@@ -1,0 +1,22 @@
+{
+  "name": "ekimemo-access-simulator",
+  "version": "1.0.0",
+  "description": "simulates access events in game 'ekimemo'.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "prepare": "webpack --config webpack.config.js",
+    "watch": "webpack --config webpack.dev.js --watch"
+  },
+  "author": "@Seo-4d696b75",
+  "license": "MIT License",
+  "devDependencies": {
+    "@types/node": "^16.7.10",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.4.2",
+    "webpack": "^5.51.1",
+    "webpack-cli": "^4.8.0",
+    "webpack-merge": "^5.8.0"
+  }
+}
