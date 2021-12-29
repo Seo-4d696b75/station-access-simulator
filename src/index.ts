@@ -10,6 +10,9 @@ async function init() {
 }
 
 init().then(() => {
+  const luna = denco_manager.getDenco("3", 50)
   const reika = denco_manager.getDenco("5", 50)
-  console.log(reika)
+  const sheena = denco_manager.getDenco("7", 50)
+  const fubu = denco_manager.getDenco("14", 50)
+  console.log(luna, reika, sheena, fubu)
 })
