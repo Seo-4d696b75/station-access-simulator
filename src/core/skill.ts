@@ -1,3 +1,5 @@
+import { AccessState, ActiveSkillDenco} from "./access"
+import { SkillPropertyReader } from "./skill_manager"
 
 export enum SkillPossessType {
   POSSESS,
@@ -33,22 +35,34 @@ export enum SkillState {
   WAIT,
 }
 
-interface SkillHolder<T, S=undefined> {
+interface SkillHolder<T, S = undefined> {
   type: T,
   skill: S
 }
 
-type SKillPossess = SkillHolder<SkillPossessType.POSSESS, {
+export type ProbabilityPercent = number
+export type SkillTrigger = boolean | ProbabilityPercent
+export type SkillTriggerPredicate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => SkillTrigger
+export type SkillEvaluate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => AccessState
+
+export interface SkillLogic {
+  can_evaluate?: SkillTriggerPredicate
+  evaluate?: SkillEvaluate
+  evaluate_in_pink?: boolean
+}
+
+export interface Skill extends SkillLogic{
   level: number
   name: string
   state: SkillState
   transition_type: SkillStateTransition
-  logic: SkillLogic
-}>
-type SkillNotAquired = SkillHolder<SkillPossessType.NOT_AQUIRED>
-type SkillNone = SkillHolder<SkillPossessType.NONE>
+  property_reader: SkillPropertyReader
+}
 
-export type Skill = SKillPossess | SkillNotAquired | SkillNone
+export type SkillPossess =
+  SkillHolder<SkillPossessType.POSSESS, Skill> |
+  SkillHolder<SkillPossessType.NOT_AQUIRED> |
+  SkillHolder<SkillPossessType.NONE>
 
 export enum SkillStateTransition {
   MANUAL,
@@ -57,8 +71,13 @@ export enum SkillStateTransition {
   ALWAYS,
 }
 
-/**
- * スキル評価ロジックの部分
- */
-export interface SkillLogic {
+export enum SkillEvaluationStep {
+  PINK_CHECK,
+  PROBABILITY_CHECK,
+  BEFORE_ACCESS,
+  START_ACCESS,
+  DAMAGE_COMMON,
+  DAMAGE_SPECIAL,
+  DAMAGE_FIXED,
+  AFTER_DAMAGE,
 }

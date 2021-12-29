@@ -1,4 +1,4 @@
-import {Skill} from "./skill"
+import {SkillPossess} from "./skill"
 import {Film} from "./film"
 
 export enum DencoType {
@@ -28,6 +28,6 @@ export interface Denco {
   current_hp: number
   ap: number
 
-  skill: Skill
+  skill: SkillPossess
   film: Film
 }
