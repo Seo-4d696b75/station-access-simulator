@@ -1,12 +1,15 @@
 import sourceMapSupport from 'source-map-support'
 sourceMapSupport.install()
 
-import manager from "./core/skill_manager"
+import skill_manager from "./core/skill_manager"
+import denco_manager from "./core/denco_manager"
 
-manager.load().then( () => {
-  console.log("load fin.")
-  const skill = manager.getSkill("5", 70)
-  console.log(skill, skill?.skill?.property_reader("ATK"))
-}).catch( e => {
-  console.log(e)
+async function init() {
+  await skill_manager.load()
+  await denco_manager.load()
+}
+
+init().then(() => {
+  const reika = denco_manager.getDenco("5", 50)
+  console.log(reika)
 })
