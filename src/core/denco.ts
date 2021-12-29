@@ -1,19 +1,17 @@
-import {SkillPossess} from "./skill"
-import {Film} from "./film"
+import { SkillPossess } from "./skill"
+import { Film } from "./film"
 
-export enum DencoType {
-  ATTACKER,
-  DEFENDER,
-  SUPPORTER,
-  TRICKSTER,
-}
+export type DencoType =
+  "attacker" |
+  "defender" |
+  "supporter" |
+  "trickster"
 
-export enum DencoAttribute {
-  COOL,
-  HEAT,
-  ECO,
-  FLAT,
-}
+export type DencoAttribute =
+  "cool" |
+  "heat" |
+  "eco" |
+  "flat"
 
 export interface Denco {
   numbering: string

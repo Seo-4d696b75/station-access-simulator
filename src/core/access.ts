@@ -106,10 +106,9 @@ interface AccessDencoState {
   exp: number
 }
 
-export enum AccessSide {
-  OFFENSE = "offense",
-  DEFENSE = "defense"
-}
+export type AccessSide =
+  "offense" |
+  "defense"
 
 export interface AccessState {
   log: Logger
@@ -224,21 +223,21 @@ function execute(state: AccessState, top: boolean = true) {
         // PROBABILITY_CHECK の前に評価する
         // 現状メロしか存在せずこの実装でもよいだろう
         state.log.log("スキルを評価：フットバースの確認")
-        evaluateSkillAt(state, SkillEvaluationStep.PINK_CHECK)
+        evaluateSkillAt(state, "pink_check")
       }
     }
     if (state.pink_mode) state.log.log("フットバースが発動！")
 
     // 確率補正の可能性 とりあえず発動させて後で調整
     state.log.log("スキルを評価：確率ブーストの確認")
-    evaluateSkillAt(state, SkillEvaluationStep.PROBABILITY_CHECK)
+    evaluateSkillAt(state, "probability_check")
   }
 
   // 他ピンクに関係なく発動するもの
   state.log.log("スキルを評価：アクセス開始前")
-  evaluateSkillAt(state, SkillEvaluationStep.BEFORE_ACCESS)
+  evaluateSkillAt(state, "before_access")
   state.log.log("スキルを評価：アクセス開始")
-  evaluateSkillAt(state, SkillEvaluationStep.START_ACCESS)
+  evaluateSkillAt(state, "start_access")
 
   const offense = state.offense
   const defense = state.defense
@@ -248,9 +247,9 @@ function execute(state: AccessState, top: boolean = true) {
     // 属性ダメージの補正値
     const attr_offense = offense.denco.self.attr
     const attr_defense = defense.denco.self.attr
-    const attr = (attr_offense === DencoAttribute.COOL && attr_defense === DencoAttribute.HEAT) ||
-      (attr_offense === DencoAttribute.HEAT && attr_defense === DencoAttribute.ECO) ||
-      (attr_offense === DencoAttribute.ECO && attr_defense === DencoAttribute.COOL)
+    const attr = (attr_offense === "cool" && attr_defense === "heat") ||
+      (attr_offense === "heat" && attr_defense === "eco") ||
+      (attr_offense === "eco" && attr_defense === "cool")
     if (attr) {
       defense.damage_attr = true
       state.damage_ratio = 1.3
@@ -264,11 +263,11 @@ function execute(state: AccessState, top: boolean = true) {
 
     // ダメージ増減の設定
     state.log.log("スキルを評価：ATK&DEFの増減")
-    evaluateSkillAt(state, SkillEvaluationStep.DAMAGE_COMMON)
+    evaluateSkillAt(state, "damage_common")
 
     // 特殊なダメージの計算
     state.log.log("スキルを評価：特殊なダメージ計算")
-    evaluateSkillAt(state, SkillEvaluationStep.DAMAGE_SPECIAL)
+    evaluateSkillAt(state, "damage_special")
 
     // 基本ダメージの計算
     if (!state.damage_base) {
@@ -280,7 +279,7 @@ function execute(state: AccessState, top: boolean = true) {
     // 固定ダメージの計算
     if (state?.skip_damage_fixed) {
       state.log.log("スキルを評価：固定ダメージ")
-      evaluateSkillAt(state, SkillEvaluationStep.DAMAGE_FIXED)
+      evaluateSkillAt(state, "damage_fixed")
       state.log.log(`固定ダメージの計算：${state.damage_fixed}`)
     } else {
       state.log.log("固定ダメージの計算：スキップ")
@@ -318,7 +317,7 @@ function execute(state: AccessState, top: boolean = true) {
   state.log.log(`守備側のリンク解除：${state.link_disconneted}`)
 
   state.log.log("スキルを評価：ダメージ計算完了後")
-  evaluateSkillAt(state, SkillEvaluationStep.AFTER_DAMAGE)
+  evaluateSkillAt(state, "after_damage")
 
   if (top) {
     state.log.log("最終的なアクセス結果を決定")
@@ -348,7 +347,7 @@ function execute(state: AccessState, top: boolean = true) {
 
 function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep) {
 
-  filterActiveSkill(state.offense.formation, AccessSide.OFFENSE).filter(d => {
+  filterActiveSkill(state.offense.formation, "offense").filter(d => {
     const s = d.skill
     return (!state.pink_mode || s.evaluate_in_pink)
       && canSkillEvaluated(state, step, d)
@@ -360,7 +359,7 @@ function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep) {
 
   const defense = state.defense
   if (defense) {
-    filterActiveSkill(defense.formation, AccessSide.DEFENSE).filter(d => {
+    filterActiveSkill(defense.formation, "defense").filter(d => {
       const s = d.skill
       return (!state.pink_mode || s.evaluate_in_pink)
         && canSkillEvaluated(state, step, d)
@@ -423,7 +422,7 @@ function hasActiveSkill(d: DencoState): boolean {
  * @returns 
  */
 function isSkillActive(skill: SkillPossess): boolean {
-  return skill.type === SkillPossessType.POSSESS && skill.skill.state === SkillState.ACTIVE
+  return skill.type === "possess" && skill.skill.state === "active"
 }
 
 /**
@@ -456,11 +455,11 @@ function canSkillEvaluated(state: AccessState, step: SkillEvaluationStep, d: Act
  */
 export function random(state: AccessState, percent: number, which: AccessSide): boolean {
   if (percent >= 100) return true
-  const boost = which === AccessSide.OFFENSE ? state.offense.probability_boost_percent : state.defense?.probability_boost_percent
+  const boost = which === "offense" ? state.offense.probability_boost_percent : state.defense?.probability_boost_percent
   if (boost) {
     if (boost !== 0) {
       const defense = state.defense
-      if (which === AccessSide.DEFENSE) {
+      if (which === "defense") {
         state.offense.probability_boosted = true
       } else if (defense) {
         defense.probability_boosted = true
@@ -479,7 +478,7 @@ export function random(state: AccessState, percent: number, which: AccessSide): 
  */
 function checkProbabilityBoost(d: AccessDencoState) {
   if (!d.probability_boosted && d.probability_boost_percent !== 0) {
-    d.triggered_skills.delete(SkillEvaluationStep.PROBABILITY_CHECK)
+    d.triggered_skills.delete("probability_check")
   }
 }
 

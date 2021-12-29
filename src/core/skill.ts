@@ -1,39 +1,27 @@
+import { type } from "os"
 import { AccessState, ActiveSkillDenco} from "./access"
 import { SkillPropertyReader } from "./skill_manager"
 
-export enum SkillPossessType {
-  POSSESS,
-  NOT_AQUIRED,
-  NONE,
-}
+export type SkillPossessType =
+  "possess" |
+  "not_aquired" |
+  "none"
 
 /**
  * スキルの有効化に関する状態  
  * 
  * ユーザが変更できる場合とできない場合がある
+ * - unable ユーザはスキルを有効化できない状態 スキル評価の対象外
+ * - idle ユーザがスキルの有効化できる状態 まだ有効化しておらず評価の対象外
+ * - active スキル評価の対象となる
+ * - wait スキルがクールダウン中の状態スキル評価の対象外
+ * 
  */
-export enum SkillState {
-  /**
-   * ユーザはスキルを有効化できない状態  
-   * スキル評価の対象外
-   */
-  UNABLE,
-  /**
-   * ユーザがスキルの有効化できる状態  
-   * まだ有効化しておらず評価の対象外
-   */
-  IDLE,
-  /**
-   * スキルが有効化されている状態  
-   * スキル評価の対象となる
-   */
-  ACTIVE,
-  /**
-   * スキルがクールダウン中の状態
-   * スキル評価の対象外
-   */
-  WAIT,
-}
+export type SkillState = 
+  "unable" |
+  "idle" |
+  "active" |
+  "wait"
 
 interface SkillHolder<T, S = undefined> {
   type: T,
@@ -81,24 +69,22 @@ export interface Skill extends SkillLogic{
 }
 
 export type SkillPossess =
-  SkillHolder<SkillPossessType.POSSESS, Skill> |
-  SkillHolder<SkillPossessType.NOT_AQUIRED> |
-  SkillHolder<SkillPossessType.NONE>
+  SkillHolder<"possess", Skill> |
+  SkillHolder<"not_aquired"> |
+  SkillHolder<"none">
 
-export enum SkillStateTransition {
-  MANUAL,
-  AUTO,
-  CONDITION,
-  ALWAYS,
-}
+export type SkillStateTransition =
+  "manual" |
+  "auto" |
+  "condition" |
+  "always"
 
-export enum SkillEvaluationStep {
-  PINK_CHECK,
-  PROBABILITY_CHECK,
-  BEFORE_ACCESS,
-  START_ACCESS,
-  DAMAGE_COMMON,
-  DAMAGE_SPECIAL,
-  DAMAGE_FIXED,
-  AFTER_DAMAGE,
-}
+export type SkillEvaluationStep =
+  "pink_check" |
+  "probability_check" |
+  "before_access" |
+  "start_access" |
+  "damage_common" |
+  "damage_special" |
+  "damage_fixed" |
+  "after_damage"

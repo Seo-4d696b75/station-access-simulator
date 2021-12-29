@@ -63,7 +63,7 @@ export class SkillManager {
         class_name: class_name,
         skill: logic,
         skill_properties: properties,
-        transaction_type: SkillStateTransition.ALWAYS,
+        transaction_type: "always",
         evaluate_in_pink: false,
       }
       this.map.set(numbering, dataset)
@@ -80,18 +80,18 @@ export class SkillManager {
       }
       if (idx < 0) {
         return {
-          type: SkillPossessType.NOT_AQUIRED,
+          type: "not_aquired",
           skill: undefined
         }
       } else if (idx < data.skill_properties.length) {
         const property = data.skill_properties[idx]
         return {
-          type: SkillPossessType.POSSESS,
+          type: "possess",
           skill: {
             ...data.skill,
             level: property.skill_level,
             name: property.skill_name,
-            state: SkillState.ACTIVE,
+            state: "active",
             transition_type: data.transaction_type,
             evaluate_in_pink: data.evaluate_in_pink,
             property_reader: (key: string) => {
@@ -106,7 +106,7 @@ export class SkillManager {
       }
     } else {
       return {
-        type: SkillPossessType.NONE,
+        type: "none",
         skill: undefined
       }
     }

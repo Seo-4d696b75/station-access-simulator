@@ -3,7 +3,7 @@ import { SkillEvaluationStep, SkillLogic, SkillTrigger } from "../core/skill"
 
 const skill : SkillLogic = {
   can_evaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): SkillTrigger => {
-    return step === SkillEvaluationStep.DAMAGE_COMMON && self.which === AccessSide.OFFENSE
+    return step === "damage_common" && self.which === "offense"
   },
   evaluate:(state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): AccessState => {
     state.attack_percent += 10
