@@ -72,25 +72,32 @@ export interface AccessConfig {
   use_pink: boolean
 }
 
+/**
+ * アクセス処理中の両編成の各でんこの状態
+ */
 interface DencoState {
-  self: Denco
+  denco: Denco
+  which: AccessSide
+  who: "defense" | "offense" | "other"
+  car_index: number
   hp_before: number
   hp_after: number
   skill_invalidated: boolean
+  reboot: boolean
 }
 
-export interface ActiveSkillDenco {
-  denco: Denco
-  skill: Skill
-  which: AccessSide
-  car_index: number
+export interface ActiveSkillDenco extends DencoState{
   property_reader: SkillPropertyReader
+  skill: Skill
 }
 
+/**
+ * アクセスの攻守ふたりの状態
+ */
 interface AccessDencoState {
-  denco: DencoState
-  car_index: number
+  self: Denco
   formation: Array<DencoState>
+  car_index: number
 
   triggered_skills: Map<SkillEvaluationStep, Denco[]>
 
@@ -99,8 +106,6 @@ interface AccessDencoState {
 
   damage: number
   damage_attr: boolean
-
-  reboot: boolean
 
   score: number
   exp: number
@@ -135,16 +140,22 @@ export interface AccessState {
   random: ((arg: number | void) => number)
 }
 
-function initAccessDencoState(f: DencoFormation): AccessDencoState {
-  const formation = f.formation.map(e => {
-    return {
-      self: e,
+function initAccessDencoState(f: DencoFormation, which: AccessSide): AccessDencoState {
+  const formation = f.formation.map((e, idx) => {
+    const s: DencoState = {
+      denco: e,
       hp_before: e.current_hp,
       hp_after: e.current_hp,
-    } as DencoState
+      which: which,
+      who: idx === f.car_index ? which : "other",
+      car_index: idx,
+      reboot: false,
+      skill_invalidated: false,
+    }
+    return s
   })
   return {
-    denco: formation[f.car_index],
+    self: f.formation[f.car_index],
     car_index: f.car_index,
     formation: formation,
     triggered_skills: new Map(),
@@ -152,7 +163,6 @@ function initAccessDencoState(f: DencoFormation): AccessDencoState {
     probability_boosted: false,
     damage: 0,
     damage_attr: false,
-    reboot: false,
     score: 0,
     exp: 0,
   }
@@ -167,8 +177,8 @@ export interface AccessResult {
 export function executeAccess(config: AccessConfig) {
   var state: AccessState = {
     log: new Logger("access"),
-    offense: initAccessDencoState(config.offense),
-    defense: config.defense ? initAccessDencoState(config.defense) : null,
+    offense: initAccessDencoState(config.offense, "offense"),
+    defense: config.defense ? initAccessDencoState(config.defense, "defense") : null,
     damage_fixed: 0,
     attack_percent: 0,
     defend_percent: 0,
@@ -188,25 +198,36 @@ export function executeAccess(config: AccessConfig) {
 
 }
 
+function getDefense(state: AccessState): AccessDencoState {
+  const s = state.defense
+  if (!s) {
+    state.log.error("守備側が見つかりません")
+    throw Error("defense not found")
+  }
+  return s
+}
+
 function execute(state: AccessState, top: boolean = true) {
 
+  const has_defense = !!state.defense
   if (top) {
     // log active skill
     var names = state.offense.formation
       .filter(d => hasActiveSkill(d))
-      .map(d => d.self.name)
+      .map(d => d.denco.name)
       .join(",")
-    state.log.log(`攻撃：${state.offense.denco.self.name}`)
+    state.log.log(`攻撃：${state.offense.self.name}`)
     state.log.log(`アクティブなスキル(攻撃側): ${names}`)
 
-    if (!state.defense) state.log.log("守備側はいません")
+    if (!has_defense) state.log.log("守備側はいません")
 
-    if (state.defense) {
-      names = state.defense.formation
+    if (has_defense) {
+      const defense = getDefense(state)
+      names = defense.formation
         .filter(d => hasActiveSkill(d))
-        .map(d => d.self.name)
+        .map(d => d.denco.name)
         .join(",")
-      state.log.log(`守備：${state.defense.denco.self.name}`)
+      state.log.log(`守備：${defense.self.name}`)
       state.log.log(`アクティブなスキル(守備側): ${names}`)
 
     }
@@ -214,7 +235,7 @@ function execute(state: AccessState, top: boolean = true) {
 
     // pink_check
     // フットバの確認、アイテム優先=>スキル評価
-    if (state.defense) {
+    if (has_defense) {
       if (state.pink_item_set) {
         state.pink_item_used = true
         state.pink_mode = true
@@ -223,35 +244,34 @@ function execute(state: AccessState, top: boolean = true) {
         // PROBABILITY_CHECK の前に評価する
         // 現状メロしか存在せずこの実装でもよいだろう
         state.log.log("スキルを評価：フットバースの確認")
-        evaluateSkillAt(state, "pink_check")
+        state = evaluateSkillAt(state, "pink_check")
       }
     }
     if (state.pink_mode) state.log.log("フットバースが発動！")
 
     // 確率補正の可能性 とりあえず発動させて後で調整
     state.log.log("スキルを評価：確率ブーストの確認")
-    evaluateSkillAt(state, "probability_check")
+    state = evaluateSkillAt(state, "probability_check")
   }
 
   // 他ピンクに関係なく発動するもの
   state.log.log("スキルを評価：アクセス開始前")
-  evaluateSkillAt(state, "before_access")
+  state = evaluateSkillAt(state, "before_access")
   state.log.log("スキルを評価：アクセス開始")
-  evaluateSkillAt(state, "start_access")
+  state = evaluateSkillAt(state, "start_access")
 
-  const offense = state.offense
-  const defense = state.defense
-  if (defense && !state.pink_mode) {
+  
+  if (has_defense && !state.pink_mode) {
     state.log.log("攻守のダメージ計算を開始")
 
     // 属性ダメージの補正値
-    const attr_offense = offense.denco.self.attr
-    const attr_defense = defense.denco.self.attr
+    const attr_offense = state.offense.self.attr
+    const attr_defense = getDefense(state).self.attr
     const attr = (attr_offense === "cool" && attr_defense === "heat") ||
       (attr_offense === "heat" && attr_defense === "eco") ||
       (attr_offense === "eco" && attr_defense === "cool")
     if (attr) {
-      defense.damage_attr = true
+      getDefense(state).damage_attr = true
       state.damage_ratio = 1.3
       state.log.log("攻守の属性によるダメージ補正が適用：1.3")
     } else {
@@ -263,15 +283,15 @@ function execute(state: AccessState, top: boolean = true) {
 
     // ダメージ増減の設定
     state.log.log("スキルを評価：ATK&DEFの増減")
-    evaluateSkillAt(state, "damage_common")
+    state = evaluateSkillAt(state, "damage_common")
 
     // 特殊なダメージの計算
     state.log.log("スキルを評価：特殊なダメージ計算")
-    evaluateSkillAt(state, "damage_special")
+    state = evaluateSkillAt(state, "damage_special")
 
     // 基本ダメージの計算
     if (!state.damage_base) {
-      const base = offense.denco.self.ap
+      const base = getDefense(state).self.ap
       state.log.log(`基本ダメージを計算 AP:${base}`)
       state.damage_base = calcBaseDamage(state, base)
     }
@@ -279,30 +299,37 @@ function execute(state: AccessState, top: boolean = true) {
     // 固定ダメージの計算
     if (state?.skip_damage_fixed) {
       state.log.log("スキルを評価：固定ダメージ")
-      evaluateSkillAt(state, "damage_fixed")
+      state = evaluateSkillAt(state, "damage_fixed")
       state.log.log(`固定ダメージの計算：${state.damage_fixed}`)
     } else {
       state.log.log("固定ダメージの計算：スキップ")
     }
 
     // 最終ダメージ計算 固定ダメージ等の影響でも負数にはならない
-    const damage = Math.max(state.damage_base + state.damage_fixed, 0)
+    const damage_base = state.damage_base
+    if (!damage_base) {
+      state.log.error("基本ダメージの値が見つかりません")
+      throw Error("base damage not set")
+    }
+    const damage = Math.max(damage_base + state.damage_fixed, 0)
 
     // 被アクセス側のダメージ確定
+    const defense = getDefense(state)
     defense.damage = damage
     defense.damage_attr = state.damage_ratio !== 1.0
     state.log.log(`ダメージ計算が終了：${damage}`)
 
     // HP0 になったらリブート
-    defense.reboot = defense.damage >= defense.denco.hp_before
+    const d = defense.formation[defense.car_index]
+    d.reboot = defense.damage >= d.hp_before
 
     // 被アクセス側がリブートしたらリンク解除（ピンク除く）
-    state.link_disconneted = defense.reboot
+    state.link_disconneted = d.reboot
 
     // 被アクセス側がリンク解除、かつアクセス側がリブートしていない
     state.link_success = state.link_disconneted
 
-    state.log.log(`守備の結果 HP: ${defense.denco.hp_before} > ${defense.denco.hp_after} reboot:${defense.reboot}`)
+    state.log.log(`守備の結果 HP: ${d.hp_before} > ${d.hp_after} reboot:${d.reboot}`)
   } else if (state.pink_mode) {
     // ピンク
     state.link_disconneted = true
@@ -317,7 +344,7 @@ function execute(state: AccessState, top: boolean = true) {
   state.log.log(`守備側のリンク解除：${state.link_disconneted}`)
 
   state.log.log("スキルを評価：ダメージ計算完了後")
-  evaluateSkillAt(state, "after_damage")
+  state = evaluateSkillAt(state, "after_damage")
 
   if (top) {
     state.log.log("最終的なアクセス結果を決定")
@@ -335,8 +362,9 @@ function execute(state: AccessState, top: boolean = true) {
 
     // 最終的なアクセス結果を計算 カウンターで変化する場合あり
     if (state.defense) {
-      state.link_disconneted = state.defense.reboot
-      state.link_success = state.link_disconneted && !state.offense.reboot
+      const d = state.defense.formation[state.defense.car_index]
+      state.link_disconneted = d.reboot
+      state.link_success = state.link_disconneted && !d.reboot
     }
     state.log.log(`攻撃側のリンク成果：${state.link_success}`)
     state.log.log(`守備側のリンク解除：${state.link_disconneted}`)
@@ -345,9 +373,9 @@ function execute(state: AccessState, top: boolean = true) {
 
 }
 
-function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep) {
+function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep): AccessState {
 
-  filterActiveSkill(state.offense.formation, "offense").filter(d => {
+  filterActiveSkill(state.offense.formation, "offense", state.offense.car_index).filter(d => {
     const s = d.skill
     return (!state.pink_mode || s.evaluate_in_pink)
       && canSkillEvaluated(state, step, d)
@@ -359,7 +387,7 @@ function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep) {
 
   const defense = state.defense
   if (defense) {
-    filterActiveSkill(defense.formation, "defense").filter(d => {
+    filterActiveSkill(defense.formation, "defense", defense.car_index).filter(d => {
       const s = d.skill
       return (!state.pink_mode || s.evaluate_in_pink)
         && canSkillEvaluated(state, step, d)
@@ -369,6 +397,7 @@ function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep) {
       state.log.log(`スキルが発動(守備側). name:${d.denco.name}(${d.denco.numbering}) skill:${d.skill.name}`)
     })
   }
+  return state
 }
 
 function markTriggerSkill(state: AccessDencoState, step: SkillEvaluationStep, denco: Denco) {
@@ -390,16 +419,14 @@ function markTriggerSkill(state: AccessDencoState, step: SkillEvaluationStep, de
  * @param which 
  * @returns 
  */
-function filterActiveSkill(list: Array<DencoState>, which: AccessSide): Array<ActiveSkillDenco> {
+function filterActiveSkill(list: Array<DencoState>, which: AccessSide, access_idx: number): Array<ActiveSkillDenco> {
   const result: Array<ActiveSkillDenco> = []
   list.forEach((d, idx) => {
-    const s = d.self.skill
+    const s = d.denco.skill
     if (hasActiveSkill(d) && s.skill) {
       result.push({
-        denco: d.self,
+        ...d,
         skill: s.skill,
-        car_index: idx,
-        which: which,
         property_reader: s.skill.property_reader
       })
     }
@@ -413,7 +440,7 @@ function filterActiveSkill(list: Array<DencoState>, which: AccessSide): Array<Ac
  * @returns 
  */
 function hasActiveSkill(d: DencoState): boolean {
-  return isSkillActive(d.self.skill) && !d.skill_invalidated
+  return isSkillActive(d.denco.skill) && !d.skill_invalidated
 }
 
 /**
@@ -515,24 +542,25 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
     return state
   }
   if (state.defense) {
-    const idx = state.defense.formation.findIndex(d => d.self.numbering === denco.numbering)
+    const idx = state.defense.formation.findIndex(d => d.denco.numbering === denco.numbering)
     if (idx < 0) {
       state.log.error(`反撃するでんこが見つかりません ${denco.numbering} ${denco.name}`)
       return state
     }
-    const offense_next = {
-      ...state.defense,
+    // 編成内の直接アクセスされた以外のでんこによる反撃の場合もあるため慎重に
+    const offense_next: AccessDencoState = {
+      self: denco,
+      car_index: idx,
+      formation: state.defense.formation,
+      triggered_skills: state.defense.triggered_skills,
+      probability_boost_percent: state.defense.probability_boost_percent,
+      probability_boosted: state.defense.probability_boosted,
       damage: 0,
       damage_attr: false,
-      reboot: false,
       score: 0,
       exp: 0,
     }
-    if (idx !== state.defense.car_index) {
-      // 編成内の直接アクセスされた以外のでんこによる反撃
-      offense_next.car_index = idx
-      offense_next.denco = offense_next.formation[idx]
-    }
+    // 原則さっきまでのoffense
     const defense_next = {
       ...state.offense,
       damage: 0,
@@ -556,6 +584,7 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
       pink_item_set: false,
       pink_item_used: false,
       random: state.random,
+      previous: state,
     }
 
     // カウンター実行
@@ -588,19 +617,19 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
 }
 
 function completeDencoAccess(state: AccessState, s: AccessDencoState) {
-  const denco = s.denco.self
+  const denco = s.formation[s.car_index]
   // HPの反映
-  s.denco.hp_after = Math.max(s.denco.hp_before - s.damage, 0)
+  denco.hp_after = Math.max(denco.hp_before - s.damage, 0)
   // カウンターによりリブートする場合あり
-  s.reboot = s.denco.hp_after === 0
-  if (s.reboot) {
-    denco.current_hp = denco.max_hp
+  denco.reboot = denco.hp_after === 0
+  if (denco.reboot) {
+    s.self.current_hp = s.self.max_hp
   } else {
-    denco.current_hp = s.denco.hp_after
+    s.self.current_hp = denco.hp_after
   }
   // EXP の反映
-  denco.current_exp += s.exp
+  s.self.current_exp += s.exp
   // TODO レベルアップ処理
 
-  state.log.log(`HP確定 ${denco.name} ${s.denco.hp_before} > ${s.denco.hp_after}`)
+  state.log.log(`HP確定 ${s.self.name} ${denco.hp_before} > ${denco.hp_after}`)
 }
