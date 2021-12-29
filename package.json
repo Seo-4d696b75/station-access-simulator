@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "simulates access events in game 'ekimemo'.",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
@@ -21,6 +22,8 @@
   },
   "dependencies": {
     "@types/seedrandom": "^3.0.1",
-    "seedrandom": "^3.0.5"
+    "@types/source-map-support": "^0.5.4",
+    "seedrandom": "^3.0.5",
+    "source-map-support": "^0.5.21"
   }
 }
