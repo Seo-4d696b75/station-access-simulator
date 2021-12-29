@@ -3,6 +3,7 @@ sourceMapSupport.install()
 
 import skill_manager from "./core/skill_manager"
 import denco_manager from "./core/denco_manager"
+import { AccessConfig, executeAccess } from './core/access'
 
 async function init() {
   await skill_manager.load()
@@ -14,5 +15,22 @@ init().then(() => {
   const reika = denco_manager.getDenco("5", 50)
   const sheena = denco_manager.getDenco("7", 50)
   const fubu = denco_manager.getDenco("14", 50)
-  console.log(luna, reika, sheena, fubu)
+  const config: AccessConfig = {
+    offense: {
+      car_index: 0,
+      formation: [
+        sheena,
+        reika
+      ]
+    },
+    defense: {
+      car_index: 1,
+      formation: [
+        fubu,
+        luna
+      ]
+    }
+  }
+  const result = executeAccess(config)
+  console.log(result)
 })

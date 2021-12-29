@@ -8,7 +8,7 @@ const skill: SkillLogic = {
   },
   evaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): AccessState => {
     const hour = new Date().getHours()
-    if (hour < 6 && hour >= 18) {
+    if (hour < 6 || hour >= 18) {
       state.defend_percent += self.property_reader("DEF_night")
     } else {
       state.defend_percent += self.property_reader("DEF_morning")
