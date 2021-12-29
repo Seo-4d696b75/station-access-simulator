@@ -65,7 +65,6 @@
     {"skill_level":6,"denco_level":70,"name":"ディファーレ Lv.6","probability":9.5},
     {"skill_level":7,"denco_level":80,"name":"レッツトエントリヒ","probability":11.0}
   ]},
-  {"numbering":"8","class":"D08_Saya"},
   {"numbering":"9","class":"D09_Moe","type":"condition","step":{"one_hour":"probability"},"list":[
     {"skill_level":1,"denco_level":5,"name":"定時メンテナンス Lv.1","heal":10},
     {"skill_level":2,"denco_level":15,"name":"定時メンテナンス Lv.2","heal":15},
@@ -93,7 +92,6 @@
     {"skill_level":6,"denco_level":70,"name":"ペインガード Lv.6","probability":30,"DEF":40},
     {"skill_level":7,"denco_level":80,"name":"ジョイフルガード","probability":30,"DEF":50}
   ]},
-  {"numbering":"12","class":"D12_Mobo"},
   {"numbering":"13","class":"D13_Izuna","type":"always","step":{"damage_common":null},"list":[
     {"skill_level":1,"denco_level":5,"name":"重連壁 Lv.1","DEF":1},
     {"skill_level":2,"denco_level":15,"name":"重連壁 Lv.2","DEF":2},

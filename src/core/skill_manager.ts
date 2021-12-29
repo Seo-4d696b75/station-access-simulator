@@ -1,4 +1,4 @@
-import { SkillEvaluationStep, SkillLogic, SkillPossess, SkillPossessType, SkillState, SkillStateTransition } from "./skill"
+import { SkillLogic, SkillPossess, SkillPossessType, SkillState, SkillStateTransition } from "./skill"
 
 interface SkillProperty {
   skill_name: string
@@ -14,19 +14,21 @@ interface SkillDataset {
   class_name: string
   skill: SkillLogic
   transaction_type: SkillStateTransition
-  evaluate_steps: Array<SkillEvaluationStep>
   evaluate_in_pink: boolean
   skill_properties: Array<SkillProperty>
 }
 
-class SkillManager {
+export class SkillManager {
 
   map: Map<string, SkillDataset> = new Map()
 
-  load(data: string) {
-    const list = JSON.parse(data)
+  async load(data?: string) {
+    const list = data ? JSON.parse(data) : await import("../data/skill.json").then(o => o.default).catch(e => [])
     if (!Array.isArray(list)) throw Error("fail to load skill property")
-    list.forEach(e => {
+    for (let e of list) {
+      if (!e.numbering || !e.class || !e.list) {
+        throw Error(`invalid skill lacking some property ${JSON.stringify(e)}`)
+      }
       const numbering = e.numbering as string
       const class_name = e.class as string
       const properties = (e.list as Array<any>).map(d => {
@@ -49,7 +51,12 @@ class SkillManager {
         return p
       })
       properties.sort((a, b) => a.skill_level - b.skill_level)
-      const logic = require(`../skill/${class_name}`) as SkillLogic
+      const logic = await import("../skill/" + class_name + ".ts")
+        .then(o => o.default)
+        .catch(() => {
+          console.warn("fail to import skill logic", class_name)
+          return {}
+        })
       // TODO
       var dataset: SkillDataset = {
         numbering: numbering,
@@ -57,11 +64,10 @@ class SkillManager {
         skill: logic,
         skill_properties: properties,
         transaction_type: SkillStateTransition.ALWAYS,
-        evaluate_steps: [],
         evaluate_in_pink: false,
       }
       this.map.set(numbering, dataset)
-    })
+    }
   }
 
   getSkill(numbering: string, level: number): SkillPossess {
