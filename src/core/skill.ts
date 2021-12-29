@@ -40,14 +40,35 @@ interface SkillHolder<T, S = undefined> {
   skill: S
 }
 
+/**
+ * スキルの発動確率を百分率で表現
+ */
 export type ProbabilityPercent = number
+
+/**
+ * スキル発動の有無を表す  
+ * 発動の有無が確定できる場合はboolean, 確率に依存する場合は発動する確率を指定する
+ */
 export type SkillTrigger = boolean | ProbabilityPercent
+
+/**
+ * 指定された状態でスキルが発動できるか判定する
+ */
 export type SkillTriggerPredicate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => SkillTrigger
+
+/**
+ * スキルが発動した時の効果を反映する
+ */
 export type SkillEvaluate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => AccessState
 
 export interface SkillLogic {
   can_evaluate?: SkillTriggerPredicate
   evaluate?: SkillEvaluate
+
+  /**
+   * フットバースでも発動するスキルの場合はtrueを指定  
+   * 一部のスキル発動ステップはフットバース時はスキップされる
+   */
   evaluate_in_pink?: boolean
 }
 

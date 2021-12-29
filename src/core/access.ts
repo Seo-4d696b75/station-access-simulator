@@ -438,9 +438,10 @@ function canSkillEvaluated(state: AccessState, step: SkillEvaluationStep, d: Act
     return trigger
   } else {
     if (random(state, trigger, d.which)) {
+      state.log.log(`スキルが発動できます. ${d.denco.name} 確率:${trigger}`)
       return true
     } else {
-      state.log.log(`skill not triggered. probability: ${trigger}`)
+      state.log.log(`スキルが発動しませんでした. ${d.denco.name} 確率:${trigger}`)
       return false
     }
   }
