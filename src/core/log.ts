@@ -69,7 +69,7 @@ interface Log {
   message: string
 }
 
-export function formatAccessDetail(result: AccessState, which: AccessSide, width: number = 80): string {
+export function formatAccessDetail(result: AccessState, which: AccessSide, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -131,6 +131,11 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
   str += "┃" + formatSpace(formatDamage(left_side), table_left, "left")
   str += "damage"
   str += formatSpace(formatDamage(right_side), table_right, "right") + "┃\n"
+
+  str += "┠" + "─".repeat(width - 2) + "┨\n"
+  str += "┃" + formatSpace(formatHP(left_side), table_left, "left")
+  str += "  hp  "
+  str += formatSpace(formatHP(right_side), table_right, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   str += "┃" + formatSpace(formatLinkTime(left_side), table_left, "left")
@@ -233,6 +238,16 @@ function formatSkills(state?: AccessDencoState | null): string {
   const skills = state.triggered_skills
   if (skills.length === 0) return "-"
   return skills.map(s => s.denco.name).join(",")
+}
+
+function formatHP(state?: AccessDencoState | null) {
+  if(!state) return ""
+  const d = state.formation[state.car_index]
+  if ( d.hp_after === d.hp_before) {
+    return `${d.hp_after}/${d.denco.max_hp}`
+  } else {
+    return `${d.hp_before}>>${d.hp_after}/${d.denco.max_hp}`
+  }
 }
 
 function formatAttr(attr: DencoAttribute, width: number): string {

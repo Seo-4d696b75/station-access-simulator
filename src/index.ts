@@ -14,21 +14,23 @@ async function init() {
 init().then(() => {
   const luna = denco_manager.getDenco("3", 50)
   const reika = denco_manager.getDenco("5", 50)
-  const sheena = denco_manager.getDenco("7", 50)
+  const sheena = denco_manager.getDenco("7", 80)
   const fubu = denco_manager.getDenco("14", 50)
+  const charlotte = denco_manager.getDenco("6", 30)
   const config: AccessConfig = {
     offense: {
-      car_index: 0,
-      formation: [
-        luna,
-        fubu
-      ]
-    },
-    defense: {
       car_index: 1,
       formation: [
         reika,
         sheena
+      ]
+    },
+    defense: {
+      car_index: 0,
+      formation: [
+        charlotte,
+        luna,
+        fubu
       ]
     },
     probability: "force"

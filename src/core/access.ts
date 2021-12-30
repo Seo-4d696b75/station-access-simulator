@@ -36,7 +36,7 @@ export interface AccessConfig {
 /**
  * アクセス処理中の両編成の各でんこの状態
  */
-interface DencoState {
+export interface DencoState {
   denco: Denco
   which: AccessSide
   who: "defense" | "offense" | "other"
@@ -337,8 +337,9 @@ function execute(state: AccessState, top: boolean = true): AccessState {
 
     // 最終的なアクセス結果を計算 カウンターで変化する場合あり
     if (state.defense) {
-      const d = state.defense.formation[state.defense.car_index]
+      var d = state.defense.formation[state.defense.car_index]
       state.link_disconneted = d.reboot
+      d = state.offense.formation[state.offense.car_index]
       state.link_success = state.link_disconneted && !d.reboot
     }
     state.log.log(`攻撃側のリンク成果：${state.link_success}`)
