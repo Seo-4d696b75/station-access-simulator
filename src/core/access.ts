@@ -387,9 +387,9 @@ function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep): AccessS
     return (!state.pink_mode || s.evaluate_in_pink)
       && canSkillEvaluated(state, step, d)
   }).forEach(d => {
-    state = d.skill.evaluate ? d.skill.evaluate(state, step, d) : state
     markTriggerSkill(state.offense, step, d.denco)
-    state.log.log(`スキルが発動(攻撃側). name:${d.denco.name}(${d.denco.numbering}) skill:${d.skill.name}`)
+    state.log.log(`スキルが発動(攻撃側) name:${d.denco.name}(${d.denco.numbering}) skill:${d.skill.name}`)
+    state = d.skill.evaluate ? d.skill.evaluate(state, step, d) : state
   })
 
   const defense = state.defense
@@ -399,9 +399,9 @@ function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep): AccessS
       return (!state.pink_mode || s.evaluate_in_pink)
         && canSkillEvaluated(state, step, d)
     }).forEach(d => {
-      state = d.skill.evaluate ? d.skill.evaluate(state, step, d) : state
       markTriggerSkill(defense, step, d.denco)
-      state.log.log(`スキルが発動(守備側). name:${d.denco.name}(${d.denco.numbering}) skill:${d.skill.name}`)
+      state.log.log(`スキルが発動(守備側) name:${d.denco.name}(${d.denco.numbering}) skill:${d.skill.name}`)
+      state = d.skill.evaluate ? d.skill.evaluate(state, step, d) : state
     })
   }
   return state
@@ -557,7 +557,7 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
     // 編成内の直接アクセスされた以外のでんこによる反撃の場合もあるため慎重に
     const offense_next: AccessDencoState = {
       car_index: idx,
-      formation: state.defense.formation,
+      formation: turnFromation(state.defense.formation, "defense", idx),
       triggered_skills: state.defense.triggered_skills,
       probability_boost_percent: state.defense.probability_boost_percent,
       probability_boosted: state.defense.probability_boosted,
@@ -567,11 +567,11 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
       exp: 0,
     }
     // 原則さっきまでのoffense
-    const defense_next = {
+    const defense_next: AccessDencoState = {
       ...state.offense,
+      formation: turnFromation(state.offense.formation, "offense", state.offense.car_index),
       damage: 0,
       damage_attr: false,
-      reboot: false,
       score: 0,
       exp: 0,
     }
@@ -594,31 +594,49 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
 
     // カウンター実行
     state.log.log("攻守交代、カウンター攻撃を開始")
-    execute(next, false)
+    const result = execute(next, false)
     state.log.log("カウンター攻撃を終了")
+    const offense_result = result.offense
+    const defense_result = getDefense(result)
 
-    // カウンターによるダメージの反映
-    state.offense.damage += defense_next.damage
-    state.offense.damage_attr = defense_next.damage_attr
+    // カウンターによるダメージ・Score・EXPの反映 AccessDencoState
+    state.offense.damage += defense_result.damage
+    state.offense.damage_attr = defense_result.damage_attr
     // 被アクセス側であってもスキル等によりスコア＆EXPが加算される場合がある
-    state.offense.exp += defense_next.exp
-    state.offense.score += defense_next.score
+    state.offense.exp += defense_result.exp
+    state.offense.score += defense_result.score
     if (idx === state.defense.car_index) {
       // 被アクセス側本人のカウンター攻撃
-      state.defense.damage += offense_next.damage // 二重反撃など
-      state.defense.damage_attr = state.defense.damage_attr || offense_next.damage_attr
+      state.defense.damage += offense_result.damage // 二重反撃など
+      state.defense.damage_attr = state.defense.damage_attr || offense_result.damage_attr
       // カウンターは通常のアクセスと同様処理のためスコア＆EXPが加算される
-      state.defense.score += offense_next.score
-      state.defense.exp += offense_next.exp
+      state.defense.score += offense_result.score
+      state.defense.exp += offense_result.exp
     } else {
       // 被アクセス側本人以外のカウンター攻撃
-      state.defense.score += offense_next.score
-      completeDencoAccess(state, offense_next)
+      state.defense.score += offense_result.score
+      completeDencoAccess(result, offense_result)
     }
+
+    // カウンター攻撃によるでんこ状態の反映 DencoState[]
+    state.offense.formation = turnFromation(defense_result.formation, "defense", state.offense.car_index)
+    state.defense.formation = turnFromation(offense_result.formation, "offense", state.defense.car_index)
   } else {
     state.log.error("相手が存在しないので反撃はできません")
   }
   return state
+}
+
+function turnFromation(formation: DencoState[], current_side: AccessSide, next_access_idx: number): DencoState[] {
+  const next_side = current_side === "defense" ? "offense" : "defense"
+  return formation.map(s => {
+    var next: DencoState = {
+      ...s,
+      which: next_side,
+      who: s.car_index === next_access_idx ? next_side : "other",
+    }
+    return next
+  })
 }
 
 function completeDencoAccess(state: AccessState, s: AccessDencoState) {

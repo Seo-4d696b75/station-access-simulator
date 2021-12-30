@@ -6,7 +6,9 @@ const skill: SkillLogic = {
     return step === "damage_common" && self.which === "offense"
   },
   evaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): AccessState => {
-    state.attack_percent += self.property_reader("ATK")
+    const atk = self.property_reader("ATK")
+    state.attack_percent += atk
+    state.log.log(`仕方ないわね ATK+${atk}%`)
     return state
   }
 }

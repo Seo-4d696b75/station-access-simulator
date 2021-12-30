@@ -19,15 +19,15 @@ init().then(() => {
     offense: {
       car_index: 0,
       formation: [
-        sheena,
-        reika
+        luna,
+        fubu
       ]
     },
     defense: {
       car_index: 1,
       formation: [
-        fubu,
-        luna
+        reika,
+        sheena
       ]
     }
   }

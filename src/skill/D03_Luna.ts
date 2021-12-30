@@ -9,9 +9,13 @@ const skill: SkillLogic = {
   evaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): AccessState => {
     const hour = new Date().getHours()
     if (hour < 6 || hour >= 18) {
-      state.defend_percent += self.property_reader("DEF_night")
+      const def = self.property_reader("DEF_night")
+      state.defend_percent += def
+      state.log.log(`夜はこれからなんよ～ DEF+${def}%`)
     } else {
-      state.defend_percent += self.property_reader("DEF_morning")
+      const def = self.property_reader("DEF_morning")
+      state.defend_percent += def
+      state.log.log(`まだ眠いんよ～ DEF${def}%`)
     }
     return state
   }
