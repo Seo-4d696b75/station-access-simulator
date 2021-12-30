@@ -4,6 +4,7 @@ sourceMapSupport.install()
 import skill_manager from "./core/skill_manager"
 import denco_manager from "./core/denco_manager"
 import { AccessConfig, executeAccess } from './core/access'
+import { formatAccessDetail, formatAccessEvent } from './core/log'
 
 async function init() {
   await skill_manager.load()
@@ -33,4 +34,8 @@ init().then(() => {
     probability: "force"
   }
   const result = executeAccess(config)
+  console.log(formatAccessEvent(result, "offense"))
+  console.log(formatAccessEvent(result, "defense"))
+  console.log(formatAccessDetail(result, "offense"))
+  console.log(formatAccessDetail(result, "defense"))
 })

@@ -2,74 +2,7 @@ import seedrandom from "seedrandom"
 import { Denco } from "./denco"
 import { SkillEvaluationStep, SkillPossess, Skill } from "./skill"
 import { SkillPropertyReader } from "./skill_manager"
-
-export class Logger {
-
-  constructor(type: string, write_console: boolean = true) {
-    this.type = type
-    this.time = Date.now()
-    this.write_console = write_console
-  }
-
-  type: string
-  time: number
-  logs: Array<Log> = []
-  write_console: boolean
-
-  toString(): string {
-    var str = ""
-    str += "========================\n"
-    str += `type: ${this.type}\n`
-    str += `time: ${new Date(this.time).toTimeString()}\n`
-    str += "------------------------\n"
-    this.logs.forEach(log => {
-      str += `[${log.tag}] ${log.message}\n`
-    })
-    str += "========================"
-    return str
-  }
-
-  appendMessage(tag: LogTag, message: string) {
-    this.logs.push({
-      tag: tag,
-      message: message
-    })
-    if (this.write_console) {
-      if (tag === LogTag.LOG) {
-        console.log(message)
-      } else if (tag === LogTag.WARN) {
-        console.warn(message)
-      } else if (tag === LogTag.ERR) {
-        console.error(message)
-      }
-    }
-  }
-
-  log(message: string) {
-    this.appendMessage(LogTag.LOG, message)
-  }
-
-  warn(message: string) {
-    this.appendMessage(LogTag.WARN, message)
-  }
-
-  error(message: string) {
-    this.appendMessage(LogTag.ERR, message)
-    throw Error(message)
-  }
-
-}
-
-enum LogTag {
-  LOG = "L",
-  WARN = "W",
-  ERR = "E",
-}
-
-interface Log {
-  tag: LogTag
-  message: string
-}
+import { Logger } from "./log"
 
 export interface DencoFormation {
   formation: Array<Denco>
@@ -119,20 +52,29 @@ export interface ActiveSkillDenco extends DencoState {
   skill: Skill
 }
 
+export interface TriggeredSkill {
+  denco: Denco
+  step: SkillEvaluationStep
+}
+
+export interface DamageState {
+  value: number
+  attr: boolean
+}
+
 /**
  * アクセスの攻守ふたりの状態
  */
-interface AccessDencoState {
+export interface AccessDencoState {
   formation: Array<DencoState>
   car_index: number
 
-  triggered_skills: Map<SkillEvaluationStep, Denco[]>
+  triggered_skills: TriggeredSkill[]
 
   probability_boost_percent: number
   probability_boosted: boolean
 
-  damage: number
-  damage_attr: boolean
+  damage?: DamageState
 
   score: number
   exp: number
@@ -185,11 +127,9 @@ function initAccessDencoState(f: DencoFormation, which: AccessSide): AccessDenco
   return {
     car_index: f.car_index,
     formation: formation,
-    triggered_skills: new Map(),
+    triggered_skills: [],
     probability_boost_percent: 0,
     probability_boosted: false,
-    damage: 0,
-    damage_attr: false,
     score: 0,
     exp: 0,
   }
@@ -230,6 +170,14 @@ function getDefense(state: AccessState): AccessDencoState {
     throw Error("defense not found")
   }
   return s
+}
+
+function getDamage(state: AccessDencoState): DamageState {
+  const d = state.damage
+  if (!d) {
+    throw Error("no damage state found")
+  }
+  return d
 }
 
 function execute(state: AccessState, top: boolean = true): AccessState {
@@ -296,7 +244,6 @@ function execute(state: AccessState, top: boolean = true): AccessState {
       (attr_offense === "heat" && attr_defense === "eco") ||
       (attr_offense === "eco" && attr_defense === "cool")
     if (attr) {
-      getDefense(state).damage_attr = true
       state.damage_ratio = 1.3
       state.log.log("攻守の属性によるダメージ補正が適用：1.3")
     } else {
@@ -340,14 +287,16 @@ function execute(state: AccessState, top: boolean = true): AccessState {
 
     // 被アクセス側のダメージ確定
     const defense = getDefense(state)
-    defense.damage = damage
-    defense.damage_attr = state.damage_ratio !== 1.0
+    defense.damage = {
+      value: damage,
+      attr: state.damage_ratio !== 1.0
+    }
     state.log.log(`ダメージ計算が終了：${damage}`)
 
     // HP0 になったらリブート
     const d = defense.formation[defense.car_index]
     d.hp_after = Math.max(d.hp_before - damage, 0)
-    d.reboot = defense.damage >= d.hp_before
+    d.reboot = damage >= d.hp_before
 
     // 被アクセス側がリブートしたらリンク解除（ピンク除く）
     state.link_disconneted = d.reboot
@@ -427,14 +376,13 @@ function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep): AccessS
 }
 
 function markTriggerSkill(state: AccessDencoState, step: SkillEvaluationStep, denco: Denco) {
-  let list = state.triggered_skills.get(step)
-  if (!list) {
-    list = []
-    state.triggered_skills.set(step, list)
-  }
-  const idx = list.findIndex(d => d.numbering === denco.numbering)
+  const list = state.triggered_skills
+  const idx = list.findIndex(d => d.denco.numbering === denco.numbering)
   if (idx < 0) {
-    list.push(denco)
+    list.push({
+      denco: denco,
+      step: step
+    })
   }
 }
 
@@ -539,7 +487,7 @@ export function random(state: AccessState, random: Random, percent: number, whic
  */
 function checkProbabilityBoost(d: AccessDencoState) {
   if (!d.probability_boosted && d.probability_boost_percent !== 0) {
-    d.triggered_skills.delete("probability_check")
+    d.triggered_skills = d.triggered_skills.filter(s => s.step !== "probability_check")
   }
 }
 
@@ -588,8 +536,6 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
       triggered_skills: state.defense.triggered_skills,
       probability_boost_percent: state.defense.probability_boost_percent,
       probability_boosted: state.defense.probability_boosted,
-      damage: 0,
-      damage_attr: false,
       score: 0,
       exp: 0,
     }
@@ -597,8 +543,6 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
     const defense_next: AccessDencoState = {
       ...state.offense,
       formation: turnFromation(state.offense.formation, "offense", state.offense.car_index),
-      damage: 0,
-      damage_attr: false,
       score: 0,
       exp: 0,
     }
@@ -627,15 +571,24 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
     const defense_result = getDefense(result)
 
     // カウンターによるダメージ・Score・EXPの反映 AccessDencoState
-    state.offense.damage += defense_result.damage
-    state.offense.damage_attr = defense_result.damage_attr
+    if (state.offense.damage) {
+      state.log.error("攻撃側にダメージが発生しています")
+    }
+    state.offense.damage = defense_result.damage
     // 被アクセス側であってもスキル等によりスコア＆EXPが加算される場合がある
     state.offense.exp += defense_result.exp
     state.offense.score += defense_result.score
     if (idx === state.defense.car_index) {
       // 被アクセス側本人のカウンター攻撃
-      state.defense.damage += offense_result.damage // 二重反撃など
-      state.defense.damage_attr = state.defense.damage_attr || offense_result.damage_attr
+      const previous = getDamage(state.defense)
+      const add = offense_result.damage
+      if (add) {
+        // 二重反撃などでカウンター中にダメージを受ける場合
+        state.defense.damage = {
+          value: previous.value + add.value,
+          attr: previous.attr || add.attr
+        }
+      }
       // カウンターは通常のアクセスと同様処理のためスコア＆EXPが加算される
       state.defense.score += offense_result.score
       state.defense.exp += offense_result.exp
@@ -669,7 +622,10 @@ function turnFromation(formation: DencoState[], current_side: AccessSide, next_a
 function completeDencoAccess(state: AccessState, s: AccessDencoState) {
   const denco = s.formation[s.car_index]
   // HPの反映
-  denco.hp_after = Math.max(denco.hp_before - s.damage, 0)
+  if (s.damage) {
+    const damage = s.damage.value
+    denco.hp_after = Math.max(denco.hp_before - damage, 0)
+  }
   // カウンターによりリブートする場合あり
   denco.reboot = denco.hp_after === 0
   const self = denco.denco
