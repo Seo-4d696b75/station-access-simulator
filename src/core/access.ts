@@ -76,11 +76,28 @@ export interface DencoFormation {
   car_index: number
 }
 
+/**
+ * アクセス処理の入力・設定を定義します
+ */
 export interface AccessConfig {
+  /**
+   * 攻撃側の編成
+   */
   offense: DencoFormation
+  /**
+   * 守備側の編成
+   */
   defense?: DencoFormation
-
+  /**
+   * フットバースアイテム使用の有無を指定する
+   */
   use_pink?: boolean
+  /**
+   * 発動条件が確率に依存する場合の挙動を指定できます
+   * - "ignore": 必ず発動しない
+   * - "force": 必ず発動する
+   */
+  probability?: "ignore" | "force"
 }
 
 /**
@@ -125,6 +142,8 @@ export type AccessSide =
   "offense" |
   "defense"
 
+type Random = () => number
+
 export interface AccessState {
   log: Logger
   offense: AccessDencoState
@@ -146,7 +165,7 @@ export interface AccessState {
   pink_item_set: boolean
   pink_item_used: boolean
 
-  random: ((arg: number | void) => number)
+  random: Random | "ignore" | "force"
 }
 
 function initAccessDencoState(f: DencoFormation, which: AccessSide): AccessDencoState {
@@ -190,7 +209,7 @@ export function executeAccess(config: AccessConfig): AccessState {
     pink_mode: false,
     pink_item_set: !!config.use_pink,
     pink_item_used: false,
-    random: seedrandom("test"),
+    random: config.probability ? config.probability : seedrandom("test"),
   }
 
 
@@ -470,11 +489,19 @@ function canSkillEvaluated(state: AccessState, step: SkillEvaluationStep, d: Act
   if (typeof trigger === 'boolean') {
     return trigger
   } else {
-    if (random(state, trigger, d.which)) {
-      state.log.log(`スキルが発動できます. ${d.denco.name} 確率:${trigger}`)
+    if (state.random === "force") {
+      state.log.log("確率計算は無視されます mode: force")
+      return true
+    }
+    if (state.random === "ignore") {
+      state.log.log("確率計算は無視されます mode: ignore")
+      return false
+    }
+    if (random(state, state.random, trigger, d.which)) {
+      state.log.log(`スキルが発動できます ${d.denco.name} 確率:${trigger}`)
       return true
     } else {
-      state.log.log(`スキルが発動しませんでした. ${d.denco.name} 確率:${trigger}`)
+      state.log.log(`スキルが発動しませんでした ${d.denco.name} 確率:${trigger}`)
       return false
     }
   }
@@ -487,7 +514,7 @@ function canSkillEvaluated(state: AccessState, step: SkillEvaluationStep, d: Act
  * @param which どっちサイドの確立ブーストを適用するか
  * @returns 
  */
-export function random(state: AccessState, percent: number, which: AccessSide): boolean {
+export function random(state: AccessState, random: Random, percent: number, which: AccessSide): boolean {
   if (percent >= 100) return true
   const boost = which === "offense" ? state.offense.probability_boost_percent : state.defense?.probability_boost_percent
   if (boost) {
@@ -499,7 +526,7 @@ export function random(state: AccessState, percent: number, which: AccessSide): 
         defense.probability_boosted = true
       }
     }
-    return state.random(100) < percent * (1.0 + boost / 100.0)
+    return random() < (percent * (1.0 + boost / 100.0)) / 100.0
   } else {
     state.log.error("defense not set, but try to read probability_boost_percent")
     return false

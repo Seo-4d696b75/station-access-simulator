@@ -29,8 +29,8 @@ init().then(() => {
         reika,
         sheena
       ]
-    }
+    },
+    probability: "force"
   }
   const result = executeAccess(config)
-  console.log(result)
 })
