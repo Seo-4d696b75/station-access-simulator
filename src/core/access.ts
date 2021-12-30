@@ -3,8 +3,9 @@ import { Denco } from "./denco"
 import { SkillEvaluationStep, SkillPossess, Skill } from "./skill"
 import { SkillPropertyReader } from "./skill_manager"
 import { Logger } from "./log"
+import { Event } from "./event"
 
-export interface DencoFormation {
+export interface AccessDenco {
   formation: Array<Denco>
   car_index: number
 }
@@ -16,11 +17,11 @@ export interface AccessConfig {
   /**
    * 攻撃側の編成
    */
-  offense: DencoFormation
+  offense: AccessDenco
   /**
    * 守備側の編成
    */
-  defense?: DencoFormation
+  defense?: AccessDenco
   /**
    * フットバースアイテム使用の有無を指定する
    */
@@ -110,7 +111,7 @@ export interface AccessState {
   random: Random | "ignore" | "force"
 }
 
-function initAccessDencoState(f: DencoFormation, which: AccessSide): AccessDencoState {
+function initAccessDencoState(f: AccessDenco, which: AccessSide): AccessDencoState {
   const formation = f.formation.map((e, idx) => {
     const s: DencoState = {
       denco: e,
@@ -135,7 +136,13 @@ function initAccessDencoState(f: DencoFormation, which: AccessSide): AccessDenco
   }
 }
 
-export function executeAccess(config: AccessConfig): AccessState {
+export interface AccessResult {
+  offense: Denco[]
+  defense?: Denco[]
+  event: Event[]
+}
+
+export function executeAccess(config: AccessConfig): AccessResult {
   var state: AccessState = {
     log: new Logger("access"),
     offense: initAccessDencoState(config.offense, "offense"),
@@ -154,8 +161,16 @@ export function executeAccess(config: AccessConfig): AccessState {
 
 
   state.log.log("アクセス処理の開始")
-  return execute(state)
-
+  state = execute(state)
+  // TODO アクセス後の処理
+  return {
+    offense: state.offense.formation.map(s => s.denco),
+    defense: state.defense?.formation?.map(s => s.denco),
+    event: [{
+      type: "access",
+      data: state
+    }]
+  }
 }
 
 function getDenco(state: AccessState, which: AccessSide): Denco {
