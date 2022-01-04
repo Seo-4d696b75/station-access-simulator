@@ -366,7 +366,7 @@ function execute(state: AccessState, top: boolean = true): AccessState {
 
 function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep): AccessState {
 
-  filterActiveSkill(state.offense.formation, "offense", state.offense.carIndex).filter(d => {
+  filterActiveSkill(state.offense.formation).filter(d => {
     const s = d.skill
     return (!state.pinkMode || s.evaluateInPink)
       && canSkillEvaluated(state, step, d)
@@ -378,7 +378,7 @@ function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep): AccessS
 
   const defense = state.defense
   if (defense) {
-    filterActiveSkill(defense.formation, "defense", defense.carIndex).filter(d => {
+    filterActiveSkill(defense.formation).filter(d => {
       const s = d.skill
       return (!state.pinkMode || s.evaluateInPink)
         && canSkillEvaluated(state, step, d)
@@ -409,7 +409,7 @@ function markTriggerSkill(state: AccessDencoState, step: SkillEvaluationStep, de
  * @param which 
  * @returns 
  */
-function filterActiveSkill(list: Array<DencoState>, which: AccessSide, access_idx: number): Array<ActiveSkillDenco> {
+function filterActiveSkill(list: Array<DencoState>): Array<ActiveSkillDenco> {
   const result: Array<ActiveSkillDenco> = []
   list.forEach((d, idx) => {
     const s = d.denco.skill

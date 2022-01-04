@@ -1,32 +1,32 @@
 import sourceMapSupport from 'source-map-support'
 sourceMapSupport.install()
 
-import skill_manager from "./core/skill_manager"
-import denco_manager from "./core/denco_manager"
+import skillManager from "./core/skillManager"
+import dencoManager from "./core/dencoManager"
 import { AccessConfig, executeAccess } from './core/access'
-import { formatAccessDetail, formatAccessEvent } from './core/log'
+import { formatEvent } from './core/log'
 
 async function init() {
-  await skill_manager.load()
-  await denco_manager.load()
+  await skillManager.load()
+  await dencoManager.load()
 }
 
 init().then(() => {
-  const luna = denco_manager.getDenco("3", 50)
-  const reika = denco_manager.getDenco("5", 50)
-  const sheena = denco_manager.getDenco("7", 80)
-  const fubu = denco_manager.getDenco("14", 50)
-  const charlotte = denco_manager.getDenco("6", 30)
+  const luna = dencoManager.getDenco("3", 50)
+  const reika = dencoManager.getDenco("5", 50)
+  const sheena = dencoManager.getDenco("7", 80)
+  const fubu = dencoManager.getDenco("14", 50)
+  const charlotte = dencoManager.getDenco("6", 30)
   const config: AccessConfig = {
     offense: {
-      car_index: 1,
+      carIndex: 1,
       formation: [
         reika,
         sheena
       ]
     },
     defense: {
-      car_index: 0,
+      carIndex: 0,
       formation: [
         charlotte,
         luna,
@@ -35,9 +35,9 @@ init().then(() => {
     },
     probability: "force"
   }
-  const result = executeAccess(config)
-  console.log(formatAccessEvent(result, "offense"))
-  console.log(formatAccessEvent(result, "defense"))
-  console.log(formatAccessDetail(result, "offense"))
-  console.log(formatAccessDetail(result, "defense"))
+  const result = executeAccess(config).event[0]
+  console.log(formatEvent(result, "offense"))
+  console.log(formatEvent(result, "defense"))
+  console.log(formatEvent(result, "offense", true))
+  console.log(formatEvent(result, "defense", true))
 })

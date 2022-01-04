@@ -70,6 +70,15 @@ interface Log {
   message: string
 }
 
+
+export function formatEvent(event: Event, which: AccessSide, detail: boolean = false): string {
+  if (event.type === "access") {
+    return detail ? formatAccessDetail(event.data, which) : formatAccessEvent(event.data, which)
+  } else {
+    return event.type
+  }
+}
+
 export function formatAccessDetail(result: AccessState, which: AccessSide, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
