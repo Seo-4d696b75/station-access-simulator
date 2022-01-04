@@ -2,7 +2,7 @@ import { DencoAttribute } from "./denco";
 
 export interface Station {
   name: string
-  name_kana: string
+  nameKana: string
   attr: DencoAttribute
 }
 

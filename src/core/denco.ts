@@ -20,10 +20,10 @@ export interface Denco {
   attr: DencoAttribute
 
   level: number
-  next_exp: number
-  current_exp: number
-  max_hp: number
-  current_hp: number
+  nextExp: number
+  currentExp: number
+  maxHp: number
+  currentHp: number
   ap: number
 
   skill: SkillPossess

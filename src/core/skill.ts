@@ -1,6 +1,6 @@
 import { type } from "os"
 import { AccessState, ActiveSkillDenco} from "./access"
-import { SkillPropertyReader } from "./skill_manager"
+import { SkillPropertyReader } from "./skillManager"
 
 export type SkillPossessType =
   "possess" |
@@ -50,22 +50,22 @@ export type SkillTriggerPredicate = (state: AccessState, step: SkillEvaluationSt
 export type SkillEvaluate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => AccessState
 
 export interface SkillLogic {
-  can_evaluate?: SkillTriggerPredicate
+  canEvaluate?: SkillTriggerPredicate
   evaluate?: SkillEvaluate
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
    * 一部のスキル発動ステップはフットバース時はスキップされる
    */
-  evaluate_in_pink?: boolean
+  evaluateInPink?: boolean
 }
 
 export interface Skill extends SkillLogic{
   level: number
   name: string
   state: SkillState
-  transition_type: SkillStateTransition
-  property_reader: SkillPropertyReader
+  transitionType: SkillStateTransition
+  propertyReader: SkillPropertyReader
 }
 
 export type SkillPossess =

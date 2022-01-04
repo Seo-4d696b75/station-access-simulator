@@ -1,9 +1,9 @@
-import { SkillLogic, SkillPossess, SkillPossessType, SkillState, SkillStateTransition } from "./skill"
+import { SkillLogic, SkillPossess, SkillStateTransition } from "./skill"
 
 interface SkillProperty {
-  skill_name: string
-  skill_level: number
-  denco_level: number
+  name: string
+  skillLevel: number
+  dencoLevel: number
   property: Map<string, number>
 }
 
@@ -11,11 +11,11 @@ export type SkillPropertyReader = (key: string) => number
 
 interface SkillDataset {
   numbering: string
-  class_name: string
+  moduleName: string
   skill: SkillLogic
-  transaction_type: SkillStateTransition
-  evaluate_in_pink: boolean
-  skill_properties: Array<SkillProperty>
+  transactionType: SkillStateTransition
+  evaluateInPink: boolean
+  skillProperties: Array<SkillProperty>
 }
 
 export class SkillManager {
@@ -30,7 +30,7 @@ export class SkillManager {
         throw Error(`invalid skill lacking some property ${JSON.stringify(e)}`)
       }
       const numbering = e.numbering as string
-      const class_name = e.class as string
+      const moduleName = e.class as string
       const properties = (e.list as Array<any>).map(d => {
         var skill = d.skill_level as number
         var denco = d.denco_level as number
@@ -43,28 +43,28 @@ export class SkillManager {
           map.set(key, value as number)
         }
         var p: SkillProperty = {
-          skill_name: name,
-          skill_level: skill,
-          denco_level: denco,
+          name: name,
+          skillLevel: skill,
+          dencoLevel: denco,
           property: map,
         }
         return p
       })
-      properties.sort((a, b) => a.skill_level - b.skill_level)
-      const logic = await import("../skill/" + class_name + ".ts")
+      properties.sort((a, b) => a.skillLevel - b.skillLevel)
+      const logic = await import("../skill/" + moduleName + ".ts")
         .then(o => o.default)
         .catch(() => {
-          console.warn("fail to import skill logic", class_name)
+          console.warn("fail to import skill logic", moduleName)
           return {}
         })
       // TODO
       var dataset: SkillDataset = {
         numbering: numbering,
-        class_name: class_name,
+        moduleName: moduleName,
         skill: logic,
-        skill_properties: properties,
-        transaction_type: "always",
-        evaluate_in_pink: false,
+        skillProperties: properties,
+        transactionType: "always",
+        evaluateInPink: false,
       }
       this.map.set(numbering, dataset)
     }
@@ -73,9 +73,9 @@ export class SkillManager {
   getSkill(numbering: string, level: number): SkillPossess {
     const data = this.map.get(numbering)
     if (data) {
-      var idx = data.skill_properties.length - 1
+      var idx = data.skillProperties.length - 1
       while (idx >= 0) {
-        if (level >= data.skill_properties[idx].denco_level) break
+        if (level >= data.skillProperties[idx].dencoLevel) break
         idx -= 1
       }
       if (idx < 0) {
@@ -83,18 +83,18 @@ export class SkillManager {
           type: "not_aquired",
           skill: undefined
         }
-      } else if (idx < data.skill_properties.length) {
-        const property = data.skill_properties[idx]
+      } else if (idx < data.skillProperties.length) {
+        const property = data.skillProperties[idx]
         return {
           type: "possess",
           skill: {
             ...data.skill,
-            level: property.skill_level,
-            name: property.skill_name,
+            level: property.skillLevel,
+            name: property.name,
             state: "active",
-            transition_type: data.transaction_type,
-            evaluate_in_pink: data.evaluate_in_pink,
-            property_reader: (key: string) => {
+            transitionType: data.transactionType,
+            evaluateInPink: data.evaluateInPink,
+            propertyReader: (key: string) => {
               var value = property.property.get(key)
               if (!value) throw new Error(`skill property not found. key:${key}`)
               return value
@@ -115,8 +115,8 @@ export class SkillManager {
   readSkillProperty(numbering: string, level: number): SkillProperty | null {
     const dataset = this.map.get(numbering)
     if (!dataset) throw new Error(`no skill property found: ${numbering}`)
-    for (var property of dataset.skill_properties) {
-      if (level <= property.denco_level) {
+    for (var property of dataset.skillProperties) {
+      if (level <= property.dencoLevel) {
         return property
       }
     }

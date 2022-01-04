@@ -1,20 +1,20 @@
 import { Denco, DencoAttribute, DencoType } from "./denco"
-import skill_manager from "./skill_manager"
+import skillManager from "./skillManager"
 
 interface DencoLevelStatus {
   level: number
   ap: number
-  max_hp: number
-  next_exp: number
+  maxHp: number
+  nextExp: number
 }
 
 interface DencoData {
   numbering: string
   name: string
-  full_name: string
+  fullName: string
   type: DencoType
   attr: DencoAttribute
-  status_list: DencoLevelStatus[]
+  statusList: DencoLevelStatus[]
 }
 
 class DencoManager {
@@ -42,17 +42,17 @@ class DencoManager {
         return {
           level: i + 1,
           ap: ap[i],
-          max_hp: hp[i],
-          next_exp: exp[i],
+          maxHp: hp[i],
+          nextExp: exp[i],
         } as DencoLevelStatus
       })
       const d: DencoData = {
         numbering: e.numbering,
         name: e.name,
-        full_name: e.full_name,
+        fullName: e.full_name,
         type: e.type,
         attr: e.attribute,
-        status_list: status
+        statusList: status
       }
       this.data.set(d.numbering, d)
     }
@@ -61,11 +61,11 @@ class DencoManager {
   getDenco(numbering: string, level: number = 50): Denco {
     const data = this.data.get(numbering)
     if (!data) throw Error(`denco data not found: ${numbering}`)
-    if (level < 1 || level > data.status_list.length) {
-      throw Error(`invalid level:${level} for data size ${data.status_list.length}`)
+    if (level < 1 || level > data.statusList.length) {
+      throw Error(`invalid level:${level} for data size ${data.statusList.length}`)
     }
-    const status = data.status_list[level - 1]
-    const skill = skill_manager.getSkill(numbering, level)
+    const status = data.statusList[level - 1]
+    const skill = skillManager.getSkill(numbering, level)
     return {
       numbering: data.numbering,
       name: data.name,
@@ -73,8 +73,8 @@ class DencoManager {
       attr: data.attr,
       ...status,
       level: level,
-      current_exp: 0,
-      current_hp: status.max_hp,
+      currentExp: 0,
+      currentHp: status.maxHp,
       skill: skill,
       film: {
 

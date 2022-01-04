@@ -1,18 +1,19 @@
-import { AccessDencoState, AccessSide, AccessState, TriggeredSkill } from "./access"
+import { AccessDencoState, AccessSide, AccessState } from "./access"
 import { Denco, DencoAttribute } from "./denco"
+import { Event } from "./event"
 
 export class Logger {
 
-  constructor(type: string, write_console: boolean = true) {
+  constructor(type: string, writeConsole: boolean = true) {
     this.type = type
     this.time = Date.now()
-    this.write_console = write_console
+    this.writeConsole = writeConsole
   }
 
   type: string
   time: number
   logs: Array<Log> = []
-  write_console: boolean
+  writeConsole: boolean
 
   toString(): string {
     var str = ""
@@ -32,7 +33,7 @@ export class Logger {
       tag: tag,
       message: message
     })
-    if (this.write_console) {
+    if (this.writeConsole) {
       if (tag === LogTag.LOG) {
         console.log(message)
       } else if (tag === LogTag.WARN) {
@@ -74,9 +75,9 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
 
   // アクセス結果の表示
   var title = "access"
-  if (which === "offense" && result.link_success) {
+  if (which === "offense" && result.linkSuccess) {
     title += "/connect"
-  } else if (which === "defense" && result.link_disconneted) {
+  } else if (which === "defense" && result.linkDisconncted) {
     title += "/disconnect"
   }
   str += formatLine(title, width)
@@ -84,80 +85,80 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
   str += formatLine("とうきょう", width)
 
   //which === "offense"
-  var left_side: AccessDencoState | null = result.defense
-  var right_side: AccessDencoState = result.offense
-  var left: Denco | null = result.defense ? result.defense.formation[result.defense.car_index].denco : null
-  var right: Denco = result.offense.formation[result.offense.car_index].denco
+  var leftSide: AccessDencoState | null = result.defense
+  var rightSide: AccessDencoState = result.offense
+  var left: Denco | null = result.defense ? result.defense.formation[result.defense.carIndex].denco : null
+  var right: Denco = result.offense.formation[result.offense.carIndex].denco
   if (which === "defense" && result.defense) {
-    right = result.defense.formation[result.defense.car_index].denco
-    left = result.offense.formation[result.offense.car_index].denco
-    right_side = result.defense
-    left_side = result.offense
+    right = result.defense.formation[result.defense.carIndex].denco
+    left = result.offense.formation[result.offense.carIndex].denco
+    rightSide = result.defense
+    leftSide = result.offense
   }
-  const icon_width = 14
-  str += "┃" + formatSpace(left ? left.name : "不在", icon_width)
+  const iconWidth = 14
+  str += "┃" + formatSpace(left ? left.name : "不在", iconWidth)
   if (which === "offense") {
-    str += "╱" + "─".repeat(width - 4 - icon_width * 2) + "┐"
+    str += "╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐"
   } else {
-    str += "┌" + "─".repeat(width - 4 - icon_width * 2) + "╲"
+    str += "┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲"
   }
-  str += formatSpace(right.name, icon_width) + "┃\n"
+  str += formatSpace(right.name, iconWidth) + "┃\n"
 
-  str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", icon_width)
+  str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", iconWidth)
   if (which === "offense") {
-    str += "╲" + "─".repeat(width - 4 - icon_width * 2) + "┘"
+    str += "╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘"
   } else {
-    str += "└" + "─".repeat(width - 4 - icon_width * 2) + "╱"
+    str += "└" + "─".repeat(width - 4 - iconWidth * 2) + "╱"
   }
-  str += formatSpace(`Lv.${right.level}`, icon_width) + "┃\n"
+  str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
 
-  str += "┃" + (left ? formatAttr(left.attr, icon_width) : " ".repeat(icon_width))
-  str += formatSpace(formatPastTime(Date.now(), result.log.time), width - icon_width * 2 - 2)
-  str += formatAttr(right.attr, icon_width) + "┃\n"
+  str += "┃" + (left ? formatAttr(left.attr, iconWidth) : " ".repeat(iconWidth))
+  str += formatSpace(formatPastTime(Date.now(), result.log.time), width - iconWidth * 2 - 2)
+  str += formatAttr(right.attr, iconWidth) + "┃\n"
 
-  const table_left = Math.floor((width - 6 - 2) / 2)
-  const table_right = width - 6 - 2 - table_left
+  const tableLeft = Math.floor((width - 6 - 2) / 2)
+  const tableRight = width - 6 - 2 - tableLeft
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(left ? `${left.name}のマスター` : "", table_left, "left")
+  str += "┃" + formatSpace(left ? `${left.name}のマスター` : "", tableLeft, "left")
   str += " user "
-  str += formatSpace(`${right.name}のマスター`, table_right, "right") + "┃\n"
+  str += formatSpace(`${right.name}のマスター`, tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatSkills(left_side), table_left, "left")
+  str += "┃" + formatSpace(formatSkills(leftSide), tableLeft, "left")
   str += " skill"
-  str += formatSpace(formatSkills(right_side), table_right, "right") + "┃\n"
+  str += formatSpace(formatSkills(rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatDamage(left_side), table_left, "left")
+  str += "┃" + formatSpace(formatDamage(leftSide), tableLeft, "left")
   str += "damage"
-  str += formatSpace(formatDamage(right_side), table_right, "right") + "┃\n"
+  str += formatSpace(formatDamage(rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatHP(left_side), table_left, "left")
+  str += "┃" + formatSpace(formatHP(leftSide), tableLeft, "left")
   str += "  hp  "
-  str += formatSpace(formatHP(right_side), table_right, "right") + "┃\n"
+  str += formatSpace(formatHP(rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatLinkTime(left_side), table_left, "left")
+  str += "┃" + formatSpace(formatLinkTime(leftSide), tableLeft, "left")
   str += " link "
-  str += formatSpace(formatLinkTime(right_side), table_right, "right") + "┃\n"
+  str += formatSpace(formatLinkTime(rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(left_side ? left_side.score.toString() : "", table_left, "left")
+  str += "┃" + formatSpace(leftSide ? leftSide.score.toString() : "", tableLeft, "left")
   str += " score"
-  str += formatSpace(right_side.score.toString(), table_right, "right") + "┃\n"
+  str += formatSpace(rightSide.score.toString(), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(left_side ? left_side.exp.toString() : "", table_left, "left")
+  str += "┃" + formatSpace(leftSide ? leftSide.exp.toString() : "", tableLeft, "left")
   str += "  exp "
-  str += formatSpace(right_side.exp.toString(), table_right, "right") + "┃\n"
+  str += formatSpace(rightSide.exp.toString(), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   var mes = ""
   if (which === "offense") {
-    mes = result.link_success ? `${right.name}がリンクを開始` : `${right.name}がアクセス`
+    mes = result.linkSuccess ? `${right.name}がリンクを開始` : `${right.name}がアクセス`
   } else {
-    mes = result.link_disconneted ? `${right.name}のリンクが解除` : "リンク継続中"
+    mes = result.linkDisconncted ? `${right.name}のリンクが解除` : "リンク継続中"
   }
   str += formatLine(mes, width)
 
@@ -171,9 +172,9 @@ export function formatAccessEvent(result: AccessState, which: AccessSide, width:
 
   // アクセス結果の表示
   var title = "access"
-  if (which === "offense" && result.link_success) {
+  if (which === "offense" && result.linkSuccess) {
     title += "/connect"
-  } else if (which === "defense" && result.link_disconneted) {
+  } else if (which === "defense" && result.linkDisconncted) {
     title += "/disconnect"
   }
   str += formatLine(title, width)
@@ -181,37 +182,37 @@ export function formatAccessEvent(result: AccessState, which: AccessSide, width:
   str += formatLine("とうきょう", width)
 
   //which === "offense"
-  var left = result.defense ? result.defense.formation[result.defense.car_index].denco : null
-  var right = result.offense.formation[result.offense.car_index].denco
+  var left = result.defense ? result.defense.formation[result.defense.carIndex].denco : null
+  var right = result.offense.formation[result.offense.carIndex].denco
   if (which === "defense" && result.defense) {
-    right = result.defense.formation[result.defense.car_index].denco
-    left = result.offense.formation[result.offense.car_index].denco
+    right = result.defense.formation[result.defense.carIndex].denco
+    left = result.offense.formation[result.offense.carIndex].denco
   }
-  const icon_width = 14
-  str += "┃" + formatSpace(left ? left.name : "不在", icon_width)
+  const iconWidth = 14
+  str += "┃" + formatSpace(left ? left.name : "不在", iconWidth)
   if (which === "offense") {
-    str += "╱" + "─".repeat(width - 4 - icon_width * 2) + "┐"
+    str += "╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐"
   } else {
-    str += "┌" + "─".repeat(width - 4 - icon_width * 2) + "╲"
-  } str += formatSpace(right.name, icon_width) + "┃\n"
+    str += "┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲"
+  } str += formatSpace(right.name, iconWidth) + "┃\n"
 
-  str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", icon_width)
+  str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", iconWidth)
   if (which === "offense") {
-    str += "╲" + "─".repeat(width - 4 - icon_width * 2) + "┘"
+    str += "╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘"
   } else {
-    str += "└" + "─".repeat(width - 4 - icon_width * 2) + "╱"
-  } str += formatSpace(`Lv.${right.level}`, icon_width) + "┃\n"
+    str += "└" + "─".repeat(width - 4 - iconWidth * 2) + "╱"
+  } str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
 
-  str += "┃" + formatSpace(left ? `${left.name}のマスター` : "", icon_width)
-  str += formatSpace(formatPastTime(Date.now(), result.log.time), width - icon_width * 2 - 2)
-  str += formatSpace(`${right.name}のマスター`, icon_width) + "┃\n"
+  str += "┃" + formatSpace(left ? `${left.name}のマスター` : "", iconWidth)
+  str += formatSpace(formatPastTime(Date.now(), result.log.time), width - iconWidth * 2 - 2)
+  str += formatSpace(`${right.name}のマスター`, iconWidth) + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   var mes = ""
   if (which === "offense") {
-    mes = result.link_success ? `${right.name}がリンクを開始` : `${right.name}がアクセス`
+    mes = result.linkSuccess ? `${right.name}がリンクを開始` : `${right.name}がアクセス`
   } else {
-    mes = result.link_disconneted ? `${right.name}のリンクが解除` : "リンク継続中"
+    mes = result.linkDisconncted ? `${right.name}のリンクが解除` : "リンク継続中"
   }
   str += formatLine(mes, width)
 
@@ -228,25 +229,25 @@ function formatDamage(state?: AccessDencoState | null): string {
 
 function formatLinkTime(state?: AccessDencoState | null): string {
   if (!state) return ""
-  const d = state.formation[state.car_index]
+  const d = state.formation[state.carIndex]
   if (d.who === "defense") return "10秒"
   return "-"
 }
 
 function formatSkills(state?: AccessDencoState | null): string {
   if (!state) return ""
-  const skills = state.triggered_skills
+  const skills = state.triggeredSkills
   if (skills.length === 0) return "-"
   return skills.map(s => s.denco.name).join(",")
 }
 
 function formatHP(state?: AccessDencoState | null) {
-  if(!state) return ""
-  const d = state.formation[state.car_index]
-  if ( d.hp_after === d.hp_before) {
-    return `${d.hp_after}/${d.denco.max_hp}`
+  if (!state) return ""
+  const d = state.formation[state.carIndex]
+  if (d.hpAfter === d.hpBefore) {
+    return `${d.hpAfter}/${d.denco.maxHp}`
   } else {
-    return `${d.hp_before}>>${d.hp_after}/${d.denco.max_hp}`
+    return `${d.hpBefore}>>${d.hpAfter}/${d.denco.maxHp}`
   }
 }
 
@@ -262,12 +263,12 @@ function formatAttr(attr: DencoAttribute, width: number): string {
   }
 }
 
-const char_start = " ".charCodeAt(0)
-const char_end = "~".charCodeAt(0)
-const char_list = ["…".charCodeAt(0)]
+const charStart = " ".charCodeAt(0)
+const charEnd = "~".charCodeAt(0)
+const charList = ["…".charCodeAt(0)]
 function charLen(code: number): number {
-  if (char_start <= code && code <= char_end) return 1
-  if (char_list.includes(code)) return 1
+  if (charStart <= code && code <= charEnd) return 1
+  if (charList.includes(code)) return 1
   return 2
 }
 
