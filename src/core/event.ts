@@ -1,4 +1,4 @@
-import { AccessState } from "./access"
+import { AccessSide, AccessState } from "./access"
 import { Denco } from "./denco"
 import { LinkResult } from "./station"
 
@@ -16,6 +16,7 @@ interface EventBase<T,V = undefined> {
 export type AccessEvent = EventBase<"access", AccessState>
 export type RebootEvent = EventBase<"reboot", {
   denco: Denco
+  which: AccessSide
   link: LinkResult[]
 }>
 
@@ -25,6 +26,9 @@ export type LevelupEvent = EventBase<"levelup", {
   after: Denco
 }>
 
+/**
+ * タイムライン上に表示される各ダイアログをモデル化
+ */
 export type Event = 
   AccessEvent |
   RebootEvent |

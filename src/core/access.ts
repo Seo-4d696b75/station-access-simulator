@@ -2,8 +2,8 @@ import seedrandom from "seedrandom"
 import { Denco } from "./denco"
 import { SkillPossess, Skill } from "./skill"
 import { SkillPropertyReader } from "./skillManager"
-import { Logger } from "./log"
 import { Event } from "./event"
+import { Random, Context, Logger } from "./context"
 
 /**
  * アクセスするでんこの設定
@@ -134,8 +134,6 @@ export type AccessSide =
   "offense" |
   "defense"
 
-export type Random = () => number
-
 export interface AccessState {
   log: Logger
   offense: AccessDencoState
@@ -185,15 +183,15 @@ function initAccessDencoState(f: AccessDenco, which: AccessSide): AccessDencoSta
   }
 }
 
-export interface AfterAccessState {
+export interface AfterAccessState extends Context {
   offense: Denco[]
   defense?: Denco[]
   event: Event[]
 }
 
-export function startAccess(config: AccessConfig): AfterAccessState {
+export function startAccess(context: Context, config: AccessConfig): AfterAccessState {
   var state: AccessState = {
-    log: new Logger("access"),
+    log: context.log,
     offense: initAccessDencoState(config.offense, "offense"),
     defense: config.defense ? initAccessDencoState(config.defense, "defense") : null,
     damageFixed: 0,
@@ -205,7 +203,7 @@ export function startAccess(config: AccessConfig): AfterAccessState {
     pinkMode: false,
     pinkItemSet: !!config.usePink,
     pinkItemUsed: false,
-    random: config.probability ? config.probability : seedrandom("test"),
+    random: config.probability ? config.probability : context.random,
   }
 
 
@@ -213,11 +211,13 @@ export function startAccess(config: AccessConfig): AfterAccessState {
   state = execute(state)
   state.log.log("アクセス処理の終了")
 
-  return completeAccess(state)
+  return completeAccess(context, state)
 }
 
-function completeAccess(state: AccessState): AfterAccessState {
+function completeAccess(context: Context, state: AccessState): AfterAccessState {
+  // このアクセスイベントの追加
   var afterState: AfterAccessState = {
+    ...context,
     offense: state.offense.formation.map(s => s.denco),
     defense: state.defense?.formation?.map(s => s.denco),
     event: [{
@@ -225,7 +225,22 @@ function completeAccess(state: AccessState): AfterAccessState {
       data: state
     }]
   }
-  // アクセス直後のスキル発動
+  // リブートイベントの追加
+  const offense = state.offense.formation[state.offense.carIndex]
+  if (offense.reboot) {
+    afterState.event.push({
+      type: "reboot",
+      data: {
+        denco: offense.denco,
+        which: "offense",
+        link: []
+      }
+    })
+  }
+
+  // レベルアップ処理
+
+  // アクセス直後のスキル発動イベント
   filterActiveSkill(state.offense.formation).forEach(d => {
     const nextState = d.skill.onAccessComplete?.(afterState, d)
     if (nextState) {
@@ -723,7 +738,6 @@ function completeDencoAccess(state: AccessState, s: AccessDencoState) {
   }
   // EXP の反映
   self.currentExp += s.exp
-  // TODO レベルアップ処理
 
   state.log.log(`HP確定 ${self.name} ${denco.hpBefore} > ${denco.hpAfter} reboot:${denco.reboot}`)
 }
