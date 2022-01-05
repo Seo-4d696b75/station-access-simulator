@@ -85,7 +85,7 @@ export type AccessSide =
   "offense" |
   "defense"
 
-type Random = () => number
+export type Random = () => number
 
 export interface AccessState {
   log: Logger
@@ -462,10 +462,10 @@ function canSkillEvaluated(state: AccessState, step: SkillEvaluationStep, d: Act
       return false
     }
     if (random(state, state.random, trigger, d.which)) {
-      state.log.log(`スキルが発動できます ${d.denco.name} 確率:${trigger}`)
+      state.log.log(`スキルが発動できます ${d.denco.name} 確率:${trigger}%`)
       return true
     } else {
-      state.log.log(`スキルが発動しませんでした ${d.denco.name} 確率:${trigger}`)
+      state.log.log(`スキルが発動しませんでした ${d.denco.name} 確率:${trigger}%`)
       return false
     }
   }

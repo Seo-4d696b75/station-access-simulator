@@ -1,5 +1,5 @@
-import { type } from "os"
-import { AccessState, ActiveSkillDenco} from "./access"
+import { AccessResult, AccessState, ActiveSkillDenco } from "./access"
+import * as SkillEvent from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
 
 export type SkillPossessType =
@@ -17,7 +17,7 @@ export type SkillPossessType =
  * - wait スキルがクールダウン中の状態スキル評価の対象外
  * 
  */
-export type SkillState = 
+export type SkillState =
   "unable" |
   "idle" |
   "active" |
@@ -41,17 +41,34 @@ export type SkillTrigger = boolean | ProbabilityPercent
 
 /**
  * 指定された状態でスキルが発動できるか判定する
+ * 
+ * 確率に依存する部分以外の判定をここで行うこと
  */
 export type SkillTriggerPredicate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => SkillTrigger
 
 /**
- * スキルが発動した時の効果を反映する
+ * アクセス時にスキルが発動した時の効果を反映する
  */
-export type SkillEvaluate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => AccessState
+export type AccessSkillEvaluate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => AccessState
+
+/**
+ * アクセス時以外のイベントでスキルが発動した時の効果を反映する
+ */
+export type EventSkillEvaluate = (state: SkillEvent.SkillEventState, self: SkillEvent.ActiveSkillDenco) => SkillEvent.SkillEventState | undefined
 
 export interface SkillLogic {
+  /**
+   * アクセス時の各段階でスキルが発動するか判定する
+   */
   canEvaluate?: SkillTriggerPredicate
-  evaluate?: SkillEvaluate
+  /**
+   * アクセス時のスキル発動処理
+   */
+  evaluate?: AccessSkillEvaluate
+
+  evaluateOnEvent?: EventSkillEvaluate
+
+  onAccessComplete?: (result: AccessResult, self: ActiveSkillDenco) => AccessResult 
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
@@ -60,7 +77,7 @@ export interface SkillLogic {
   evaluateInPink?: boolean
 }
 
-export interface Skill extends SkillLogic{
+export interface Skill extends SkillLogic {
   level: number
   name: string
   state: SkillState
@@ -88,3 +105,12 @@ export type SkillEvaluationStep =
   "damage_special" |
   "damage_fixed" |
   "after_damage"
+
+/**
+* スキル保有の有無とスキル状態を考慮してアクティブなスキルか判定
+* @param skill 
+* @returns 
+*/
+export function isSkillActive(skill: SkillPossess): skill is SkillHolder<"possess", Skill> {
+  return skill.type === "possess" && skill.skill.state === "active"
+}
