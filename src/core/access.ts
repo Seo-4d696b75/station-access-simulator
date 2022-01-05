@@ -191,7 +191,7 @@ export interface AfterAccessState {
   event: Event[]
 }
 
-export function executeAccess(config: AccessConfig): AfterAccessState {
+export function startAccess(config: AccessConfig): AfterAccessState {
   var state: AccessState = {
     log: new Logger("access"),
     offense: initAccessDencoState(config.offense, "offense"),
@@ -211,8 +211,13 @@ export function executeAccess(config: AccessConfig): AfterAccessState {
 
   state.log.log("アクセス処理の開始")
   state = execute(state)
-  // TODO アクセス後の処理
-  return {
+  state.log.log("アクセス処理の終了")
+
+  return completeAccess(state)
+}
+
+function completeAccess(state: AccessState): AfterAccessState {
+  var afterState: AfterAccessState = {
     offense: state.offense.formation.map(s => s.denco),
     defense: state.defense?.formation?.map(s => s.denco),
     event: [{
@@ -220,6 +225,22 @@ export function executeAccess(config: AccessConfig): AfterAccessState {
       data: state
     }]
   }
+  // アクセス直後のスキル発動
+  filterActiveSkill(state.offense.formation).forEach(d => {
+    const nextState = d.skill.onAccessComplete?.(afterState, d)
+    if (nextState) {
+      afterState = nextState
+    }
+  })
+  if (state.defense) {
+    filterActiveSkill(state.defense.formation).forEach(d => {
+      const nextState = d.skill.onAccessComplete?.(afterState, d)
+      if (nextState) {
+        afterState = nextState
+      }
+    })
+  }
+  return afterState
 }
 
 function getDenco(state: AccessState, which: AccessSide): Denco {
@@ -334,11 +355,11 @@ function execute(state: AccessState, top: boolean = true): AccessState {
 
     // 固定ダメージの計算
     if (state?.skipDamageFixed) {
+      state.log.log("固定ダメージの計算：スキップ")
+    } else {
       state.log.log("スキルを評価：固定ダメージ")
       state = evaluateSkillAt(state, "damage_fixed")
       state.log.log(`固定ダメージの計算：${state.damageFixed}`)
-    } else {
-      state.log.log("固定ダメージの計算：スキップ")
     }
 
     // 最終ダメージ計算 固定ダメージ等の影響でも負数にはならない
@@ -704,5 +725,5 @@ function completeDencoAccess(state: AccessState, s: AccessDencoState) {
   self.currentExp += s.exp
   // TODO レベルアップ処理
 
-  state.log.log(`HP確定 ${self.name} ${denco.hpBefore} > ${denco.hpAfter}`)
+  state.log.log(`HP確定 ${self.name} ${denco.hpBefore} > ${denco.hpAfter} reboot:${denco.reboot}`)
 }
