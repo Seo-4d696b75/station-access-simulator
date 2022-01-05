@@ -1,5 +1,6 @@
 import { SkillPossess } from "./skill"
 import { Film } from "./film"
+import { StationLink } from "./station"
 
 export type DencoType =
   "attacker" |
@@ -28,4 +29,6 @@ export interface Denco {
 
   skill: SkillPossess
   film: Film
+
+  link: StationLink[]
 }
