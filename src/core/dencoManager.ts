@@ -1,5 +1,8 @@
+import { Context } from "./context"
 import { Denco, DencoAttribute, DencoType } from "./denco"
 import skillManager from "./skillManager"
+import { StationLink } from "./station"
+import stationManager from "./stationManager"
 
 interface DencoLevelStatus {
   level: number
@@ -58,7 +61,7 @@ class DencoManager {
     }
   }
 
-  getDenco(numbering: string, level: number = 50): Denco {
+  getDenco(context: Context, numbering: string, level: number = 50, link: StationLink[] | number = []): Denco {
     const data = this.data.get(numbering)
     if (!data) throw Error(`denco data not found: ${numbering}`)
     if (level < 1 || level > data.statusList.length) {
@@ -66,6 +69,8 @@ class DencoManager {
     }
     const status = data.statusList[level - 1]
     const skill = skillManager.getSkill(numbering, level)
+    const linkList = (typeof link === "number") ?
+      stationManager.getRandomLink(context, link) : link
     return {
       numbering: data.numbering,
       name: data.name,
@@ -78,7 +83,8 @@ class DencoManager {
       skill: skill,
       film: {
 
-      }
+      },
+      link: linkList,
     }
   }
 

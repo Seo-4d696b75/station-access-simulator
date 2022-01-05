@@ -3,21 +3,25 @@ sourceMapSupport.install()
 
 import skillManager from "./core/skillManager"
 import dencoManager from "./core/dencoManager"
+import staionManager from "./core/stationManager"
 import { AccessConfig, startAccess } from './core/access'
-import { formatEvent } from './core/log'
+import { formatEvent } from './core/format'
+import { initContext } from './core/context'
 
 async function init() {
   await skillManager.load()
   await dencoManager.load()
+  await staionManager.load()
 }
 
 init().then(() => {
-  const luna = dencoManager.getDenco("3", 50)
-  const reika = dencoManager.getDenco("5", 50)
-  const sheena = dencoManager.getDenco("7", 80)
-  const fubu = dencoManager.getDenco("14", 50)
-  const charlotte = dencoManager.getDenco("6", 30)
-  const hiiru = dencoManager.getDenco("34", 80)
+  const context = initContext()
+  const luna = dencoManager.getDenco(context, "3", 50)
+  const reika = dencoManager.getDenco(context, "5", 50)
+  const sheena = dencoManager.getDenco(context, "7", 80, 2)
+  const fubu = dencoManager.getDenco(context, "14", 50)
+  const charlotte = dencoManager.getDenco(context, "6", 30, 1)
+  const hiiru = dencoManager.getDenco(context, "34", 80)
   const config: AccessConfig = {
     offense: {
       carIndex: 0,
@@ -37,7 +41,7 @@ init().then(() => {
     },
     probability: "force"
   }
-  const result = startAccess(config).event[0]
+  const result = startAccess(context, config).event[0]
   console.log(formatEvent(result, "offense", true))
   console.log(formatEvent(result, "defense", true))
 })
