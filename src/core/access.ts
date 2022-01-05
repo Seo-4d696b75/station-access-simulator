@@ -1,14 +1,63 @@
 import seedrandom from "seedrandom"
 import { Denco } from "./denco"
-import { SkillEvaluationStep, SkillPossess, Skill } from "./skill"
+import { SkillPossess, Skill } from "./skill"
 import { SkillPropertyReader } from "./skillManager"
 import { Logger } from "./log"
 import { Event } from "./event"
 
+/**
+ * アクセスするでんこの設定
+ */
 export interface AccessDenco {
+  /**
+   * 現在の編成状態
+   */
   formation: Array<Denco>
+  /**
+   * アクセスする（攻撃・守備側）でんこの編成内のindex  
+   * 0 <= carIndex < formation.length
+   */
   carIndex: number
 }
+
+/**
+ * アクセスにおけるスキルの評価ステップ
+ * 
+ * 以下の順序の各ステップでスキルを評価する
+ * ただし、フットバース利用など特殊な状態で一部ステップはスキップされる場合あがある
+ * 
+ * - pink_check フットバース状態にするスキル
+ * - probability_check スキル発動などに関わる確率の補正
+ * - before_access アクセス開始前の処理（スキル無効化など）
+ * - start_access アクセス結果に依らない処理（経験値付与など）
+ * - damage_common ATK, DEF の増減
+ * - damage_special ATK, DEF以外のダメージ計算
+ * - damage_fixed 固定ダメージ値のセット
+ * - after_damage ダメージ量やリンク成功などアクセス結果に依存する処理
+ * 
+ * 各ステップは攻撃側→守備側の順序で評価するため、
+ * 1. 攻撃側の pink_check
+ * 2. 守備側の pink_check
+ * 3. 攻撃側の probability_check
+ * 4. 守備側の probability_check
+ * 5. .....
+ * となる
+ * 
+ * 評価される対象スキルは以下の条件を満たすでんこのスキルを編成順に行われる
+ * - スキルを保持している
+ * - スキルがactive状態
+ * - アクセス処理の途中で無効化スキルの影響を受けていない
+ */
+export type SkillEvaluationStep =
+  "pink_check" |
+  "probability_check" |
+  "before_access" |
+  "start_access" |
+  "damage_common" |
+  "damage_special" |
+  "damage_fixed" |
+  "after_damage"
+
 
 /**
  * アクセス処理の入力・設定を定義します
@@ -136,13 +185,13 @@ function initAccessDencoState(f: AccessDenco, which: AccessSide): AccessDencoSta
   }
 }
 
-export interface AccessResult {
+export interface AfterAccessState {
   offense: Denco[]
   defense?: Denco[]
   event: Event[]
 }
 
-export function executeAccess(config: AccessConfig): AccessResult {
+export function executeAccess(config: AccessConfig): AfterAccessState {
   var state: AccessState = {
     log: new Logger("access"),
     offense: initAccessDencoState(config.offense, "offense"),
@@ -366,28 +415,29 @@ function execute(state: AccessState, top: boolean = true): AccessState {
 
 function evaluateSkillAt(state: AccessState, step: SkillEvaluationStep): AccessState {
 
-  filterActiveSkill(state.offense.formation).filter(d => {
+  const offenseDenco = filterActiveSkill(state.offense.formation).filter(d => {
     const s = d.skill
     return (!state.pinkMode || s.evaluateInPink)
       && canSkillEvaluated(state, step, d)
-  }).forEach(d => {
+  })
+  const defense = state.defense
+  const defenseDenco = defense ? filterActiveSkill(defense.formation).filter(d => {
+    const s = d.skill
+    return (!state.pinkMode || s.evaluateInPink)
+      && canSkillEvaluated(state, step, d)
+  }) : []
+
+  offenseDenco.forEach(d => {
     markTriggerSkill(state.offense, step, d.denco)
     state.log.log(`スキルが発動(攻撃側) name:${d.denco.name}(${d.denco.numbering}) skill:${d.skill.name}`)
     state = d.skill.evaluate ? d.skill.evaluate(state, step, d) : state
   })
 
-  const defense = state.defense
-  if (defense) {
-    filterActiveSkill(defense.formation).filter(d => {
-      const s = d.skill
-      return (!state.pinkMode || s.evaluateInPink)
-        && canSkillEvaluated(state, step, d)
-    }).forEach(d => {
-      markTriggerSkill(defense, step, d.denco)
-      state.log.log(`スキルが発動(守備側) name:${d.denco.name}(${d.denco.numbering}) skill:${d.skill.name}`)
-      state = d.skill.evaluate ? d.skill.evaluate(state, step, d) : state
-    })
-  }
+  defenseDenco.forEach(d => {
+    markTriggerSkill(defense as AccessDencoState, step, d.denco)
+    state.log.log(`スキルが発動(守備側) name:${d.denco.name}(${d.denco.numbering}) skill:${d.skill.name}`)
+    state = d.skill.evaluate ? d.skill.evaluate(state, step, d) : state
+  })
   return state
 }
 

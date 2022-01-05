@@ -1,5 +1,5 @@
-import { AccessResult, AccessState, ActiveSkillDenco } from "./access"
-import * as SkillEvent from "./skillEvent"
+import * as access from "./access"
+import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
 
 export type SkillPossessType =
@@ -44,17 +44,18 @@ export type SkillTrigger = boolean | ProbabilityPercent
  * 
  * 確率に依存する部分以外の判定をここで行うこと
  */
-export type SkillTriggerPredicate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => SkillTrigger
+export type SkillTriggerPredicate = (state: access.AccessState, step: access.SkillEvaluationStep, self: access.ActiveSkillDenco) => SkillTrigger
 
 /**
  * アクセス時にスキルが発動した時の効果を反映する
  */
-export type AccessSkillEvaluate = (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco) => AccessState
+export type AccessSkillEvaluate = (state: access.AccessState, step: access.SkillEvaluationStep, self: access.ActiveSkillDenco) => access.AccessState
 
 /**
- * アクセス時以外のイベントでスキルが発動した時の効果を反映する
+ * アクセス時以外のイベントでスキルが発動の有無・発動時の効果を反映
+ * @returns 発動する場合は効果を反映した結果を返すこと
  */
-export type EventSkillEvaluate = (state: SkillEvent.SkillEventState, self: SkillEvent.ActiveSkillDenco) => SkillEvent.SkillEventState | undefined
+export type EventSkillEvaluate = (state: event.SkillEventState, step: event.SkillEvaluationStep, self: event.ActiveSkillDenco) => event.SkillEventState | undefined
 
 export interface SkillLogic {
   /**
@@ -66,9 +67,17 @@ export interface SkillLogic {
    */
   evaluate?: AccessSkillEvaluate
 
+  /**
+   * アクセス時以外のスキル発動有無と発動時処理
+   */
   evaluateOnEvent?: EventSkillEvaluate
 
-  onAccessComplete?: (result: AccessResult, self: ActiveSkillDenco) => AccessResult 
+  /**
+   * アクセス処理が完了した直後の処理をここで行う
+   * 
+   * アクセス直後にスキルが発動する場合はここで処理すること
+   */
+  onAccessComplete?: (state: access.AfterAccessState, self: access.ActiveSkillDenco) => access.AfterAccessState 
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
@@ -95,16 +104,6 @@ export type SkillStateTransition =
   "auto" |
   "condition" |
   "always"
-
-export type SkillEvaluationStep =
-  "pink_check" |
-  "probability_check" |
-  "before_access" |
-  "start_access" |
-  "damage_common" |
-  "damage_special" |
-  "damage_fixed" |
-  "after_damage"
 
 /**
 * スキル保有の有無とスキル状態を考慮してアクティブなスキルか判定

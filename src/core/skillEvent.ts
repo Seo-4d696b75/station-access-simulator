@@ -32,12 +32,25 @@ export interface SkillEventState {
   random: access.Random | "ignore" | "force"
 }
 
-export interface Result {
-  formation: Denco[]
-  event: SkillTriggerEvent[]
-}
+/**
+ * アクセスを除くスキル発動時の評価ステップ
+ * 
+ * 以下の順序で編成内のスキルを評価する
+ * ただし、発動確率の関係で発動なしと処理された場合は"self"はスキップされる
+ * 
+ * - probability_check 確率を補正する効果を反映（現状はひいるのみ）
+ * - self 評価するスキル本体
+ * 
+ * 評価される編成内のスキルは以下の条件を満たすでんこのスキルを編成順に行われる
+ * - スキルを保持している
+ * - スキルがactive状態
+ * - アクセス直後の場合 {@link SkillLogic}#onAccessComplete は直前のアクセス処理中に無効化スキルの影響を受けていない
+ */
+export type SkillEvaluationStep = 
+  "probability_check" |
+  "self"
 
-export function evaluateAfterAccess(result: access.AccessResult, self: access.ActiveSkillDenco, probability?: ProbabilityPercent): access.AccessResult {
+export function evaluateAfterAccess(result: access.AfterAccessState, self: access.ActiveSkillDenco, probability?: ProbabilityPercent): access.AfterAccessState {
   const e = result.event[0]
   if (e.type !== "access") {
     throw Error("result.event[0] is not access-event")
@@ -86,6 +99,8 @@ function execute(state: SkillEventState): SkillTriggerEvent[] {
   const skill = self.denco.skill.skill
   state.log.log(`${self.denco.name} ${skill.name}`)
 
+  // TODO ラッピングによる補正
+
   // 主体となるスキルとは別に事前に発動するスキル
   const others = state.formation.filter(s => {
     return isSkillActive(s.denco.skill) && !s.skillInvalidated && s.carIndex !== self.carIndex
@@ -97,7 +112,7 @@ function execute(state: SkillEventState): SkillTriggerEvent[] {
       propertyReader: skill.propertyReader,
       skill: skill,
     }
-    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(state, d) : undefined
+    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(state, "probability_check", d) : undefined
     if (next) {
       state = next
       state.triggeredSkills.push(s.denco)
@@ -121,7 +136,7 @@ function execute(state: SkillEventState): SkillTriggerEvent[] {
     skill: skill,
     propertyReader: skill.propertyReader
   }
-  const result = logic(state, d)
+  const result = logic(state, "self", d)
   if ( !result ) {
     state.log.error("スキル評価が実行されませんでした")
     throw Error("skill not evaluated")
