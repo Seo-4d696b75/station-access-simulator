@@ -1,9 +1,14 @@
-import { DencoAttribute } from "./denco";
+
+export type StationAttribute = 
+  "eco" |
+  "heat" |
+  "cool" |
+  "unknown"
 
 export interface Station {
   name: string
   nameKana: string
-  attr: DencoAttribute
+  attr: StationAttribute
 }
 
 export interface StationLink extends Station {
