@@ -12,7 +12,7 @@ export interface AccessDenco {
   /**
    * 現在の編成状態
    */
-  formation: Array<Denco>
+  formation: Denco[]
   /**
    * アクセスする（攻撃・守備側）でんこの編成内のindex  
    * 0 <= carIndex < formation.length
@@ -116,7 +116,7 @@ export interface DamageState {
  * アクセスの攻守ふたりの状態
  */
 export interface AccessDencoState {
-  formation: Array<DencoState>
+  formation: DencoState[]
   carIndex: number
 
   triggeredSkills: TriggeredSkill[]
@@ -459,8 +459,8 @@ function markTriggerSkill(state: AccessDencoState, step: SkillEvaluationStep, de
  * @param which 
  * @returns 
  */
-function filterActiveSkill(list: Array<DencoState>): Array<ActiveSkillDenco> {
-  const result: Array<ActiveSkillDenco> = []
+function filterActiveSkill(list: DencoState[]): ActiveSkillDenco[] {
+  const result: ActiveSkillDenco[] = []
   list.forEach((d, idx) => {
     const s = d.denco.skill
     if (hasActiveSkill(d) && s.skill) {

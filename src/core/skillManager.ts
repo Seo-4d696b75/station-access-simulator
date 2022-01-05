@@ -15,7 +15,7 @@ interface SkillDataset {
   skill: SkillLogic
   transactionType: SkillStateTransition
   evaluateInPink: boolean
-  skillProperties: Array<SkillProperty>
+  skillProperties: SkillProperty[]
 }
 
 export class SkillManager {
@@ -31,7 +31,7 @@ export class SkillManager {
       }
       const numbering = e.numbering as string
       const moduleName = e.class as string
-      const properties = (e.list as Array<any>).map(d => {
+      const properties = (e.list as any[]).map(d => {
         var skill = d.skill_level as number
         var denco = d.denco_level as number
         var name = d.name as string

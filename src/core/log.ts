@@ -12,7 +12,7 @@ export class Logger {
 
   type: string
   time: number
-  logs: Array<Log> = []
+  logs: Log[] = []
   writeConsole: boolean
 
   toString(): string {

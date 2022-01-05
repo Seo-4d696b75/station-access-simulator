@@ -18,10 +18,15 @@ export interface ActiveSkillDenco {
   skill: Skill
 }
 
+export interface TriggeredSkill {
+  denco: Denco
+  step: SkillEvaluationStep
+}
+
 export interface SkillEventState {
   log: Logger
 
-  formation: Array<DencoState>
+  formation: DencoState[]
   carIndex: number
 
   triggeredSkills: Denco[]
