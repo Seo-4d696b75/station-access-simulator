@@ -21,11 +21,11 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
     title += "/disconnect"
   }
   str += formatLine(title, width)
-  str += formatLine("東京", width)
-  str += formatLine("とうきょう", width)
+  str += formatLine(result.station.name, width)
+  str += formatLine(result.station.nameKana, width)
 
   //which === "offense"
-  var leftSide: AccessDencoState | null = result.defense
+  var leftSide: AccessDencoState | undefined = result.defense
   var rightSide: AccessDencoState = result.offense
   var left: Denco | null = result.defense ? result.defense.formation[result.defense.carIndex].denco : null
   var right: Denco = result.offense.formation[result.offense.carIndex].denco
@@ -118,8 +118,8 @@ export function formatAccessEvent(result: AccessState, which: AccessSide, width:
     title += "/disconnect"
   }
   str += formatLine(title, width)
-  str += formatLine("東京", width)
-  str += formatLine("とうきょう", width)
+  str += formatLine(result.station.name, width)
+  str += formatLine(result.station.nameKana, width)
 
   //which === "offense"
   var left = result.defense ? result.defense.formation[result.defense.carIndex].denco : null

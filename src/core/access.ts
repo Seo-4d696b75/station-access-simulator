@@ -4,6 +4,7 @@ import { SkillPossess, Skill } from "./skill"
 import { SkillPropertyReader } from "./skillManager"
 import { Event } from "./event"
 import { Random, Context, Logger } from "./context"
+import { Station, StationLink } from "./station"
 
 /**
  * アクセスするでんこの設定
@@ -68,6 +69,10 @@ export interface AccessConfig {
    */
   offense: AccessDenco
   /**
+   * アクセス先の駅
+   */
+  station: Station
+  /**
    * 守備側の編成
    */
   defense?: AccessDenco
@@ -116,8 +121,18 @@ export interface DamageState {
  * アクセスの攻守ふたりの状態
  */
 export interface AccessDencoState {
+  /**
+   * 自身側の編成一覧
+   */
   formation: DencoState[]
+  /**
+   * 編成内における自身の位置
+   */
   carIndex: number
+  /**
+   * formation[carIndex]と同一オブジェクト
+   */
+  self: DencoState
 
   triggeredSkills: TriggeredSkill[]
 
@@ -130,14 +145,22 @@ export interface AccessDencoState {
   exp: number
 }
 
+export interface DefenseDencoState extends AccessDencoState {
+  /**
+   * アクセスされている駅に対応するリンク
+   */
+  link: StationLink
+}
+
 export type AccessSide =
   "offense" |
   "defense"
 
 export interface AccessState {
   log: Logger
+  station: Station
   offense: AccessDencoState
-  defense: AccessDencoState | null
+  defense?: AccessDencoState
   previous?: AccessState
 
   damageBase?: number
@@ -175,6 +198,7 @@ function initAccessDencoState(f: AccessDenco, which: AccessSide): AccessDencoSta
   return {
     carIndex: f.carIndex,
     formation: formation,
+    self: formation[f.carIndex],
     triggeredSkills: [],
     probabilityBoostPercent: 0,
     probabilityBoosted: false,
@@ -192,8 +216,9 @@ export interface AfterAccessState extends Context {
 export function startAccess(context: Context, config: AccessConfig): AfterAccessState {
   var state: AccessState = {
     log: context.log,
+    station: config.station,
     offense: initAccessDencoState(config.offense, "offense"),
-    defense: config.defense ? initAccessDencoState(config.defense, "defense") : null,
+    defense: undefined,
     damageFixed: 0,
     attackPercent: 0,
     defendPercent: 0,
@@ -204,6 +229,28 @@ export function startAccess(context: Context, config: AccessConfig): AfterAccess
     pinkItemSet: !!config.usePink,
     pinkItemUsed: false,
     random: config.probability ? config.probability : context.random,
+  }
+
+  // アクセス駅とリンクの確認
+  const d = state.offense.self
+  const idx = d.denco.link.findIndex(link => link.name === config.station.name)
+  if (idx >= 0) {
+    state.log.warn(`攻撃側(${d.denco.name})のリンクに対象駅(${config.station.name})が含まれています,削除します`)
+    d.denco.link = d.denco.link.splice(idx, 1)
+  }
+  if (config.defense) {
+    const defense = initAccessDencoState(config.defense, "defense")
+    const d = defense.self
+    var link = d.denco.link.find(link => link.name === config.station.name)
+    if (!link) {
+      state.log.warn(`守備側(${d.denco.name})のリンクに対象駅(${config.station.name})が含まれていません,追加します`)
+      link = {
+        ...config.station,
+        start: Date.now() - 100
+      }
+      d.denco.link.push(link)
+    }
+    state.defense = defense
   }
 
 
@@ -632,9 +679,11 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
       return state
     }
     // 編成内の直接アクセスされた以外のでんこによる反撃の場合もあるため慎重に
+    const offenseNextFormation = turnFromation(state.defense.formation, "defense", idx)
     const offenseNext: AccessDencoState = {
       carIndex: idx,
-      formation: turnFromation(state.defense.formation, "defense", idx),
+      formation: offenseNextFormation,
+      self: offenseNextFormation[idx],
       triggeredSkills: state.defense.triggeredSkills,
       probabilityBoostPercent: state.defense.probabilityBoostPercent,
       probabilityBoosted: state.defense.probabilityBoosted,
@@ -642,14 +691,17 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
       exp: 0,
     }
     // 原則さっきまでのoffense
+    const defenseNextFormation = turnFromation(state.offense.formation, "offense", state.offense.carIndex)
     const defenseNext: AccessDencoState = {
       ...state.offense,
-      formation: turnFromation(state.offense.formation, "offense", state.offense.carIndex),
+      formation: defenseNextFormation,
+      self: defenseNextFormation[state.offense.carIndex],
       score: 0,
       exp: 0,
     }
     const next: AccessState = {
       log: state.log,
+      station: state.station,
       offense: offenseNext,
       defense: defenseNext,
       damageFixed: 0,

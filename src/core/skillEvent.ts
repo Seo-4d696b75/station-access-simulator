@@ -1,7 +1,7 @@
 import * as access from "./access";
+import { Logger, Random } from "./context";
 import { Denco } from "./denco";
 import { SkillTriggerEvent } from "./event";
-import { Logger } from "./log";
 import { isSkillActive, ProbabilityPercent, Skill } from "./skill";
 import { SkillPropertyReader } from "./skillManager";
 
@@ -34,7 +34,7 @@ export interface SkillEventState {
   probability?: ProbabilityPercent 
   probabilityBoostPercent: number
 
-  random: access.Random | "ignore" | "force"
+  random: Random | "ignore" | "force"
 }
 
 /**

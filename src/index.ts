@@ -39,6 +39,7 @@ init().then(() => {
         hiiru
       ]
     },
+    station: sheena.link[0],
     probability: "force"
   }
   const result = startAccess(context, config).event[0]
