@@ -14,7 +14,7 @@ const skill: SkillLogic = {
   },
   evaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): AccessState => {
     state.log.log(`あら、誰か来たみたい♪ カウンター攻撃`)
-    return counterAttack(state, self.denco)
+    return counterAttack(state, self)
   }
 }
 

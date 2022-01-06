@@ -1,6 +1,6 @@
-import { AccessState, ActiveSkillDenco, AfterAccessContext, getFormation } from "../core/access"
-import { EventSkillEvaluate, SkillLogic } from "../core/skill"
-import { evaluateSkillAfterAccess, SkillEvaluationStep, SkillEventState, ActiveSkillDenco as EventActiveSkill, SkillTriggerResult } from "../core/skillEvent"
+import { AccessState, ActiveSkillDenco, getFormation } from "../core/access"
+import { SkillLogic } from "../core/skill"
+import { evaluateSkillAfterAccess, EventSkillEvaluate, SkillTriggerResult } from "../core/skillEvent"
 
 const skill: SkillLogic = {
   onAccessComplete: (state: AccessState, self: ActiveSkillDenco): void | SkillTriggerResult => {
@@ -11,7 +11,7 @@ const skill: SkillLogic = {
     if (target.length > 0) {
       const percent = self.propertyReader("probability")
       const heal = self.propertyReader("heal")
-      const evlauate: EventSkillEvaluate = (state, step, self) => {
+      const evlauate: EventSkillEvaluate = (state, self) => {
         return {
           ...state,
           formation: state.formation.map(d => {

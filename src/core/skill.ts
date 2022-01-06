@@ -55,7 +55,7 @@ export type AccessSkillEvaluate = (state: access.AccessState, step: access.Skill
  * アクセス時以外のイベントでスキルが発動の有無・発動時の効果を反映
  * @returns 発動する場合は効果を反映した結果を返すこと
  */
-export type EventSkillEvaluate = (state: event.SkillEventState, step: event.SkillEvaluationStep, self: event.ActiveSkillDenco) => event.SkillEventState | undefined
+export type EventSkillPreEvaluate = (state: event.SkillEventState, self: event.ActiveSkillDenco) => event.SkillEventState | undefined
 
 export interface SkillLogic {
   /**
@@ -71,7 +71,7 @@ export interface SkillLogic {
    * アクセス時以外のスキル評価において付随的に評価される処理
    * 現状ではひいるの確率補正のみ
    */
-  evaluateOnEvent?: EventSkillEvaluate
+  evaluateOnEvent?: EventSkillPreEvaluate
 
   /**
    * アクセス処理が完了した直後の処理をここで行う

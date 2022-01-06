@@ -1,7 +1,7 @@
 import * as access from "./access";
 import { Logger, Random } from "./context";
 import { DencoState } from "./denco";
-import { EventSkillEvaluate, isSkillActive, ProbabilityPercent, Skill } from "./skill";
+import { EventSkillPreEvaluate, isSkillActive, ProbabilityPercent, Skill } from "./skill";
 import { SkillPropertyReader } from "./skillManager";
 
 
@@ -61,6 +61,8 @@ export interface SkillTriggerResult {
   triggeredSkill: TriggeredSkill[]
   state: access.AccessState
 }
+
+export type EventSkillEvaluate = (state: SkillEventState, self: ActiveSkillDenco) => SkillEventState
 
 export function evaluateSkillAfterAccess(a: access.AccessState, self: access.ActiveSkillDenco, evaluate: EventSkillEvaluate, probability?: ProbabilityPercent): SkillTriggerResult {
   const state: SkillEventState = {
@@ -152,7 +154,7 @@ function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEve
       propertyReader: skill.propertyReader,
       skill: skill,
     }
-    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(state, "probability_check", d) : undefined
+    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(state, d) : undefined
     if (next) {
       state = next
       state.triggeredSkills.push({
@@ -178,11 +180,7 @@ function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEve
     skill: skill,
     propertyReader: skill.propertyReader
   }
-  const result = evaluate(state, "self", d)
-  if ( !result ) {
-    state.log.error("スキル評価が実行されませんでした")
-    throw Error("skill not evaluated")
-  }
+  const result = evaluate(state, d)
   state = result
   state.triggeredSkills.push({
     time: state.time,

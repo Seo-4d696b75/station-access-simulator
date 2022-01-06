@@ -1,6 +1,5 @@
 import { AccessState, ActiveSkillDenco, SkillEvaluationStep } from "../core/access"
 import { SkillLogic, SkillTrigger } from "../core/skill"
-import * as event from "../core/skillEvent"
 
 const skill: SkillLogic = {
   canEvaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): SkillTrigger => {
@@ -16,13 +15,11 @@ const skill: SkillLogic = {
     }
     return state
   },
-  evaluateOnEvent: (state: event.SkillEventState, step: event.SkillEvaluationStep, self: event.ActiveSkillDenco): event.SkillEventState | undefined => {
-    if (step === "probability_check") {
-      const boost = self.propertyReader("boost")
-      state.log.log(`テンション上げていこう↑↑ boost:${boost}%`)
-      state.probabilityBoostPercent += boost
-      return state
-    }
+  evaluateOnEvent: (state, self) => {
+    const boost = self.propertyReader("boost")
+    state.log.log(`テンション上げていこう↑↑ boost:${boost}%`)
+    state.probabilityBoostPercent += boost
+    return state
   }
 }
 
