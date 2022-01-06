@@ -585,22 +585,13 @@ function canSkillEvaluated(state: AccessState, step: SkillEvaluationStep, d: Act
   const trigger = d.skill.canEvaluate ? d.skill.canEvaluate(state, step, d) : false
   if (typeof trigger === 'boolean') {
     return trigger
+  }
+  if (random(state, trigger, d.which)) {
+    state.log.log(`スキルが発動できます ${d.denco.name} 確率:${trigger}%`)
+    return true
   } else {
-    if (state.random === "force") {
-      state.log.log("確率計算は無視されます mode: force")
-      return true
-    }
-    if (state.random === "ignore") {
-      state.log.log("確率計算は無視されます mode: ignore")
-      return false
-    }
-    if (random(state, state.random, trigger, d.which)) {
-      state.log.log(`スキルが発動できます ${d.denco.name} 確率:${trigger}%`)
-      return true
-    } else {
-      state.log.log(`スキルが発動しませんでした ${d.denco.name} 確率:${trigger}%`)
-      return false
-    }
+    state.log.log(`スキルが発動しませんでした ${d.denco.name} 確率:${trigger}%`)
+    return false
   }
 }
 
@@ -611,23 +602,30 @@ function canSkillEvaluated(state: AccessState, step: SkillEvaluationStep, d: Act
  * @param which どっちサイドの確立ブーストを適用するか
  * @returns 
  */
-export function random(state: AccessState, random: Random, percent: number, which: AccessSide): boolean {
+export function random(state: AccessState, percent: number, which: AccessSide): boolean {
   if (percent >= 100) return true
   const boost = which === "offense" ? state.offense.probabilityBoostPercent : state.defense?.probabilityBoostPercent
-  if (boost) {
-    if (boost !== 0) {
-      const defense = state.defense
-      if (which === "defense") {
-        state.offense.probabilityBoosted = true
-      } else if (defense) {
-        defense.probabilityBoosted = true
-      }
+  if (!boost) {
+    state.log.error("存在しない守備側の確率補正計算を実行しようとしました")
+    throw Error("defense not set, but try to read probability_boost_percent")
+  }
+  if (boost !== 0) {
+    const defense = state.defense
+    if (which === "offense") {
+      state.offense.probabilityBoosted = true
+    } else if (defense) {
+      defense.probabilityBoosted = true
     }
-    return random() < (percent * (1.0 + boost / 100.0)) / 100.0
-  } else {
-    state.log.error("defense not set, but try to read probability_boost_percent")
+  }
+  if (state.random === "force") {
+    state.log.log("確率計算は無視されます mode: force")
+    return true
+  }
+  if (state.random === "ignore") {
+    state.log.log("確率計算は無視されます mode: ignore")
     return false
   }
+  return state.random() < (percent * (1.0 + boost / 100.0)) / 100.0
 }
 
 /**
