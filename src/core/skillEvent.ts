@@ -55,7 +55,7 @@ export type SkillEvaluationStep =
   "probability_check" |
   "self"
 
-export function evaluateAfterAccess(result: access.AfterAccessState, self: access.ActiveSkillDenco, probability?: ProbabilityPercent): access.AfterAccessState {
+export function evaluateAfterAccess(result: access.AfterAccessContext, self: access.ActiveSkillDenco, probability?: ProbabilityPercent): access.AfterAccessContext {
   const e = result.event[0]
   if (e.type !== "access") {
     throw Error("result.event[0] is not access-event")

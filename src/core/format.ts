@@ -27,11 +27,11 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
   //which === "offense"
   var leftSide: AccessDencoState | undefined = result.defense
   var rightSide: AccessDencoState = result.offense
-  var left: Denco | null = result.defense ? result.defense.formation[result.defense.carIndex].denco : null
-  var right: Denco = result.offense.formation[result.offense.carIndex].denco
+  var left: Denco | null = result.defense ? result.defense.self.denco : null
+  var right: Denco = result.offense.self.denco
   if (which === "defense" && result.defense) {
-    right = result.defense.formation[result.defense.carIndex].denco
-    left = result.offense.formation[result.offense.carIndex].denco
+    right = result.defense.self.denco
+    left = result.offense.self.denco
     rightSide = result.defense
     leftSide = result.offense
   }
@@ -122,11 +122,11 @@ export function formatAccessEvent(result: AccessState, which: AccessSide, width:
   str += formatLine(result.station.nameKana, width)
 
   //which === "offense"
-  var left = result.defense ? result.defense.formation[result.defense.carIndex].denco : null
-  var right = result.offense.formation[result.offense.carIndex].denco
+  var left = result.defense ? result.defense.self.denco : null
+  var right = result.offense.self.denco
   if (which === "defense" && result.defense) {
-    right = result.defense.formation[result.defense.carIndex].denco
-    left = result.offense.formation[result.offense.carIndex].denco
+    right = result.defense.self.denco
+    left = result.offense.self.denco
   }
   const iconWidth = 14
   str += "┃" + formatSpace(left ? left.name : "不在", iconWidth)

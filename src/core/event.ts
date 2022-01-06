@@ -1,6 +1,7 @@
 import { AccessSide, AccessState } from "./access"
 import { Denco } from "./denco"
-import { LinkResult } from "./station"
+import { Skill } from "./skill"
+import { LinksResult } from "./station"
 
 export type EventType = 
   "access" | 
@@ -13,18 +14,16 @@ interface EventBase<T,V = undefined> {
   data: V
 } 
 
-export type AccessEvent = EventBase<"access", AccessState>
-export type RebootEvent = EventBase<"reboot", {
-  denco: Denco
+export interface LevelupDenco {
   which: AccessSide
-  link: LinkResult[]
-}>
-
-export type SkillTriggerEvent = EventBase<"skill_trigger", Denco>
-export type LevelupEvent = EventBase<"levelup", {
-  before: Denco,
   after: Denco
-}>
+  before: Denco
+}
+
+export type AccessEvent = EventBase<"access", AccessState>
+export type RebootEvent = EventBase<"reboot", LinksResult>
+export type SkillTriggerEvent = EventBase<"skill_trigger", Denco>
+export type LevelupEvent = EventBase<"levelup", LevelupDenco>
 
 /**
  * タイムライン上に表示される各ダイアログをモデル化

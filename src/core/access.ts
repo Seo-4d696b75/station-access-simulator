@@ -1,10 +1,9 @@
-import seedrandom from "seedrandom"
 import { Denco } from "./denco"
 import { SkillPossess, Skill } from "./skill"
 import { SkillPropertyReader } from "./skillManager"
-import { Event } from "./event"
+import { Event, LevelupDenco, LevelupEvent } from "./event"
 import { Random, Context, Logger } from "./context"
-import { Station, StationLink } from "./station"
+import { LinkResult, LinksResult, Station, StationLink } from "./station"
 
 /**
  * アクセスするでんこの設定
@@ -157,6 +156,7 @@ export type AccessSide =
   "defense"
 
 export interface AccessState {
+  time: number
   log: Logger
   station: Station
   offense: AccessDencoState
@@ -207,14 +207,18 @@ function initAccessDencoState(f: AccessDenco, which: AccessSide): AccessDencoSta
   }
 }
 
-export interface AfterAccessState extends Context {
+export interface AfterAccessContext extends Context {
   offense: Denco[]
   defense?: Denco[]
   event: Event[]
 }
 
-export function startAccess(context: Context, config: AccessConfig): AfterAccessState {
+export function startAccess(context: Context, config: AccessConfig): AfterAccessContext {
+  const now = new Date()
+  context.log.log(`アクセス処理の開始 ${now.toTimeString()}`)
+
   var state: AccessState = {
+    time: now.getTime(),
     log: context.log,
     station: config.station,
     offense: initAccessDencoState(config.offense, "offense"),
@@ -254,16 +258,15 @@ export function startAccess(context: Context, config: AccessConfig): AfterAccess
   }
 
 
-  state.log.log("アクセス処理の開始")
   state = execute(state)
   state.log.log("アクセス処理の終了")
 
   return completeAccess(context, state)
 }
 
-function completeAccess(context: Context, state: AccessState): AfterAccessState {
+function completeAccess(context: Context, state: AccessState): AfterAccessContext {
   // このアクセスイベントの追加
-  var afterState: AfterAccessState = {
+  var afterState: AfterAccessContext = {
     ...context,
     offense: state.offense.formation.map(s => s.denco),
     defense: state.defense?.formation?.map(s => s.denco),
@@ -273,17 +276,8 @@ function completeAccess(context: Context, state: AccessState): AfterAccessState 
     }]
   }
   // リブートイベントの追加
-  const offense = state.offense.formation[state.offense.carIndex]
-  if (offense.reboot) {
-    afterState.event.push({
-      type: "reboot",
-      data: {
-        denco: offense.denco,
-        which: "offense",
-        link: []
-      }
-    })
-  }
+  afterState = checkReboot(afterState, state.offense, state.time)
+  afterState = checkReboot(afterState, state.defense, state.time)
 
   // レベルアップ処理
 
@@ -303,6 +297,50 @@ function completeAccess(context: Context, state: AccessState): AfterAccessState 
     })
   }
   return afterState
+}
+
+function checkReboot(state: AfterAccessContext, side: AccessDencoState | undefined, accessTime: number): AfterAccessContext {
+  if (!side) return state
+  // 編成全員を確認する
+  side.formation.forEach(d => {
+    if (d.reboot) {
+      const linkResult = d.denco.link.map(e => {
+        let duration = accessTime - e.start
+        if (duration < 0) {
+          state.log.error("リンク時間が負数です")
+          throw Error("link duration < 0")
+        }
+        let attr = (e.attr === d.denco.attr)
+        let ratio = attr ? 1.3 : 1.0
+        let result: LinkResult = {
+          station: e,
+          start: e.start,
+          end: accessTime,
+          duration: duration,
+          score: Math.floor(duration / 100 * ratio),
+          exp: Math.floor(duration / 100 * ratio),
+          attr: attr
+        }
+        return result
+      })
+      const score = linkResult.map(link => link.score).reduce((a, b) => a + b)
+      const exp = linkResult.map(link => link.exp).reduce((a, b) => a + b)
+      // リンクによる経験値付与
+      d.denco.currentExp += exp
+      const result: LinksResult = {
+        denco: d.denco,
+        which: d.which,
+        score: score,
+        exp: exp,
+        link: linkResult,
+      }
+      state.event.push({
+        type: "reboot",
+        data: result,
+      })
+    }
+  })
+  return state
 }
 
 function getDenco(state: AccessState, which: AccessSide): Denco {
@@ -441,7 +479,7 @@ function execute(state: AccessState, top: boolean = true): AccessState {
     state.log.log(`ダメージ計算が終了：${damage}`)
 
     // HP0 になったらリブート
-    const d = defense.formation[defense.carIndex]
+    const d = defense.self
     d.hpAfter = Math.max(d.hpBefore - damage, 0)
     d.reboot = damage >= d.hpBefore
 
@@ -484,9 +522,9 @@ function execute(state: AccessState, top: boolean = true): AccessState {
 
     // 最終的なアクセス結果を計算 カウンターで変化する場合あり
     if (state.defense) {
-      var d = state.defense.formation[state.defense.carIndex]
+      var d = state.defense.self
       state.linkDisconncted = d.reboot
-      d = state.offense.formation[state.offense.carIndex]
+      d = state.offense.self
       state.linkSuccess = state.linkDisconncted && !d.reboot
     }
     state.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
@@ -698,6 +736,7 @@ export function counterAttack(state: AccessState, denco: Denco): AccessState {
       exp: 0,
     }
     const next: AccessState = {
+      time: state.time,
       log: state.log,
       station: state.station,
       offense: offenseNext,
@@ -786,7 +825,7 @@ function completeDencoAccess(state: AccessState, s: AccessDencoState) {
   } else {
     self.currentHp = denco.hpAfter
   }
-  // EXP の反映
+  // アクセスによる経験値付与
   self.currentExp += s.exp
 
   state.log.log(`HP確定 ${self.name} ${denco.hpBefore} > ${denco.hpAfter} reboot:${denco.reboot}`)

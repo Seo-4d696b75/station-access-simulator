@@ -77,7 +77,7 @@ export interface SkillLogic {
    * 
    * アクセス直後にスキルが発動する場合はここで処理すること
    */
-  onAccessComplete?: (state: access.AfterAccessState, self: access.ActiveSkillDenco) => access.AfterAccessState 
+  onAccessComplete?: (state: access.AfterAccessContext, self: access.ActiveSkillDenco) => access.AfterAccessContext 
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  

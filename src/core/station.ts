@@ -1,3 +1,5 @@
+import { AccessSide } from "./access";
+import { Denco } from "./denco";
 
 export type StationAttribute = 
   "eco" |
@@ -23,4 +25,12 @@ export interface LinkResult {
   score: number
   exp: number
   attr: boolean
+}
+
+export interface LinksResult {
+  denco: Denco
+  which: AccessSide
+  link: LinkResult[]
+  score: number
+  exp: number
 }
