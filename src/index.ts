@@ -5,7 +5,7 @@ import skillManager from "./core/skillManager"
 import dencoManager from "./core/dencoManager"
 import staionManager from "./core/stationManager"
 import { AccessConfig, startAccess } from './core/access'
-import { formatEvent } from './core/format'
+import { formatEvent, printEvents } from './core/format'
 import { initContext } from './core/context'
 
 async function init() {
@@ -20,7 +20,7 @@ init().then(() => {
   const reika = dencoManager.getDenco(context, "5", 50)
   const sheena = dencoManager.getDenco(context, "7", 80, 2)
   const fubu = dencoManager.getDenco(context, "14", 50)
-  const charlotte = dencoManager.getDenco(context, "6", 30, 1)
+  const charlotte = dencoManager.getDenco(context, "6", 30, 10)
   const hiiru = dencoManager.getDenco(context, "34", 80)
   const config: AccessConfig = {
     offense: {
@@ -42,7 +42,9 @@ init().then(() => {
     station: sheena.link[0],
     probability: "force"
   }
-  const result = startAccess(context, config).event[0]
-  console.log(formatEvent(result, "offense", true))
-  console.log(formatEvent(result, "defense", true))
+  const result = startAccess(context, config).event
+  console.log("攻撃側のタイムライン")
+  printEvents(result, "offense", true)
+  console.log("守備側のタイムライン")
+  printEvents(result, "defense", true)
 })

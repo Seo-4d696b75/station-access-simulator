@@ -311,26 +311,35 @@ function checkReboot(state: AfterAccessContext, side: AccessDencoState | undefin
           throw Error("link duration < 0")
         }
         let attr = (e.attr === d.denco.attr)
-        let ratio = attr ? 1.3 : 1.0
+        let score = Math.floor(duration / 100)
         let result: LinkResult = {
           station: e,
           start: e.start,
           end: accessTime,
           duration: duration,
-          score: Math.floor(duration / 100 * ratio),
-          exp: Math.floor(duration / 100 * ratio),
-          attr: attr
+          score: score,
+          matchBonus: attr ? Math.floor(score * 0.3) : undefined
         }
         return result
       })
-      const score = linkResult.map(link => link.score).reduce((a, b) => a + b)
-      const exp = linkResult.map(link => link.exp).reduce((a, b) => a + b)
+      // TODO combo bonus の計算
+      const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b)
+      const match = linkResult.map(link => link.matchBonus).filter(e => !!e) as number[]
+      const matchBonus = match.reduce((a,b) => a+b)
+      const totalScore = linkScore + matchBonus
+      // TODO 経験値の計算
+      const exp = totalScore
       // リンクによる経験値付与
       d.denco.currentExp += exp
       const result: LinksResult = {
+        time: accessTime,
         denco: d.denco,
         which: d.which,
-        score: score,
+        totalScore: totalScore,
+        linkScore: linkScore,
+        comboBonus: 0, 
+        matchBonus: matchBonus,
+        matchCnt: match.length,
         exp: exp,
         link: linkResult,
       }

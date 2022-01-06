@@ -23,14 +23,18 @@ export interface LinkResult {
   end: number
   duration: number
   score: number
-  exp: number
-  attr: boolean
+  matchBonus?: number
 }
 
 export interface LinksResult {
+  time: number
   denco: Denco
   which: AccessSide
   link: LinkResult[]
-  score: number
+  totalScore: number
+  linkScore: number
+  comboBonus: number
+  matchBonus: number
+  matchCnt: number
   exp: number
 }
