@@ -1,35 +1,37 @@
 import * as access from "./access";
 import { Logger, Random } from "./context";
-import { Denco } from "./denco";
-import { SkillTriggerEvent } from "./event";
-import { isSkillActive, ProbabilityPercent, Skill } from "./skill";
+import { DencoState } from "./denco";
+import { EventSkillEvaluate, isSkillActive, ProbabilityPercent, Skill } from "./skill";
 import { SkillPropertyReader } from "./skillManager";
 
 
-export interface DencoState {
-  denco: Denco
+export interface SkillEventDencoState extends DencoState {
   who: "self" | "other"
   carIndex: number
   skillInvalidated: boolean
 }
 
-export interface ActiveSkillDenco {
+export interface ActiveSkillDenco extends SkillEventDencoState {
   propertyReader: SkillPropertyReader
   skill: Skill
 }
 
 export interface TriggeredSkill {
-  denco: Denco
+  time: number
+  carIndex: number
+  denco: DencoState
+  skillName: string
   step: SkillEvaluationStep
 }
 
 export interface SkillEventState {
+  time: number
   log: Logger
 
-  formation: DencoState[]
+  formation: SkillEventDencoState[]
   carIndex: number
 
-  triggeredSkills: Denco[]
+  triggeredSkills: TriggeredSkill[]
 
   probability?: ProbabilityPercent 
   probabilityBoostPercent: number
@@ -55,20 +57,19 @@ export type SkillEvaluationStep =
   "probability_check" |
   "self"
 
-export function evaluateAfterAccess(result: access.AfterAccessContext, self: access.ActiveSkillDenco, probability?: ProbabilityPercent): access.AfterAccessContext {
-  const e = result.event[0]
-  if (e.type !== "access") {
-    throw Error("result.event[0] is not access-event")
-  }
-  const a = e.data
+export interface SkillTriggerResult {
+  triggeredSkill: TriggeredSkill[]
+  state: access.AccessState
+}
+
+export function evaluateSkillAfterAccess(a: access.AccessState, self: access.ActiveSkillDenco, evaluate: EventSkillEvaluate, probability?: ProbabilityPercent): SkillTriggerResult {
   const state: SkillEventState = {
+    time: a.time,
     log: a.log,
     formation: getFormation(a, self.which).map(d => {
       return {
-        denco: d.denco,
+        ...d,
         who: d.carIndex === self.carIndex ? "self" : "other",
-        carIndex: d.carIndex,
-        skillInvalidated: d.skillInvalidated
       }
     }),
     carIndex: self.carIndex,
@@ -77,12 +78,42 @@ export function evaluateAfterAccess(result: access.AfterAccessContext, self: acc
     probabilityBoostPercent: 0,
     random: a.random,
   }
-  const events = execute(state)
-  result.event.push(...events)
-  return result
+  const result = execute(state, evaluate)
+  // スキル発動による影響の反映
+  const nextState = assignResult(a, result, self.which)
+  return {
+    triggeredSkill: result.triggeredSkills,
+    state: nextState,
+  }
 }
 
-function getFormation(state: access.AccessState, which: access.AccessSide): access.DencoState[] {
+function assignResult(state: access.AccessState, reuslt: SkillEventState, which: access.AccessSide): access.AccessState {
+  const next = {...state}
+  const side = (which === "offense") ? state.offense : state.defense as access.AccessSideState
+  const nextSide = {
+    ...side,
+    formation: reuslt.formation.map((d,idx) => {
+      const origin = side.formation[idx]
+      let s: access.AccessDencoState = {
+        ...d,
+        which: which,
+        who: d.carIndex === side.carIndex ? which : "other",
+        hpBefore: origin.hpBefore,
+        hpAfter: origin.hpAfter,
+        reboot: origin.reboot
+      }
+      return s
+    })
+  }
+  if ( which === "offense"){
+    next.offense = nextSide
+  } else {
+    next.defense = nextSide
+  }
+  return next
+}
+
+function getFormation(state: access.AccessState, which: access.AccessSide): access.AccessDencoState[] {
   if (which === "offense") {
     return state.offense.formation
   } else {
@@ -92,26 +123,30 @@ function getFormation(state: access.AccessState, which: access.AccessSide): acce
   }
 }
 
-
-function execute(state: SkillEventState): SkillTriggerEvent[] {
+function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEventState {
   state.log.log(`スキル評価イベントの開始`)
+  const origin: SkillEventState = {
+    ...state,
+    formation: state.formation.map( d => { return {...d}}),
+    triggeredSkills: Array.from(state.triggeredSkills)
+  }
   const self = state.formation[state.carIndex]
-  if ( !isSkillActive(self.denco.skill)) {
-    state.log.error(`アクティブなスキルを保持していません ${self.denco.name}`)
+  if ( !isSkillActive(self.skillHolder)) {
+    state.log.error(`アクティブなスキルを保持していません ${self.name}`)
     throw Error("no active skill found")
   }
 
-  const skill = self.denco.skill.skill
-  state.log.log(`${self.denco.name} ${skill.name}`)
+  const skill = self.skillHolder.skill
+  state.log.log(`${self.name} ${skill.name}`)
 
   // TODO ラッピングによる補正
 
   // 主体となるスキルとは別に事前に発動するスキル
   const others = state.formation.filter(s => {
-    return isSkillActive(s.denco.skill) && !s.skillInvalidated && s.carIndex !== self.carIndex
+    return isSkillActive(s.skillHolder) && !s.skillInvalidated && s.carIndex !== self.carIndex
   })
   others.forEach(s => {
-    const skill = s.denco.skill.skill as Skill
+    const skill = s.skillHolder.skill as Skill
     const d: ActiveSkillDenco = {
       ...s,
       propertyReader: skill.propertyReader,
@@ -120,42 +155,43 @@ function execute(state: SkillEventState): SkillTriggerEvent[] {
     const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(state, "probability_check", d) : undefined
     if (next) {
       state = next
-      state.triggeredSkills.push(s.denco)
+      state.triggeredSkills.push({
+        time: state.time,
+        carIndex: s.carIndex,
+        denco: s,
+        skillName: skill.name,
+        step: "probability_check"
+      })
     }
   })
 
   // 発動確率の確認
   if ( !canSkillEvaluated(state) ) {
     state.log.log("スキル評価イベントの終了（発動なし）")
-    return []
+    // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
+    return origin
   }
 
   // 主体となるスキルの発動
-  const logic = skill.evaluateOnEvent
-  if (!logic){
-    state.log.error(`スキル処理がありません ${self.denco.name}`)
-    throw Error("no evaluation function found")
-  }
   const d: ActiveSkillDenco = {
     ...self,
     skill: skill,
     propertyReader: skill.propertyReader
   }
-  const result = logic(state, "self", d)
+  const result = evaluate(state, "self", d)
   if ( !result ) {
     state.log.error("スキル評価が実行されませんでした")
     throw Error("skill not evaluated")
   }
-  result.triggeredSkills.push(self.denco)
-  
-
-  return result.triggeredSkills.map( d => {
-    const e: SkillTriggerEvent = {
-      type: "skill_trigger",
-      data: d
-    }
-    return e
+  state = result
+  state.triggeredSkills.push({
+    time: state.time,
+    carIndex: self.carIndex,
+    denco: self,
+    skillName: skill.name,
+    step: "self"
   })
+  return state
 }
 
 function canSkillEvaluated(state: SkillEventState) : boolean {

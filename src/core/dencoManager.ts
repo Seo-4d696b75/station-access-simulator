@@ -1,5 +1,5 @@
 import { Context } from "./context"
-import { Denco, DencoAttribute, DencoType } from "./denco"
+import { Denco, DencoAttribute, DencoState, DencoType } from "./denco"
 import skillManager from "./skillManager"
 import { StationLink } from "./station"
 import stationManager from "./stationManager"
@@ -56,7 +56,7 @@ class DencoManager {
     }
   }
 
-  getDenco(context: Context, numbering: string, level: number = 50, link: StationLink[] | number = []): Denco {
+  getDenco(context: Context, numbering: string, level: number = 50, link: StationLink[] | number = []): DencoState {
     const status = this.getDencoStatus(numbering, level)
     if (!status) {
       context.log.error(`指定したレベルの情報がありません ${numbering} Lv.${level}`)
@@ -69,7 +69,7 @@ class DencoManager {
       ...status,
       currentExp: 0,
       currentHp: status.maxHp,
-      skill: skill,
+      skillHolder: skill,
       film: {
 
       },
@@ -86,7 +86,7 @@ class DencoManager {
     return data[level - 1]
   }
 
-  checkLevelup(formation: Denco[]): Denco[] {
+  checkLevelup(formation: DencoState[]): DencoState[] {
     return formation.map(d => {
       let level = d.level
       while (d.currentExp >= d.nextExp) {
@@ -99,7 +99,7 @@ class DencoManager {
             currentExp: d.currentExp - d.nextExp,
             film: d.film,
             link: d.link,
-            skill: skillManager.getSkill(d.numbering, level)
+            skillHolder: skillManager.getSkill(d.numbering, level)
           }
         } else {
           // これ以上のレベルアップはなし

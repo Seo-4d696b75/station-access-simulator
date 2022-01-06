@@ -1,5 +1,5 @@
-import { AccessDencoState, AccessSide, AccessState } from "./access"
-import { Denco, DencoAttribute } from "./denco"
+import { AccessSideState, AccessSide, AccessState, getAccessDenco } from "./access"
+import { Denco, DencoAttribute, DencoState } from "./denco"
 import { Event } from "./event"
 import { LinksResult, Station, StationLink } from "./station"
 
@@ -88,13 +88,13 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
   str += formatLine(result.station.nameKana, width)
 
   //which === "offense"
-  var leftSide: AccessDencoState | undefined = result.defense
-  var rightSide: AccessDencoState = result.offense
-  var left: Denco | null = result.defense ? result.defense.self.denco : null
-  var right: Denco = result.offense.self.denco
+  var leftSide: AccessSideState | undefined = result.defense
+  var rightSide: AccessSideState = result.offense
+  var left: DencoState | null = result.defense ? getAccessDenco(result, "defense") : null
+  var right: DencoState = getAccessDenco(result, "offense")
   if (which === "defense" && result.defense) {
-    right = result.defense.self.denco
-    left = result.offense.self.denco
+    right = getAccessDenco(result, "defense")
+    left = getAccessDenco(result, "offense")
     rightSide = result.defense
     leftSide = result.offense
   }
@@ -185,11 +185,11 @@ export function formatAccessEvent(result: AccessState, which: AccessSide, width:
   str += formatLine(result.station.nameKana, width)
 
   //which === "offense"
-  var left = result.defense ? result.defense.self.denco : null
-  var right = result.offense.self.denco
+  var left = result.defense ? getAccessDenco(result, "defense") : null
+  var right = getAccessDenco(result, "offense")
   if (which === "defense" && result.defense) {
-    right = result.defense.self.denco
-    left = result.offense.self.denco
+    right = getAccessDenco(result, "defense")
+    left = getAccessDenco(result, "offense")
   }
   const iconWidth = 14
   str += "┃" + formatSpace(left ? left.name : "不在", iconWidth)
@@ -223,7 +223,7 @@ export function formatAccessEvent(result: AccessState, which: AccessSide, width:
   return str
 }
 
-function formatDamage(state?: AccessDencoState | null): string {
+function formatDamage(state?: AccessSideState | null): string {
   if (!state) return ""
   const d = state.damage
   if (!d) return "-"
@@ -231,7 +231,7 @@ function formatDamage(state?: AccessDencoState | null): string {
 }
 
 function formatPt(pt: number | undefined): string {
-  if (!pt  && pt !== 0) return ""
+  if (!pt && pt !== 0) return ""
   return new Intl.NumberFormat().format(pt) + "pt"
 }
 
@@ -253,30 +253,30 @@ function formatLinkTime(link?: StationLink | null): string {
   return str
 }
 
-function formatAccessLinkTime(station: Station, state?: AccessDencoState | null): string {
+function formatAccessLinkTime(station: Station, state?: AccessSideState | null): string {
   if (!state) return ""
-  const d = state.self
+  const d = state.formation[state.carIndex]
   if (d.who === "defense") {
-    const link = d.denco.link.find(link => link.name === station.name)
+    const link = d.link.find(link => link.name === station.name)
     if (link) return formatLinkTime(link)
   }
   return "-"
 }
 
-function formatSkills(state?: AccessDencoState | null): string {
+function formatSkills(state?: AccessSideState | null): string {
   if (!state) return ""
   const skills = state.triggeredSkills
   if (skills.length === 0) return "-"
-  return skills.map(s => s.denco.name).join(",")
+  return skills.map(s => s.name).join(",")
 }
 
-function formatHP(state?: AccessDencoState | null) {
+function formatHP(state?: AccessSideState | null) {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.hpAfter === d.hpBefore) {
-    return `${d.hpAfter}/${d.denco.maxHp}`
+    return `${d.hpAfter}/${d.maxHp}`
   } else {
-    return `${d.hpBefore}>>${d.hpAfter}/${d.denco.maxHp}`
+    return `${d.hpBefore}>>${d.hpAfter}/${d.maxHp}`
   }
 }
 

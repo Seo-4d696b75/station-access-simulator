@@ -14,11 +14,22 @@ export type DencoAttribute =
   "eco" |
   "flat"
 
+
+/**
+ * でんこ個体の情報
+ * 原則として変化する状態を持たない
+ */
 export interface Denco {
   numbering: string
   name: string
   type: DencoType
   attr: DencoAttribute
+}
+
+/**
+ * 状態を保持する
+ */
+export interface DencoState extends Denco {
 
   level: number
   nextExp: number
@@ -27,7 +38,7 @@ export interface Denco {
   currentHp: number
   ap: number
 
-  skill: SkillPossess
+  skillHolder: SkillPossess
   film: Film
 
   link: StationLink[]

@@ -1,5 +1,5 @@
 import { AccessSide } from "./access";
-import { Denco } from "./denco";
+import { Denco, DencoState } from "./denco";
 
 export type StationAttribute = 
   "eco" |
@@ -26,7 +26,7 @@ export interface LinkResult extends StationLink {
 
 export interface LinksResult {
   time: number
-  denco: Denco
+  denco: DencoState
   which: AccessSide
   link: LinkResult[]
   totalScore: number

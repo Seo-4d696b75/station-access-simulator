@@ -1,6 +1,6 @@
 import { AccessSide, AccessState } from "./access"
 import { Denco } from "./denco"
-import { Skill } from "./skill"
+import { TriggeredSkill } from "./skillEvent"
 import { LinksResult } from "./station"
 
 export type EventType = 
@@ -15,6 +15,7 @@ interface EventBase<T,V = undefined> {
 } 
 
 export interface LevelupDenco {
+  time: number
   which: AccessSide
   after: Denco
   before: Denco
@@ -22,7 +23,7 @@ export interface LevelupDenco {
 
 export type AccessEvent = EventBase<"access", AccessState>
 export type RebootEvent = EventBase<"reboot", LinksResult>
-export type SkillTriggerEvent = EventBase<"skill_trigger", Denco>
+export type SkillTriggerEvent = EventBase<"skill_trigger", TriggeredSkill>
 export type LevelupEvent = EventBase<"levelup", LevelupDenco>
 
 /**

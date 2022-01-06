@@ -68,16 +68,17 @@ export interface SkillLogic {
   evaluate?: AccessSkillEvaluate
 
   /**
-   * アクセス時以外のスキル発動有無と発動時処理
+   * アクセス時以外のスキル評価において付随的に評価される処理
+   * 現状ではひいるの確率補正のみ
    */
   evaluateOnEvent?: EventSkillEvaluate
 
   /**
    * アクセス処理が完了した直後の処理をここで行う
    * 
-   * アクセス直後にスキルが発動する場合はここで処理すること
+   * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
    */
-  onAccessComplete?: (state: access.AfterAccessContext, self: access.ActiveSkillDenco) => access.AfterAccessContext 
+  onAccessComplete?: (state: access.AccessState, self: access.ActiveSkillDenco) => void | event.SkillTriggerResult 
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
