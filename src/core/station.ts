@@ -17,9 +17,7 @@ export interface StationLink extends Station {
   start: number
 }
 
-export interface LinkResult {
-  station: Station
-  start: number
+export interface LinkResult extends StationLink {
   end: number
   duration: number
   score: number

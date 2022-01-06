@@ -4,6 +4,7 @@ import { SkillPropertyReader } from "./skillManager"
 import { Event, LevelupDenco, LevelupEvent } from "./event"
 import { Random, Context, Logger } from "./context"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
+import DencoManager from "./dencoManager"
 
 /**
  * アクセスするでんこの設定
@@ -313,8 +314,7 @@ function checkReboot(state: AfterAccessContext, side: AccessDencoState | undefin
         let attr = (e.attr === d.denco.attr)
         let score = Math.floor(duration / 100)
         let result: LinkResult = {
-          station: e,
-          start: e.start,
+          ...e,
           end: accessTime,
           duration: duration,
           score: score,
@@ -349,6 +349,33 @@ function checkReboot(state: AfterAccessContext, side: AccessDencoState | undefin
       })
     }
   })
+  return state
+}
+
+function checkLevelup(state: AfterAccessContext, which: AccessSide): AfterAccessContext {
+  const formation = (which === "offense") ? state.offense : state.defense
+  if (!formation) return state
+  const nextFormation = DencoManager.checkLevelup(formation)
+  formation.forEach((before, idx) => {
+    let after = nextFormation[idx]
+    if (before.level < after.level) {
+      let levelup: LevelupDenco = {
+        which: which,
+        after: after,
+        before: before
+      }
+      let event: LevelupEvent = {
+        type: "levelup",
+        data: levelup
+      }
+      state.event.push(event)
+    }
+  })
+  if ( which === "offense" ){
+    state.offense = nextFormation
+  } else {
+    state.defense = nextFormation
+  }
   return state
 }
 

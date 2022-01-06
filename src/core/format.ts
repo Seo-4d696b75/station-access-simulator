@@ -1,7 +1,7 @@
 import { AccessDencoState, AccessSide, AccessState } from "./access"
 import { Denco, DencoAttribute } from "./denco"
 import { Event } from "./event"
-import { LinksResult } from "./station"
+import { LinksResult, Station, StationLink } from "./station"
 
 export function printEvents(events: Event[], which: AccessSide, detail: boolean = false) {
   events.forEach(event => {
@@ -13,7 +13,7 @@ export function formatEvent(event: Event, which: AccessSide, detail: boolean = f
   if (event.type === "access") {
     return detail ? formatAccessDetail(event.data, which) : formatAccessEvent(event.data, which)
   } else if (event.type === "reboot") {
-    return formatReboot(event.data, which)
+    return detail ? formatRebootDetail(event.data, which) : formatReboot(event.data, which)
   } else {
     return event.type
   }
@@ -29,7 +29,7 @@ export function formatReboot(result: LinksResult, which: AccessSide, width: numb
   if (result.link.length > 0) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine("接続中のリンクが解除されます", width)
-    let stations = result.link.map(e => e.station.name).join(",")
+    let stations = result.link.map(e => e.name).join(",")
     let mes = "(" + stations + ")"
     if (len(mes) > width - 2) {
       let length = width - 2 - len(`( ${result.link.length}駅)`)
@@ -39,6 +39,34 @@ export function formatReboot(result: LinksResult, which: AccessSide, width: numb
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   }
   str += formatLine(`${result.denco.name}再起動します…`, width)
+  str += formatLine(formatPastTime(Date.now(), result.time), width)
+
+  str = str + "┗" + "━".repeat(width - 2) + "┛"
+  return str
+}
+
+
+export function formatRebootDetail(result: LinksResult, which: AccessSide, width: number = 50): string {
+  if (which !== result.which) return ""
+  if (result.link.length === 0) return ""
+  var str = "┏" + "━".repeat(width - 2) + "┓\n"
+  str += formatLine("reboot", width)
+  str += formatLine(`${result.denco.name}がリンクしていた駅のスコアが加算されました`, width)
+  str += "┠" + "─".repeat(width - 2) + "┨\n"
+  result.link.forEach(link => {
+    str += "┃" + formatSpace(link.name, width - 10, "left")
+    str += link.matchBonus ? formatAttr(result.denco.attr, 8) : " ".repeat(8)
+    str += "┃\n"
+    let duration = formatLinkTime(link)
+    let pt = formatSpace(formatPt(link.score), width - 2 - len(duration), "right")
+    str += "┃" + duration + pt + "┃\n"
+    str += "┠" + "─".repeat(width - 2) + "┨\n"
+  })
+  str += "┃" + "total score" + formatSpace(formatPt(result.totalScore), width - 13, "right") + "┃\n"
+  str += "┃" + "link score" + formatSpace(formatPt(result.linkScore), width - 12, "right") + "┃\n"
+  str += "┃" + "combo bonus" + formatSpace(formatPt(result.comboBonus), width - 13, "right") + "┃\n"
+  str += "┃" + "match bonus" + formatSpace(formatPt(result.matchBonus), width - 13, "right") + "┃\n"
+  str += "┃" + formatSpace(result.denco.name + "'s exp " + formatPt(result.totalScore), width - 2, "right") + "┃\n"
   str += formatLine(formatPastTime(Date.now(), result.time), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
@@ -114,19 +142,19 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
   str += formatSpace(formatHP(rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatLinkTime(leftSide), tableLeft, "left")
+  str += "┃" + formatSpace(formatAccessLinkTime(result.station, leftSide), tableLeft, "left")
   str += " link "
-  str += formatSpace(formatLinkTime(rightSide), tableRight, "right") + "┃\n"
+  str += formatSpace(formatAccessLinkTime(result.station, rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(leftSide ? leftSide.score.toString() : "", tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.score), tableLeft, "left")
   str += " score"
-  str += formatSpace(rightSide.score.toString(), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.score), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(leftSide ? leftSide.exp.toString() : "", tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.exp), tableLeft, "left")
   str += "  exp "
-  str += formatSpace(rightSide.exp.toString(), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.exp), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   var mes = ""
@@ -202,10 +230,36 @@ function formatDamage(state?: AccessDencoState | null): string {
   return d.value.toString()
 }
 
-function formatLinkTime(state?: AccessDencoState | null): string {
+function formatPt(pt: number | undefined): string {
+  if (!pt  && pt !== 0) return ""
+  return new Intl.NumberFormat().format(pt) + "pt"
+}
+
+function formatLinkTime(link?: StationLink | null): string {
+  if (!link) return ""
+  let duration = Date.now() - link.start
+  if (duration < 0) return ""
+  duration = Math.floor(duration / 1000)
+  let str = `${duration % 60}秒`
+  duration = Math.floor(duration / 60)
+  if (duration === 0) return str
+  str = `${duration % 60}分` + str
+  duration = Math.floor(duration / 60)
+  if (duration === 0) return str
+  str = `${duration % 24}時間` + str
+  duration = Math.floor(duration / 24)
+  if (duration === 0) return str
+  str = `${duration}日` + str
+  return str
+}
+
+function formatAccessLinkTime(station: Station, state?: AccessDencoState | null): string {
   if (!state) return ""
-  const d = state.formation[state.carIndex]
-  if (d.who === "defense") return "10秒"
+  const d = state.self
+  if (d.who === "defense") {
+    const link = d.denco.link.find(link => link.name === station.name)
+    if (link) return formatLinkTime(link)
+  }
   return "-"
 }
 

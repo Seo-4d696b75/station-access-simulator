@@ -5,24 +5,21 @@ import { StationLink } from "./station"
 import stationManager from "./stationManager"
 
 interface DencoLevelStatus {
+  numbering: string
+  name: string
+  fullName: string
+  type: DencoType
+  attr: DencoAttribute
+
   level: number
   ap: number
   maxHp: number
   nextExp: number
 }
 
-interface DencoData {
-  numbering: string
-  name: string
-  fullName: string
-  type: DencoType
-  attr: DencoAttribute
-  statusList: DencoLevelStatus[]
-}
-
 class DencoManager {
 
-  data: Map<string, DencoData> = new Map()
+  data: Map<string, DencoLevelStatus[]> = new Map()
 
   async load(data?: string) {
     const list = data ? JSON.parse(data) : await import("../data/base.json").then(o => o.default).catch(e => [])
@@ -42,42 +39,34 @@ class DencoManager {
         throw Error(`invalid denco status: AP, HP, EXP size mismatch ${JSON.stringify(e)}`)
       }
       const status = Array(size).fill(0).map((_, i) => {
-        return {
+        let status: DencoLevelStatus = {
           level: i + 1,
           ap: ap[i],
           maxHp: hp[i],
           nextExp: exp[i],
-        } as DencoLevelStatus
+          numbering: e.numbering,
+          name: e.name,
+          fullName: e.full_name,
+          type: e.type,
+          attr: e.attribute,
+        }
+        return status
       })
-      const d: DencoData = {
-        numbering: e.numbering,
-        name: e.name,
-        fullName: e.full_name,
-        type: e.type,
-        attr: e.attribute,
-        statusList: status
-      }
-      this.data.set(d.numbering, d)
+      this.data.set(e.numbering, status)
     }
   }
 
   getDenco(context: Context, numbering: string, level: number = 50, link: StationLink[] | number = []): Denco {
-    const data = this.data.get(numbering)
-    if (!data) throw Error(`denco data not found: ${numbering}`)
-    if (level < 1 || level > data.statusList.length) {
-      throw Error(`invalid level:${level} for data size ${data.statusList.length}`)
+    const status = this.getDencoStatus(numbering, level)
+    if (!status) {
+      context.log.error(`指定したレベルの情報がありません ${numbering} Lv.${level}`)
+      throw Error("invalid level, status data not found")
     }
-    const status = data.statusList[level - 1]
     const skill = skillManager.getSkill(numbering, level)
     const linkList = (typeof link === "number") ?
       stationManager.getRandomLink(context, link) : link
     return {
-      numbering: data.numbering,
-      name: data.name,
-      type: data.type,
-      attr: data.attr,
       ...status,
-      level: level,
       currentExp: 0,
       currentHp: status.maxHp,
       skill: skill,
@@ -86,6 +75,43 @@ class DencoManager {
       },
       link: linkList,
     }
+  }
+
+  getDencoStatus(numbering: string, level: number): DencoLevelStatus | undefined {
+    const data = this.data.get(numbering)
+    if (!data) throw Error(`denco data not found: ${numbering}`)
+    if (level < 1 || level > data.length) {
+      return undefined
+    }
+    return data[level - 1]
+  }
+
+  checkLevelup(formation: Denco[]): Denco[] {
+    return formation.map(d => {
+      let level = d.level
+      while (d.currentExp >= d.nextExp) {
+        let status = this.getDencoStatus(d.numbering, level + 1)
+        if (status) {
+          level += 1
+          d = {
+            ...status,
+            currentHp: status.maxHp, // 現在のHPを無視して最大HPに設定
+            currentExp: d.currentExp - d.nextExp,
+            film: d.film,
+            link: d.link,
+            skill: skillManager.getSkill(d.numbering, level)
+          }
+        } else {
+          // これ以上のレベルアップはなし
+          d = {
+            ...d,
+            currentExp: d.nextExp
+          }
+          break
+        }
+      }
+      return d
+    })
   }
 
 }
