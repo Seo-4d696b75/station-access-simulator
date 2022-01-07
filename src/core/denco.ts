@@ -1,4 +1,4 @@
-import { SkillPossess } from "./skill"
+import { Skill, SkillPossess, SkillState } from "./skill"
 import { Film } from "./film"
 import { StationLink } from "./station"
 
@@ -42,4 +42,11 @@ export interface DencoState extends Denco {
   film: Film
 
   link: StationLink[]
+}
+
+export function getSkill(denco: DencoState): Skill {
+  if ( denco.skillHolder.type === "possess"){
+    return denco.skillHolder.skill
+  }
+  throw Error("skill not found")
 }
