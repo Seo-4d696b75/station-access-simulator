@@ -57,65 +57,62 @@ const dencos = [
 ]
 
 describe("manager", () => {
-  test("station-manager", () => {
-    StationManager.load(JSON.stringify(stations)).then(() => {
-      const context = initContext("test", "test", false)
-      expect(StationManager.data.length).toBe(2)
-      const s = StationManager.getRandomStation(context, 2).find(s => s.name === "適当な駅１")
-      expect(s).not.toBeUndefined()
-      expect(s?.nameKana).toBe(stations[0].name_kana)
-      expect(s?.attr).toBe("heat")
-      const now = Date.now()
-      const link = StationManager.getRandomLink(context, 1, 1, 2)[0]
-      expect(link.start).toBeGreaterThan(now - 2000)
-      expect(link.start).toBeLessThanOrEqual(now - 1000)
-      expect(() => StationManager.getRandomStation(context, 10)).toThrowError()
-      expect(() => StationManager.getRandomLink(context, 10)).toThrowError()
-    })
+  test("station-manager", async () => {
+    await StationManager.load(JSON.stringify(stations))
+    const context = initContext("test", "test", false)
+    expect(StationManager.data.length).toBe(2)
+    const s = StationManager.getRandomStation(context, 2).find(s_1 => s_1.name === "適当な駅１")
+    expect(s).not.toBeUndefined()
+    expect(s?.nameKana).toBe(stations[0].name_kana)
+    expect(s?.attr).toBe("heat")
+    const now = Date.now()
+    const link = StationManager.getRandomLink(context, 1, 1, 2)[0]
+    expect(link.start).toBeGreaterThan(now - 2000)
+    expect(link.start).toBeLessThanOrEqual(now - 1000)
+    expect(() => StationManager.getRandomStation(context, 10)).toThrowError()
+    expect(() => StationManager.getRandomLink(context, 10)).toThrowError()
   })
-  test("skill-manager", () => {
-    SkillManager.load(JSON.stringify(skills)).then(() => {
-      // スキルあり
-      let skill = SkillManager.getSkill("3", 50)
-      expect(skill.type).toBe("possess")
-      expect(skill.skill).not.toBeUndefined()
-      const s = skill.skill
-      expect(s?.level).toBe(4)
-      expect(s?.name).toBe("ナイトライダー Lv.4")
-      expect(s?.propertyReader("DEF_night")).toBe(25)
-      expect(s?.propertyReader("DEF_morning")).toBe(-30)
-      expect(() => s?.propertyReader("hoge")).toThrowError()
-      // スキルをまだ取得していない
-      skill = SkillManager.getSkill("3", 1)
-      expect(skill.type).toBe("not_aquired")
-      expect(skill.skill).toBeUndefined()
-      // スキルなし
-      skill = SkillManager.getSkill("8", 80)
-      expect(skill.type).toBe("none")
-      expect(skill.skill).toBeUndefined()
-    })
+  test("skill-manager", async () => {
+    await SkillManager.load(JSON.stringify(skills))
+    // スキルあり
+    let skill = SkillManager.getSkill("3", 50)
+    expect(skill.type).toBe("possess")
+    expect(skill.skill).not.toBeUndefined()
+    const s = skill.skill
+    expect(s?.level).toBe(4)
+    expect(s?.name).toBe("ナイトライダー Lv.4")
+    expect(s?.propertyReader("DEF_night")).toBe(25)
+    expect(s?.propertyReader("DEF_morning")).toBe(-30)
+    expect(() => s?.propertyReader("hoge")).toThrowError()
+    // スキルをまだ取得していない
+    skill = SkillManager.getSkill("3", 1)
+    expect(skill.type).toBe("not_aquired")
+    expect(skill.skill).toBeUndefined()
+    // スキルなし
+    skill = SkillManager.getSkill("8", 80)
+    expect(skill.type).toBe("none")
+    expect(skill.skill).toBeUndefined()
   })
-  test("denco-manager", () => {
-    DencoManager.load(JSON.stringify(dencos)).then(() => {
-      const context = initContext("test", "test", false)
-      // 正常
-      let luna = DencoManager.getDenco(context, "3", 50, 1)
-      const data = dencos[3]
-      expect(luna.numbering).toBe("3")
-      expect(luna.name).toBe(data.name)
-      expect(luna.level).toBe(50)
-      expect(luna.type).toBe(data.type)
-      expect(luna.ap).toBe(data.AP[49])
-      expect(luna.maxHp).toBe(data.HP[49])
-      expect(luna.attr).toBe(data.attribute)
-      expect(luna.nextExp).toBe(data.EXP[49])
-      expect(luna.skillHolder.type).toBe("possess")
-      expect(luna.skillHolder.skill?.name).toBe("ナイトライダー Lv.4")
-      expect(luna.link.length).toBe(1)
-      // invalid numbering
-      expect(() => DencoManager.getDenco(context, "hoge")).toThrowError()
-      // invalid level
-      expect(() => DencoManager.getDenco(context, "3", 120)).toThrowError()
-    })
+  test("denco-manager", async () => {
+    await DencoManager.load(JSON.stringify(dencos))
+    const context = initContext("test", "test", false)
+    // 正常
+    let luna = DencoManager.getDenco(context, "3", 50, 1)
+    const data_1 = dencos[3]
+    expect(luna.numbering).toBe("3")
+    expect(luna.name).toBe(data_1.name)
+    expect(luna.level).toBe(50)
+    expect(luna.type).toBe(data_1.type)
+    expect(luna.ap).toBe(data_1.AP[49])
+    expect(luna.maxHp).toBe(data_1.HP[49])
+    expect(luna.attr).toBe(data_1.attribute)
+    expect(luna.nextExp).toBe(data_1.EXP[49])
+    expect(luna.skillHolder.type).toBe("possess")
+    expect(luna.skillHolder.skill?.name).toBe("ナイトライダー Lv.4")
+    expect(luna.link.length).toBe(1)
+    // invalid numbering
+    expect(() => DencoManager.getDenco(context, "hoge")).toThrowError()
+    // invalid level
+    expect(() => DencoManager.getDenco(context, "3", 120)).toThrowError()
   })
 })
