@@ -878,5 +878,5 @@ function completeDencoAccess(state: AccessState, s: AccessSideState) {
   // アクセスによる経験値付与
   denco.currentExp += s.exp
 
-  state.log.log(`HP確定 ${self.name} ${denco.hpBefore} > ${denco.hpAfter} reboot:${denco.reboot}`)
+  state.log.log(`HP確定 ${denco.name} ${denco.hpBefore} > ${denco.hpAfter} reboot:${denco.reboot}`)
 }

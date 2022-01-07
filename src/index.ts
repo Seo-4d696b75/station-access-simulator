@@ -26,21 +26,11 @@ init().then(() => {
     offense: {
       carIndex: 0,
       formation: [
-        charlotte,
-        luna,
-        fubu
-      ]
-    },
-    defense: {
-      carIndex: 0,
-      formation: [
-        sheena,
         reika,
-        hiiru
+        charlotte
       ]
     },
-    station: sheena.link[0],
-    probability: "force"
+    station: staionManager.getRandomStation(context, 1)[0]
   }
   const result = startAccess(context, config).event
   console.log("攻撃側のタイムライン")
