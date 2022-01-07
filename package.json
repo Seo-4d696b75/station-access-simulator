@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "build": "webpack",
     "prepare": "webpack --config webpack.config.js",
     "watch": "webpack --config webpack.dev.js --watch"
@@ -13,11 +13,14 @@
   "author": "@Seo-4d696b75",
   "license": "MIT License",
   "devDependencies": {
+    "@types/jest": "^27.4.0",
     "@types/node": "^16.7.10",
     "@types/source-map-support": "^0.5.4",
     "jest": "^27.4.7",
     "source-map-support": "^0.5.21",
+    "ts-jest": "^27.1.2",
     "ts-loader": "^9.2.5",
+    "ts-node": "^10.4.0",
     "typescript": "^4.4.2",
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0",

@@ -12,9 +12,9 @@ export interface Context {
   random: Random
 }
 
-export function initContext(type: string = "test", seed: string = "test"): Context {
+export function initContext(type: string = "test", seed: string = "test", console: boolean = true): Context {
   return {
-    log: new Logger(type, true),
+    log: new Logger(type, console),
     random: seedrandom(seed)
   }
 }

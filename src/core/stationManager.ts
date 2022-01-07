@@ -23,8 +23,8 @@ class StationManager {
   getRandomStation(context: Context, size: number): Station[] {
     if (size === 0) return []
     if (size > this.data.length) {
-      console.warn("random station size > data size")
-      size = this.data.length
+      context.log.error("データサイズを越えています")
+      throw RangeError("random station size > data size")
     }
     const list = shuffle(this.data, context.random, size)
     context.log.log(`ランダムに駅を選出：${list.map(s => s.name).join(",")}`)
@@ -34,7 +34,7 @@ class StationManager {
   getRandomLink(context: Context, size: number, minLinkSec: number = 10, maxLinkSec: number = 3600): StationLink[] {
     if (size === 0) return []
     minLinkSec = Math.max(minLinkSec, 1)
-    maxLinkSec = Math.max(maxLinkSec, minLinkSec + 10)
+    maxLinkSec = Math.max(maxLinkSec, minLinkSec)
     const station = this.getRandomStation(context, size)
     const duration = new Array(size).fill(null)
       .map(() => minLinkSec * 1000 + Math.floor((maxLinkSec - minLinkSec) * 1000 * context.random()))
