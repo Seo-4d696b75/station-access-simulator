@@ -1,5 +1,5 @@
 import { copyDencoState, Denco, DencoState } from "./denco"
-import { SkillPossess, Skill } from "./skill"
+import { SkillPossess, Skill, refreshSkillState } from "./skill"
 import { SkillPropertyReader } from "./skillManager"
 import { AccessEvent, Event, LevelupDenco, LevelupEvent } from "./event"
 import { Random, Context, Logger } from "./context"
@@ -159,8 +159,8 @@ export interface AccessState {
   random: Random | "ignore" | "force"
 }
 
-function initAccessDencoState(f: DencoTargetedUserState, which: AccessSide): AccessSideState {
-  const formation = f.formation.map((e, idx) => {
+function initAccessDencoState(f: DencoTargetedUserState, which: AccessSide, time: number): AccessSideState {
+  const formation = refreshSkillState(f, time).formation.map((e, idx) => {
     const s: AccessDencoState = {
       ...e,
       hpBefore: e.currentHp,
@@ -198,7 +198,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
     time: now.getTime(),
     log: context.log,
     station: config.station,
-    offense: initAccessDencoState(config.offense, "offense"),
+    offense: initAccessDencoState(config.offense, "offense", now.getTime()),
     defense: undefined,
     damageFixed: 0,
     attackPercent: 0,
@@ -220,7 +220,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
     d.link = d.link.splice(idx, 1)
   }
   if (config.defense) {
-    state.defense = initAccessDencoState(config.defense, "defense")
+    state.defense = initAccessDencoState(config.defense, "defense", now.getTime())
     const d = getAccessDenco(state, "defense")
     var link = d.link.find(link => link.name === config.station.name)
     if (!link) {

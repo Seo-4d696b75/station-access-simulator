@@ -1,5 +1,6 @@
 import { copyDencoState, DencoState } from "./denco";
 import { Event } from "./event";
+import { refreshSkillState } from "./skill";
 
 export interface User {
   name: string
@@ -29,21 +30,20 @@ export interface DencoTargetedUserState extends UserState {
 
 export function initUser(userName: string, formation?: DencoState[]): UserState {
   if (!formation) formation = []
-  //TODO call skill's onFormationChanged
-  return {
+  return changeFormation({
     name: userName,
-    formation: formation,
+    formation: [],
     event: []
-  }
+  }, formation)
 }
 
 export function changeFormation(current: UserState, formation: DencoState[]): UserState {
-  //TODO call skill's onFormationChanged
-  return {
+  let state = {
     ...current,
     event: Array.from(current.event),
     formation: Array.from(formation)
   }
+  return refreshSkillState(state, Date.now())
 }
 
 export function copyUserState(state: UserState): UserState {
