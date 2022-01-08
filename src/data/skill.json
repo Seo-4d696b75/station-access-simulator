@@ -65,7 +65,7 @@
     {"skill_level":6,"denco_level":70,"name":"ディファーレ Lv.6","probability":9.5},
     {"skill_level":7,"denco_level":80,"name":"レッツトエントリヒ","probability":11.0}
   ]},
-  {"numbering":"9","class":"D09_Moe","type":"condition","step":{"one_hour":"probability"},"list":[
+  {"numbering":"9","class":"D09_Moe","type":"auto-condition","step":{"one_hour":"probability"},"list":[
     {"skill_level":1,"denco_level":5,"name":"定時メンテナンス Lv.1","heal":10},
     {"skill_level":2,"denco_level":15,"name":"定時メンテナンス Lv.2","heal":15},
     {"skill_level":3,"denco_level":30,"name":"定時メンテナンス Lv.3","heal":20},
@@ -250,7 +250,7 @@
     {"skill_level":6,"denco_level":70,"name":"ナイトレイダー Lv.6","ATK":55,"DEF":-30},
     {"skill_level":7,"denco_level":80,"name":"ナイトメア","ATK":60,"DEF":-30}
   ]},
-  {"numbering":"31","class":"D31_Alice","type":"condition","step":{"damage_common":"probability"},"list":[
+  {"numbering":"31","class":"D31_Alice","type":"auto-condition","step":{"damage_common":"probability"},"list":[
     {"skill_level":1,"denco_level":5,"name":"ハッピーホリデイ Lv.1","DEF":10,"probability":75},
     {"skill_level":2,"denco_level":15,"name":"ハッピーホリデイ Lv.2","DEF":15,"probability":75},
     {"skill_level":3,"denco_level":30,"name":"ハッピーホリデイ Lv.3","DEF":20,"probability":75},
@@ -352,7 +352,7 @@
     {"skill_level":6,"denco_level":70,"name":"にちなの祈り Lv.6","active":10800,"wait":5400},
     {"skill_level":7,"denco_level":80,"name":"思い出だけは譲れません","active":12600,"wait":5400}
   ]},
-  {"numbering":"42","class":"D42_Sora","type":"condition","step":{"damage_common":"probability"},
+  {"numbering":"42","class":"D42_Sora","type":"auto-condition","step":{"damage_common":"probability"},
     "list":[
     {"skill_level":1,"denco_level":5,"name":"タイムフォーワーク Lv.1","ATK":20,"probability":70},
     {"skill_level":2,"denco_level":15,"name":"タイムフォーワーク Lv.2","ATK":30,"probability":70},

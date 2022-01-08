@@ -31,6 +31,7 @@ export class SkillManager {
       }
       const numbering = e.numbering as string
       const moduleName = e.class as string
+      const type = e.type as SkillStateTransition
       const properties = (e.list as any[]).map(d => {
         var skill = d.skill_level as number
         var denco = d.denco_level as number
@@ -63,7 +64,7 @@ export class SkillManager {
         moduleName: moduleName,
         skill: logic,
         skillProperties: properties,
-        transactionType: "always",
+        transactionType: type,
         evaluateInPink: false,
       }
       this.map.set(numbering, dataset)
