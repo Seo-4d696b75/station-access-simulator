@@ -2,25 +2,26 @@ import { AccessSideState, AccessSide, AccessState, getAccessDenco } from "./acce
 import { Denco, DencoAttribute, DencoState } from "./denco"
 import { Event } from "./event"
 import { LinksResult, Station, StationLink } from "./station"
+import { UserState } from "./user"
 
-export function printEvents(events: Event[], which: AccessSide, detail: boolean = false) {
-  events.forEach(event => {
-    console.log(formatEvent(event, which, detail))
+export function printEvents(user: UserState | undefined, detail: boolean = false) {
+  if (!user) return
+  user.event.forEach(event => {
+    console.log(formatEvent(event, detail))
   })
 }
 
-export function formatEvent(event: Event, which: AccessSide, detail: boolean = false): string {
+export function formatEvent(event: Event, detail: boolean = false): string {
   if (event.type === "access") {
-    return detail ? formatAccessDetail(event.data, which) : formatAccessEvent(event.data, which)
+    return detail ? formatAccessDetail(event.data.access, event.data.which) : formatAccessEvent(event.data.access, event.data.which)
   } else if (event.type === "reboot") {
-    return detail ? formatRebootDetail(event.data, which) : formatReboot(event.data, which)
+    return detail ? formatRebootDetail(event.data) : formatReboot(event.data)
   } else {
     return event.type
   }
 }
 
-export function formatReboot(result: LinksResult, which: AccessSide, width: number = 40): string {
-  if (which !== result.which) return ""
+export function formatReboot(result: LinksResult, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine("reboot", width)
   str += formatLine(result.denco.name, width)
@@ -46,9 +47,7 @@ export function formatReboot(result: LinksResult, which: AccessSide, width: numb
 }
 
 
-export function formatRebootDetail(result: LinksResult, which: AccessSide, width: number = 50): string {
-  if (which !== result.which) return ""
-  if (result.link.length === 0) return ""
+export function formatRebootDetail(result: LinksResult, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine("reboot", width)
   str += formatLine(`${result.denco.name}がリンクしていた駅のスコアが加算されました`, width)

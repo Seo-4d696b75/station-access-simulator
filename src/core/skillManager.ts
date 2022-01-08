@@ -91,7 +91,10 @@ export class SkillManager {
             ...data.skill,
             level: property.skillLevel,
             name: property.name,
-            state: "active",
+            state: {
+              type: "not_init",
+              data: undefined,
+            },
             transitionType: data.transactionType,
             evaluateInPink: data.evaluateInPink,
             propertyReader: (key: string) => {

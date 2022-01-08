@@ -1,4 +1,4 @@
-import { DencoState } from "./denco";
+import { copyDencoState, DencoState } from "./denco";
 import { Event } from "./event";
 
 export interface User {
@@ -43,5 +43,19 @@ export function changeFormation(current: UserState, formation: DencoState[]): Us
     ...current,
     event: Array.from(current.event),
     formation: Array.from(formation)
+  }
+}
+
+export function copyUserState(state: UserState): UserState {
+  return {
+    ...state,
+    formation: Array.from(state.formation).map(d => copyDencoState(d)),
+  }
+}
+
+export function copyDencoUserState(state: DencoTargetedUserState): DencoTargetedUserState {
+  return {
+    ...state,
+    formation: Array.from(state.formation).map(d => copyDencoState(d)),
   }
 }

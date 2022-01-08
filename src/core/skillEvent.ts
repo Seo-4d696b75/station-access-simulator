@@ -1,8 +1,9 @@
 import * as access from "./access";
 import { Logger, Random } from "./context";
 import { DencoState } from "./denco";
-import { EventSkillPreEvaluate, isSkillActive, ProbabilityPercent, Skill } from "./skill";
+import { EventSkillPreEvaluate, isSkillActive, ProbabilityPercent, Skill, TargetSkillDenco } from "./skill";
 import { SkillPropertyReader } from "./skillManager";
+import { copyUserState, UserState } from "./user";
 
 
 export interface SkillEventDencoState extends DencoState {
@@ -33,7 +34,7 @@ export interface SkillEventState {
 
   triggeredSkills: TriggeredSkill[]
 
-  probability?: ProbabilityPercent 
+  probability?: ProbabilityPercent
   probabilityBoostPercent: number
 
   random: Random | "ignore" | "force"
@@ -53,7 +54,7 @@ export interface SkillEventState {
  * - スキルがactive状態
  * - アクセス直後の場合 {@link SkillLogic}#onAccessComplete は直前のアクセス処理中に無効化スキルの影響を受けていない
  */
-export type SkillEvaluationStep = 
+export type SkillEvaluationStep =
   "probability_check" |
   "self"
 
@@ -64,55 +65,34 @@ export interface SkillTriggerResult {
 
 export type EventSkillEvaluate = (state: SkillEventState, self: ActiveSkillDenco) => SkillEventState
 
-export function evaluateSkillAfterAccess(a: access.AccessState, self: access.ActiveSkillDenco, evaluate: EventSkillEvaluate, probability?: ProbabilityPercent): SkillTriggerResult {
-  const state: SkillEventState = {
-    time: a.time,
-    log: a.log,
-    formation: getFormation(a, self.which).map(d => {
+export function evaluateSkillAfterAccess(state: UserState, self: access.ActiveSkillDenco, access: access.AccessState, evaluate: EventSkillEvaluate, probability?: ProbabilityPercent): UserState {
+  const eventState: SkillEventState = {
+    time: access.time,
+    log: access.log,
+    formation: state.formation.map((d, idx) => {
       return {
         ...d,
-        who: d.carIndex === self.carIndex ? "self" : "other",
+        who: idx === self.carIndex ? "self" : "other",
+        carIndex: idx,
+        skillInvalidated: getFormation(access, self.which)[idx].skillInvalidated
       }
     }),
     carIndex: self.carIndex,
     triggeredSkills: [],
     probability: probability,
     probabilityBoostPercent: 0,
-    random: a.random,
+    random: access.random,
   }
-  const result = execute(state, evaluate)
-  // スキル発動による影響の反映
-  const nextState = assignResult(a, result, self.which)
-  return {
-    triggeredSkill: result.triggeredSkills,
-    state: nextState,
-  }
-}
-
-function assignResult(state: access.AccessState, reuslt: SkillEventState, which: access.AccessSide): access.AccessState {
-  const next = {...state}
-  const side = (which === "offense") ? state.offense : state.defense as access.AccessSideState
-  const nextSide = {
-    ...side,
-    formation: reuslt.formation.map((d,idx) => {
-      const origin = side.formation[idx]
-      let s: access.AccessDencoState = {
-        ...d,
-        which: which,
-        who: d.carIndex === side.carIndex ? which : "other",
-        hpBefore: origin.hpBefore,
-        hpAfter: origin.hpAfter,
-        reboot: origin.reboot
-      }
-      return s
-    })
-  }
-  if ( which === "offense"){
-    next.offense = nextSide
+  const result = execute(eventState, evaluate)
+  if (result) {
+    // スキル発動による影響の反映
+    return {
+      ...copyUserState(state),
+      formation: result.formation,
+    }
   } else {
-    next.defense = nextSide
+    return state
   }
-  return next
 }
 
 function getFormation(state: access.AccessState, which: access.AccessSide): access.AccessDencoState[] {
@@ -125,15 +105,10 @@ function getFormation(state: access.AccessState, which: access.AccessSide): acce
   }
 }
 
-function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEventState {
+function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEventState | undefined {
   state.log.log(`スキル評価イベントの開始`)
-  const origin: SkillEventState = {
-    ...state,
-    formation: state.formation.map( d => { return {...d}}),
-    triggeredSkills: Array.from(state.triggeredSkills)
-  }
   const self = state.formation[state.carIndex]
-  if ( !isSkillActive(self.skillHolder)) {
+  if (!isSkillActive(self.skillHolder)) {
     state.log.error(`アクティブなスキルを保持していません ${self.name}`)
     throw Error("no active skill found")
   }
@@ -168,10 +143,10 @@ function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEve
   })
 
   // 発動確率の確認
-  if ( !canSkillEvaluated(state) ) {
+  if (!canSkillEvaluated(state)) {
     state.log.log("スキル評価イベントの終了（発動なし）")
     // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
-    return origin
+    return
   }
 
   // 主体となるスキルの発動
@@ -192,9 +167,9 @@ function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEve
   return state
 }
 
-function canSkillEvaluated(state: SkillEventState) : boolean {
-  if ( state.probability) {
-    if ( state.random === "force") {
+function canSkillEvaluated(state: SkillEventState): boolean {
+  if (state.probability) {
+    if (state.random === "force") {
       state.log.log("確率計算は無視されます mode: force")
       return true
     }
@@ -204,10 +179,10 @@ function canSkillEvaluated(state: SkillEventState) : boolean {
     }
     const percent = state.probability
     const boost = state.probabilityBoostPercent
-    if ( percent >= 100 ) {
+    if (percent >= 100) {
       return true
     }
-    if ( state.random() < (percent * (1.0 + boost / 100.0)) / 100.0){
+    if (state.random() < (percent * (1.0 + boost / 100.0)) / 100.0) {
       state.log.log(`スキルが発動できます 確率:${percent}%`)
       return true
     }

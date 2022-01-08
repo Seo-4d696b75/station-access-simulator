@@ -1,26 +1,13 @@
-import { Denco, DencoState } from "./denco"
+import { copyDencoState, Denco, DencoState } from "./denco"
 import { SkillPossess, Skill } from "./skill"
 import { SkillPropertyReader } from "./skillManager"
-import { Event, LevelupDenco, LevelupEvent } from "./event"
+import { AccessEvent, Event, LevelupDenco, LevelupEvent } from "./event"
 import { Random, Context, Logger } from "./context"
-import { LinkResult, LinksResult, Station, StationLink } from "./station"
+import { LinkResult, LinksResult, Station } from "./station"
 import DencoManager from "./dencoManager"
 import { TriggeredSkill as EventTriggeredSkill } from "./skillEvent"
+import { DencoTargetedUserState, UserState } from "./user"
 
-/**
- * アクセスするでんこの設定
- */
-export interface AccessDenco {
-  /**
-   * 現在の編成状態
-   */
-  formation: DencoState[]
-  /**
-   * アクセスする（攻撃・守備側）でんこの編成内のindex  
-   * 0 <= carIndex < formation.length
-   */
-  carIndex: number
-}
 
 /**
  * アクセスにおけるスキルの評価ステップ
@@ -68,7 +55,7 @@ export interface AccessConfig {
   /**
    * 攻撃側の編成
    */
-  offense: AccessDenco
+  offense: DencoTargetedUserState
   /**
    * アクセス先の駅
    */
@@ -76,7 +63,7 @@ export interface AccessConfig {
   /**
    * 守備側の編成
    */
-  defense?: AccessDenco
+  defense?: DencoTargetedUserState
   /**
    * フットバースアイテム使用の有無を指定する
    */
@@ -172,7 +159,7 @@ export interface AccessState {
   random: Random | "ignore" | "force"
 }
 
-function initAccessDencoState(f: AccessDenco, which: AccessSide): AccessSideState {
+function initAccessDencoState(f: DencoTargetedUserState, which: AccessSide): AccessSideState {
   const formation = f.formation.map((e, idx) => {
     const s: AccessDencoState = {
       ...e,
@@ -197,13 +184,13 @@ function initAccessDencoState(f: AccessDenco, which: AccessSide): AccessSideStat
   }
 }
 
-export interface AfterAccessContext extends Context {
-  offense: DencoState[]
-  defense?: DencoState[]
-  event: Event[]
+export interface AccessResult extends Context {
+  access: AccessState
+  offense: DencoTargetedUserState
+  defense?: DencoTargetedUserState
 }
 
-export function startAccess(context: Context, config: AccessConfig): AfterAccessContext {
+export function startAccess(context: Context, config: AccessConfig): AccessResult {
   const now = new Date()
   context.log.log(`アクセス処理の開始 ${now.toTimeString()}`)
 
@@ -250,71 +237,107 @@ export function startAccess(context: Context, config: AccessConfig): AfterAccess
   state = execute(state)
   state.log.log("アクセス処理の終了")
 
-  return completeAccess(context, state)
+  return completeAccess(context, config, state)
 }
 
-function completeAccess(context: Context, state: AccessState): AfterAccessContext {
-  const trigger: EventTriggeredSkill[] = []
-  // アクセス直後のスキル発動イベント
-  // TODO　発動イベントの追加
-  filterActiveSkill(state.offense.formation).forEach(d => {
-    const result = d.skill.onAccessComplete?.(state, d)
-    if (result) {
-      state = result.state
-      trigger.push(...result.triggeredSkill)
-    }
-  })
-  if (state.defense) {
-    filterActiveSkill(state.defense.formation).forEach(d => {
-      const result = d.skill.onAccessComplete?.(state, d)
-      if (result) {
-        state = result.state
-        trigger.push(...result.triggeredSkill)
-      }
-    })
+function copyState(state: AccessState): AccessState {
+  return {
+    ...state,
+    offense: copySideState(state.offense),
+    defense: state.defense ? copySideState(state.defense) : undefined,
   }
+}
+
+function copySideState(state: AccessSideState): AccessSideState {
+  return {
+    ...state,
+    formation: Array.from(state.formation).map(d => Object.assign({}, d)),
+    triggeredSkills: Array.from(state.triggeredSkills),
+  }
+}
+
+function completeAccess(context: Context, config: AccessConfig, result: AccessState): AccessResult {
+
   // このアクセスイベントの追加
-  var afterState: AfterAccessContext = {
-    ...context,
-    offense: state.offense.formation,
-    defense: state.defense?.formation,
-    event: [{
-      type: "access",
-      data: state
-    }]
+
+  let offense: DencoTargetedUserState = {
+    ...config.offense,
+    formation: Array.from(result.offense.formation).map(d => copyDencoState(d)),
+    event: [
+      ...config.offense.event,
+      {
+        type: "access",
+        data: {
+          access: result,
+          which: "offense"
+        }
+      },
+    ]
   }
-  afterState.event.push(...trigger.map(t => {
-    let e: Event = {
-      type: "skill_trigger",
-      data: t
-    }
-    return e
-  }))
+  let defense: DencoTargetedUserState | undefined = config.defense ? {
+    ...config.defense,
+    formation: Array.from(result.defense?.formation as DencoState[]).map(d => copyDencoState(d)),
+    event: [
+      ...config.defense.event,
+      {
+        type: "access",
+        data: {
+          access: result,
+          which: "defense"
+        }
+      },
+    ]
+  } : undefined
+
+  // アクセス直後のスキル発動イベント
+  offense = checkSkillAfterAccess(offense, result, "offense")
+  defense = defense ? checkSkillAfterAccess(defense, result, "defense") : undefined
   // リブートイベントの追加
-  afterState = checkReboot(afterState, state.offense, state.time)
-  afterState = checkReboot(afterState, state.defense, state.time)
+  offense = checkReboot(offense, result, "offense")
+  defense = defense ? checkReboot(defense, result, "defense") : undefined
 
   // レベルアップ処理
 
-  return afterState
+  return {
+    ...context,
+    offense: offense,
+    defense: defense,
+    access: result,
+  }
 }
 
-function checkReboot(state: AfterAccessContext, side: AccessSideState | undefined, accessTime: number): AfterAccessContext {
+function checkSkillAfterAccess(state: DencoTargetedUserState, access: AccessState, which: AccessSide): DencoTargetedUserState {
+  const side = (which === "offense") ? access.offense : access.defense
+  if (!side) return state
+  filterActiveSkill(side.formation).forEach(d => {
+    const next = d.skill.onAccessComplete?.(state, d, access)
+    if (next) {
+      state = {
+        ...next,
+        carIndex: state.carIndex,
+      }
+    }
+  })
+  return state
+}
+
+function checkReboot(state: DencoTargetedUserState, access: AccessState, which: AccessSide): DencoTargetedUserState {
+  const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
   // 編成全員を確認する
   side.formation.forEach(d => {
     if (d.reboot) {
       const linkResult = d.link.map(e => {
-        let duration = accessTime - e.start
+        let duration = access.time - e.start
         if (duration < 0) {
-          state.log.error("リンク時間が負数です")
+          access.log.error("リンク時間が負数です")
           throw Error("link duration < 0")
         }
         let attr = (e.attr === d.attr)
         let score = Math.floor(duration / 100)
         let result: LinkResult = {
           ...e,
-          end: accessTime,
+          end: access.time,
           duration: duration,
           score: score,
           matchBonus: attr ? Math.floor(score * 0.3) : undefined
@@ -322,16 +345,16 @@ function checkReboot(state: AfterAccessContext, side: AccessSideState | undefine
         return result
       })
       // TODO combo bonus の計算
-      const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b)
+      const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b, 0)
       const match = linkResult.map(link => link.matchBonus).filter(e => !!e) as number[]
-      const matchBonus = match.reduce((a, b) => a + b)
+      const matchBonus = match.reduce((a, b) => a + b, 0)
       const totalScore = linkScore + matchBonus
       // TODO 経験値の計算
       const exp = totalScore
       // リンクによる経験値付与
       d.currentExp += exp
       const result: LinksResult = {
-        time: accessTime,
+        time: access.time,
         denco: d,
         which: d.which,
         totalScore: totalScore,
@@ -351,15 +374,15 @@ function checkReboot(state: AfterAccessContext, side: AccessSideState | undefine
   return state
 }
 
-function checkLevelup(state: AfterAccessContext, which: AccessSide, accessTime: number): AfterAccessContext {
-  const formation = (which === "offense") ? state.offense : state.defense
+function checkLevelup(state: DencoTargetedUserState, access: AccessState, which: AccessSide): DencoTargetedUserState {
+  const formation = (which === "offense") ? access.offense.formation : access.defense?.formation
   if (!formation) return state
   const nextFormation = DencoManager.checkLevelup(formation)
   formation.forEach((before, idx) => {
     let after = nextFormation[idx]
     if (before.level < after.level) {
       let levelup: LevelupDenco = {
-        time: accessTime,
+        time: access.time,
         which: which,
         after: after,
         before: before
@@ -371,11 +394,7 @@ function checkLevelup(state: AfterAccessContext, which: AccessSide, accessTime: 
       state.event.push(event)
     }
   })
-  if (which === "offense") {
-    state.offense = nextFormation
-  } else {
-    state.defense = nextFormation
-  }
+  state.formation = nextFormation
   return state
 }
 
@@ -663,7 +682,7 @@ function hasActiveSkill(d: AccessDencoState): boolean {
  * @returns 
  */
 function isSkillActive(skill: SkillPossess): boolean {
-  return skill.type === "possess" && skill.skill.state === "active"
+  return skill.type === "possess" && skill.skill.state.type === "active"
 }
 
 /**

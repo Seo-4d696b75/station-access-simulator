@@ -7,6 +7,8 @@ import staionManager from "./core/stationManager"
 import { AccessConfig, startAccess } from './core/access'
 import { formatEvent, printEvents } from './core/format'
 import { initContext } from './core/context'
+import { getSkill } from './core/denco'
+import { initUser } from './core/user'
 
 async function init() {
   await skillManager.load()
@@ -18,23 +20,30 @@ init().then(() => {
   const context = initContext()
   const luna = dencoManager.getDenco(context, "3", 50)
   const reika = dencoManager.getDenco(context, "5", 50)
-  const sheena = dencoManager.getDenco(context, "7", 80, 2)
+  //const sheena = dencoManager.getDenco(context, "7", 80, 2)
   const fubu = dencoManager.getDenco(context, "14", 50)
-  const charlotte = dencoManager.getDenco(context, "6", 30, 3)
+  const charlotte = dencoManager.getDenco(context, "6", 80, 3)
   const hiiru = dencoManager.getDenco(context, "34", 80)
+  const offense = initUser("とあるマスター１", [
+    reika
+  ])
+  const defense = initUser("とあるマスター２", [
+    charlotte
+  ])
   const config: AccessConfig = {
     offense: {
       carIndex: 0,
-      formation: [
-        reika,
-        charlotte
-      ]
+      ...offense
     },
-    station: staionManager.getRandomStation(context, 1)[0]
+    defense: {
+      carIndex: 0,
+      ...defense
+    },
+    station: charlotte.link[0],
   }
-  const result = startAccess(context, config).event
+  const result = startAccess(context, config)
   console.log("攻撃側のタイムライン")
-  printEvents(result, "offense", true)
+  printEvents(result.offense, true)
   console.log("守備側のタイムライン")
-  printEvents(result, "defense", true)
+  printEvents(result.defense, true)
 })

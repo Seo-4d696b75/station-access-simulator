@@ -44,6 +44,16 @@ export interface DencoState extends Denco {
   link: StationLink[]
 }
 
+export function copyDencoState(state: DencoState): DencoState {
+  return {
+    ...state,
+    link: Array.from(state.link),
+    film: {
+      ...state.film
+    },
+  }
+}
+
 export function getSkill(denco: DencoState): Skill {
   if ( denco.skillHolder.type === "possess"){
     return denco.skillHolder.skill

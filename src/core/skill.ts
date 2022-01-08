@@ -89,6 +89,7 @@ export type AccessSkillEvaluate = (state: access.AccessState, step: access.Skill
 export type EventSkillPreEvaluate = (state: event.SkillEventState, self: event.ActiveSkillDenco) => event.SkillEventState | undefined
 
 export interface TargetSkillDenco extends DencoState {
+  carIndex: number
   skill: Skill
   propertyReader: SkillPropertyReader
 }
@@ -114,7 +115,7 @@ export interface SkillLogic {
    * 
    * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
    */
-  onAccessComplete?: (state: access.AccessState, self: access.ActiveSkillDenco) => void | event.SkillTriggerResult
+  onAccessComplete?: (state: UserState, self: access.ActiveSkillDenco, access: access.AccessState) => undefined | UserState
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
@@ -132,7 +133,7 @@ export interface SkillLogic {
    * `onActivated`を指定しない場合は返値`undefined`と同様に処理する
    * @returns 一定時間の経過で判定する場合はtimeoutを返す
    */
-  disactivateAt?: (state: DencoTargetedUserState, self: TargetSkillDenco) => undefined | SkillActiveTimeout
+  disactivateAt?: (state: UserState, self: TargetSkillDenco) => undefined | SkillActiveTimeout
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`において`cooldown`が終了して`idle/unable`へ移行する判定の方法を指定する
@@ -141,13 +142,13 @@ export interface SkillLogic {
    * 
    * @returns 返値で指定した時刻以降に`unable`へ移行する
    */
-  completeCooldownAt?: (state: DencoTargetedUserState, self: TargetSkillDenco) => SkillCooldownTimeout
+  completeCooldownAt?: (state: UserState, self: TargetSkillDenco) => SkillCooldownTimeout
 
-  onActivated?: (state: DencoTargetedUserState, self: TargetSkillDenco) => UserState
-  onFormationChanged?: (state: DencoTargetedUserState, self: TargetSkillDenco) => UserState
-  onDencoHPChanged?: (state: DencoTargetedUserState, self: TargetSkillDenco) => UserState
-  onLinkSuccess?: (state: DencoTargetedUserState, self: TargetSkillDenco) => UserState
-  onDencoReboot?: (state: DencoTargetedUserState, self: TargetSkillDenco) => UserState
+  onActivated?: (state: UserState, self: TargetSkillDenco) => UserState
+  onFormationChanged?: (state: UserState, self: TargetSkillDenco) => UserState
+  onDencoHPChanged?: (state: UserState, self: TargetSkillDenco) => UserState
+  onLinkSuccess?: (state: UserState, self: TargetSkillDenco) => UserState
+  onDencoReboot?: (state: UserState, self: TargetSkillDenco) => UserState
 }
 
 export interface Skill extends SkillLogic {
@@ -156,6 +157,13 @@ export interface Skill extends SkillLogic {
   state: SkillState
   transitionType: SkillStateTransition
   propertyReader: SkillPropertyReader
+}
+
+export function copySkill(skill: Skill): Skill {
+  return {
+    ...skill,
+    state: Object.assign({}, skill.state)
+  }
 }
 
 export type SkillPossessType =
@@ -198,7 +206,7 @@ export function enableSkill(state: DencoTargetedUserState): UserState {
   const d = state.formation[state.carIndex]
   const skill = getSkill(d)
   if (skill.transitionType === "manual-condition") {
-    switch(skill.state.type){
+    switch (skill.state.type) {
       case "not_init":
       case "unable": {
         skill.state = {
@@ -231,7 +239,7 @@ export function disableSkill(state: DencoTargetedUserState): UserState {
   const d = state.formation[state.carIndex]
   const skill = getSkill(d)
   if (skill.transitionType === "manual-condition") {
-    switch(skill.state.type){
+    switch (skill.state.type) {
       case "not_init":
       case "idle": {
         skill.state = {
@@ -248,7 +256,7 @@ export function disableSkill(state: DencoTargetedUserState): UserState {
       }
     }
   } else if (skill.transitionType === "auto-condition") {
-    switch(skill.state.type){
+    switch (skill.state.type) {
       case "not_init":
       case "active": {
         skill.state = {
@@ -282,16 +290,17 @@ export function disableSkill(state: DencoTargetedUserState): UserState {
 export function activateSkill(state: DencoTargetedUserState): UserState {
   const d = state.formation[state.carIndex]
   const skill = getSkill(d)
-  switch(skill.transitionType){
-    case "manual": 
+  switch (skill.transitionType) {
+    case "manual":
     case "manual-condition": {
-      switch(skill.state.type){
+      switch (skill.state.type) {
         case "not_init":
         case "idle": {
           skill.state = {
             type: "active",
             data: skill.disactivateAt?.(state, {
               ...d,
+              carIndex: state.carIndex,
               skill: skill,
               propertyReader: skill.propertyReader,
             })
@@ -307,13 +316,14 @@ export function activateSkill(state: DencoTargetedUserState): UserState {
       }
     }
     case "auto": {
-      switch(skill.state.type){
+      switch (skill.state.type) {
         case "not_init":
         case "unable": {
           skill.state = {
             type: "active",
             data: skill.disactivateAt?.(state, {
               ...d,
+              carIndex: state.carIndex,
               skill: skill,
               propertyReader: skill.propertyReader,
             })
@@ -329,7 +339,7 @@ export function activateSkill(state: DencoTargetedUserState): UserState {
       }
     }
     case "auto-condition": {
-      switch(skill.state.type){
+      switch (skill.state.type) {
         case "not_init":
         case "unable": {
           skill.state = {
@@ -363,7 +373,7 @@ export function activateSkill(state: DencoTargetedUserState): UserState {
 export function refreshSkillState(state: UserState, time: number): UserState {
   return {
     ...state,
-    formation: state.formation.map( d => refreshSkillStateOne(d, time))
+    formation: state.formation.map(d => refreshSkillStateOne(d, time))
   }
 }
 
@@ -436,7 +446,7 @@ function refreshSkillStateOne(denco: DencoState, time: number): DencoState {
 function refreshTimeout(skill: Skill, time: number) {
   if (skill.state.type === "active") {
     const data = skill.state.data
-    if ( data && data.activeTimeout >= time) {
+    if (data && data.activeTimeout >= time) {
       skill.state = {
         type: "cooldown",
         data: {

@@ -21,7 +21,10 @@ export interface LevelupDenco {
   before: Denco
 }
 
-export type AccessEvent = EventBase<"access", AccessState>
+export type AccessEvent = EventBase<"access", {
+  access: AccessState
+  which: AccessSide
+}>
 export type RebootEvent = EventBase<"reboot", LinksResult>
 export type SkillTriggerEvent = EventBase<"skill_trigger", TriggeredSkill>
 export type LevelupEvent = EventBase<"levelup", LevelupDenco>
