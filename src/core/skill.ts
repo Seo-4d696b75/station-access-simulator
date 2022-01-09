@@ -149,8 +149,17 @@ export interface SkillLogic {
    * スキル状態の遷移タイプ`auto-condition`において`active`状態であるか判定する
    * 
    * `auto-condition`タイプでこの関数未定義はエラーとなる
+   * @returns trueの場合は`active`状態へ遷移
    */
   canActivated?: (state: UserState, self: TargetSkillDenco) => boolean
+
+  /**
+   * スキル状態の遷移タイプ`manual-condition`において`idle <> unable`状態であるか判定する
+   * 
+   * `manual-condition`タイプでこの関数未定義はエラーとなる
+   * @returns trueの場合は`idle`状態へ遷移
+   */
+  canEnabled?: (state: UserState, self: TargetSkillDenco) => boolean
 
   onActivated?: (state: UserState, self: TargetSkillDenco) => UserState
   onFormationChanged?: (state: UserState, self: TargetSkillDenco) => UserState
@@ -236,6 +245,7 @@ export function enableSkill(state: DencoTargetedUserState): UserState {
 }
 
 /**
+ * TODO　削除？？
  * スキル状態を`unable`へ遷移させる
  * 
  * 許可される操作は次の場合  
@@ -405,6 +415,7 @@ export function refreshSkillState(state: UserState, time: number): UserState {
 }
 
 function refreshSkillStateOne(denco: DencoState, state: DencoTargetedUserState, time: number): DencoState {
+  denco = copyDencoState(denco)
   if (denco.skillHolder.type !== "possess") {
     return denco
   }
@@ -443,6 +454,28 @@ function refreshSkillStateOne(denco: DencoState, state: DencoTargetedUserState, 
         }
       }
       refreshTimeout(skill, time)
+      if (skill.state.type === "idle" || skill.state.type === "unable") {
+        const predicate = skill.canEnabled
+        if (!predicate) {
+          throw Error("type:manual-condition, but function #canEnabled not defined")
+        }
+        if (predicate(state, {
+          ...denco,
+          carIndex: state.carIndex,
+          skill: skill,
+          propertyReader: skill.propertyReader
+        })) {
+          skill.state = {
+            type: "idle",
+            data: undefined
+          }
+        } else {
+          skill.state = {
+            type: "unable",
+            data: undefined
+          }
+        }
+      }
       return denco
     }
     case "auto": {
