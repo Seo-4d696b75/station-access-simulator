@@ -1,5 +1,5 @@
 import * as access from "./access"
-import { DencoState, getSkill } from "./denco"
+import { copyDencoState, DencoState, getSkill } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
 import { DencoTargetedUserState, UserState } from "./user"
@@ -179,7 +179,38 @@ export interface Skill extends SkillLogic {
 export function copySkill(skill: Skill): Skill {
   return {
     ...skill,
-    state: Object.assign({}, skill.state)
+    state: copySkillState(skill.state),
+  }
+}
+
+export function copySkillState(state: SkillState): SkillState {
+  switch (state.type) {
+    case "active": {
+      if (state.data) {
+        return {
+          type: "active",
+          data: {
+            ...state.data
+          }
+        }
+      }
+      break
+    }
+    case "cooldown": {
+      return {
+        type: "cooldown",
+        data: {
+          cooldownTimeout: state.data.cooldownTimeout
+        }
+      }
+    }
+    default: {
+      break
+    }
+  }
+  return {
+    type: state.type,
+    data: undefined
   }
 }
 
@@ -198,6 +229,19 @@ export type SkillPossess =
   SkillHolder<"possess", Skill> |
   SkillHolder<"not_aquired"> |
   SkillHolder<"none">
+
+export function copySkillPossess(skill: SkillPossess): SkillPossess {
+  if (skill.type === "possess") {
+    return {
+      type: "possess",
+      skill: copySkill(skill.skill),
+    }
+  }
+  return {
+    type: skill.type,
+    skill: undefined,
+  }
+}
 
 /**
 * スキル保有の有無とスキル状態を考慮してアクティブなスキルか判定

@@ -1,4 +1,4 @@
-import { Skill, SkillPossess, SkillState } from "./skill"
+import { copySkillPossess, Skill, SkillPossess, SkillState } from "./skill"
 import { Film } from "./film"
 import { StationLink } from "./station"
 
@@ -48,6 +48,7 @@ export function copyDencoState(state: DencoState): DencoState {
   return {
     ...state,
     link: Array.from(state.link),
+    skillHolder: copySkillPossess(state.skillHolder),
     film: {
       ...state.film
     },

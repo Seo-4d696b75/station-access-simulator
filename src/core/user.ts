@@ -54,6 +54,7 @@ export function copyUserState(state: UserState): UserState {
   return {
     ...state,
     formation: Array.from(state.formation).map(d => copyDencoState(d)),
+    event: Array.from(state.event),
   }
 }
 
@@ -61,5 +62,6 @@ export function copyDencoUserState(state: DencoTargetedUserState): DencoTargeted
   return {
     ...state,
     formation: Array.from(state.formation).map(d => copyDencoState(d)),
+    event: Array.from(state.event)
   }
 }
