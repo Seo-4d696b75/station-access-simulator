@@ -3,7 +3,7 @@ import { SkillPossess, Skill, refreshSkillState } from "./skill"
 import { SkillPropertyReader } from "./skillManager"
 import { AccessEvent, Event, LevelupDenco, LevelupEvent } from "./event"
 import { Random, Context, Logger } from "./context"
-import { LinkResult, LinksResult, Station } from "./station"
+import { LinkResult, LinksResult, Station, StationLink } from "./station"
 import DencoManager from "./dencoManager"
 import { TriggeredSkill as EventTriggeredSkill } from "./skillEvent"
 import { DencoTargetedUserState, UserState } from "./user"
@@ -321,6 +321,45 @@ function checkSkillAfterAccess(state: DencoTargetedUserState, access: AccessStat
   return state
 }
 
+function calcLinkResult(links: StationLink[], d: DencoState, which: AccessSide, time: number): LinksResult {
+  const linkResult = links.map(link => {
+    let duration = time - link.start
+    if (duration < 0) {
+      throw Error("link duration < 0")
+    }
+    let attr = (link.attr === d.attr)
+    let score = Math.floor(duration / 100)
+    let result: LinkResult = {
+      ...link,
+      end: time,
+      duration: duration,
+      score: score,
+      matchBonus: attr ? Math.floor(score * 0.3) : undefined
+    }
+    return result
+  })
+  // TODO combo bonus の計算
+  const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b, 0)
+  const match = linkResult.map(link => link.matchBonus).filter(e => !!e) as number[]
+  const matchBonus = match.reduce((a, b) => a + b, 0)
+  const totalScore = linkScore + matchBonus
+  // TODO 経験値の計算
+  const exp = totalScore
+  const result: LinksResult = {
+    time: time,
+    denco: copyDencoState(d),
+    which: which,
+    totalScore: totalScore,
+    linkScore: linkScore,
+    comboBonus: 0,
+    matchBonus: matchBonus,
+    matchCnt: match.length,
+    exp: exp,
+    link: linkResult,
+  }
+  return result
+}
+
 function checkReboot(state: DencoTargetedUserState, access: AccessState, which: AccessSide): DencoTargetedUserState {
   // access: こっちを弄るな！
   const side = (which === "offense") ? access.offense : access.defense
@@ -329,44 +368,9 @@ function checkReboot(state: DencoTargetedUserState, access: AccessState, which: 
   side.formation.forEach((dd, idx) => {
     if (dd.reboot) {
       const d = state.formation[idx]
-      const linkResult = d.link.map(e => {
-        let duration = access.time - e.start
-        if (duration < 0) {
-          access.log.error("リンク時間が負数です")
-          throw Error("link duration < 0")
-        }
-        let attr = (e.attr === d.attr)
-        let score = Math.floor(duration / 100)
-        let result: LinkResult = {
-          ...e,
-          end: access.time,
-          duration: duration,
-          score: score,
-          matchBonus: attr ? Math.floor(score * 0.3) : undefined
-        }
-        return result
-      })
-      // TODO combo bonus の計算
-      const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b, 0)
-      const match = linkResult.map(link => link.matchBonus).filter(e => !!e) as number[]
-      const matchBonus = match.reduce((a, b) => a + b, 0)
-      const totalScore = linkScore + matchBonus
-      // TODO 経験値の計算
-      const exp = totalScore
-      // リンクによる経験値付与
-      d.currentExp += exp
-      const result: LinksResult = {
-        time: access.time,
-        denco: copyDencoState(d),
-        which: dd.which,
-        totalScore: totalScore,
-        linkScore: linkScore,
-        comboBonus: 0,
-        matchBonus: matchBonus,
-        matchCnt: match.length,
-        exp: exp,
-        link: linkResult,
-      }
+      const result = calcLinkResult(d.link, d, which, access.time)
+      // リンクEXPの追加
+      d.currentExp += result.exp
       state.event.push({
         type: "reboot",
         data: result,
@@ -568,6 +572,20 @@ function execute(state: AccessState, top: boolean = true): AccessState {
     // ピンク
     state.linkDisconncted = true
     state.linkSuccess = true
+
+    // 守備側のアクセス駅のリンクのみ解除
+    if (state.defense) {
+      const d = getAccessDenco(state, "defense")
+      const idx = d.link.findIndex(link => link.name === state.station.name)
+      if (idx < 0) {
+        throw Error("disconnected link not found")
+      }
+      d.link.splice(idx, 1)
+      // 特にイベントは発生せず経験値だけ追加
+      const result = calcLinkResult([d.link[idx]], d, "defense", state.time)
+      state.defense.exp += result.exp
+      state.defense.score += result.totalScore
+    }
   } else {
     // 相手不在
     state.linkSuccess = true
@@ -595,7 +613,7 @@ function execute(state: AccessState, top: boolean = true): AccessState {
     }
 
     // 最終的なアクセス結果を計算 カウンターで変化する場合あり
-    if (state.defense) {
+    if (state.defense && !state.pinkMode) {
       let defense = getAccessDenco(state, "defense")
       state.linkDisconncted = defense.reboot
       let offense = getAccessDenco(state, "offense")

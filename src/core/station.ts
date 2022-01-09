@@ -25,7 +25,13 @@ export interface LinkResult extends StationLink {
 }
 
 export interface LinksResult {
+  /**
+   * リブートしたタイミング
+   */
   time: number
+  /**
+   * リブートしてリンクスコア＆経験値が加算される直前の状態
+   */
   denco: DencoState
   which: AccessSide
   link: LinkResult[]

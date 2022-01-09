@@ -54,7 +54,34 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(192)
     expect(d.currentExp).toBe(reika.currentExp + access.offense.exp)
   })
-
+  test("守備側なし-フットバースあり", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 50)
+    const offense = initUser("とあるマスター１", [
+      reika
+    ])
+    const config: AccessConfig = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      station: StationManager.getRandomStation(context, 1)[0],
+      usePink: true,
+    }
+    const result = startAccess(context, config)
+    expect(result.offense.event.length).toBe(1)
+    expect(result.offense.event[0].type).toBe("access")
+    expect(result.defense).toBeUndefined()
+    const access = result.access
+    // 不在の確認
+    expect(access.defense).toBeUndefined()
+    // アクセス結果の確認
+    expect(access.linkSuccess).toBe(true)
+    expect(access.linkDisconncted).toBe(false)
+    expect(access.pinkItemSet).toBe(true)
+    expect(access.pinkItemUsed).toBe(false)
+    expect(access.pinkMode).toBe(false)
+  })
   test("守備側あり-スキル発動なし-Rebootなし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -116,6 +143,58 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentExp).toBe(charlotte.currentExp + def.exp)
   })
   
+
+  test("守備側あり-フットバースあり", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+    const offense = initUser("とあるマスター１", [
+      reika
+    ])
+    const defense = initUser("とあるマスター２", [
+      charlotte
+    ])
+    const config: AccessConfig = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: charlotte.link[0],
+      usePink: true,
+    }
+    const result = startAccess(context, config)
+    expect(result.offense.event.length).toBe(1)
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defense?.event.length).toBe(1)
+    const access = result.access
+    // 相手の確認
+    expect(access.defense).not.toBeUndefined()
+    // アクセス結果の確認
+    expect(access.linkSuccess).toBe(true)
+    expect(access.linkDisconncted).toBe(true)
+    // アクセス処理の確認
+    expect(access.pinkMode).toBe(true)
+    expect(access.pinkItemSet).toBe(true)
+    expect(access.pinkItemUsed).toBe(true)
+    // ダメージ計算確認
+    expect(access.damageBase).toBeUndefined()
+    expect(access.damageFixed).toBe(0)
+    expect(access.offense.damage).toBeUndefined()
+    expect(access.defense?.damage).toBeUndefined()
+    // 最終状態の確認
+    expect(result.defense).not.toBeUndefined()
+    const charlotteResult = getTargetDenco(result.defense as DencoTargetedUserState)
+    charlotte = defense.formation[0]
+    expect(charlotteResult).toMatchObject({
+      ...charlotte,
+      link: charlotte.link.slice(1),
+      currentExp: charlotte.currentExp + getDefense(access).exp,
+    })
+  })
 
   test("守備側あり-スキル発動なし-Rebootあり", () => {
     const context = initContext("test", "test", false)
@@ -189,12 +268,13 @@ describe("基本的なアクセス処理", () => {
     expect(data.link[2]).toMatchObject(charlotte.link[2])
     // アクセス後の状態
     let defenseResult = result.defense as DencoTargetedUserState
+    charlotte = defense.formation[0]
     let charlotteResult = getTargetDenco(defenseResult)
-    expect(charlotteResult).toEqual(data.denco)
     expect(charlotteResult).toMatchObject({
       ...charlotte,
       currentExp: charlotte.currentExp + getDefense(access).exp + data.exp,
     })
+    reika = offense.formation[0]
     let reikaResult = getTargetDenco(result.offense)
     expect(reikaResult).toMatchObject({
       ...reika,
