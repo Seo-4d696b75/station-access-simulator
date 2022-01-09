@@ -322,11 +322,13 @@ function checkSkillAfterAccess(state: DencoTargetedUserState, access: AccessStat
 }
 
 function checkReboot(state: DencoTargetedUserState, access: AccessState, which: AccessSide): DencoTargetedUserState {
+  // access: こっちを弄るな！
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
   // 編成全員を確認する
-  side.formation.forEach(d => {
-    if (d.reboot) {
+  side.formation.forEach((dd, idx) => {
+    if (dd.reboot) {
+      const d = state.formation[idx]
       const linkResult = d.link.map(e => {
         let duration = access.time - e.start
         if (duration < 0) {
@@ -355,8 +357,8 @@ function checkReboot(state: DencoTargetedUserState, access: AccessState, which: 
       d.currentExp += exp
       const result: LinksResult = {
         time: access.time,
-        denco: d,
-        which: d.which,
+        denco: copyDencoState(d),
+        which: dd.which,
         totalScore: totalScore,
         linkScore: linkScore,
         comboBonus: 0,

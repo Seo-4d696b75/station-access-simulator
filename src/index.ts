@@ -19,10 +19,10 @@ async function init() {
 init().then(() => {
   const context = initContext()
   const luna = dencoManager.getDenco(context, "3", 50)
-  const reika = dencoManager.getDenco(context, "5", 50)
+  const reika = dencoManager.getDenco(context, "5", 80)
   //const sheena = dencoManager.getDenco(context, "7", 80, 2)
   const fubu = dencoManager.getDenco(context, "14", 50)
-  const charlotte = dencoManager.getDenco(context, "6", 80, 3)
+  const charlotte = dencoManager.getDenco(context, "6", 50, 3)
   const hiiru = dencoManager.getDenco(context, "34", 80)
   const offense = initUser("とあるマスター１", [
     reika

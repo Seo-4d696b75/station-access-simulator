@@ -28,6 +28,10 @@ export interface DencoTargetedUserState extends UserState {
   carIndex: number
 }
 
+export function getTargetDenco(state: DencoTargetedUserState): DencoState {
+  return state.formation[state.carIndex]
+}
+
 export function initUser(userName: string, formation?: DencoState[]): UserState {
   if (!formation) formation = []
   return changeFormation({
