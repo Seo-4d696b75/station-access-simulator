@@ -55,6 +55,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpAfter).toBe(192)
     expect(d.currentHp).toBe(192)
     expect(d.currentExp).toBe(reika.currentExp + access.offense.exp)
+    expect(() => getAccessDenco(access, "defense")).toThrowError()
   })
   test("守備側なし-フットバースあり", () => {
     const context = initContext("test", "test", false)
@@ -275,6 +276,7 @@ describe("基本的なアクセス処理", () => {
     expect(charlotteResult).toMatchObject({
       ...charlotte,
       currentExp: charlotte.currentExp + getDefense(access).exp + data.exp,
+      link: [],
     })
     reika = offense.formation[0]
     let reikaResult = getTargetDenco(result.offense)
@@ -527,5 +529,8 @@ describe("基本的なアクセス処理", () => {
     let reboot = e.data as LinksResult
     expect(reboot.link.length).toBe(1)
     expect(reboot.link[0]).toMatchObject(reika.link[0])
+    // リンク解除確認
+    let reikaResult = getTargetDenco(result.offense)
+    expect(reikaResult.link.length).toBe(0)
   })
 })

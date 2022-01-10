@@ -33,11 +33,16 @@ class DencoManager {
       }
       const ap = e.AP as number[]
       const hp = e.HP as number[]
-      const exp = e.EXP as number[]
+      let exp = e.EXP as number[]
       const size = ap.length
       if (hp.length !== size || exp.length !== size) {
         throw Error(`invalid denco status: AP, HP, EXP size mismatch ${JSON.stringify(e)}`)
       }
+      // EXP: level(idx)->level(idx+1)にレベルアップ必要な経験値
+      if(exp[0] !== 0){
+        throw Error("EXP array[0] must be 0")
+      }
+      exp = [...exp.slice(1), exp[size-1]]
       const status = Array(size).fill(0).map((_, i) => {
         let status: DencoLevelStatus = {
           level: i + 1,

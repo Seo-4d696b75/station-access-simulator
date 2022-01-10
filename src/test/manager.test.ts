@@ -106,7 +106,8 @@ describe("manager", () => {
     expect(luna.ap).toBe(data_1.AP[49])
     expect(luna.maxHp).toBe(data_1.HP[49])
     expect(luna.attr).toBe(data_1.attribute)
-    expect(luna.nextExp).toBe(data_1.EXP[49])
+    // 次のlevel:51に必要な経験値
+    expect(luna.nextExp).toBe(data_1.EXP[50])
     expect(luna.skillHolder.type).toBe("possess")
     expect(luna.skillHolder.skill?.name).toBe("ナイトライダー Lv.4")
     expect(luna.link.length).toBe(1)

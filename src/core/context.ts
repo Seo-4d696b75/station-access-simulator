@@ -7,6 +7,11 @@ import seedrandom from "seedrandom"
  */
 export type Random = () => number
 
+/**
+ * 実行される各種処理に紐づけられる
+ * 
+ * このオブジェクトは内部状態を保持します
+ */
 export interface Context {
   log: Logger
   random: Random
@@ -19,6 +24,9 @@ export function initContext(type: string = "test", seed: string = "test", consol
   }
 }
 
+/**
+ * Contextの下で実行された処理のログを記録する
+ */
 export class Logger {
 
   constructor(type: string, writeConsole: boolean = true) {
