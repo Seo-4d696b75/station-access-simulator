@@ -1,6 +1,7 @@
 import { copyDencoState, DencoState } from "./denco";
-import { Event } from "./event";
+import { Event, LevelupDenco, LevelupEvent } from "./event";
 import { refreshSkillState } from "./skill";
+import DencoManager from "./dencoManager"
 
 export interface User {
   name: string
@@ -64,4 +65,32 @@ export function copyDencoUserState(state: DencoTargetedUserState): DencoTargeted
     formation: Array.from(state.formation).map(d => copyDencoState(d)),
     event: Array.from(state.event)
   }
+}
+
+/**
+ * 現在の状態の経験値の確認してレベルアップ処理を行う
+ * @param state 現在の状態
+ * @returns 
+ */
+export function refreshEXPState(state: UserState, time: number): UserState {
+  state = copyUserState(state)
+  const formation = state.formation
+  const nextFormation = DencoManager.checkLevelup(formation)
+  formation.forEach((before, idx) => {
+    let after = nextFormation[idx]
+    if (before.level < after.level) {
+      let levelup: LevelupDenco = {
+        time: time,
+        after: copyDencoState(after),
+        before: copyDencoState(before),
+      }
+      let event: LevelupEvent = {
+        type: "levelup",
+        data: levelup
+      }
+      state.event.push(event)
+    }
+  })
+  state.formation = nextFormation
+  return state
 }

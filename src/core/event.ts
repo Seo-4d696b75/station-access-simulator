@@ -16,7 +16,6 @@ interface EventBase<T,V = undefined> {
 
 export interface LevelupDenco {
   time: number
-  which: AccessSide
   after: Denco
   before: Denco
 }

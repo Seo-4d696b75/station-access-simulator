@@ -6,7 +6,7 @@ import { Random, Context, Logger } from "./context"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
 import DencoManager from "./dencoManager"
 import { TriggeredSkill as EventTriggeredSkill } from "./skillEvent"
-import { DencoTargetedUserState, UserState } from "./user"
+import { DencoTargetedUserState, refreshEXPState, UserState } from "./user"
 
 
 /**
@@ -308,8 +308,8 @@ function completeAccess(context: Context, config: AccessConfig, result: AccessSt
   defense = defense ? checkReboot(defense, result, "defense") : undefined
 
   // レベルアップ処理
-  offense = checkLevelup(offense, result, "offense")
-  defense = defense ? checkLevelup(defense, result, "defense") : undefined
+  offense = checkLevelup(offense, result)
+  defense = defense ? checkLevelup(defense, result) : undefined
 
   return {
     ...context,
@@ -394,27 +394,11 @@ function checkReboot(state: DencoTargetedUserState, access: AccessState, which: 
   return state
 }
 
-function checkLevelup(state: DencoTargetedUserState, access: AccessState, which: AccessSide): DencoTargetedUserState {
-  const formation = state.formation
-  const nextFormation = DencoManager.checkLevelup(formation)
-  formation.forEach((before, idx) => {
-    let after = nextFormation[idx]
-    if (before.level < after.level) {
-      let levelup: LevelupDenco = {
-        time: access.time,
-        which: which,
-        after: copyDencoState(after),
-        before: copyDencoState(before),
-      }
-      let event: LevelupEvent = {
-        type: "levelup",
-        data: levelup
-      }
-      state.event.push(event)
-    }
-  })
-  state.formation = nextFormation
-  return state
+function checkLevelup(state: DencoTargetedUserState, access: AccessState): DencoTargetedUserState {
+  return {
+    ...refreshEXPState(state, access.time),
+    carIndex: state.carIndex,
+  }
 }
 
 function getDenco(state: AccessState, which: AccessSide): AccessDencoState {
