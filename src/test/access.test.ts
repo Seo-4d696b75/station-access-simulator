@@ -345,6 +345,60 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpAfter).toBe(144)
     expect(d.currentHp).toBe(144)
   })
+
+  
+  test("守備側あり-スキル確率発動なし", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 50)
+    let sheena = DencoManager.getDenco(context, "7", 50, 3)
+    let offense = initUser("とあるマスター１", [
+      reika
+    ])
+    let defense = initUser("とあるマスター２", [
+      sheena
+    ])
+    const config: AccessConfig = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: sheena.link[0],
+      probability: "ignore"
+    }
+    const result = startAccess(context, config)
+    expect(result.offense.event.length).toBe(1)
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defense?.event.length).toBe(1)
+    const access = result.access
+    // 相手の確認
+    expect(access.defense).not.toBeUndefined()
+    // アクセス結果の確認
+    expect(access.linkSuccess).toBe(false)
+    expect(access.linkDisconncted).toBe(false)
+    // アクセス処理の確認
+    expect(access.pinkMode).toBe(false)
+    expect(access.pinkItemSet).toBe(false)
+    expect(access.pinkItemUsed).toBe(false)
+    expect(access.attackPercent).toBe(0)
+    expect(access.defendPercent).toBe(0)
+    // ダメージ計算確認
+    expect(access.damageBase).toBe(200)
+    expect(access.damageFixed).toBe(0)
+    expect(access.offense.damage).toBeUndefined()
+    expect(access.defense?.damage?.value).toBe(200)
+    expect(access.defense?.damage?.attr).toBe(false)
+    expect(access.offense.triggeredSkills.length).toBe(0)
+    expect(access.defense?.triggeredSkills.length).toBe(0)
+    let d = getAccessDenco(access, "defense")
+    expect(d.name).toBe("sheena")
+    expect(d.hpBefore).toBe(264)
+    expect(d.hpAfter).toBe(64)
+    expect(d.currentHp).toBe(64)
+  })
   
 
 })

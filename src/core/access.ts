@@ -735,7 +735,7 @@ function canSkillEvaluated(state: AccessState, step: SkillEvaluationStep, d: Act
 export function random(state: AccessState, percent: number, which: AccessSide): boolean {
   if (percent >= 100) return true
   const boost = which === "offense" ? state.offense.probabilityBoostPercent : state.defense?.probabilityBoostPercent
-  if (!boost) {
+  if (!boost && boost !== 0) {
     state.log.error("存在しない守備側の確率補正計算を実行しようとしました")
     throw Error("defense not set, but try to read probability_boost_percent")
   }

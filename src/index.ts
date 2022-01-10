@@ -19,17 +19,13 @@ async function init() {
 
 init().then(() => {
   const context = initContext()
-  let reika = DencoManager.getDenco(context, "5", 30)
-  let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+  let reika = DencoManager.getDenco(context, "5", 50)
+  let sheena = DencoManager.getDenco(context, "7", 50, 3)
   let offense = initUser("とあるマスター１", [
     reika
   ])
-  offense = activateSkill({
-    ...offense,
-    carIndex: 0,
-  })
   let defense = initUser("とあるマスター２", [
-    charlotte
+    sheena
   ])
   const config: AccessConfig = {
     offense: {
@@ -40,7 +36,8 @@ init().then(() => {
       carIndex: 0,
       ...defense
     },
-    station: charlotte.link[0],
+    station: sheena.link[0],
+    probability: "ignore"
   }
   const result = startAccess(context, config)
   console.log("攻撃側のタイムライン")
