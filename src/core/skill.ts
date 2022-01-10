@@ -330,7 +330,7 @@ export function disableSkill(state: DencoTargetedUserState): UserState {
  * - タイプ`auto`のスキル状態を`unable > active`へ遷移させる
  * @returns `active`へ遷移した新しい状態
  */
-export function activateSkill(state: DencoTargetedUserState, time: number): UserState {
+export function activateSkill(state: DencoTargetedUserState, time: number = Date.now()): UserState {
   const d = state.formation[state.carIndex]
   const skill = getSkill(d)
   switch (skill.transitionType) {

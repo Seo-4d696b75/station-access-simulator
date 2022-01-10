@@ -1,29 +1,34 @@
 import sourceMapSupport from 'source-map-support'
 sourceMapSupport.install()
 
-import skillManager from "./core/skillManager"
-import dencoManager from "./core/dencoManager"
-import staionManager from "./core/stationManager"
+import SkillManager from "./core/skillManager"
+import DencoManager from "./core/dencoManager"
+import StationManager from "./core/stationManager"
 import { AccessConfig, startAccess } from './core/access'
 import { formatEvent, printEvents } from './core/format'
 import { initContext } from './core/context'
 import { getSkill } from './core/denco'
 import { initUser } from './core/user'
+import { activateSkill } from './core/skill'
 
 async function init() {
-  await skillManager.load()
-  await dencoManager.load()
-  await staionManager.load()
+  await SkillManager.load()
+  await DencoManager.load()
+  await StationManager.load()
 }
 
 init().then(() => {
   const context = initContext()
-  let reika = dencoManager.getDenco(context, "5", 50)
-  let charlotte = dencoManager.getDenco(context, "6", 80, 3)
-  const offense = initUser("とあるマスター１", [
+  let reika = DencoManager.getDenco(context, "5", 30)
+  let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+  let offense = initUser("とあるマスター１", [
     reika
   ])
-  const defense = initUser("とあるマスター２", [
+  offense = activateSkill({
+    ...offense,
+    carIndex: 0,
+  })
+  let defense = initUser("とあるマスター２", [
     charlotte
   ])
   const config: AccessConfig = {
@@ -36,7 +41,6 @@ init().then(() => {
       ...defense
     },
     station: charlotte.link[0],
-    usePink: true,
   }
   const result = startAccess(context, config)
   console.log("攻撃側のタイムライン")

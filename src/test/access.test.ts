@@ -5,6 +5,7 @@ import { initContext } from "../core/context"
 import { AccessConfig, AccessState, getAccessDenco, getDefense, startAccess } from "../core/access"
 import { DencoTargetedUserState, getTargetDenco, initUser } from "../core/user"
 import { LinksResult, StationLink } from "../core/station"
+import { activateSkill } from "../core/skill"
 
 describe("基本的なアクセス処理", () => {
   test("load", async () => {
@@ -281,4 +282,69 @@ describe("基本的なアクセス処理", () => {
       currentExp: reika.currentExp + access.offense.exp,
     })
   })
+
+  
+  test("守備側あり-スキル発動あり-Rebootなし", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 30)
+    let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+    let offense = initUser("とあるマスター１", [
+      reika
+    ])
+    offense = activateSkill({
+      ...offense,
+      carIndex: 0,
+    })
+    let defense = initUser("とあるマスター２", [
+      charlotte
+    ])
+    const config: AccessConfig = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: charlotte.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.offense.event.length).toBe(1)
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defense?.event.length).toBe(1)
+    const access = result.access
+    // 相手の確認
+    expect(access.defense).not.toBeUndefined()
+    // アクセス結果の確認
+    expect(access.linkSuccess).toBe(false)
+    expect(access.linkDisconncted).toBe(false)
+    // アクセス処理の確認
+    expect(access.pinkMode).toBe(false)
+    expect(access.pinkItemSet).toBe(false)
+    expect(access.pinkItemUsed).toBe(false)
+    expect(access.attackPercent).toBe(20)
+    expect(access.defendPercent).toBe(0)
+    // ダメージ計算確認
+    expect(access.damageBase).toBe(180)
+    expect(access.damageFixed).toBe(0)
+    expect(access.offense.damage).toBeUndefined()
+    expect(access.defense?.damage?.value).toBe(180)
+    expect(access.defense?.damage?.attr).toBe(true)
+    let d = getAccessDenco(access, "offense")
+    expect(d.name).toBe("reika")
+    expect(d.hpBefore).toBe(165)
+    expect(d.hpAfter).toBe(165)
+    expect(d.currentHp).toBe(165)
+    expect(access.offense.triggeredSkills.length).toBe(1)
+    expect(access.offense.triggeredSkills[0].name).toBe("reika")
+    expect(access.offense.triggeredSkills[0].step).toBe("damage_common")
+    d = getAccessDenco(access, "defense")
+    expect(d.name).toBe("charlotte")
+    expect(d.hpBefore).toBe(324)
+    expect(d.hpAfter).toBe(144)
+    expect(d.currentHp).toBe(144)
+  })
+  
+
 })
