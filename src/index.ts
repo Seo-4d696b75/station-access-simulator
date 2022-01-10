@@ -19,8 +19,8 @@ async function init() {
 
 init().then(() => {
   const context = initContext()
-  let reika = DencoManager.getDenco(context, "5", 50)
-  let sheena = DencoManager.getDenco(context, "7", 50, 3)
+  let reika = DencoManager.getDenco(context, "5", 50, 1)
+  let sheena = DencoManager.getDenco(context, "7", 80, 3)
   let offense = initUser("とあるマスター１", [
     reika
   ])

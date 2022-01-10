@@ -6,6 +6,7 @@ import { AccessConfig, AccessState, getAccessDenco, getDefense, startAccess } fr
 import { DencoTargetedUserState, getTargetDenco, initUser } from "../core/user"
 import { LinksResult, StationLink } from "../core/station"
 import { activateSkill } from "../core/skill"
+import { Event } from "../core/event"
 
 describe("基本的なアクセス処理", () => {
   test("load", async () => {
@@ -401,7 +402,7 @@ describe("基本的なアクセス処理", () => {
   })
   
   
-  test("守備側あり-スキル確率発動あり", () => {
+  test("守備側あり-カウンター攻撃あり", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
     let sheena = DencoManager.getDenco(context, "7", 50, 3)
@@ -462,4 +463,69 @@ describe("基本的なアクセス処理", () => {
   })
   
 
+  
+  test("守備側あり-カウンター攻撃あり-Rebootあり", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 50, 1)
+    let sheena = DencoManager.getDenco(context, "7", 80, 3)
+    let offense = initUser("とあるマスター１", [
+      reika
+    ])
+    let defense = initUser("とあるマスター２", [
+      sheena
+    ])
+    const config: AccessConfig = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: sheena.link[0],
+      probability: "force"
+    }
+    const result = startAccess(context, config)
+    expect(result.offense.event.length).toBe(2)
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defense?.event.length).toBe(1)
+    const access = result.access
+    // 相手の確認
+    expect(access.defense).not.toBeUndefined()
+    // アクセス結果の確認
+    expect(access.linkSuccess).toBe(false)
+    expect(access.linkDisconncted).toBe(false)
+    // アクセス処理の確認
+    expect(access.pinkMode).toBe(false)
+    expect(access.pinkItemSet).toBe(false)
+    expect(access.pinkItemUsed).toBe(false)
+    expect(access.attackPercent).toBe(0)
+    expect(access.defendPercent).toBe(0)
+    // ダメージ計算確認
+    expect(access.defense?.damage?.value).toBe(200)
+    expect(access.defense?.damage?.attr).toBe(false)
+    expect(access.offense.damage).not.toBeUndefined()
+    expect(access.offense.damage?.value).toBe(250)
+    expect(access.offense.damage?.attr).toBe(false)
+    expect(access.offense.triggeredSkills.length).toBe(0)
+    expect(access.defense?.triggeredSkills.length).toBe(1)
+    expect(access.defense?.triggeredSkills[0].name).toBe("sheena")
+    expect(access.defense?.triggeredSkills[0].step).toBe("after_damage")
+    let d = getAccessDenco(access, "defense")
+    expect(d.name).toBe("sheena")
+    expect(d.hpBefore).toBe(420)
+    expect(d.hpAfter).toBe(220)
+    expect(d.currentHp).toBe(220)
+    d = getAccessDenco(access, "offense")
+    expect(d.name).toBe("reika")
+    expect(d.hpBefore).toBe(192)
+    expect(d.hpAfter).toBe(0)
+    expect(d.currentHp).toBe(192)
+    let e = result.offense.event[1] as Event
+    expect(e.type).toBe("reboot")
+    let reboot = e.data as LinksResult
+    expect(reboot.link.length).toBe(1)
+    expect(reboot.link[0]).toMatchObject(reika.link[0])
+  })
 })
