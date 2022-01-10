@@ -37,7 +37,7 @@ init().then(() => {
       ...defense
     },
     station: sheena.link[0],
-    probability: "ignore"
+    probability: "force"
   }
   const result = startAccess(context, config)
   console.log("攻撃側のタイムライン")
