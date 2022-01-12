@@ -1,12 +1,12 @@
 import { copyDencoState, Denco, DencoState } from "./denco"
-import { SkillPossess, Skill, refreshSkillState } from "./skill"
+import { SkillPossess, Skill, refreshSkillState, ActiveSkill } from "./skill"
 import { SkillPropertyReader } from "./skillManager"
 import { AccessEvent, Event, LevelupDenco, LevelupEvent } from "./event"
 import { Random, Context, Logger } from "./context"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
 import DencoManager from "./dencoManager"
 import { TriggeredSkill as EventTriggeredSkill } from "./skillEvent"
-import { DencoTargetedUserState, refreshEXPState, UserState } from "./user"
+import { FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
 
 
 /**
@@ -55,7 +55,7 @@ export interface AccessConfig {
   /**
    * 攻撃側の編成
    */
-  offense: DencoTargetedUserState
+  offense: UserState & FormationPosition
   /**
    * アクセス先の駅
    */
@@ -63,7 +63,7 @@ export interface AccessConfig {
   /**
    * 守備側の編成
    */
-  defense?: DencoTargetedUserState
+  defense?: UserState & FormationPosition
   /**
    * フットバースアイテム使用の有無を指定する
    */
@@ -83,11 +83,6 @@ export interface AccessDencoState extends DencoState {
   hpAfter: number
   skillInvalidated: boolean
   reboot: boolean
-}
-
-export interface ActiveSkillDenco extends AccessDencoState {
-  propertyReader: SkillPropertyReader
-  skill: Skill
 }
 
 export interface TriggeredSkill extends Denco {
@@ -158,7 +153,7 @@ export interface AccessStateWithDefense extends AccessState {
   defense: AccessSideState
 }
 
-function initAccessDencoState(context: Context, f: DencoTargetedUserState, which: AccessSide, time: number): AccessSideState {
+function initAccessDencoState(context: Context, f: UserState & FormationPosition, which: AccessSide, time: number): AccessSideState {
   const formation = refreshSkillState(context, f, time).formation.map((e, idx) => {
     const s: AccessDencoState = {
       ...e,
@@ -185,8 +180,8 @@ function initAccessDencoState(context: Context, f: DencoTargetedUserState, which
 
 export interface AccessResult {
   access: AccessState
-  offense: DencoTargetedUserState
-  defense?: DencoTargetedUserState
+  offense: UserState & FormationPosition
+  defense?: UserState & FormationPosition
 }
 
 export function startAccess(context: Context, config: AccessConfig): AccessResult {
@@ -237,18 +232,19 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
   return completeAccess(context, config, state)
 }
 
-function copyState(state: AccessState): AccessState {
+export function copyAccessState(state: ReadonlyState<AccessState>): AccessState {
   return {
     ...state,
     offense: copySideState(state.offense),
     defense: state.defense ? copySideState(state.defense) : undefined,
+    previous: state.previous ? copyAccessState(state.previous): undefined
   }
 }
 
-function copySideState(state: AccessSideState): AccessSideState {
+function copySideState(state: ReadonlyState<AccessSideState>): AccessSideState {
   return {
     ...state,
-    formation: Array.from(state.formation).map(d => Object.assign({}, d)),
+    formation: Array.from(state.formation).map(d => Object.assign({}, d, copyDencoState(d))),
     triggeredSkills: Array.from(state.triggeredSkills),
   }
 }
@@ -257,7 +253,7 @@ function completeAccess(context: Context, config: AccessConfig, result: AccessSt
 
   // このアクセスイベントの追加
 
-  let offense: DencoTargetedUserState = {
+  let offense: UserState & FormationPosition = {
     ...config.offense,
     formation: Array.from(result.offense.formation).map(d => copyDencoState(d)),
     event: [
@@ -271,7 +267,7 @@ function completeAccess(context: Context, config: AccessConfig, result: AccessSt
       },
     ]
   }
-  let defense: DencoTargetedUserState | undefined = undefined
+  let defense: UserState & FormationPosition | undefined = undefined
   if (hasDefense(result) && config.defense) {
     defense = {
       ...config.defense,
@@ -308,7 +304,7 @@ function completeAccess(context: Context, config: AccessConfig, result: AccessSt
   }
 }
 
-function checkSkillAfterAccess(context: Context, state: DencoTargetedUserState, access: AccessState, which: AccessSide): DencoTargetedUserState {
+function checkSkillAfterAccess(context: Context, state: UserState & FormationPosition, access: AccessState, which: AccessSide): UserState & FormationPosition {
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
   filterActiveSkill(side.formation).forEach(d => {
@@ -362,7 +358,7 @@ function calcLinkResult(links: StationLink[], d: DencoState, which: AccessSide, 
   return result
 }
 
-function checkReboot(state: DencoTargetedUserState, access: AccessState, which: AccessSide): DencoTargetedUserState {
+function checkReboot(state: UserState & FormationPosition, access: AccessState, which: AccessSide): UserState & FormationPosition {
   // access: こっちを弄るな！
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
@@ -383,7 +379,7 @@ function checkReboot(state: DencoTargetedUserState, access: AccessState, which: 
   return state
 }
 
-function checkLevelup(context: Context, state: DencoTargetedUserState, access: AccessState): DencoTargetedUserState {
+function checkLevelup(context: Context, state: UserState & FormationPosition, access: AccessState): UserState & FormationPosition {
   return {
     ...refreshEXPState(context, state, access.time),
     carIndex: state.carIndex,
@@ -657,15 +653,15 @@ function markTriggerSkill(state: AccessSideState, step: SkillEvaluationStep, den
  * @param which 
  * @returns 
  */
-function filterActiveSkill(list: AccessDencoState[]): ActiveSkillDenco[] {
-  const result: ActiveSkillDenco[] = []
+function filterActiveSkill(list: AccessDencoState[]): (AccessDencoState & ActiveSkill)[] {
+  const result: (AccessDencoState & ActiveSkill)[] = []
   list.forEach((d, idx) => {
     const s = d.skillHolder
     if (hasActiveSkill(d) && s.skill) {
       result.push({
         ...d,
         skill: s.skill,
-        propertyReader: s.skill.propertyReader
+        skillPropertyReader: s.skill.propertyReader
       })
     }
   })
@@ -696,7 +692,7 @@ function isSkillActive(skill: SkillPossess): boolean {
  * @param d 発動する可能性があるアクティブなスキル
  * @returns 
  */
-function canSkillEvaluated(context: Context, state: AccessState, step: SkillEvaluationStep, d: ActiveSkillDenco): boolean {
+function canSkillEvaluated(context: Context, state: AccessState, step: SkillEvaluationStep, d: AccessDencoState & ActiveSkill): boolean {
   const trigger = d.skill.canEvaluate ? d.skill.canEvaluate(context, state, step, d) : false
   if (typeof trigger === 'boolean') {
     return trigger

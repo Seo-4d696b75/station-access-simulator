@@ -1,6 +1,7 @@
 import { copySkillPossess, Skill, SkillPossess, SkillState } from "./skill"
 import { Film } from "./film"
 import { StationLink } from "./station"
+import { ReadonlyState } from "./user"
 
 export type DencoType =
   "attacker" |
@@ -44,7 +45,7 @@ export interface DencoState extends Denco {
   link: StationLink[]
 }
 
-export function copyDencoState(state: DencoState): DencoState {
+export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
   return {
     ...state,
     link: Array.from(state.link),

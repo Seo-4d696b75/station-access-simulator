@@ -10,9 +10,9 @@ type Builtin = Primitive | Function | Date | Error | RegExp;
 /**
  * 変更不可な状態を表す型
  */
-export type ReadonlyState<T> =   T extends Builtin
+export type ReadonlyState<T> = T extends (Builtin|Event)
   ? T
-  : { readonly [ key in keyof T]: ReadonlyState<T[key]>}
+  : { readonly [key in keyof T]: ReadonlyState<T[key]> }
 
 export interface User {
   name: string
@@ -53,7 +53,7 @@ export function initUser(context: Context, userName: string, formation?: Readonl
   }, formation)
 }
 
-export function changeFormation(context: Context, current: UserState, formation: ReadonlyState<DencoState[]>): UserState {
+export function changeFormation(context: Context, current: ReadonlyState<UserState>, formation: ReadonlyState<DencoState[]>): UserState {
   let state = {
     ...current,
     event: Array.from(current.event),
@@ -75,12 +75,12 @@ export function copyUserState(state: ReadonlyState<UserState>): UserState {
 
 /**
  * 現在の状態の経験値の確認してレベルアップ処理を行う
- * @param state 現在の状態
+ * @param next 現在の状態
  * @returns 
  */
-export function refreshEXPState(context: Context, state: UserState, time: number): UserState {
-  state = copyUserState(state)
-  const formation = state.formation
+export function refreshEXPState(context: Context, state: ReadonlyState<UserState>, time: number): UserState {
+  const next = copyUserState(state)
+  const formation = next.formation
   const nextFormation = DencoManager.checkLevelup(formation)
   formation.forEach((before, idx) => {
     let after = nextFormation[idx]
@@ -94,11 +94,11 @@ export function refreshEXPState(context: Context, state: UserState, time: number
         type: "levelup",
         data: levelup
       }
-      state.event.push(event)
+      next.event.push(event)
       context.log.log(`レベルアップ：${after.name} Lv.${before.level}->Lv.${after.level}`)
       context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
     }
   })
-  state.formation = nextFormation
-  return state
+  next.formation = nextFormation
+  return next
 }

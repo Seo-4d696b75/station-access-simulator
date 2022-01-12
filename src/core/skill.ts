@@ -1,9 +1,9 @@
 import * as access from "./access"
 import { Context } from "./context"
-import { copyDencoState, DencoState, getSkill } from "./denco"
+import { DencoState, getSkill } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
-import { copyUserState, DencoTargetedUserState, UserState } from "./user"
+import { copyUserState, FormationPosition, ReadonlyState, UserState } from "./user"
 
 /**
  * スキル状態の遷移の種類
@@ -76,12 +76,12 @@ export type SkillTrigger = boolean | ProbabilityPercent
  * 
  * 確率に依存する部分以外の判定をここで行うこと
  */
-export type SkillTriggerPredicate = (context: Context, state: access.AccessState, step: access.SkillEvaluationStep, self: access.ActiveSkillDenco) => SkillTrigger
+export type SkillTriggerPredicate = (context: Context, state: ReadonlyState<access.AccessState>, step: access.SkillEvaluationStep, self: access.AccessDencoState & ActiveSkill) => SkillTrigger
 
 /**
  * アクセス時にスキルが発動した時の効果を反映する
  */
-export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.SkillEvaluationStep, self: access.ActiveSkillDenco) => access.AccessState
+export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.SkillEvaluationStep, self: access.AccessDencoState & ActiveSkill) => access.AccessState
 
 
 export interface TargetSkillDenco extends DencoState {
@@ -104,14 +104,14 @@ export interface SkillLogic {
    * アクセス時以外のスキル評価において付随的に評価される処理
    * 現状ではひいるの確率補正のみ
    */
-  evaluateOnEvent?: (context: Context, state: event.SkillEventState, self: event.ActiveSkillDenco) => event.SkillEventState | undefined
+  evaluateOnEvent?: (context: Context, state: event.SkillEventState, self: event.SkillEventDencoState & ActiveSkill) => event.SkillEventState | undefined
 
   /**
    * アクセス処理が完了した直後の処理をここで行う
    * 
    * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
    */
-  onAccessComplete?: (context: Context, state: UserState, self: access.ActiveSkillDenco, access: access.AccessState) => undefined | UserState
+  onAccessComplete?: (context: Context, state: UserState, self: access.AccessDencoState & ActiveSkill, access: ReadonlyState<access.AccessState>) => undefined | UserState
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
@@ -129,7 +129,7 @@ export interface SkillLogic {
    * `onActivated`を指定しない場合は返値`undefined`と同様に処理する
    * @returns 一定時間の経過で判定する場合はtimeoutを返す
    */
-  disactivateAt?: (context: Context, state: UserState, self: TargetSkillDenco, time: number) => undefined | SkillActiveTimeout
+  disactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: TargetSkillDenco, time: number) => undefined | SkillActiveTimeout
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`において`cooldown`が終了して`idle/unable`へ移行する判定の方法を指定する
@@ -139,7 +139,7 @@ export interface SkillLogic {
    * 
    * @returns 返値で指定した時刻以降に`cooldown > unable/idle`へ移行する
    */
-  completeCooldownAt?: (context: Context, state: UserState, self: TargetSkillDenco, time: number) => SkillCooldownTimeout
+  completeCooldownAt?: (context: Context, state: ReadonlyState<UserState>, self: TargetSkillDenco, time: number) => SkillCooldownTimeout
 
   /**
    * スキル状態の遷移タイプ`auto-condition`において`active`状態であるか判定する
@@ -147,7 +147,7 @@ export interface SkillLogic {
    * `auto-condition`タイプでこの関数未定義はエラーとなる
    * @returns trueの場合は`active`状態へ遷移
    */
-  canActivated?: (context: Context, state: UserState, self: TargetSkillDenco) => boolean
+  canActivated?: (context: Context, state: ReadonlyState<UserState>, self: TargetSkillDenco) => boolean
 
   /**
    * スキル状態の遷移タイプ`manual-condition`において`idle <> unable`状態であるか判定する
@@ -155,7 +155,7 @@ export interface SkillLogic {
    * `manual-condition`タイプでこの関数未定義はエラーとなる
    * @returns trueの場合は`idle`状態へ遷移
    */
-  canEnabled?: (context: Context, state: UserState, self: TargetSkillDenco) => boolean
+  canEnabled?: (context: Context, state: ReadonlyState<UserState>, self: TargetSkillDenco) => boolean
 
   onActivated?: (context: Context, state: UserState, self: TargetSkillDenco) => UserState
   onFormationChanged?: (context: Context, state: UserState, self: TargetSkillDenco) => UserState
@@ -170,6 +170,14 @@ export interface Skill extends SkillLogic {
   state: SkillState
   transitionType: SkillStateTransition
   propertyReader: SkillPropertyReader
+}
+
+/**
+ * スキルの発動を評価するときに必要なスキルの各種データを定義
+ */
+export interface ActiveSkill {
+  skill: Skill
+  skillPropertyReader: SkillPropertyReader
 }
 
 export function copySkill(skill: Skill): Skill {
@@ -256,69 +264,6 @@ export function isSkillActive(skill: SkillPossess): skill is SkillHolder<"posses
 }
 
 /**
- * TODO 削除
- * タイプ`manual-condition`のスキル状態を`unable > idle`へ遷移させる
- * @returns `idle`へ遷移した新しい状態
- */
-export function enableSkill(state: DencoTargetedUserState): UserState {
-  const d = state.formation[state.carIndex]
-  const skill = getSkill(d)
-  if (skill.transitionType === "manual-condition") {
-    switch (skill.state.type) {
-      case "not_init":
-      case "unable": {
-        skill.state = {
-          type: "idle",
-          data: undefined
-        }
-        return state
-      }
-      case "idle": {
-        return state
-      }
-      default: {
-        throw Error(`can not enable this skill(state:${skill.state.type},type:manaual-condition)`)
-      }
-    }
-  } else {
-    throw Error(`only type:manual-condition skill enabled, but found type:${skill.transitionType}`)
-  }
-}
-
-/**
- * TODO　削除？？
- * スキル状態を`unable`へ遷移させる
- * 
- * 許可される操作は次の場合  
- * - タイプ`manual-condition`のスキル状態を`idle > unable`へ遷移させる
- * @returns `unable`へ遷移した新しい状態
- */
-export function disableSkill(state: DencoTargetedUserState): UserState {
-  const d = state.formation[state.carIndex]
-  const skill = getSkill(d)
-  if (skill.transitionType === "manual-condition") {
-    switch (skill.state.type) {
-      case "not_init":
-      case "idle": {
-        skill.state = {
-          type: "unable",
-          data: undefined
-        }
-        return state
-      }
-      case "unable": {
-        return state
-      }
-      default: {
-        throw Error(`can not disable this skill(state:${skill.state.type},type:manaual-condition)`)
-      }
-    }
-  } else {
-    throw Error(`only type:manual-condition/auto-condition skill disabled, but found type:${skill.transitionType}`)
-  }
-}
-
-/**
  * スキル状態を`active`へ遷移させる
  * 
  * 許可される操作は次の場合  
@@ -327,8 +272,9 @@ export function disableSkill(state: DencoTargetedUserState): UserState {
  * - タイプ`auto`のスキル状態を`unable > active`へ遷移させる
  * @returns `active`へ遷移した新しい状態
  */
-export function activateSkill(context: Context, state: DencoTargetedUserState, time: number = Date.now()): UserState {
-  const d = state.formation[state.carIndex]
+export function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition, time: number = Date.now()): UserState {
+  const next = copyUserState(state)
+  const d = next.formation[state.carIndex]
   const skill = getSkill(d)
   switch (skill.transitionType) {
     case "manual":
@@ -345,10 +291,10 @@ export function activateSkill(context: Context, state: DencoTargetedUserState, t
             }, time)
           }
           context.log.log(`スキル状態の変更：${d.name} idle -> active`)
-          return refreshSkillState(context, state, time)
+          return refreshSkillState(context, next, time)
         }
         case "active": {
-          return state
+          return next
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:${skill.transitionType})`)
@@ -369,10 +315,10 @@ export function activateSkill(context: Context, state: DencoTargetedUserState, t
             }, time)
           }
           context.log.log(`スキル状態の変更：${d.name} unable -> active`)
-          return refreshSkillState(context, state, time)
+          return refreshSkillState(context, next, time)
         }
         case "active": {
-          return state
+          return next
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:auto)`)
@@ -400,8 +346,9 @@ export function activateSkill(context: Context, state: DencoTargetedUserState, t
  * 
  * @returns `cooldown`へ遷移した新しい状態
  */
-export function disactivateSkill(context: Context, state: DencoTargetedUserState, time: number): UserState {
-  const d = state.formation[state.carIndex]
+export function disactivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition, time: number): UserState {
+  const next = copyUserState(state)
+  const d = next.formation[state.carIndex]
   const skill = getSkill(d)
   switch (skill.transitionType) {
     case "manual":
@@ -419,7 +366,7 @@ export function disactivateSkill(context: Context, state: DencoTargetedUserState
         }
         skill.state = {
           type: "cooldown",
-          data: callback(context, state, {
+          data: callback(context, next, {
             ...d,
             carIndex: state.carIndex,
             skill: skill,
@@ -427,7 +374,7 @@ export function disactivateSkill(context: Context, state: DencoTargetedUserState
           }, time)
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
-        return refreshSkillState(context, state, time)
+        return refreshSkillState(context, next, time)
       } else {
         context.log.error(`スキル状態をcooldownに変更できません(state:${skill.state.type})`)
       }
@@ -452,13 +399,13 @@ export function disactivateSkill(context: Context, state: DencoTargetedUserState
  * @param time 現在時刻
  * @returns 新しい状態
  */
-export function refreshSkillState(context: Context, state: UserState, time: number): UserState {
+export function refreshSkillState(context: Context, state: ReadonlyState<UserState>, time: number): UserState {
   const size = state.formation.length
-  state = copyUserState(state)
+  let next = copyUserState(state)
   for (let idx = 0; idx < size; idx++) {
-    state = refreshSkillStateOne(context, state, idx, time)
+    next = refreshSkillStateOne(context, next, idx, time)
   }
-  return state
+  return next
 }
 
 function refreshSkillStateOne(context: Context, state: UserState, idx: number, time: number): UserState {

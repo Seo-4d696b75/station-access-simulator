@@ -2,7 +2,7 @@ import { AccessSideState, AccessSide, AccessState, getAccessDenco } from "./acce
 import { Denco, DencoAttribute, DencoState } from "./denco"
 import { Event } from "./event"
 import { LinksResult, Station, StationLink } from "./station"
-import { UserState } from "./user"
+import { ReadonlyState, UserState } from "./user"
 
 export function printEvents(user: UserState | undefined, detail: boolean = false) {
   if (!user) return

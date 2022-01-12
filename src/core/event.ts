@@ -1,23 +1,24 @@
 import { AccessSide, AccessState } from "./access"
-import { Denco } from "./denco"
+import { Denco, DencoState } from "./denco"
 import { TriggeredSkill } from "./skillEvent"
 import { LinksResult } from "./station"
+import { ReadonlyState } from "./user"
 
-export type EventType = 
-  "access" | 
+export type EventType =
+  "access" |
   "reboot" |
   "skill_trigger" |
   "levelup"
 
-interface EventBase<T,V = undefined> {
-  type: T,
-  data: V
-} 
+interface EventBase<T, V = undefined> {
+  readonly type: T,
+  readonly data: V
+}
 
 export interface LevelupDenco {
   time: number
-  after: Denco
-  before: Denco
+  after: ReadonlyState<DencoState>
+  before: ReadonlyState<DencoState>
 }
 
 export type AccessEvent = EventBase<"access", {
@@ -31,7 +32,7 @@ export type LevelupEvent = EventBase<"levelup", LevelupDenco>
 /**
  * タイムライン上に表示される各ダイアログをモデル化
  */
-export type Event = 
+export type Event =
   AccessEvent |
   RebootEvent |
   SkillTriggerEvent |
