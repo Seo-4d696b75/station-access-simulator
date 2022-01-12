@@ -1,11 +1,23 @@
 import seedrandom from "seedrandom"
 
 /**
- * 疑似乱数
- * 
- * @returns [0,1)
+ * スキル発動などtrue/falseの条件が確率に依存する場合の挙動を指定できます
+ * - "normal": 疑似乱数を用いて指定された確率で計算
+ * - "ignore": 必ずfalse
+ * - "force": 必ずtrue
  */
-export type Random = () => number
+export type RandomMode =
+  "normal" |
+  "ignore" |
+  "force"
+
+/**
+ * スキル発動の有無など確率を計算する
+ */
+export interface Random {
+  mode: RandomMode
+  (): number
+}
 
 /**
  * 実行される各種処理に紐づけられる
@@ -20,7 +32,7 @@ export interface Context {
 export function initContext(type: string = "test", seed: string = "test", console: boolean = true): Context {
   return {
     log: new Logger(type, console),
-    random: seedrandom(seed)
+    random: Object.assign(seedrandom(seed), { mode: "normal" as RandomMode })
   }
 }
 

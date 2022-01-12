@@ -2,6 +2,17 @@ import { copyDencoState, DencoState } from "./denco";
 import { Event, LevelupDenco, LevelupEvent } from "./event";
 import { refreshSkillState } from "./skill";
 import DencoManager from "./dencoManager"
+import { Context } from "./context";
+
+type Primitive = number | string | boolean | bigint | symbol | undefined | null;
+type Builtin = Primitive | Function | Date | Error | RegExp;
+
+/**
+ * 変更不可な状態を表す型
+ */
+export type ReadonlyState<T> =   T extends Builtin
+  ? T
+  : { readonly [ key in keyof T]: ReadonlyState<T[key]>}
 
 export interface User {
   name: string
@@ -20,7 +31,7 @@ export interface UserState extends User {
   event: Event[]
 }
 
-export interface DencoTargetedUserState extends UserState {
+export interface FormationPosition {
 
   /**
    * 主体となるでんこの編成内のindex  
@@ -29,41 +40,36 @@ export interface DencoTargetedUserState extends UserState {
   carIndex: number
 }
 
-export function getTargetDenco(state: DencoTargetedUserState): DencoState {
+export function getTargetDenco(state: UserState & FormationPosition): DencoState {
   return state.formation[state.carIndex]
 }
 
-export function initUser(userName: string, formation?: DencoState[]): UserState {
+export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>): UserState {
   if (!formation) formation = []
-  return changeFormation({
+  return changeFormation(context, {
     name: userName,
     formation: [],
     event: []
   }, formation)
 }
 
-export function changeFormation(current: UserState, formation: DencoState[]): UserState {
+export function changeFormation(context: Context, current: UserState, formation: ReadonlyState<DencoState[]>): UserState {
   let state = {
     ...current,
     event: Array.from(current.event),
     formation: Array.from(formation)
   }
-  return refreshSkillState(state, Date.now())
+  let before = current.formation.map(d => d.name).join(",")
+  let after = formation.map(d => d.name).join(",")
+  context.log.log(`編成を変更します [${before}] -> [${after}]`)
+  return refreshSkillState(context, state, Date.now())
 }
 
-export function copyUserState(state: UserState): UserState {
+export function copyUserState(state: ReadonlyState<UserState>): UserState {
   return {
     ...state,
     formation: Array.from(state.formation).map(d => copyDencoState(d)),
     event: Array.from(state.event),
-  }
-}
-
-export function copyDencoUserState(state: DencoTargetedUserState): DencoTargetedUserState {
-  return {
-    ...state,
-    formation: Array.from(state.formation).map(d => copyDencoState(d)),
-    event: Array.from(state.event)
   }
 }
 
@@ -72,7 +78,7 @@ export function copyDencoUserState(state: DencoTargetedUserState): DencoTargeted
  * @param state 現在の状態
  * @returns 
  */
-export function refreshEXPState(state: UserState, time: number): UserState {
+export function refreshEXPState(context: Context, state: UserState, time: number): UserState {
   state = copyUserState(state)
   const formation = state.formation
   const nextFormation = DencoManager.checkLevelup(formation)
@@ -89,6 +95,8 @@ export function refreshEXPState(state: UserState, time: number): UserState {
         data: levelup
       }
       state.event.push(event)
+      context.log.log(`レベルアップ：${after.name} Lv.${before.level}->Lv.${after.level}`)
+      context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
     }
   })
   state.formation = nextFormation

@@ -20,7 +20,7 @@ describe("基本的なアクセス処理", () => {
   test("守備側なし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
-    const offense = initUser("とあるマスター１", [
+    const offense = initUser(context, "とあるマスター１", [
       reika
     ])
     const config: AccessConfig = {
@@ -60,7 +60,7 @@ describe("基本的なアクセス処理", () => {
   test("守備側なし-フットバースあり", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
-    const offense = initUser("とあるマスター１", [
+    const offense = initUser(context, "とあるマスター１", [
       reika
     ])
     const config: AccessConfig = {
@@ -89,10 +89,10 @@ describe("基本的なアクセス処理", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
     let charlotte = DencoManager.getDenco(context, "6", 80, 3)
-    const offense = initUser("とあるマスター１", [
+    const offense = initUser(context, "とあるマスター１", [
       reika
     ])
-    const defense = initUser("とあるマスター２", [
+    const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
     const config: AccessConfig = {
@@ -151,10 +151,10 @@ describe("基本的なアクセス処理", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
     let charlotte = DencoManager.getDenco(context, "6", 80, 3)
-    const offense = initUser("とあるマスター１", [
+    const offense = initUser(context, "とあるマスター１", [
       reika
     ])
-    const defense = initUser("とあるマスター２", [
+    const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
     const config: AccessConfig = {
@@ -203,10 +203,10 @@ describe("基本的なアクセス処理", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 80)
     let charlotte = DencoManager.getDenco(context, "6", 50, 3)
-    const offense = initUser("とあるマスター１", [
+    const offense = initUser(context, "とあるマスター１", [
       reika
     ])
-    const defense = initUser("とあるマスター２", [
+    const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
     const config: AccessConfig = {
@@ -291,14 +291,14 @@ describe("基本的なアクセス処理", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 30)
     let charlotte = DencoManager.getDenco(context, "6", 80, 3)
-    let offense = initUser("とあるマスター１", [
+    let offense = initUser(context, "とあるマスター１", [
       reika
     ])
-    offense = activateSkill({
+    offense = activateSkill(context, {
       ...offense,
       carIndex: 0,
     })
-    let defense = initUser("とあるマスター２", [
+    let defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
     const config: AccessConfig = {
@@ -354,10 +354,10 @@ describe("基本的なアクセス処理", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
     let sheena = DencoManager.getDenco(context, "7", 50, 3)
-    let offense = initUser("とあるマスター１", [
+    let offense = initUser(context, "とあるマスター１", [
       reika
     ])
-    let defense = initUser("とあるマスター２", [
+    let defense = initUser(context, "とあるマスター２", [
       sheena
     ])
     const config: AccessConfig = {
@@ -370,8 +370,8 @@ describe("基本的なアクセス処理", () => {
         ...defense
       },
       station: sheena.link[0],
-      probability: "ignore"
     }
+    context.random.mode = "ignore"
     const result = startAccess(context, config)
     expect(result.offense.event.length).toBe(1)
     expect(result.defense).not.toBeUndefined()
@@ -408,10 +408,10 @@ describe("基本的なアクセス処理", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
     let sheena = DencoManager.getDenco(context, "7", 50, 3)
-    let offense = initUser("とあるマスター１", [
+    let offense = initUser(context, "とあるマスター１", [
       reika
     ])
-    let defense = initUser("とあるマスター２", [
+    let defense = initUser(context, "とあるマスター２", [
       sheena
     ])
     const config: AccessConfig = {
@@ -424,8 +424,8 @@ describe("基本的なアクセス処理", () => {
         ...defense
       },
       station: sheena.link[0],
-      probability: "force"
     }
+    context.random.mode = "force"
     const result = startAccess(context, config)
     expect(result.offense.event.length).toBe(1)
     expect(result.defense).not.toBeUndefined()
@@ -470,10 +470,10 @@ describe("基本的なアクセス処理", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let sheena = DencoManager.getDenco(context, "7", 80, 3)
-    let offense = initUser("とあるマスター１", [
+    let offense = initUser(context, "とあるマスター１", [
       reika
     ])
-    let defense = initUser("とあるマスター２", [
+    let defense = initUser(context, "とあるマスター２", [
       sheena
     ])
     const config: AccessConfig = {
@@ -486,8 +486,8 @@ describe("基本的なアクセス処理", () => {
         ...defense
       },
       station: sheena.link[0],
-      probability: "force"
     }
+    context.random.mode = "force"
     const result = startAccess(context, config)
     expect(result.offense.event.length).toBe(2)
     expect(result.defense).not.toBeUndefined()

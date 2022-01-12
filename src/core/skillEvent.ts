@@ -1,7 +1,7 @@
 import * as access from "./access";
-import { Logger, Random } from "./context";
+import { Context } from "./context";
 import { DencoState } from "./denco";
-import { EventSkillPreEvaluate, isSkillActive, ProbabilityPercent, Skill, TargetSkillDenco } from "./skill";
+import { isSkillActive, ProbabilityPercent, Skill } from "./skill";
 import { SkillPropertyReader } from "./skillManager";
 import { copyUserState, UserState } from "./user";
 
@@ -27,7 +27,6 @@ export interface TriggeredSkill {
 
 export interface SkillEventState {
   time: number
-  log: Logger
 
   formation: SkillEventDencoState[]
   carIndex: number
@@ -37,7 +36,6 @@ export interface SkillEventState {
   probability?: ProbabilityPercent
   probabilityBoostPercent: number
 
-  random: Random | "ignore" | "force"
 }
 
 /**
@@ -65,10 +63,20 @@ export interface SkillTriggerResult {
 
 export type EventSkillEvaluate = (state: SkillEventState, self: ActiveSkillDenco) => SkillEventState
 
-export function evaluateSkillAfterAccess(state: UserState, self: access.ActiveSkillDenco, access: access.AccessState, evaluate: EventSkillEvaluate, probability?: ProbabilityPercent): UserState {
+/**
+ * アクセス直後のタイミングでスキル発動型のイベントを処理する
+ * 
+ * @param context ログ・乱数等の共通状態
+ * @param state 現在の状態
+ * @param self スキル発動の主体
+ * @param access アクセス処理の結果
+ * @param probability スキル発動が確率依存かどうか
+ * @param evaluate スキル発動時の処理
+ * @returns 
+ */
+export function evaluateSkillAfterAccess(context: Context, state: UserState, self: access.ActiveSkillDenco, access: access.AccessState, probability: ProbabilityPercent, evaluate: EventSkillEvaluate): UserState {
   const eventState: SkillEventState = {
     time: access.time,
-    log: access.log,
     formation: state.formation.map((d, idx) => {
       return {
         ...d,
@@ -81,9 +89,8 @@ export function evaluateSkillAfterAccess(state: UserState, self: access.ActiveSk
     triggeredSkills: [],
     probability: probability,
     probabilityBoostPercent: 0,
-    random: access.random,
   }
-  const result = execute(eventState, evaluate)
+  const result = execute(context, eventState, evaluate)
   if (result) {
     // スキル発動による影響の反映
     return {
@@ -105,16 +112,16 @@ function getFormation(state: access.AccessState, which: access.AccessSide): acce
   }
 }
 
-function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEventState | undefined {
-  state.log.log(`スキル評価イベントの開始`)
+function execute(context: Context, state: SkillEventState, evaluate: EventSkillEvaluate): SkillEventState | undefined {
+  context.log.log(`スキル評価イベントの開始`)
   const self = state.formation[state.carIndex]
   if (!isSkillActive(self.skillHolder)) {
-    state.log.error(`アクティブなスキルを保持していません ${self.name}`)
+    context.log.error(`アクティブなスキルを保持していません ${self.name}`)
     throw Error("no active skill found")
   }
 
   const skill = self.skillHolder.skill
-  state.log.log(`${self.name} ${skill.name}`)
+  context.log.log(`${self.name} ${skill.name}`)
 
   // TODO ラッピングによる補正
 
@@ -129,7 +136,7 @@ function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEve
       propertyReader: skill.propertyReader,
       skill: skill,
     }
-    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(state, d) : undefined
+    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(context, state, d) : undefined
     if (next) {
       state = next
       state.triggeredSkills.push({
@@ -143,8 +150,8 @@ function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEve
   })
 
   // 発動確率の確認
-  if (!canSkillEvaluated(state)) {
-    state.log.log("スキル評価イベントの終了（発動なし）")
+  if (!canSkillEvaluated(context, state)) {
+    context.log.log("スキル評価イベントの終了（発動なし）")
     // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
     return
   }
@@ -167,14 +174,14 @@ function execute(state: SkillEventState, evaluate: EventSkillEvaluate): SkillEve
   return state
 }
 
-function canSkillEvaluated(state: SkillEventState): boolean {
+function canSkillEvaluated(context: Context, state: SkillEventState): boolean {
   if (state.probability) {
-    if (state.random === "force") {
-      state.log.log("確率計算は無視されます mode: force")
+    if (context.random.mode === "force") {
+      context.log.log("確率計算は無視されます mode: force")
       return true
     }
-    if (state.random === "ignore") {
-      state.log.log("確率計算は無視されます mode: ignore")
+    if (context.random.mode === "ignore") {
+      context.log.log("確率計算は無視されます mode: ignore")
       return false
     }
     const percent = state.probability
@@ -182,11 +189,11 @@ function canSkillEvaluated(state: SkillEventState): boolean {
     if (percent >= 100) {
       return true
     }
-    if (state.random() < (percent * (1.0 + boost / 100.0)) / 100.0) {
-      state.log.log(`スキルが発動できます 確率:${percent}%`)
+    if (context.random() < (percent * (1.0 + boost / 100.0)) / 100.0) {
+      context.log.log(`スキルが発動できます 確率:${percent}%`)
       return true
     }
-    state.log.log(`スキルが発動しませんでした 確率:${percent}%`)
+    context.log.log(`スキルが発動しませんでした 確率:${percent}%`)
     return false
   } else {
     return true

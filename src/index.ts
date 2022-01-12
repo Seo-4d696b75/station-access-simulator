@@ -8,7 +8,7 @@ import { AccessConfig, startAccess } from './core/access'
 import { formatEvent, printEvents } from './core/format'
 import { initContext } from './core/context'
 import { getSkill } from './core/denco'
-import { initUser } from './core/user'
+import { initUser, UserState } from './core/user'
 import { activateSkill } from './core/skill'
 
 async function init() {
@@ -21,10 +21,11 @@ init().then(() => {
   const context = initContext()
   let reika = DencoManager.getDenco(context, "5", 80)
   let charlotte = DencoManager.getDenco(context, "6", 50, 3)
-  const offense = initUser("とあるマスター１", [
+  const offense: Readonly<UserState> = initUser(context, "とあるマスター１", [
     reika
   ])
-  const defense = initUser("とあるマスター２", [
+  offense.formation.push()
+  const defense = initUser(context, "とあるマスター２", [
     charlotte
   ])
   const config: AccessConfig = {
