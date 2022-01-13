@@ -2,9 +2,9 @@ import StationManager from "../core/stationManager"
 import SkillManager from "../core/skillManager"
 import DencoManager from "../core/dencoManager"
 import { initContext } from "../core/context"
-import { AccessConfig, AccessState, getAccessDenco, getDefense, startAccess } from "../core/access"
-import { DencoTargetedUserState, getTargetDenco, initUser } from "../core/user"
-import { LinksResult, StationLink } from "../core/station"
+import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../core/access"
+import { getTargetDenco, initUser } from "../core/user"
+import { LinksResult } from "../core/station"
 import { activateSkill } from "../core/skill"
 import { Event } from "../core/event"
 
@@ -145,7 +145,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(64)
     expect(d.currentExp).toBe(charlotte.currentExp + def.exp)
   })
-  
+
 
   test("守備側あり-フットバースあり", () => {
     const context = initContext("test", "test", false)
@@ -190,13 +190,15 @@ describe("基本的なアクセス処理", () => {
     expect(access.defense?.damage).toBeUndefined()
     // 最終状態の確認
     expect(result.defense).not.toBeUndefined()
-    const charlotteResult = getTargetDenco(result.defense as DencoTargetedUserState)
-    charlotte = defense.formation[0]
-    expect(charlotteResult).toMatchObject({
-      ...charlotte,
-      link: charlotte.link.slice(1),
-      currentExp: charlotte.currentExp + getDefense(access).exp,
-    })
+    if (result.defense) {
+      const charlotteResult = getTargetDenco(result.defense)
+      charlotte = defense.formation[0]
+      expect(charlotteResult).toMatchObject({
+        ...charlotte,
+        link: charlotte.link.slice(1),
+        currentExp: charlotte.currentExp + getDefense(access).exp,
+      })
+    }
   })
 
   test("守備側あり-スキル発動なし-Rebootあり", () => {
@@ -270,23 +272,25 @@ describe("基本的なアクセス処理", () => {
     expect(data.link[1]).toMatchObject(charlotte.link[1])
     expect(data.link[2]).toMatchObject(charlotte.link[2])
     // アクセス後の状態
-    let defenseResult = result.defense as DencoTargetedUserState
-    charlotte = defense.formation[0]
-    let charlotteResult = getTargetDenco(defenseResult)
-    expect(charlotteResult).toMatchObject({
-      ...charlotte,
-      currentExp: charlotte.currentExp + getDefense(access).exp + data.exp,
-      link: [],
-    })
-    reika = offense.formation[0]
-    let reikaResult = getTargetDenco(result.offense)
-    expect(reikaResult).toMatchObject({
-      ...reika,
-      currentExp: reika.currentExp + access.offense.exp,
-    })
+    expect(result.defense).not.toBeUndefined()
+    if (result.defense) {
+      charlotte = defense.formation[0]
+      let charlotteResult = getTargetDenco(result.defense)
+      expect(charlotteResult).toMatchObject({
+        ...charlotte,
+        currentExp: charlotte.currentExp + getDefense(access).exp + data.exp,
+        link: [],
+      })
+      reika = offense.formation[0]
+      let reikaResult = getTargetDenco(result.offense)
+      expect(reikaResult).toMatchObject({
+        ...reika,
+        currentExp: reika.currentExp + access.offense.exp,
+      })
+    }
   })
 
-  
+
   test("守備側あり-スキル発動あり-Rebootなし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 30)
@@ -349,7 +353,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(144)
   })
 
-  
+
   test("守備側あり-スキル確率発動なし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -402,8 +406,8 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpAfter).toBe(64)
     expect(d.currentHp).toBe(64)
   })
-  
-  
+
+
   test("守備側あり-カウンター攻撃あり", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -463,9 +467,9 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpAfter).toBe(32)
     expect(d.currentHp).toBe(32)
   })
-  
 
-  
+
+
   test("守備側あり-カウンター攻撃あり-Rebootあり", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50, 1)

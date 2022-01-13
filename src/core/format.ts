@@ -4,7 +4,7 @@ import { Event } from "./event"
 import { LinksResult, Station, StationLink } from "./station"
 import { ReadonlyState, UserState } from "./user"
 
-export function printEvents(user: UserState | undefined, detail: boolean = false) {
+export function printEvents(user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
   if (!user) return
   user.event.forEach(event => {
     console.log(formatEvent(event, detail))

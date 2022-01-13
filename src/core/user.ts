@@ -9,7 +9,7 @@ type Builtin = Primitive | Function | Date | Error | RegExp;
 /**
  * 変更不可な状態を表す型
  */
-export type ReadonlyState<T> = T extends (Builtin|Event)
+export type ReadonlyState<T> = T extends (Builtin | Event)
   ? T
   : { readonly [key in keyof T]: ReadonlyState<T[key]> }
 
@@ -39,7 +39,7 @@ export interface FormationPosition {
   carIndex: number
 }
 
-export function getTargetDenco(state: UserState & FormationPosition): DencoState {
+export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: number }): T {
   return state.formation[state.carIndex]
 }
 
