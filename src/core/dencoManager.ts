@@ -1,8 +1,9 @@
 import { Context } from "./context"
-import { DencoAttribute, DencoState, DencoType } from "./denco"
+import { copyDencoState, DencoAttribute, DencoState, DencoType } from "./denco"
 import skillManager from "./skillManager"
 import { StationLink } from "./station"
 import stationManager from "./stationManager"
+import { ReadonlyState } from "./user"
 
 interface DencoLevelStatus {
   numbering: string
@@ -39,10 +40,10 @@ class DencoManager {
         throw Error(`invalid denco status: AP, HP, EXP size mismatch ${JSON.stringify(e)}`)
       }
       // EXP: level(idx)->level(idx+1)にレベルアップ必要な経験値
-      if(exp[0] !== 0){
+      if (exp[0] !== 0) {
         throw Error("EXP array[0] must be 0")
       }
-      exp = [...exp.slice(1), exp[size-1]]
+      exp = [...exp.slice(1), exp[size - 1]]
       const status = Array(size).fill(0).map((_, i) => {
         let status: DencoLevelStatus = {
           level: i + 1,
@@ -91,8 +92,9 @@ class DencoManager {
     return data[level - 1]
   }
 
-  checkLevelup(formation: DencoState[]): DencoState[] {
-    return formation.map(d => {
+  checkLevelup(formation: ReadonlyState<DencoState[]>): DencoState[] {
+    return formation.map(state => {
+      let d = copyDencoState(state)
       let level = d.level
       while (d.currentExp >= d.nextExp) {
         let status = this.getDencoStatus(d.numbering, level + 1)

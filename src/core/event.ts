@@ -15,16 +15,16 @@ interface EventBase<T, V = undefined> {
   readonly data: V
 }
 
-export interface LevelupDenco {
+export type LevelupDenco = Readonly<{
   time: number
   after: ReadonlyState<DencoState>
   before: ReadonlyState<DencoState>
-}
-
-export type AccessEvent = EventBase<"access", {
-  access: AccessState
-  which: AccessSide
 }>
+
+export type AccessEvent = EventBase<"access", Readonly<{
+  access: ReadonlyState<AccessState>
+  which: ReadonlyState<AccessSide>
+}>>
 export type RebootEvent = EventBase<"reboot", LinksResult>
 export type SkillTriggerEvent = EventBase<"skill_trigger", TriggeredSkill>
 export type LevelupEvent = EventBase<"levelup", LevelupDenco>

@@ -2,7 +2,6 @@ import * as access from "./access";
 import { Context } from "./context";
 import { copyDencoState, DencoState } from "./denco";
 import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill } from "./skill";
-import { SkillPropertyReader } from "./skillManager";
 import { copyUserState, ReadonlyState, UserState } from "./user";
 
 
@@ -12,13 +11,22 @@ export interface SkillEventDencoState extends DencoState {
   skillInvalidated: boolean
 }
 
-export interface TriggeredSkill {
+function copySKillEventDencoState(state: ReadonlyState<SkillEventDencoState>): SkillEventDencoState {
+  return {
+    ...copyDencoState(state),
+    who: state.who,
+    carIndex: state.carIndex,
+    skillInvalidated: state.skillInvalidated,
+  }
+}
+
+export type TriggeredSkill = Readonly<{
   time: number
   carIndex: number
   denco: ReadonlyState<DencoState>
   skillName: string
   step: SkillEvaluationStep
-}
+}>
 
 export interface SkillEventState {
   time: number
@@ -51,12 +59,7 @@ export type SkillEvaluationStep =
   "probability_check" |
   "self"
 
-export interface SkillTriggerResult {
-  triggeredSkill: TriggeredSkill[]
-  state: access.AccessState
-}
-
-export type EventSkillEvaluate = (state: SkillEventState, self: SkillEventDencoState & ActiveSkill) => SkillEventState
+export type EventSkillEvaluate = (state: SkillEventState, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => SkillEventState
 
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
@@ -69,7 +72,7 @@ export type EventSkillEvaluate = (state: SkillEventState, self: SkillEventDencoS
  * @param evaluate スキル発動時の処理
  * @returns 
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<access.AccessDencoState> & ActiveSkill, access: ReadonlyState<access.AccessState>, probability: ProbabilityPercent, evaluate: EventSkillEvaluate): UserState {
+export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<access.AccessDencoState & ActiveSkill>, access: ReadonlyState<access.AccessState>, probability: ProbabilityPercent, evaluate: EventSkillEvaluate): UserState {
   const accessFormation = (self.which === "offense") ? access.offense.formation : access.defense?.formation
   if (!accessFormation) {
     context.log.error(`指定されたでんこが直前のアクセスの状態で見つかりません`)
@@ -104,7 +107,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
 
 function execute(context: Context, state: SkillEventState, evaluate: EventSkillEvaluate): SkillEventState | undefined {
   context.log.log(`スキル評価イベントの開始`)
-  const self = state.formation[state.carIndex]
+  let self = state.formation[state.carIndex]
   if (!isSkillActive(self.skillHolder)) {
     context.log.error(`アクティブなスキルを保持していません ${self.name}`)
     throw Error("no active skill found")
@@ -118,8 +121,9 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
   // 主体となるスキルとは別に事前に発動するスキル
   const others = state.formation.filter(s => {
     return isSkillActive(s.skillHolder) && !s.skillInvalidated && s.carIndex !== self.carIndex
-  })
-  others.forEach(s => {
+  }).map( d => d.carIndex)
+  others.forEach(idx => {
+    const s = copySKillEventDencoState(state.formation[idx])
     const skill = s.skillHolder.skill as Skill
     const d: SkillEventDencoState & ActiveSkill = {
       ...s,
@@ -146,6 +150,8 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
     return
   }
 
+  // 最新の状態を参照
+  self = copySKillEventDencoState(state.formation[state.carIndex])
   // 主体となるスキルの発動
   const d: SkillEventDencoState & ActiveSkill = {
     ...self,

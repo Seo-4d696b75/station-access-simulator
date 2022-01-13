@@ -6,7 +6,6 @@ import { Context } from "./context";
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
 type Builtin = Primitive | Function | Date | Error | RegExp;
-
 /**
  * 変更不可な状態を表す型
  */

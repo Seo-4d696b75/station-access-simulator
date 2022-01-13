@@ -1,5 +1,6 @@
 import { AccessSide } from "./access";
-import { Denco, DencoState } from "./denco";
+import { DencoState } from "./denco";
+import { ReadonlyState } from "./user";
 
 export type StationAttribute = 
   "eco" |
@@ -7,24 +8,24 @@ export type StationAttribute =
   "cool" |
   "unknown"
 
-export interface Station {
+export type Station = Readonly<{
   name: string
   nameKana: string
   attr: StationAttribute
-}
+}>
 
 export interface StationLink extends Station {
-  start: number
+  readonly start: number
 }
 
 export interface LinkResult extends StationLink {
-  end: number
-  duration: number
-  score: number
-  matchBonus?: number
+  readonly end: number
+  readonly duration: number
+  readonly score: number
+  readonly matchBonus?: number
 }
 
-export interface LinksResult {
+export type LinksResult = Readonly<{
   /**
    * リブートしたタイミング
    */
@@ -32,13 +33,13 @@ export interface LinksResult {
   /**
    * リブートしてリンクスコア＆経験値が加算される直前の状態
    */
-  denco: DencoState
+  denco: ReadonlyState<DencoState>
   which: AccessSide
-  link: LinkResult[]
+  link: readonly LinkResult[]
   totalScore: number
   linkScore: number
   comboBonus: number
   matchBonus: number
   matchCnt: number
   exp: number
-}
+}>

@@ -76,19 +76,12 @@ export type SkillTrigger = boolean | ProbabilityPercent
  * 
  * 確率に依存する部分以外の判定をここで行うこと
  */
-export type SkillTriggerPredicate = (context: Context, state: ReadonlyState<access.AccessState>, step: access.SkillEvaluationStep, self: access.AccessDencoState & ActiveSkill) => SkillTrigger
+export type SkillTriggerPredicate = (context: Context, state: ReadonlyState<access.AccessState>, step: access.SkillEvaluationStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => SkillTrigger
 
 /**
  * アクセス時にスキルが発動した時の効果を反映する
  */
-export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.SkillEvaluationStep, self: access.AccessDencoState & ActiveSkill) => access.AccessState
-
-
-export interface TargetSkillDenco extends DencoState {
-  carIndex: number
-  skill: Skill
-  propertyReader: SkillPropertyReader
-}
+export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.SkillEvaluationStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => access.AccessState
 
 export interface SkillLogic {
   /**
@@ -104,14 +97,14 @@ export interface SkillLogic {
    * アクセス時以外のスキル評価において付随的に評価される処理
    * 現状ではひいるの確率補正のみ
    */
-  evaluateOnEvent?: (context: Context, state: event.SkillEventState, self: event.SkillEventDencoState & ActiveSkill) => event.SkillEventState | undefined
+  evaluateOnEvent?: (context: Context, state: event.SkillEventState, self: ReadonlyState<event.SkillEventDencoState & ActiveSkill>) => event.SkillEventState | undefined
 
   /**
    * アクセス処理が完了した直後の処理をここで行う
    * 
    * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
    */
-  onAccessComplete?: (context: Context, state: UserState, self: access.AccessDencoState & ActiveSkill, access: ReadonlyState<access.AccessState>) => undefined | UserState
+  onAccessComplete?: (context: Context, state: UserState, self: ReadonlyState<access.AccessDencoState & ActiveSkill>, access: ReadonlyState<access.AccessState>) => undefined | UserState
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
@@ -129,7 +122,7 @@ export interface SkillLogic {
    * `onActivated`を指定しない場合は返値`undefined`と同様に処理する
    * @returns 一定時間の経過で判定する場合はtimeoutを返す
    */
-  disactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: TargetSkillDenco, time: number) => undefined | SkillActiveTimeout
+  disactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>, time: number) => undefined | SkillActiveTimeout
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`において`cooldown`が終了して`idle/unable`へ移行する判定の方法を指定する
@@ -139,7 +132,7 @@ export interface SkillLogic {
    * 
    * @returns 返値で指定した時刻以降に`cooldown > unable/idle`へ移行する
    */
-  completeCooldownAt?: (context: Context, state: ReadonlyState<UserState>, self: TargetSkillDenco, time: number) => SkillCooldownTimeout
+  completeCooldownAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>, time: number) => SkillCooldownTimeout
 
   /**
    * スキル状態の遷移タイプ`auto-condition`において`active`状態であるか判定する
@@ -147,7 +140,7 @@ export interface SkillLogic {
    * `auto-condition`タイプでこの関数未定義はエラーとなる
    * @returns trueの場合は`active`状態へ遷移
    */
-  canActivated?: (context: Context, state: ReadonlyState<UserState>, self: TargetSkillDenco) => boolean
+  canActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => boolean
 
   /**
    * スキル状態の遷移タイプ`manual-condition`において`idle <> unable`状態であるか判定する
@@ -155,13 +148,13 @@ export interface SkillLogic {
    * `manual-condition`タイプでこの関数未定義はエラーとなる
    * @returns trueの場合は`idle`状態へ遷移
    */
-  canEnabled?: (context: Context, state: ReadonlyState<UserState>, self: TargetSkillDenco) => boolean
+  canEnabled?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => boolean
 
-  onActivated?: (context: Context, state: UserState, self: TargetSkillDenco) => UserState
-  onFormationChanged?: (context: Context, state: UserState, self: TargetSkillDenco) => UserState
-  onDencoHPChanged?: (context: Context, state: UserState, self: TargetSkillDenco) => UserState
-  onLinkSuccess?: (context: Context, state: UserState, self: TargetSkillDenco) => UserState
-  onDencoReboot?: (context: Context, state: UserState, self: TargetSkillDenco) => UserState
+  onActivated?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
+  onFormationChanged?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
+  onDencoHPChanged?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
+  onLinkSuccess?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
+  onDencoReboot?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
 }
 
 export interface Skill extends SkillLogic {
@@ -175,7 +168,7 @@ export interface Skill extends SkillLogic {
 /**
  * スキルの発動を評価するときに必要なスキルの各種データを定義
  */
-export interface ActiveSkill {
+export interface ActiveSkill extends FormationPosition{
   skill: Skill
   skillPropertyReader: SkillPropertyReader
 }
@@ -287,7 +280,7 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
               ...d,
               carIndex: state.carIndex,
               skill: skill,
-              propertyReader: skill.propertyReader,
+              skillPropertyReader: skill.propertyReader,
             }, time)
           }
           context.log.log(`スキル状態の変更：${d.name} idle -> active`)
@@ -311,7 +304,7 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
               ...d,
               carIndex: state.carIndex,
               skill: skill,
-              propertyReader: skill.propertyReader,
+              skillPropertyReader: skill.propertyReader,
             }, time)
           }
           context.log.log(`スキル状態の変更：${d.name} unable -> active`)
@@ -370,7 +363,7 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
             ...d,
             carIndex: state.carIndex,
             skill: skill,
-            propertyReader: skill.propertyReader,
+            skillPropertyReader: skill.propertyReader,
           }, time)
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
@@ -456,7 +449,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number, t
           ...denco,
           carIndex: idx,
           skill: skill,
-          propertyReader: skill.propertyReader
+          skillPropertyReader: skill.propertyReader
         }
         const enable = predicate(context, state, self)
         if (enable && skill.state.type === "unable") {
@@ -506,7 +499,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number, t
         ...denco,
         carIndex: idx,
         skill: skill,
-        propertyReader: skill.propertyReader,
+        skillPropertyReader: skill.propertyReader,
       }
       const active = predicate(context, state, self)
       if (active && skill.state.type === "unable") {
