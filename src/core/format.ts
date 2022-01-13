@@ -72,7 +72,7 @@ export function formatRebootDetail(result: LinksResult, width: number = 50): str
   return str
 }
 
-export function formatAccessDetail(result: AccessState, which: AccessSide, width: number = 60): string {
+export function formatAccessDetail(result: ReadonlyState<AccessState>, which: AccessSide, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -87,10 +87,10 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
   str += formatLine(result.station.nameKana, width)
 
   //which === "offense"
-  var leftSide: AccessSideState | undefined = result.defense
-  var rightSide: AccessSideState = result.offense
-  var left: DencoState | null = result.defense ? getAccessDenco(result, "defense") : null
-  var right: DencoState = getAccessDenco(result, "offense")
+  var leftSide = result.defense
+  var rightSide = result.offense
+  var left = result.defense ? getAccessDenco(result, "defense") : null
+  var right = getAccessDenco(result, "offense")
   if (which === "defense" && result.defense) {
     right = getAccessDenco(result, "defense")
     left = getAccessDenco(result, "offense")
@@ -169,7 +169,7 @@ export function formatAccessDetail(result: AccessState, which: AccessSide, width
 
 }
 
-export function formatAccessEvent(result: AccessState, which: AccessSide, width: number = 50): string {
+export function formatAccessEvent(result: ReadonlyState<AccessState>, which: AccessSide, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -222,7 +222,7 @@ export function formatAccessEvent(result: AccessState, which: AccessSide, width:
   return str
 }
 
-function formatDamage(state?: AccessSideState | null): string {
+function formatDamage(state?: ReadonlyState<AccessSideState> | null): string {
   if (!state) return ""
   const d = state.damage
   if (!d) return "-"
@@ -252,7 +252,7 @@ function formatLinkTime(link?: StationLink | null): string {
   return str
 }
 
-function formatAccessLinkTime(station: Station, state?: AccessSideState | null): string {
+function formatAccessLinkTime(station: Station, state?: ReadonlyState<AccessSideState> | null): string {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.who === "defense") {
@@ -262,14 +262,14 @@ function formatAccessLinkTime(station: Station, state?: AccessSideState | null):
   return "-"
 }
 
-function formatSkills(state?: AccessSideState | null): string {
+function formatSkills(state?: ReadonlyState<AccessSideState> | null): string {
   if (!state) return ""
   const skills = state.triggeredSkills
   if (skills.length === 0) return "-"
   return skills.map(s => s.name).join(",")
 }
 
-function formatHP(state?: AccessSideState | null) {
+function formatHP(state?: ReadonlyState<AccessSideState> | null) {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.hpAfter === d.hpBefore) {
