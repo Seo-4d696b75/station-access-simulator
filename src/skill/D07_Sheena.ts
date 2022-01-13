@@ -1,20 +1,20 @@
-import { AccessState, ActiveSkillDenco, counterAttack, SkillEvaluationStep } from "../core/access"
-import { SkillLogic, SkillTrigger } from "../core/skill"
+import { counterAttack } from "../core/access"
+import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
-  canEvaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): SkillTrigger => {
+  canEvaluate: (context, state, step, self) => {
     // リブートしていない、かつリンク保持継続している
     if (step === "after_damage" &&
       self.who === "defense" &&
       !self.reboot &&
       !state.linkDisconncted) {
-      return self.propertyReader("probability")
+      return self.skillPropertyReader("probability")
     }
     return false
   },
-  evaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): AccessState => {
-    state.log.log(`あら、誰か来たみたい♪ カウンター攻撃`)
-    return counterAttack(state, self)
+  evaluate: (context, state, step, self) => {
+    context.log.log(`あら、誰か来たみたい♪ カウンター攻撃`)
+    return counterAttack(context, state, self)
   }
 }
 

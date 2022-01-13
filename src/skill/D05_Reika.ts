@@ -1,14 +1,13 @@
-import { AccessState, ActiveSkillDenco, SkillEvaluationStep } from "../core/access"
-import { SkillLogic, SkillTrigger } from "../core/skill"
+import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
-  canEvaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): SkillTrigger => {
+  canEvaluate: (context, state, step, self) => {
     return step === "damage_common" && self.which === "offense"
   },
-  evaluate: (state: AccessState, step: SkillEvaluationStep, self: ActiveSkillDenco): AccessState => {
-    const atk = self.propertyReader("ATK")
+  evaluate: (context, state, step, self) => {
+    const atk = self.skillPropertyReader("ATK")
     state.attackPercent += atk
-    state.log.log(`べ、別にあんたの為じゃないんだからね！ ATK+${atk}%`)
+    context.log.log(`べ、別にあんたの為じゃないんだからね！ ATK+${atk}%`)
     return state
   }
 }
