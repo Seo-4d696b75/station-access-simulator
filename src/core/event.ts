@@ -21,10 +21,12 @@ export type LevelupDenco = Readonly<{
   before: ReadonlyState<DencoState>
 }>
 
-export type AccessEvent = EventBase<"access", Readonly<{
+export type AccessEventData = Readonly<{
   access: ReadonlyState<AccessState>
-  which: ReadonlyState<AccessSide>
-}>>
+  which: AccessSide
+}>
+
+export type AccessEvent = EventBase<"access", AccessEventData>
 export type RebootEvent = EventBase<"reboot", LinksResult>
 export type SkillTriggerEvent = EventBase<"skill_trigger", TriggeredSkill>
 export type LevelupEvent = EventBase<"levelup", LevelupDenco>
