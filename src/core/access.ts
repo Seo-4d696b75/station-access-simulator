@@ -304,16 +304,26 @@ function completeAccess(context: Context, config: AccessConfig, result: AccessSt
   }
 }
 
-function checkSkillAfterAccess(context: Context, state: UserState & FormationPosition, access: AccessState, which: AccessSide): UserState & FormationPosition {
+function checkSkillAfterAccess(context: Context, state: UserState & FormationPosition, access: ReadonlyState<AccessState>, which: AccessSide): UserState & FormationPosition {
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
-  filterActiveSkill(side.formation).forEach(d => {
-    const next = d.skill.onAccessComplete?.(context, state, d, access)
+  filterActiveSkill(side.formation).forEach(idx => {
+    const d = copyAccessDencoState(getFormation(access, which)[idx])
+    const skill = d.skillHolder.skill
+    const predicate = skill?.onAccessComplete
+    if (skill && predicate) {
+      const self = {
+        ...d,
+        skill: skill,
+        skillPropertyReader: skill.propertyReader
+      }
+      const next = predicate(context, state, self, access)
     if (next) {
       state = {
         ...next,
         carIndex: state.carIndex,
       }
+    }
     }
   })
   return state
@@ -607,29 +617,45 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
 
 function evaluateSkillAt(context: Context, state: AccessState, step: SkillEvaluationStep): AccessState {
 
-  const offenseDenco = filterActiveSkill(state.offense.formation).filter(d => {
-    const s = d.skill
-    return (!state.pinkMode || s.evaluateInPink)
-      && canSkillEvaluated(context, state, step, d)
-  })
+  // 編成順に スキル発動有無の確認 > 発動による状態の更新 
+  // ただしアクティブなスキルの確認は初めに一括で行う（同じステップで発動するスキル無効化は互いに影響しない）
+  const offenseActive = filterActiveSkill(state.offense.formation)
   const defense = state.defense
-  const defenseDenco = hasDefense(state) ? filterActiveSkill(state.defense.formation).filter(d => {
-    const s = d.skill
-    return (!state.pinkMode || s.evaluateInPink)
-      && canSkillEvaluated(context, state, step, d)
-  }) : undefined
-
-  offenseDenco.forEach(d => {
+  const defenseActive = defense ? filterActiveSkill(defense.formation) : undefined
+  offenseActive.forEach(idx => {
+    // 他スキルの発動で状態が変化する場合があるので毎度参照してからコピーする
+    const d = copyAccessDencoState(state.offense.formation[idx])
+    const skill = d.skillHolder.skill
+    if (skill && (!state.pinkMode || skill.evaluateInPink)) {
+      const active = {
+        ...d,
+        skill: skill,
+        skillPropertyReader: skill.propertyReader,
+      }
+      // 状態に依存するスキル発動有無の判定は毎度行う
+      if (canSkillEvaluated(context, state, step, active)) {
     markTriggerSkill(state.offense, step, d)
-    context.log.log(`スキルが発動(攻撃側) name:${d.name}(${d.numbering}) skill:${d.skill.name}`)
-    state = d.skill.evaluate ? d.skill.evaluate(context, state, step, d) : state
+        context.log.log(`スキルが発動(攻撃側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
+        state = skill.evaluate ? skill.evaluate(context, state, step, active) : state
+      }
+    }
   })
-
-  if (defense && defenseDenco) {
-    defenseDenco.forEach(d => {
+  if (defense && defenseActive) {
+    defenseActive.forEach(idx => {
+      const d = copyAccessDencoState(defense.formation[idx])
+      const skill = d.skillHolder.skill
+      if (skill && (!state.pinkMode || skill.evaluateInPink)) {
+        const active = {
+          ...d,
+          skill: skill,
+          skillPropertyReader: skill.propertyReader,
+        }
+        if (canSkillEvaluated(context, state, step, active)) {
       markTriggerSkill(defense, step, d)
-      context.log.log(`スキルが発動(守備側) name:${d.name}(${d.numbering}) skill:${d.skill.name}`)
-      state = d.skill.evaluate ? d.skill.evaluate(context, state, step, d) : state
+          context.log.log(`スキルが発動(守備側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
+          state = skill.evaluate ? skill.evaluate(context, state, step, active) : state
+        }
+      }
     })
   }
   return state
@@ -653,19 +679,11 @@ function markTriggerSkill(state: AccessSideState, step: SkillEvaluationStep, den
  * @param which 
  * @returns 
  */
-function filterActiveSkill(list: AccessDencoState[]): (AccessDencoState & ActiveSkill)[] {
-  const result: (AccessDencoState & ActiveSkill)[] = []
-  list.forEach((d, idx) => {
+function filterActiveSkill(list: readonly ReadonlyState<AccessDencoState>[]): number[] {
+  return list.filter(d => {
     const s = d.skillHolder
-    if (hasActiveSkill(d) && s.skill) {
-      result.push({
-        ...d,
-        skill: s.skill,
-        skillPropertyReader: s.skill.propertyReader
-      })
-    }
-  })
-  return result
+    return hasActiveSkill(d)
+  }).map(d => d.carIndex)
 }
 
 /**
