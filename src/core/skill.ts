@@ -43,12 +43,24 @@ interface SkillStateBase<SkillStateType, D = undefined> {
   data: D
 }
 
+/**
+ * スキル状態`cooldown`の終了時刻を指定する
+ */
 export interface SkillCooldownTimeout {
+  /**
+   * スキル状態`cooldown`が終了する時刻 [ms]
+   */
   cooldownTimeout: number
 }
 
+/**
+ * スキル状態`active`の終了時刻を指定する
+ */
 export interface SkillActiveTimeout extends SkillCooldownTimeout {
-  activated: number
+  /**
+   * スキル状態が`active > cooldown`へ遷移する時刻 [ms]
+   * activated <= activeTimeout
+   */
   activeTimeout: number
 }
 
@@ -525,7 +537,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number, time: n
   const skill = getSkill(denco)
   if (skill.state.type === "active") {
     const data = skill.state.data
-    if (data && data.activeTimeout >= time) {
+    if (data && data.activeTimeout <= time) {
       context.log.log(`スキル状態の変更：${denco.name} active -> cooldown (timeout:${new Date(data.activeTimeout).toTimeString()})`)
       skill.state = {
         type: "cooldown",
@@ -537,7 +549,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number, time: n
   }
   if (skill.state.type === "cooldown") {
     const data = skill.state.data
-    if (data.cooldownTimeout >= time) {
+    if (data.cooldownTimeout <= time) {
       switch (skill.transitionType) {
         case "manual": {
 

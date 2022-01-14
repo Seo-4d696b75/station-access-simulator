@@ -19,14 +19,14 @@ async function init() {
 
 init().then(() => {
   const context = initContext()
-  let reika = DencoManager.getDenco(context, "5", 10, 3)
+  let seria = DencoManager.getDenco(context, "1", 50)
+  let reika = DencoManager.getDenco(context, "5", 50, 1)
   let charlotte = DencoManager.getDenco(context, "6", 50)
   const offense: Readonly<UserState> = initUser(context, "とあるマスター１", [
     charlotte
   ])
-  const defense = initUser(context, "とあるマスター２", [
-    reika
-  ])
+  let defense = initUser(context, "とあるマスター", [reika, seria])
+  defense = activateSkill(context, {...defense, carIndex: 1})
   const config: AccessConfig = {
     offense: {
       carIndex: 0,
