@@ -6,6 +6,7 @@ import { initUser, UserState } from "../../core/user"
 import { activateSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { getSkill } from "../../core/denco"
 import { getAccessDenco, startAccess } from "../../core/access"
+import { TriggeredSkill } from "../../core/skillEvent"
 
 describe("セリアのスキル", () => {
   test("setup", async () => {
@@ -112,6 +113,77 @@ describe("セリアのスキル", () => {
     defense = result.defense as UserState
     reika = defense.formation[0]
     expect(reika.currentHp).toBe(reika.maxHp)
+    expect(defense.event.length).toBe(2)
+  })
+  test("発動なし-確率", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "ignore"
+    let seria = DencoManager.getDenco(context, "1", 50)
+    let reika = DencoManager.getDenco(context, "5", 50, 1)
+    let charlotte = DencoManager.getDenco(context, "6", 50)
+    let defense = initUser(context, "とあるマスター", [reika, seria])
+    const now = Date.now()
+    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    let offense = initUser(context, "とあるマスター２", [charlotte])
+    const config = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: reika.link[0],
+    }
+    const result = startAccess(context, config)
+    const accessReika = getAccessDenco(result.access, "defense")
+    expect(accessReika.hpAfter).toBe(22)
+    expect(accessReika.reboot).toBe(false)
+    expect(result.defense).not.toBeUndefined()
+    defense = result.defense as UserState
+    reika = defense.formation[0]
+    expect(reika.currentHp).toBe(22)
     expect(defense.event.length).toBe(1)
+  })
+  test("発動あり-回復×1", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let seria = DencoManager.getDenco(context, "1", 50)
+    let reika = DencoManager.getDenco(context, "5", 50, 1)
+    let charlotte = DencoManager.getDenco(context, "6", 50)
+    let defense = initUser(context, "とあるマスター", [reika, seria])
+    const now = Date.now()
+    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    let offense = initUser(context, "とあるマスター２", [charlotte])
+    const config = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: reika.link[0],
+    }
+    const result = startAccess(context, config)
+    const accessReika = getAccessDenco(result.access, "defense")
+    expect(accessReika.hpAfter).toBe(22)
+    expect(accessReika.reboot).toBe(false)
+    expect(result.defense).not.toBeUndefined()
+    defense = result.defense as UserState
+    ([reika, seria] = defense.formation)
+    expect(reika.currentHp).toBe(22 + 45)
+    expect(defense.event.length).toBe(2)
+    const heal = defense.event[1]
+    expect(heal.type).toBe("skill_trigger")
+    const data = heal.data as TriggeredSkill
+    expect(data.denco).toMatchObject(seria)
+    expect(data.time).toBe(result.access.time)
+    expect(data.carIndex).toBe(1)
+    const skill = getSkill(seria)
+    expect(data.skillName).toBe(skill.name)
+    expect(data.step).toBe("self")
   })
 })
