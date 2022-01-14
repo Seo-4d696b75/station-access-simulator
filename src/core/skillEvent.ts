@@ -1,6 +1,7 @@
 import * as access from "./access";
 import { Context } from "./context";
 import { copyDencoState, DencoState } from "./denco";
+import { SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill } from "./skill";
 import { copyUserState, ReadonlyState, UserState } from "./user";
 
@@ -97,8 +98,18 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
   if (result) {
     // スキル発動による影響の反映
     return {
-      ...copyUserState(state),
+      name: state.name,
       formation: result.formation,
+      event: [
+        ...state.event,
+        ...result.triggeredSkills.map(t => {
+          let e: SkillTriggerEvent = {
+            type: "skill_trigger",
+            data: t
+          }
+          return e
+        })
+      ]
     }
   } else {
     return copyUserState(state)
@@ -121,7 +132,7 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
   // 主体となるスキルとは別に事前に発動するスキル
   const others = state.formation.filter(s => {
     return isSkillActive(s.skillHolder) && !s.skillInvalidated && s.carIndex !== self.carIndex
-  }).map( d => d.carIndex)
+  }).map(d => d.carIndex)
   others.forEach(idx => {
     const s = copySKillEventDencoState(state.formation[idx])
     const skill = s.skillHolder.skill as Skill

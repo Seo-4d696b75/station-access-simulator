@@ -19,6 +19,7 @@ async function init() {
 
 init().then(() => {
   const context = initContext()
+  context.random.mode = "force"
   let seria = DencoManager.getDenco(context, "1", 50)
   let reika = DencoManager.getDenco(context, "5", 50, 1)
   let charlotte = DencoManager.getDenco(context, "6", 50)
