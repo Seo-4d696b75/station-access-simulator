@@ -2,11 +2,12 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
-import { initUser } from "../../core/user"
+import { initUser, UserState } from "../../core/user"
 import { activateSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { getSkill } from "../../core/denco"
+import { getAccessDenco, startAccess } from "../../core/access"
 
-describe("セリアのスキル", ()=>{
+describe("セリアのスキル", () => {
   test("setup", async () => {
     await StationManager.load()
     await SkillManager.load()
@@ -27,7 +28,7 @@ describe("セリアのスキル", ()=>{
     let skill = getSkill(seria)
     expect(skill.transitionType).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    defense = activateSkill(context, {...defense, carIndex: 1}, now)
+    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("active")
@@ -55,5 +56,62 @@ describe("セリアのスキル", ()=>{
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("idle")
+  })
+  test("発動なし-HP30%未満なし", () => {
+    const context = initContext("test", "test", false)
+    let seria = DencoManager.getDenco(context, "1", 50)
+    let reika = DencoManager.getDenco(context, "5", 50, 1)
+    let charlotte = DencoManager.getDenco(context, "6", 10)
+    let defense = initUser(context, "とあるマスター", [reika, seria])
+    const now = Date.now()
+    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    let offense = initUser(context, "とあるマスター２", [charlotte])
+    const config = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: reika.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    defense = result.defense as UserState
+    reika = defense.formation[0]
+    expect(reika.currentHp).toBe(116)
+    expect(defense.event.length).toBe(1)
+  })
+  test("発動なし-Reboot", () => {
+    const context = initContext("test", "test", false)
+    let seria = DencoManager.getDenco(context, "1", 50)
+    let reika = DencoManager.getDenco(context, "5", 50, 1)
+    let charlotte = DencoManager.getDenco(context, "6", 80)
+    let defense = initUser(context, "とあるマスター", [reika, seria])
+    const now = Date.now()
+    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    let offense = initUser(context, "とあるマスター２", [charlotte])
+    const config = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: reika.link[0],
+    }
+    const result = startAccess(context, config)
+    const accessReika = getAccessDenco(result.access, "defense")
+    expect(accessReika.hpAfter).toBe(0)
+    expect(accessReika.reboot).toBe(true)
+    expect(result.defense).not.toBeUndefined()
+    defense = result.defense as UserState
+    reika = defense.formation[0]
+    expect(reika.currentHp).toBe(reika.maxHp)
+    expect(defense.event.length).toBe(1)
   })
 })

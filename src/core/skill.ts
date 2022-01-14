@@ -180,7 +180,7 @@ export interface Skill extends SkillLogic {
 /**
  * スキルの発動を評価するときに必要なスキルの各種データを定義
  */
-export interface ActiveSkill extends FormationPosition{
+export interface ActiveSkill extends FormationPosition {
   skill: Skill
   skillPropertyReader: SkillPropertyReader
 }
@@ -188,6 +188,10 @@ export interface ActiveSkill extends FormationPosition{
 export function copySkill(skill: Skill): Skill {
   return {
     ...skill,
+    name: skill.name,
+    level: skill.level,
+    transitionType: skill.transitionType,
+    propertyReader: skill.propertyReader,
     state: copySkillState(skill.state),
   }
 }

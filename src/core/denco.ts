@@ -47,7 +47,16 @@ export interface DencoState extends Denco {
 
 export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
   return {
-    ...state,
+    numbering: state.numbering,
+    name: state.name,
+    attr: state.attr,
+    type: state.type,
+    level: state.level,
+    currentHp: state.currentHp,
+    maxHp: state.maxHp,
+    currentExp: state.currentExp,
+    nextExp: state.nextExp,
+    ap: state.ap,
     link: Array.from(state.link),
     skillHolder: copySkillPossess(state.skillHolder),
     film: {
@@ -57,7 +66,7 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
 }
 
 export function getSkill(denco: DencoState): Skill {
-  if ( denco.skillHolder.type === "possess"){
+  if (denco.skillHolder.type === "possess") {
     return denco.skillHolder.skill
   }
   throw Error("skill not found")

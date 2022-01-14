@@ -17,6 +17,11 @@ export interface User {
   name: string
 }
 
+/**
+ * ユーザの状態を表現する
+ * 
+ * 原則としてこの状態変数が操作の起点になる
+ */
 export interface UserState extends User {
 
   /**
@@ -66,7 +71,7 @@ export function changeFormation(context: Context, current: ReadonlyState<UserSta
 
 export function copyUserState(state: ReadonlyState<UserState>): UserState {
   return {
-    ...state,
+    name: state.name,
     formation: Array.from(state.formation).map(d => copyDencoState(d)),
     event: Array.from(state.event),
   }

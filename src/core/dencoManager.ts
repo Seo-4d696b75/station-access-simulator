@@ -1,21 +1,16 @@
 import { Context } from "./context"
-import { copyDencoState, DencoAttribute, DencoState, DencoType } from "./denco"
+import { copyDencoState, Denco, DencoAttribute, DencoState, DencoType } from "./denco"
 import skillManager from "./skillManager"
 import { StationLink } from "./station"
 import stationManager from "./stationManager"
 import { ReadonlyState } from "./user"
 
-interface DencoLevelStatus {
-  numbering: string
-  name: string
-  fullName: string
-  type: DencoType
-  attr: DencoAttribute
+interface DencoLevelStatus extends Denco {
 
-  level: number
-  ap: number
-  maxHp: number
-  nextExp: number
+  readonly level: number
+  readonly ap: number
+  readonly maxHp: number
+  readonly nextExp: number
 }
 
 class DencoManager {
@@ -52,7 +47,7 @@ class DencoManager {
           nextExp: exp[i],
           numbering: e.numbering,
           name: e.name,
-          fullName: e.full_name,
+          //fullName: e.full_name,
           type: e.type,
           attr: e.attribute,
         }

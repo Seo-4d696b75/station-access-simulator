@@ -22,12 +22,11 @@ init().then(() => {
   let seria = DencoManager.getDenco(context, "1", 50)
   let reika = DencoManager.getDenco(context, "5", 50, 1)
   let charlotte = DencoManager.getDenco(context, "6", 50)
-  const offense: Readonly<UserState> = initUser(context, "とあるマスター１", [
-    charlotte
-  ])
   let defense = initUser(context, "とあるマスター", [reika, seria])
-  defense = activateSkill(context, {...defense, carIndex: 1})
-  const config: AccessConfig = {
+  const now = Date.now()
+  defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+  let offense = initUser(context, "とあるマスター２", [charlotte])
+  const config = {
     offense: {
       carIndex: 0,
       ...offense

@@ -174,11 +174,11 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState & For
   }
 }
 
-export type AccessResult = ReadonlyState<{
-  access: AccessState
+export type AccessResult = {
+  access: ReadonlyState<AccessState>
   offense: UserState & FormationPosition
   defense?: UserState & FormationPosition
-}>
+}
 
 export function startAccess(context: Context, config: AccessConfig): AccessResult {
   const now = new Date()
@@ -230,7 +230,19 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
 
 export function copyAccessState(state: ReadonlyState<AccessState>): AccessState {
   return {
-    ...state,
+    time: state.time,
+    station: state.station,
+    attackPercent: state.attackPercent,
+    defendPercent: state.defendPercent,
+    damageFixed: state.damageFixed,
+    damageRatio: state.damageRatio,
+    damageBase: state.damageBase,
+    skipDamageFixed: state.skipDamageFixed,
+    pinkItemSet: state.pinkItemSet,
+    pinkItemUsed: state.pinkItemUsed,
+    pinkMode: state.pinkMode,
+    linkSuccess: state.linkSuccess,
+    linkDisconncted: state.linkDisconncted,
     offense: copySideState(state.offense),
     defense: state.defense ? copySideState(state.defense) : undefined,
     previous: state.previous ? copyAccessState(state.previous) : undefined
@@ -252,9 +264,14 @@ function copyAccessDencoState(state: ReadonlyState<AccessDencoState>): AccessDen
 
 function copySideState(state: ReadonlyState<AccessSideState>): AccessSideState {
   return {
-    ...state,
+    carIndex: state.carIndex,
+    score: state.score,
+    exp: state.exp,
+    probabilityBoostPercent: state.probabilityBoostPercent,
+    probabilityBoosted: state.probabilityBoosted,
     formation: Array.from(state.formation).map(d => copyAccessDencoState(d)),
     triggeredSkills: Array.from(state.triggeredSkills),
+    damage: state.damage ? { ...state.damage } : undefined,
   }
 }
 
@@ -430,7 +447,7 @@ type AccessStateArg<T> = {
   }
 }
 
-export function getAccessDenco<T>(state: AccessStateArg<T> , which: AccessSide): T {
+export function getAccessDenco<T>(state: AccessStateArg<T>, which: AccessSide): T {
   if (which === "offense") {
     return state.offense.formation[state.offense.carIndex]
   } else {
