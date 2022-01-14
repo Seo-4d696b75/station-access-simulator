@@ -32,6 +32,14 @@ const skill: SkillLogic = {
       return evaluateSkillAfterAccess(context, state, self, access, percent, evaluate)
     }
   },
+  disactivateAt: (context, state, self, time) => {
+    const active = self.skillPropertyReader("active")
+    const wait = self.skillPropertyReader("wait")
+    return {
+      activeTimeout: time + active * 1000,
+      cooldownTimeout: time + (active + wait) * 1000,
+    }
+  }
 }
 
 export default skill
