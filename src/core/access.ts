@@ -607,11 +607,11 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       if (idx < 0) {
         throw Error("disconnected link not found")
       }
-      d.link.splice(idx, 1)
       // 特にイベントは発生せず経験値だけ追加
       const result = calcLinkResult([d.link[idx]], d, "defense", state.time)
       state.defense.exp += result.exp
       state.defense.score += result.totalScore
+      d.link.splice(idx, 1)
     }
   } else {
     // 相手不在
