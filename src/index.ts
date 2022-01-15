@@ -19,14 +19,11 @@ async function init() {
 
 init().then(() => {
   const context = initContext()
-  context.random.mode = "force"
-  let seria = DencoManager.getDenco(context, "1", 50)
+  context.random.mode = "ignore"
+  let mero = DencoManager.getDenco(context, "2", 50)
   let reika = DencoManager.getDenco(context, "5", 50, 1)
-  let charlotte = DencoManager.getDenco(context, "6", 50)
-  let defense = initUser(context, "とあるマスター", [reika, seria])
-  const now = Date.now()
-  defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
-  let offense = initUser(context, "とあるマスター２", [charlotte])
+  let defense = initUser(context, "とあるマスター", [reika])
+  let offense = initUser(context, "とあるマスター２", [mero])
   const config = {
     offense: {
       carIndex: 0,
