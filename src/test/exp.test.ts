@@ -28,7 +28,8 @@ describe("経験値の処理", () => {
       reika
     ])
     const time = Date.now()
-    state = refreshEXPState(context, state, time)
+    context.clock = time
+    state = refreshEXPState(context, state)
     let current = state.formation[0]
     expect(current.level).toBe(2)
     expect(current.currentExp).toBe(100)
@@ -51,10 +52,11 @@ describe("経験値の処理", () => {
       reika
     ])
     const time = Date.now()
-    state = refreshSkillState(context, state, time)
+    context.clock = time
+    state = refreshSkillState(context, state)
     reika = state.formation[0]
     reika.currentExp = 44758
-    state = refreshEXPState(context, state, time)
+    state = refreshEXPState(context, state)
     let current = state.formation[0]
     expect(current.level).toBe(16)
     expect(current.currentExp).toBe(5858)
@@ -80,7 +82,7 @@ describe("経験値の処理", () => {
     let defense = initUser(context, "とあるマスター２", [
       reika
     ])
-    defense = refreshSkillState(context, defense, Date.now())
+    defense = refreshSkillState(context, defense)
     reika = defense.formation[0]
     const config: AccessConfig = {
       offense: {
@@ -128,7 +130,7 @@ describe("経験値の処理", () => {
       expect(levelup.before).toMatchObject(reika)
       // レベルアップ後の状態
       let tmp = initUser(context, "hoge", [reika])
-      tmp = refreshEXPState(context, tmp, Date.now())
+      tmp = refreshEXPState(context, tmp)
       reika = tmp.formation[0]
       // 最終状態
       const current = result.defense.formation[0]

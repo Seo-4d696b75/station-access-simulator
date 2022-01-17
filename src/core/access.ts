@@ -1,6 +1,6 @@
 import { copyDencoState, Denco, DencoState } from "./denco"
 import { SkillPossess, Skill, refreshSkillState, ActiveSkill } from "./skill"
-import { Random, Context, Logger } from "./context"
+import { Random, Context, Logger, fixClock, getCurrentTime } from "./context"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
 import { FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
 
@@ -149,8 +149,8 @@ interface AccessStateWithDefense extends AccessState {
   defense: AccessSideState
 }
 
-function initAccessDencoState(context: Context, f: ReadonlyState<UserState & FormationPosition>, which: AccessSide, time: number): AccessSideState {
-  const formation = refreshSkillState(context, f, time).formation.map((e, idx) => {
+function initAccessDencoState(context: Context, f: ReadonlyState<UserState & FormationPosition>, which: AccessSide): AccessSideState {
+  const formation = refreshSkillState(context, f).formation.map((e, idx) => {
     const s: AccessDencoState = {
       ...e,
       hpBefore: e.currentHp,
@@ -181,13 +181,14 @@ export type AccessResult = {
 }
 
 export function startAccess(context: Context, config: AccessConfig): AccessResult {
-  const now = new Date()
-  context.log.log(`アクセス処理の開始 ${now.toTimeString()}`)
+  context = fixClock(context)
+  const time = getCurrentTime(context)
+  context.log.log(`アクセス処理の開始 ${new Date(time).toTimeString()}`)
 
   var state: AccessState = {
-    time: now.getTime(),
+    time: time,
     station: config.station,
-    offense: initAccessDencoState(context, config.offense, "offense", now.getTime()),
+    offense: initAccessDencoState(context, config.offense, "offense"),
     defense: undefined,
     damageFixed: 0,
     attackPercent: 0,
@@ -208,7 +209,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
     d.link = d.link.splice(idx, 1)
   }
   if (config.defense) {
-    state.defense = initAccessDencoState(context, config.defense, "defense", now.getTime())
+    state.defense = initAccessDencoState(context, config.defense, "defense")
     const d = getAccessDenco(state, "defense")
     var link = d.link.find(link => link.name === config.station.name)
     if (!link) {
@@ -315,8 +316,8 @@ function completeAccess(context: Context, config: AccessConfig, result: Readonly
   offense = checkSkillAfterAccess(context, offense, result, "offense")
   defense = defense ? checkSkillAfterAccess(context, defense, result, "defense") : undefined
   // リブートイベントの追加
-  offense = checkReboot(offense, result, "offense")
-  defense = defense ? checkReboot(defense, result, "defense") : undefined
+  offense = checkReboot(context, offense, result, "offense")
+  defense = defense ? checkReboot(context, defense, result, "defense") : undefined
 
   // レベルアップ処理
   offense = checkLevelup(context, offense, result)
@@ -355,7 +356,8 @@ function checkSkillAfterAccess(context: Context, state: UserState & FormationPos
   return state
 }
 
-function calcLinkResult(links: StationLink[], d: DencoState, which: AccessSide, time: number): LinksResult {
+function calcLinkResult(context: Context, links: StationLink[], d: DencoState, which: AccessSide): LinksResult {
+  const time = getCurrentTime(context)
   const linkResult = links.map(link => {
     let duration = time - link.start
     if (duration < 0) {
@@ -363,14 +365,14 @@ function calcLinkResult(links: StationLink[], d: DencoState, which: AccessSide, 
     }
     let attr = (link.attr === d.attr)
     let score = Math.floor(duration / 100)
-    let result: LinkResult = {
+    let r: LinkResult = {
       ...link,
       end: time,
       duration: duration,
       score: score,
       matchBonus: attr ? Math.floor(score * 0.3) : undefined
     }
-    return result
+    return r
   })
   // TODO combo bonus の計算
   const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b, 0)
@@ -394,7 +396,7 @@ function calcLinkResult(links: StationLink[], d: DencoState, which: AccessSide, 
   return result
 }
 
-function checkReboot(state: UserState & FormationPosition, access: ReadonlyState<AccessState>, which: AccessSide): UserState & FormationPosition {
+function checkReboot(context: Context, state: UserState & FormationPosition, access: ReadonlyState<AccessState>, which: AccessSide): UserState & FormationPosition {
   // access: こっちを弄るな！
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
@@ -402,7 +404,7 @@ function checkReboot(state: UserState & FormationPosition, access: ReadonlyState
   side.formation.forEach((dd, idx) => {
     if (dd.reboot) {
       const d = state.formation[idx]
-      const result = calcLinkResult(d.link, d, which, access.time)
+      const result = calcLinkResult(context, d.link, d, which)
       // リンクEXPの追加
       d.currentExp += result.exp
       d.link = []
@@ -417,7 +419,7 @@ function checkReboot(state: UserState & FormationPosition, access: ReadonlyState
 
 function checkLevelup(context: Context, state: UserState & FormationPosition, access: ReadonlyState<AccessState>): UserState & FormationPosition {
   return {
-    ...refreshEXPState(context, state, access.time),
+    ...refreshEXPState(context, state),
     carIndex: state.carIndex,
   }
 }
@@ -608,7 +610,7 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
         throw Error("disconnected link not found")
       }
       // 特にイベントは発生せず経験値だけ追加
-      const result = calcLinkResult([d.link[idx]], d, "defense", state.time)
+      const result = calcLinkResult(context, [d.link[idx]], d, "defense")
       state.defense.exp += result.exp
       state.defense.score += result.totalScore
       d.link.splice(idx, 1)

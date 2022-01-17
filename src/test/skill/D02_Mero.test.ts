@@ -22,23 +22,24 @@ describe("メロのスキル", () => {
     expect(mero.skillHolder.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [mero])
     const now = Date.now()
-    state = refreshSkillState(context, state, now)
+    context.clock = now
+    state = refreshSkillState(context, state)
     mero = state.formation[0]
     let skill = getSkill(mero)
     expect(skill.transitionType).toBe("always")
     expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, { ...state, carIndex: 0 }, now)).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 }, now)).toThrowError()
+    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
 
-
-    state = refreshSkillState(context, state, now + 600 * 1000)
+    context.clock = now + 600 * 1000
+    state = refreshSkillState(context, state)
     mero = state.formation[0]
     skill = getSkill(mero)
     expect(skill.transitionType).toBe("always")
     expect(skill.state.type).toBe("active")
   })
-  test("発動なし-フットバース使用", ()=>{
+  test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
     let mero = DencoManager.getDenco(context, "2", 50)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
@@ -67,7 +68,7 @@ describe("メロのスキル", () => {
     let accessReika = getAccessDenco(access, "defense")
     expect(accessReika.reboot).toBe(false)
   })
-  test("発動なし-確率", ()=>{
+  test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"
     let mero = DencoManager.getDenco(context, "2", 50)
@@ -91,7 +92,7 @@ describe("メロのスキル", () => {
     expect(access.pinkItemUsed).toBe(false)
     expect(access.pinkMode).toBe(false)
     expect(access.offense.triggeredSkills.length).toBe(0)
-    if ( access.defense){
+    if (access.defense) {
       expect(access.defense.damage?.value).toBe(200)
       let d = getAccessDenco(access, "defense")
       expect(d.hpBefore).toBe(192)
@@ -99,7 +100,7 @@ describe("メロのスキル", () => {
       expect(d.reboot).toBe(true)
     }
   })
-  test("発動あり", ()=>{
+  test("発動あり", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let mero = DencoManager.getDenco(context, "2", 50)
@@ -129,7 +130,7 @@ describe("メロのスキル", () => {
     expect(trigger.step).toBe("pink_check")
     expect(trigger.numbering).toBe("2")
     expect(trigger.name).toBe("mero")
-    if ( access.defense){
+    if (access.defense) {
       expect(access.defense.damage).toBeUndefined()
       let accessReika = getAccessDenco(access, "defense")
       expect(accessReika.reboot).toBe(false)

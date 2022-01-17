@@ -2,7 +2,7 @@ import { copyDencoState, DencoState } from "./denco";
 import { Event, LevelupDenco, LevelupEvent } from "./event";
 import { refreshSkillState } from "./skill";
 import DencoManager from "./dencoManager"
-import { Context } from "./context";
+import { Context, getCurrentTime } from "./context";
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
 type Builtin = Primitive | Function | Date | Error | RegExp;
@@ -66,7 +66,7 @@ export function changeFormation(context: Context, current: ReadonlyState<UserSta
   let before = current.formation.map(d => d.name).join(",")
   let after = formation.map(d => d.name).join(",")
   context.log.log(`編成を変更します [${before}] -> [${after}]`)
-  return refreshSkillState(context, state, Date.now())
+  return refreshSkillState(context, state)
 }
 
 export function copyUserState(state: ReadonlyState<UserState>): UserState {
@@ -82,7 +82,7 @@ export function copyUserState(state: ReadonlyState<UserState>): UserState {
  * @param next 現在の状態
  * @returns 
  */
-export function refreshEXPState(context: Context, state: ReadonlyState<UserState>, time: number): UserState {
+export function refreshEXPState(context: Context, state: ReadonlyState<UserState>): UserState {
   const next = copyUserState(state)
   const formation = next.formation
   const nextFormation = DencoManager.checkLevelup(formation)
@@ -90,7 +90,7 @@ export function refreshEXPState(context: Context, state: ReadonlyState<UserState
     let after = nextFormation[idx]
     if (before.level < after.level) {
       let levelup: LevelupDenco = {
-        time: time,
+        time: getCurrentTime(context),
         after: copyDencoState(after),
         before: copyDencoState(before),
       }

@@ -1,4 +1,4 @@
-import * as access from "./access";
+import * as Access from "./access";
 import { Context } from "./context";
 import { copyDencoState, DencoState } from "./denco";
 import { SkillTriggerEvent } from "./event";
@@ -73,7 +73,7 @@ export type EventSkillEvaluate = (state: SkillEventState, self: ReadonlyState<Sk
  * @param evaluate スキル発動時の処理
  * @returns 
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<access.AccessDencoState & ActiveSkill>, access: ReadonlyState<access.AccessState>, probability: ProbabilityPercent, evaluate: EventSkillEvaluate): UserState {
+export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: ProbabilityPercent, evaluate: EventSkillEvaluate): UserState {
   const accessFormation = (self.which === "offense") ? access.offense.formation : access.defense?.formation
   if (!accessFormation) {
     context.log.error(`指定されたでんこが直前のアクセスの状態で見つかりません`)
@@ -136,12 +136,12 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
   others.forEach(idx => {
     const s = copySKillEventDencoState(state.formation[idx])
     const skill = s.skillHolder.skill as Skill
-    const d: SkillEventDencoState & ActiveSkill = {
+    const active: SkillEventDencoState & ActiveSkill = {
       ...s,
       skillPropertyReader: skill.propertyReader,
       skill: skill,
     }
-    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(context, state, d) : undefined
+    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(context, state, active) : undefined
     if (next) {
       state = next
       state.triggeredSkills.push({

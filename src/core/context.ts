@@ -25,15 +25,56 @@ export interface Random {
  * このオブジェクトは内部状態を保持します
  */
 export interface Context {
+  /**
+   * 処理中のログを記録する
+   */
   log: Logger
+  /**
+   * 処理中の確率依存処理を計算する
+   */
   random: Random
+  /**
+   * 処理中の現在時刻の取得方法
+   * - "now": `Date.now()`で参照（デフォルト値）
+   * - number: 指定した時刻で処理
+   */
+  clock: "now" | number
 }
 
 export function initContext(type: string = "test", seed: string = "test", console: boolean = true): Context {
   return {
     log: new Logger(type, console),
-    random: Object.assign(seedrandom(seed), { mode: "normal" as RandomMode })
+    random: Object.assign(seedrandom(seed), { mode: "normal" as RandomMode }),
+    clock: "now"
   }
+}
+
+export function setClock(context: Readonly<Context>, time?: number): Context {
+  return {
+    ...context,
+    clock: time ?? "now",
+  }
+}
+
+/**
+ * `getCurrentTime`が返す現在時刻の値で固定する
+ * @param context clock
+ * @returns 現在時刻で`clock`で固定した新しいcontext 他の状態は同じオブジェクトへの参照を維持する
+ */
+export function fixClock(context: Readonly<Context>): Context {
+  return {
+    ...context,
+    clock: getCurrentTime(context),
+  }
+}
+
+/**
+ * 現在時刻を取得する
+ * @param context clockの値に従って`Date.now()`もしくは固定された時刻を参照する
+ * @returns unix time [ms]
+ */
+export function getCurrentTime(context: Context): number {
+  return context.clock === "now" ? Date.now() : context.clock
 }
 
 /**

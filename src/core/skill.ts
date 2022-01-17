@@ -1,5 +1,5 @@
 import * as access from "./access"
-import { Context } from "./context"
+import { Context, fixClock, getCurrentTime } from "./context"
 import { DencoState, getSkill } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
@@ -38,8 +38,8 @@ export type SkillStateType =
   "active" |
   "cooldown"
 
-interface SkillStateBase<SkillStateType, D = undefined> {
-  type: SkillStateType
+interface SkillStateBase<T, D = undefined> {
+  type: T
   data: D
 }
 
@@ -134,7 +134,7 @@ export interface SkillLogic {
    * `onActivated`を指定しない場合は返値`undefined`と同様に処理する
    * @returns 一定時間の経過で判定する場合はtimeoutを返す
    */
-  disactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>, time: number) => undefined | SkillActiveTimeout
+  disactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => undefined | SkillActiveTimeout
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`において`cooldown`が終了して`idle/unable`へ移行する判定の方法を指定する
@@ -144,7 +144,7 @@ export interface SkillLogic {
    * 
    * @returns 返値で指定した時刻以降に`cooldown > unable/idle`へ移行する
    */
-  completeCooldownAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>, time: number) => SkillCooldownTimeout
+  completeCooldownAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => SkillCooldownTimeout
 
   /**
    * スキル状態の遷移タイプ`auto-condition`において`active`状態であるか判定する
@@ -281,10 +281,11 @@ export function isSkillActive(skill: SkillPossess): skill is SkillHolder<"posses
  * - タイプ`auto`のスキル状態を`unable > active`へ遷移させる
  * @returns `active`へ遷移した新しい状態
  */
-export function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition, time: number = Date.now()): UserState {
+export function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
   const next = copyUserState(state)
   const d = next.formation[state.carIndex]
   const skill = getSkill(d)
+  context = fixClock(context)
   switch (skill.transitionType) {
     case "manual":
     case "manual-condition": {
@@ -297,10 +298,10 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
               carIndex: state.carIndex,
               skill: skill,
               skillPropertyReader: skill.propertyReader,
-            }, time)
+            })
           }
           context.log.log(`スキル状態の変更：${d.name} idle -> active`)
-          return refreshSkillState(context, next, time)
+          return refreshSkillState(context, next)
         }
         case "active": {
           return next
@@ -321,10 +322,10 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
               carIndex: state.carIndex,
               skill: skill,
               skillPropertyReader: skill.propertyReader,
-            }, time)
+            })
           }
           context.log.log(`スキル状態の変更：${d.name} unable -> active`)
-          return refreshSkillState(context, next, time)
+          return refreshSkillState(context, next)
         }
         case "active": {
           return next
@@ -355,10 +356,11 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
  * 
  * @returns `cooldown`へ遷移した新しい状態
  */
-export function disactivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition, time: number): UserState {
+export function disactivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
   const next = copyUserState(state)
   const d = next.formation[state.carIndex]
   const skill = getSkill(d)
+  context = fixClock(context)
   switch (skill.transitionType) {
     case "manual":
     case "manual-condition":
@@ -380,13 +382,14 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
             carIndex: state.carIndex,
             skill: skill,
             skillPropertyReader: skill.propertyReader,
-          }, time)
+          })
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
-        return refreshSkillState(context, next, time)
+        return refreshSkillState(context, next)
       } else {
         context.log.error(`スキル状態をcooldownに変更できません(state:${skill.state.type})`)
       }
+      break
     }
     default: {
       context.log.error(`スキル状態をcooldownに変更できません type:${skill.transitionType}`)
@@ -408,16 +411,17 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
  * @param time 現在時刻
  * @returns 新しい状態
  */
-export function refreshSkillState(context: Context, state: ReadonlyState<UserState>, time: number): UserState {
+export function refreshSkillState(context: Context, state: ReadonlyState<UserState>): UserState {
   const size = state.formation.length
   let next = copyUserState(state)
+  context = fixClock(context)
   for (let idx = 0; idx < size; idx++) {
-    next = refreshSkillStateOne(context, next, idx, time)
+    next = refreshSkillStateOne(context, next, idx)
   }
   return next
 }
 
-function refreshSkillStateOne(context: Context, state: UserState, idx: number, time: number): UserState {
+function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
   const denco = state.formation[idx]
   if (denco.skillHolder.type !== "possess") {
     return state
@@ -446,7 +450,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number, t
           data: undefined
         }
       }
-      return refreshTimeout(context, state, idx, time)
+      return refreshTimeout(context, state, idx)
     }
     case "manual-condition": {
       if (skill.state.type === "not_init") {
@@ -483,7 +487,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number, t
         }
         return state
       } else {
-        return refreshTimeout(context, state, idx, time)
+        return refreshTimeout(context, state, idx)
       }
     }
     case "auto": {
@@ -496,7 +500,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number, t
           data: undefined
         }
       }
-      return refreshTimeout(context, state, idx, time)
+      return refreshTimeout(context, state, idx)
     }
     case "auto-condition": {
       if (skill.state.type === "idle") {
@@ -536,7 +540,8 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number, t
   }
 }
 
-function refreshTimeout(context: Context, state: UserState, idx: number, time: number): UserState {
+function refreshTimeout(context: Context, state: UserState, idx: number): UserState {
+  const time = getCurrentTime(context)
   const denco = state.formation[idx]
   const skill = getSkill(denco)
   if (skill.state.type === "active") {
@@ -556,12 +561,12 @@ function refreshTimeout(context: Context, state: UserState, idx: number, time: n
     if (data.cooldownTimeout <= time) {
       switch (skill.transitionType) {
         case "manual": {
-
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> idle (timeout:${new Date(data.cooldownTimeout).toTimeString()})`)
           skill.state = {
             type: "idle",
             data: undefined
           }
+          break
         }
         case "manual-condition": {
 
@@ -571,7 +576,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number, time: n
             data: undefined
           }
           // check unable <=> idle
-          return refreshSkillStateOne(context, state, idx, time)
+          return refreshSkillStateOne(context, state, idx)
         }
         case "auto": {
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${new Date(data.cooldownTimeout).toTimeString()})`)
@@ -579,6 +584,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number, time: n
             type: "idle",
             data: undefined
           }
+          break
         }
         default: {
           context.log.error(`不正なスキル状態遷移タイプ ${skill.transitionType}`)

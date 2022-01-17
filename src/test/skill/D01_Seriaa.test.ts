@@ -24,12 +24,13 @@ describe("セリアのスキル", () => {
     expect(seria.skillHolder.type).toBe("possess")
     let defense = initUser(context, "とあるマスター", [reika, seria])
     const now = Date.now()
-    defense = refreshSkillState(context, defense, now)
+    context.clock = now
+    defense = refreshSkillState(context, defense)
     seria = defense.formation[1]
     let skill = getSkill(seria)
     expect(skill.transitionType).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    defense = activateSkill(context, { ...defense, carIndex: 1 })
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("active")
@@ -39,13 +40,15 @@ describe("セリアのスキル", () => {
     expect(data.cooldownTimeout).toBe(now + 1800 * 1000 + 10800 * 1000)
 
     // 10分経過
-    defense = refreshSkillState(context, defense, now + 600 * 1000)
+    context.clock = now + 600 * 1000
+    defense = refreshSkillState(context, defense)
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("active")
 
     // 30分経過
-    defense = refreshSkillState(context, defense, now + 1800 * 1000)
+    context.clock = now + 1800 * 1000
+    defense = refreshSkillState(context, defense)
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("cooldown")
@@ -53,7 +56,8 @@ describe("セリアのスキル", () => {
     expect(timeout.cooldownTimeout).toBe(now + (1800 + 10800) * 1000)
 
     // 30分+3時間経過
-    defense = refreshSkillState(context, defense, now + (1800 + 10800) * 1000)
+    context.clock = now + (1800 + 10800) * 1000
+    defense = refreshSkillState(context, defense)
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("idle")
@@ -64,8 +68,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 10)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    const now = Date.now()
-    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    defense = activateSkill(context, { ...defense, carIndex: 1 })
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -91,8 +94,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 80)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    const now = Date.now()
-    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    defense = activateSkill(context, { ...defense, carIndex: 1 })
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -122,8 +124,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    const now = Date.now()
-    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    defense = activateSkill(context, { ...defense, carIndex: 1 })
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -153,8 +154,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    const now = Date.now()
-    defense = activateSkill(context, { ...defense, carIndex: 1 }, now)
+    defense = activateSkill(context, { ...defense, carIndex: 1 })
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
