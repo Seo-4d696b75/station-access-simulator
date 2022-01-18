@@ -105,13 +105,12 @@ describe("経験値の処理", () => {
       expect(event.type).toBe("access")
       const accessResult = event.data as AccessEventData
       let defense = getDefense(accessResult.access)
-      const accessEXP = defense.exp
+      const accessEXP = 0
       reika = {
         ...reika,
         currentExp: accessEXP
       }
       expect(defense.formation[0]).toMatchObject(reika)
-      expect(defense.exp).toBe(accessEXP)
       // リブート
       event = state.event[1]
       expect(event.type).toBe("reboot")

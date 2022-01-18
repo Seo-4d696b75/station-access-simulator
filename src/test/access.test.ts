@@ -252,6 +252,8 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(312)
     expect(d.currentExp).toBe(reika.currentExp + access.offense.exp)
     expect(d.ap).toBe(260)
+    // アクセスのEXP
+    expect(d.currentExp).toBe(reika.currentExp + 100)
     d = getAccessDenco(access, "defense")
     let def = getDefense(access)
     expect(d.name).toBe(charlotte.name)
@@ -260,7 +262,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpAfter).toBe(0)
     expect(d.currentHp).toBe(228)
     // アクセスのEXP
-    expect(d.currentExp).toBe(charlotte.currentExp + def.exp)
+    expect(d.currentExp).toBe(charlotte.currentExp + 0)
     // リブート確認
     let e = result.defense?.event[1]
     expect(e).not.toBeUndefined()
@@ -278,7 +280,7 @@ describe("基本的なアクセス処理", () => {
       let charlotteResult = getTargetDenco(result.defense)
       expect(charlotteResult).toMatchObject({
         ...charlotte,
-        currentExp: charlotte.currentExp + getDefense(access).exp + data.exp,
+        currentExp: charlotte.currentExp + 0 + data.exp,
         link: [],
       })
       reika = offense.formation[0]
