@@ -362,24 +362,27 @@ function checkSkillAfterAccess(context: Context, state: UserState & FormationPos
   return state
 }
 
-function calcLinkResult(context: Context, links: StationLink[], d: DencoState, which: AccessSide): LinksResult {
+function calcLinkResult(context: Context, link: StationLink, d: Denco): LinkResult {
   const time = getCurrentTime(context)
-  const linkResult = links.map(link => {
-    let duration = time - link.start
-    if (duration < 0) {
-      throw Error("link duration < 0")
-    }
-    let attr = (link.attr === d.attr)
-    let score = Math.floor(duration / 100)
-    let r: LinkResult = {
-      ...link,
-      end: time,
-      duration: duration,
-      score: score,
-      matchBonus: attr ? Math.floor(score * 0.3) : undefined
-    }
-    return r
-  })
+  let duration = time - link.start
+  if (duration < 0) {
+    context.log.error(`リンク時間が負数です ${duration}[ms] ${JSON.stringify(link)}`)
+    throw Error("link duration < 0")
+  }
+  let attr = (link.attr === d.attr)
+  let score = Math.floor(duration / 100)
+  return {
+    ...link,
+    end: time,
+    duration: duration,
+    score: score,
+    matchBonus: attr ? Math.floor(score * 0.3) : undefined
+  }
+}
+
+function calcLinksResult(context: Context, links: StationLink[], d: ReadonlyState<DencoState>, which: AccessSide): LinksResult {
+  const time = getCurrentTime(context)
+  const linkResult = links.map(link => calcLinkResult(context, link, d))
   // TODO combo bonus の計算
   const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b, 0)
   const match = linkResult.map(link => link.matchBonus).filter(e => !!e) as number[]
@@ -410,7 +413,7 @@ function checkReboot(context: Context, state: UserState & FormationPosition, acc
   side.formation.forEach((dd, idx) => {
     if (dd.reboot) {
       const d = state.formation[idx]
-      const result = calcLinkResult(context, d.link, d, which)
+      const result = calcLinksResult(context, d.link, d, which)
       // リンクEXPの追加
       d.currentExp += result.exp
       d.link = []
@@ -503,6 +506,9 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       context.log.log("守備側はいません")
     }
 
+    // TODO アクセスによるスコアと経験値
+    state.offense.exp += 100
+    state.offense.score += 100
 
     // pink_check
     // フットバの確認、アイテム優先=>スキル評価
@@ -593,9 +599,9 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
         attr: defense.damage.attr || (state.damageRatio !== 1.0)
       }
     } else {
-    defense.damage = {
-      value: damage,
-      attr: state.damageRatio !== 1.0
+      defense.damage = {
+        value: damage,
+        attr: state.damageRatio !== 1.0
       }
     }
     context.log.log(`ダメージ計算が終了：${damage}`)
@@ -622,12 +628,14 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       const d = getAccessDenco(state, "defense")
       const idx = d.link.findIndex(link => link.name === state.station.name)
       if (idx < 0) {
+        context.log.error(`リンク解除した守備側のリンクが見つかりません ${state.station.name}`)
         throw Error("disconnected link not found")
       }
       // 特にイベントは発生せず経験値だけ追加
-      const result = calcLinkResult(context, [d.link[idx]], d, "defense")
-      state.defense.exp += result.exp
-      state.defense.score += result.totalScore
+      const result = calcLinkResult(context, d.link[idx], d)
+      state.defense.exp += result.score
+      state.defense.score += result.score
+      // リブートはないためcheckRebootでは反映されない
       d.link.splice(idx, 1)
     }
   } else {
@@ -655,6 +663,7 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     if (hasDefense(state)) {
       completeDencoAccess(context, state, state.defense)
     }
+    // アクセス中に発生したスコア＆経験値はこの段階で反映
 
     // 最終的なアクセス結果を計算 カウンターで変化する場合あり
     if (hasDefense(state) && !state.pinkMode) {
@@ -665,6 +674,22 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     }
     context.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
     context.log.log(`守備側のリンク解除：${state.linkDisconncted}`)
+
+    // 守備側がリブートした場合はその駅のリンクのスコア＆経験値を表示
+    if (hasDefense(state)) {
+      const defense = getAccessDenco(state, "defense")
+      if (defense.reboot) {
+        const idx = defense.link.findIndex(l => l.name === state.station.name)
+        if (idx < 0) {
+          context.log.error(`リブートした守備側のリンクが見つかりません ${state.station.name}`)
+          throw Error()
+        }
+        const result = calcLinkResult(context, defense.link[idx], defense)
+        // DencoStateへのリンクスコア＆経験値の反映はcheckRebootでまとめて実行
+        state.defense.exp += result.score
+        state.defense.score += result.score
+      }
+    }
 
   }
   return state
