@@ -3,7 +3,7 @@ import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill, refreshSkillState } from "../../core/skill"
+import { activateSkill, disactivateSkill, isSkillActive, refreshSkillState } from "../../core/skill"
 import { getSkill } from "../../core/denco"
 import { getAccessDenco, startAccess } from "../../core/access"
 
@@ -126,6 +126,47 @@ describe("メロのスキル", () => {
     expect(access.linkDisconncted).toBe(true)
     expect(access.linkSuccess).toBe(true)
     expect(access.offense.triggeredSkills.length).toBe(1)
+    let trigger = access.offense.triggeredSkills[0]
+    expect(trigger.step).toBe("pink_check")
+    expect(trigger.numbering).toBe("2")
+    expect(trigger.name).toBe("mero")
+    if (access.defense) {
+      expect(access.defense.damage).toBeUndefined()
+      let accessReika = getAccessDenco(access, "defense")
+      expect(accessReika.reboot).toBe(false)
+    }
+  })
+  test("発動あり-確率ブースト", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let mero = DencoManager.getDenco(context, "2", 50)
+    let hiiru = DencoManager.getDenco(context, "34", 50)
+    let reika = DencoManager.getDenco(context, "5", 50, 1)
+    let defense = initUser(context, "とあるマスター", [reika])
+    let offense = initUser(context, "とあるマスター２", [mero, hiiru])
+    offense = activateSkill(context, {...offense, carIndex: 1})
+    hiiru = offense.formation[1]
+    expect(hiiru.skillHolder.skill?.state.type).toBe("active")
+    const config = {
+      offense: {
+        carIndex: 0,
+        ...offense
+      },
+      defense: {
+        carIndex: 0,
+        ...defense
+      },
+      station: reika.link[0],
+    }
+    const result = startAccess(context, config)
+    const access = result.access
+    expect(access.pinkItemSet).toBe(false)
+    expect(access.pinkItemUsed).toBe(false)
+    expect(access.pinkMode).toBe(true)
+    expect(access.linkDisconncted).toBe(true)
+    expect(access.linkSuccess).toBe(true)
+    expect(access.offense.triggeredSkills.length).toBe(1)
+    // メロ本人 ひいるの確率ブーストは乗らない
     let trigger = access.offense.triggeredSkills[0]
     expect(trigger.step).toBe("pink_check")
     expect(trigger.numbering).toBe("2")
