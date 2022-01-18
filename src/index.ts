@@ -19,13 +19,11 @@ async function init() {
 
 init().then(() => {
   const context = initContext()
-  context.random.mode = "force"
-  let mero = DencoManager.getDenco(context, "2", 50)
-  let hiiru = DencoManager.getDenco(context, "34", 50)
+  context.clock = Date.parse('2022-01-01T12:00:00+0900')
+  let luna = DencoManager.getDenco(context, "3", 50, 1)
   let reika = DencoManager.getDenco(context, "5", 50, 1)
-  let defense = initUser(context, "とあるマスター", [reika])
-  let offense = initUser(context, "とあるマスター２", [mero, hiiru])
-  offense = activateSkill(context, {...offense, carIndex: 1})
+  let defense = initUser(context, "とあるマスター", [luna])
+  let offense = initUser(context, "とあるマスター２", [reika])
   const config = {
     offense: {
       carIndex: 0,
@@ -35,11 +33,11 @@ init().then(() => {
       carIndex: 0,
       ...defense
     },
-    station: reika.link[0],
+    station: luna.link[0],
   }
   const result = startAccess(context, config)
   console.log("攻撃側のタイムライン")
-  printEvents(result.offense, true)
+  printEvents(context, result.offense, true)
   console.log("守備側のタイムライン")
-  printEvents(result.defense, true)
+  printEvents(context, result.defense, true)
 })

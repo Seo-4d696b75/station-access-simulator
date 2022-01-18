@@ -1,3 +1,4 @@
+import { getCurrentTime } from "../core/context"
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
@@ -6,7 +7,7 @@ const skill: SkillLogic = {
       self.who === "defense"
   },
   evaluate: (context, state, step, self) => {
-    const hour = new Date().getHours()
+    const hour = new Date(getCurrentTime(context)).getHours()
     if (hour < 6 || hour >= 18) {
       const def = self.skillPropertyReader("DEF_night")
       state.defendPercent += def
