@@ -1,4 +1,4 @@
-import { Context, Random } from "./context";
+import { Context, getCurrentTime, Random } from "./context";
 import { Station, StationAttribute, StationLink } from "./station";
 
 class StationManager {
@@ -39,7 +39,7 @@ class StationManager {
     const duration = new Array(size).fill(null)
       .map(() => minLinkSec * 1000 + Math.floor((maxLinkSec - minLinkSec) * 1000 * context.random()))
       .sort().reverse()
-    const now = Date.now()
+    const now = getCurrentTime(context)
     return station.map((s, idx) => {
       let link: StationLink = {
         ...s,

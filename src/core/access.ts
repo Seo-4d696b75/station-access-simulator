@@ -216,7 +216,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
       context.log.warn(`守備側(${d.name})のリンクに対象駅(${config.station.name})が含まれていません,追加します`)
       link = {
         ...config.station,
-        start: Date.now() - 100
+        start: getCurrentTime(context) - 100
       }
       d.link.push(link)
     }

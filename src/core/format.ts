@@ -1,27 +1,29 @@
 import { AccessSideState, AccessSide, AccessState, getAccessDenco } from "./access"
+import { Context, getCurrentTime } from "./context"
 import { Denco, DencoAttribute, DencoState } from "./denco"
 import { Event } from "./event"
 import { LinksResult, Station, StationLink } from "./station"
 import { ReadonlyState, UserState } from "./user"
 
-export function printEvents(user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
+export function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
   if (!user) return
   user.event.forEach(event => {
-    console.log(formatEvent(event, detail))
+    console.log(formatEvent(context, event, detail))
   })
 }
 
-export function formatEvent(event: Event, detail: boolean = false): string {
+export function formatEvent(context: Context, event: Event, detail: boolean = false): string {
+  const time = getCurrentTime(context)
   if (event.type === "access") {
-    return detail ? formatAccessDetail(event.data.access, event.data.which) : formatAccessEvent(event.data.access, event.data.which)
+    return detail ? formatAccessDetail(event.data.access, event.data.which, time) : formatAccessEvent(event.data.access, event.data.which, time)
   } else if (event.type === "reboot") {
-    return detail ? formatRebootDetail(event.data) : formatReboot(event.data)
+    return detail ? formatRebootDetail(event.data, time) : formatReboot(event.data, time)
   } else {
     return event.type
   }
 }
 
-export function formatReboot(result: LinksResult, width: number = 40): string {
+export function formatReboot(result: LinksResult, time: number, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine("reboot", width)
   str += formatLine(result.denco.name, width)
@@ -40,14 +42,14 @@ export function formatReboot(result: LinksResult, width: number = 40): string {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   }
   str += formatLine(`${result.denco.name}再起動します…`, width)
-  str += formatLine(formatPastTime(Date.now(), result.time), width)
+  str += formatLine(formatPastTime(time, result.time), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
 
-export function formatRebootDetail(result: LinksResult, width: number = 50): string {
+export function formatRebootDetail(result: LinksResult, time: number, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine("reboot", width)
   str += formatLine(`${result.denco.name}がリンクしていた駅のスコアが加算されました`, width)
@@ -56,7 +58,7 @@ export function formatRebootDetail(result: LinksResult, width: number = 50): str
     str += "┃" + formatSpace(link.name, width - 10, "left")
     str += link.matchBonus ? formatAttr(result.denco.attr, 8) : " ".repeat(8)
     str += "┃\n"
-    let duration = formatLinkTime(link)
+    let duration = formatLinkTime(time, link)
     let pt = formatSpace(formatPt(link.score), width - 2 - len(duration), "right")
     str += "┃" + duration + pt + "┃\n"
     str += "┠" + "─".repeat(width - 2) + "┨\n"
@@ -66,13 +68,13 @@ export function formatRebootDetail(result: LinksResult, width: number = 50): str
   str += "┃" + "combo bonus" + formatSpace(formatPt(result.comboBonus), width - 13, "right") + "┃\n"
   str += "┃" + "match bonus" + formatSpace(formatPt(result.matchBonus), width - 13, "right") + "┃\n"
   str += "┃" + formatSpace(result.denco.name + "'s exp " + formatPt(result.totalScore), width - 2, "right") + "┃\n"
-  str += formatLine(formatPastTime(Date.now(), result.time), width)
+  str += formatLine(formatPastTime(time, result.time), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
-export function formatAccessDetail(result: ReadonlyState<AccessState>, which: AccessSide, width: number = 60): string {
+export function formatAccessDetail(result: ReadonlyState<AccessState>, which: AccessSide, time: number, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -115,7 +117,7 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
 
   str += "┃" + (left ? formatAttr(left.attr, iconWidth) : " ".repeat(iconWidth))
-  str += formatSpace(formatPastTime(Date.now(), result.time), width - iconWidth * 2 - 2)
+  str += formatSpace(formatPastTime(time, result.time), width - iconWidth * 2 - 2)
   str += formatAttr(right.attr, iconWidth) + "┃\n"
 
   const tableLeft = Math.floor((width - 6 - 2) / 2)
@@ -141,9 +143,9 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   str += formatSpace(formatHP(rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatAccessLinkTime(result.station, leftSide), tableLeft, "left")
+  str += "┃" + formatSpace(formatAccessLinkTime(result.station, time, leftSide), tableLeft, "left")
   str += " link "
-  str += formatSpace(formatAccessLinkTime(result.station, rightSide), tableRight, "right") + "┃\n"
+  str += formatSpace(formatAccessLinkTime(result.station, time, rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   str += "┃" + formatSpace(formatPt(leftSide?.score), tableLeft, "left")
@@ -169,7 +171,7 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
 
 }
 
-export function formatAccessEvent(result: ReadonlyState<AccessState>, which: AccessSide, width: number = 50): string {
+export function formatAccessEvent(result: ReadonlyState<AccessState>, which: AccessSide, time: number, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -206,7 +208,7 @@ export function formatAccessEvent(result: ReadonlyState<AccessState>, which: Acc
   } str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
 
   str += "┃" + formatSpace(left ? `${left.name}のマスター` : "", iconWidth)
-  str += formatSpace(formatPastTime(Date.now(), result.time), width - iconWidth * 2 - 2)
+  str += formatSpace(formatPastTime(time, result.time), width - iconWidth * 2 - 2)
   str += formatSpace(`${right.name}のマスター`, iconWidth) + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
@@ -234,9 +236,9 @@ function formatPt(pt: number | undefined): string {
   return new Intl.NumberFormat().format(pt) + "pt"
 }
 
-function formatLinkTime(link?: StationLink | null): string {
+function formatLinkTime(time: number, link?: StationLink | null): string {
   if (!link) return ""
-  let duration = Date.now() - link.start
+  let duration = time - link.start
   if (duration < 0) return ""
   duration = Math.floor(duration / 1000)
   let str = `${duration % 60}秒`
@@ -252,12 +254,12 @@ function formatLinkTime(link?: StationLink | null): string {
   return str
 }
 
-function formatAccessLinkTime(station: Station, state?: ReadonlyState<AccessSideState> | null): string {
+function formatAccessLinkTime(station: Station, time: number, state?: ReadonlyState<AccessSideState> | null): string {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.who === "defense") {
     const link = d.link.find(link => link.name === station.name)
-    if (link) return formatLinkTime(link)
+    if (link) return formatLinkTime(time, link)
   }
   return "-"
 }
