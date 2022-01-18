@@ -108,6 +108,10 @@ export interface AccessSideState {
   probabilityBoostPercent: number
   probabilityBoosted: boolean
 
+  /**
+   * アクセスによって発生したダメージ値
+   * 攻撃側・フットバースの使用などによりダメージ計算自体が発生しない場合は `undefined`
+   */
   damage?: DamageState
 
   score: number
@@ -123,7 +127,8 @@ export interface AccessState {
   station: Station
   offense: AccessSideState
   defense?: AccessSideState
-  previous?: AccessState
+
+  depth: number
 
   damageBase?: number
   skipDamageFixed?: boolean
@@ -199,6 +204,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
     pinkMode: false,
     pinkItemSet: !!config.usePink,
     pinkItemUsed: false,
+    depth: 0,
   }
 
   // アクセス駅とリンクの確認
@@ -246,7 +252,7 @@ export function copyAccessState(state: ReadonlyState<AccessState>): AccessState 
     linkDisconncted: state.linkDisconncted,
     offense: copySideState(state.offense),
     defense: state.defense ? copySideState(state.defense) : undefined,
-    previous: state.previous ? copyAccessState(state.previous) : undefined
+    depth: state.depth,
   }
 }
 
@@ -575,13 +581,22 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       context.log.error("基本ダメージの値が見つかりません")
       throw Error("base damage not set")
     }
-    const damage = Math.max(damageBase + state.damageFixed, 0)
+    let damage = Math.max(damageBase + state.damageFixed, 0)
 
     // 被アクセス側のダメージ確定
     const defense = getDefense(state)
+    if (defense.damage) {
+      // アクセスの繰り返しや反撃の影響でダメージ計算結果が既にある場合は加算
+      damage += defense.damage.value
+      defense.damage = {
+        value: damage,
+        attr: defense.damage.attr || (state.damageRatio !== 1.0)
+      }
+    } else {
     defense.damage = {
       value: damage,
       attr: state.damageRatio !== 1.0
+      }
     }
     context.log.log(`ダメージ計算が終了：${damage}`)
 
@@ -834,6 +849,34 @@ function calcBaseDamage(context: Context, state: AccessState, base: number, useA
 }
 
 /**
+ * 攻守はそのままでアクセス処理を再度実行する
+ * 
+ * ダメージ計算・スコアと経験値の加算など各処理を再度実行して合計値を反映した新たな状態を返す
+ */
+export function repeatAccess(context: Context, state: ReadonlyState<AccessState>): AccessState {
+  context.log.log(`アクセス処理を再度実行 #${state.depth + 1}`)
+  const next: AccessState = {
+    time: state.time,
+    station: state.station,
+    offense: copySideState(state.offense),
+    defense: state.defense ? copySideState(state.defense) : undefined,
+    damageFixed: 0,
+    attackPercent: 0,
+    defendPercent: 0,
+    damageRatio: 1.0,
+    linkSuccess: false,
+    linkDisconncted: false,
+    pinkMode: false,
+    pinkItemSet: false,
+    pinkItemUsed: false,
+    depth: state.depth + 1,
+  }
+  const result = execute(context, next, false)
+  context.log.log(`アクセス処理を終了 #${state.depth + 1}`)
+  return result
+}
+
+/**
  * カウンター攻撃を処理する
  * 
  * 攻守を入れ替えて通常同様の処理を再度実行する
@@ -843,9 +886,10 @@ function calcBaseDamage(context: Context, state: AccessState, base: number, useA
  * @param denco カウンター攻撃の主体 現在の守備側である必要あり
  * @returns カウンター攻撃終了後の状態
  */
-export function counterAttack(context: Context, state: AccessState, denco: Denco): AccessState {
+export function counterAttack(context: Context, current: ReadonlyState<AccessState>, denco: Denco): AccessState {
+  const state = copyAccessState(current)
   // 面倒なので反撃は1回まで
-  if (state.previous) {
+  if (state.depth > 0) {
     context.log.warn("反撃は１回までだよ")
     return state
   }
@@ -888,7 +932,7 @@ export function counterAttack(context: Context, state: AccessState, denco: Denco
       pinkMode: false,
       pinkItemSet: false,
       pinkItemUsed: false,
-      previous: state,
+      depth: state.depth + 1,
     }
 
     // カウンター実行
