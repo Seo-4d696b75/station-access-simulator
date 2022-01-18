@@ -30,13 +30,13 @@
     {"skill_level":7,"denco_level":80,"name":"ナイトエクスプレス","DEF_night":50,"DEF_morning":-30}
   ]},
   {"numbering":"4","class":"D04_Miroku","type":"always","step":{},"list":[
-    {"skill_level":1,"denco_level":5,"name":"ダブルアクセス Lv.1"},
-    {"skill_level":2,"denco_level":15,"name":"ダブルアクセス Lv.2"},
-    {"skill_level":3,"denco_level":30,"name":"ダブルアクセス Lv.3"},
-    {"skill_level":4,"denco_level":50,"name":"ダブルアクセス Lv.4"},
-    {"skill_level":5,"denco_level":60,"name":"ダブルアクセス Lv.5"},
-    {"skill_level":6,"denco_level":70,"name":"ダブルアクセス Lv.6"},
-    {"skill_level":7,"denco_level":80,"name":"ディーゼルＤアクセス"}
+    {"skill_level":1,"denco_level":5,"name":"ダブルアクセス Lv.1","probability":2.0},
+    {"skill_level":2,"denco_level":15,"name":"ダブルアクセス Lv.2","probability":2.5},
+    {"skill_level":3,"denco_level":30,"name":"ダブルアクセス Lv.3","probability":3.0},
+    {"skill_level":4,"denco_level":50,"name":"ダブルアクセス Lv.4","probability":3.5},
+    {"skill_level":5,"denco_level":60,"name":"ダブルアクセス Lv.5","probability":4.0},
+    {"skill_level":6,"denco_level":70,"name":"ダブルアクセス Lv.6","probability":4.5},
+    {"skill_level":7,"denco_level":80,"name":"ディーゼルＤアクセス","probability":5.0}
   ]},
   {"numbering":"5","class":"D05_Reika","type":"manual","step":{"damage_common":null},"list":[
     {"skill_level":1,"denco_level":5,"name":"起動加速度向上 Lv.1","ATK":10,"active":900,"wait":5400},

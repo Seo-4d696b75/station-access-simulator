@@ -19,11 +19,14 @@ async function init() {
 
 init().then(() => {
   const context = initContext()
-  context.clock = Date.parse('2022-01-01T12:00:00+0900')
-  let luna = DencoManager.getDenco(context, "3", 50, 1)
-  let reika = DencoManager.getDenco(context, "5", 50, 1)
+  context.random.mode = "force"
+  context.clock = Date.parse('2022-01-01T23:00:00+0900')
+  let luna = DencoManager.getDenco(context, "3", 80, 1)
+  let miroku = DencoManager.getDenco(context, "4", 50, 1)
+  let reika = DencoManager.getDenco(context, "5", 50)
   let defense = initUser(context, "とあるマスター", [luna])
-  let offense = initUser(context, "とあるマスター２", [reika])
+  let offense = initUser(context, "とあるマスター２", [miroku, reika])
+  offense = activateSkill(context, { ...offense, carIndex: 1 })
   const config = {
     offense: {
       carIndex: 0,

@@ -753,6 +753,23 @@ function markTriggerSkill(state: AccessSideState, step: SkillEvaluationStep, den
 }
 
 /**
+ * 指定したでんこのスキルが発動済みか確認する
+ * 
+ * １度目のスキル発動における各コールバック呼び出しのタイミングでの返値の変化は次のとおり
+ * - `Skill#canEvaluate` : `false`
+ * - `Skill#evaluate` : `true`
+ * @param state 
+ * @param denco 
+ * @param step `undefined`の場合は`denco`の一致でのみ検索する
+ * @returns true if has been triggered
+ */
+export function hasSkillTriggered(state: ReadonlyState<AccessSideState>, denco: Denco, step?: SkillEvaluationStep): boolean {
+  return state.triggeredSkills.findIndex(t => {
+    return t.numbering === denco.numbering && (!step || step === t.step)
+  }) >= 0
+}
+
+/**
  * 編成からアクティブなスキル（スキルの保有・スキル状態・スキル無効化の影響を考慮）を抽出する
  * @param list 
  * @param step 
