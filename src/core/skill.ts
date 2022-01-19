@@ -131,7 +131,7 @@ export interface SkillLogic {
    * - undefined: スキル側で適宜状態を変更する
    * - `SkillActiveTimeout`: 指定した時間経過したら状態を変更する
    * 
-   * `onActivated`を指定しない場合は返値`undefined`と同様に処理する
+   * `disactivateAt`を指定しない場合は返値`undefined`と同様に処理する
    * @returns 一定時間の経過で判定する場合はtimeoutを返す
    */
   disactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => undefined | SkillActiveTimeout
@@ -284,6 +284,9 @@ export function isSkillActive(skill: SkillPossess): skill is SkillHolder<"posses
 export function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
   const next = copyUserState(state)
   const d = next.formation[state.carIndex]
+  if (!d) {
+    context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
+  }
   const skill = getSkill(d)
   context = fixClock(context)
   switch (skill.transitionType) {
@@ -359,6 +362,9 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
 export function disactivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
   const next = copyUserState(state)
   const d = next.formation[state.carIndex]
+  if (!d) {
+    context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
+  }
   const skill = getSkill(d)
   context = fixClock(context)
   switch (skill.transitionType) {

@@ -168,6 +168,10 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState & For
     }
     return s
   })
+  const d = formation[f.carIndex]
+  if (!d) {
+    context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${f.carIndex}, formation.legth: ${formation.length}`)
+  }
   return {
     carIndex: f.carIndex,
     formation: formation,
