@@ -1,6 +1,6 @@
 import * as access from "./access"
 import { Context, fixClock, getCurrentTime } from "./context"
-import { DencoState, getSkill } from "./denco"
+import { copyDencoState, DencoState, getSkill } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
 import { copyUserState, FormationPosition, ReadonlyState, UserState } from "./user"
@@ -282,66 +282,83 @@ export function isSkillActive(skill: SkillPossess): skill is SkillHolder<"posses
  * @returns `active`へ遷移した新しい状態
  */
 export function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
-  const next = copyUserState(state)
+  context = fixClock(context)
+  let next = copyUserState(state)
+  if (!checkActivateSkill(context, state)) {
+    return next
+  }
   const d = next.formation[state.carIndex]
+  if (!d) {
+    context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
+    throw Error()
+  }
+  const skill = getSkill(d)
+  context.log.log(`スキル状態の変更：${d.name} ${skill.state.type} -> active`)
+  let self = {
+    ...d,
+    carIndex: state.carIndex,
+    skill: skill,
+    skillPropertyReader: skill.propertyReader,
+  }
+  skill.state = {
+    type: "active",
+    data: skill.disactivateAt?.(context, state, self)
+  }
+
+  // callback #onActivated
+  const callback = skill.onActivated
+  if (callback) {
+    // 更新したスキル状態をコピー
+    self = {
+      ...copyDencoState(d),
+      carIndex: state.carIndex,
+      skill: skill,
+      skillPropertyReader: skill.propertyReader,
+    }
+    next = callback(context, next, self)
+  }
+  return refreshSkillState(context, next)
+}
+
+function checkActivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): boolean {
+  const d = state.formation[state.carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
   }
   const skill = getSkill(d)
-  context = fixClock(context)
   switch (skill.transitionType) {
     case "manual":
     case "manual-condition": {
       switch (skill.state.type) {
         case "idle": {
-          skill.state = {
-            type: "active",
-            data: skill.disactivateAt?.(context, state, {
-              ...d,
-              carIndex: state.carIndex,
-              skill: skill,
-              skillPropertyReader: skill.propertyReader,
-            })
-          }
-          context.log.log(`スキル状態の変更：${d.name} idle -> active`)
-          return refreshSkillState(context, next)
+          return true
         }
         case "active": {
-          return next
+          return false
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:${skill.transitionType})`)
-          throw Error()
+          return false
         }
       }
     }
     case "auto": {
       switch (skill.state.type) {
         case "unable": {
-          skill.state = {
-            type: "active",
-            data: skill.disactivateAt?.(context, state, {
-              ...d,
-              carIndex: state.carIndex,
-              skill: skill,
-              skillPropertyReader: skill.propertyReader,
-            })
-          }
-          context.log.log(`スキル状態の変更：${d.name} unable -> active`)
-          return refreshSkillState(context, next)
+          return true
         }
         case "active": {
-          return next
+          return false
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:auto)`)
-          throw Error()
+          return false
         }
       }
     }
     default: {
       context.log.error(`スキル状態をactiveに変更できません type:${skill.transitionType}`)
-      throw Error()
+      return false
     }
   }
 }
@@ -432,7 +449,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
   if (denco.skillHolder.type !== "possess") {
     return state
   }
-  const skill = denco.skillHolder.skill
+  const skill = getSkill(denco)
   switch (skill.transitionType) {
     case "always": {
       if (skill.state.type === "not_init") {
@@ -522,7 +539,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
         throw Error()
       }
       let self = {
-        ...denco,
+        ...copyDencoState(denco),
         carIndex: idx,
         skill: skill,
         skillPropertyReader: skill.propertyReader,
@@ -533,6 +550,18 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
         skill.state = {
           type: "active",
           data: undefined
+        }
+        const callback = skill.onActivated
+        if (callback) {
+          // 更新したスキル状態をコピー
+          self = {
+            ...copyDencoState(denco),
+            carIndex: idx,
+            skill: skill,
+            skillPropertyReader: skill.propertyReader,
+          }
+          state = callback(context, state, self)
+          state = copyUserState(state)
         }
       } else if (!active && skill.state.type === "active") {
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)
