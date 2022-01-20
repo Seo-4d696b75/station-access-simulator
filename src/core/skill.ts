@@ -162,6 +162,11 @@ export interface SkillLogic {
    */
   canEnabled?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => boolean
 
+  /**
+   * スキル状態が`active`へ変更された直後の処理をここで行う
+   * 
+   * スキル状態遷移のタイプ`manual,manual-condition,auto,auto-condition`限定
+   */
   onActivated?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
   onFormationChanged?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
   onDencoHPChanged?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
@@ -532,6 +537,12 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
       if (skill.state.type === "cooldown") {
         context.log.error("不正なスキル状態です type:auto-condition, state: cooldown")
       }
+      if (skill.state.type === "not_init") {
+        skill.state = {
+          type: "unable",
+          data: undefined
+        }
+      }
       // スキル状態の確認・更新
       const predicate = skill.canActivated
       if (!predicate) {
@@ -539,7 +550,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
         throw Error()
       }
       let self = {
-        ...copyDencoState(denco),
+        ...denco,
         carIndex: idx,
         skill: skill,
         skillPropertyReader: skill.propertyReader,
