@@ -12,7 +12,7 @@ const skill: SkillLogic = {
     if (target.length > 0) {
       const percent = self.skillPropertyReader("probability")
       const heal = self.skillPropertyReader("heal")
-      const evaluate: EventSkillEvaluate = (state, self) => {
+      const evaluate: EventSkillEvaluate = (context, state, self) => {
         context.log.log(`検測開始しま～す HP+${heal}`)
         return {
           ...state,

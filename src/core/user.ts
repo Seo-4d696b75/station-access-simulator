@@ -15,7 +15,7 @@ export type ReadonlyState<T> = T extends (Builtin | Event)
   : { readonly [key in keyof T]: ReadonlyState<T[key]> }
 
 export interface User {
-  name: string
+  readonly name: string
 }
 
 /**

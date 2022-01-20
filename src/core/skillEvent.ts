@@ -1,8 +1,9 @@
 import * as Access from "./access";
-import { Context, getCurrentTime } from "./context";
+import { Context, fixClock, getCurrentTime } from "./context";
 import { copyDencoState, Denco, DencoState } from "./denco";
-import { SkillTriggerEvent } from "./event";
-import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill } from "./skill";
+import { Event, SkillTriggerEvent } from "./event";
+import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill, SkillTrigger } from "./skill";
+import { Station } from "./station";
 import { copyUserState, ReadonlyState, User, UserState } from "./user";
 
 
@@ -21,6 +22,18 @@ function copySKillEventDencoState(state: ReadonlyState<SkillEventDencoState>): S
   }
 }
 
+function copySkillEventState(state: ReadonlyState<SkillEventState>): SkillEventState {
+  return {
+    time: state.time,
+    user: state.user,
+    formation: state.formation.map(d => copySKillEventDencoState(d)),
+    carIndex: state.carIndex,
+    event: Array.from(state.event),
+    probability: state.probability,
+    probabilityBoostPercent: state.probabilityBoostPercent,
+  }
+}
+
 export type TriggeredSkill = Readonly<{
   time: number
   carIndex: number
@@ -31,13 +44,14 @@ export type TriggeredSkill = Readonly<{
 
 export interface SkillEventState {
   time: number
+  user: User
 
   formation: SkillEventDencoState[]
   carIndex: number
 
-  triggeredSkills: TriggeredSkill[]
+  event: Event[]
 
-  probability?: ProbabilityPercent
+  probability: SkillTrigger
   probabilityBoostPercent: number
 
 }
@@ -60,7 +74,7 @@ export type SkillEvaluationStep =
   "probability_check" |
   "self"
 
-export type EventSkillEvaluate = (state: SkillEventState, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => SkillEventState
+export type EventSkillEvaluate = (context: Context, state: SkillEventState, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => SkillEventState
 
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
@@ -73,13 +87,15 @@ export type EventSkillEvaluate = (state: SkillEventState, self: ReadonlyState<Sk
  * @param evaluate スキル発動時の処理
  * @returns 
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: ProbabilityPercent, evaluate: EventSkillEvaluate): UserState {
+export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: SkillTrigger, evaluate: EventSkillEvaluate): UserState {
+  context = fixClock(context)
   const accessFormation = (self.which === "offense") ? access.offense.formation : access.defense?.formation
   if (!accessFormation) {
     context.log.error(`指定されたでんこが直前のアクセスの状態で見つかりません`)
     throw Error()
   }
   const eventState: SkillEventState = {
+    user: state,
     time: access.time,
     formation: state.formation.map((d, idx) => {
       return {
@@ -90,7 +106,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
       }
     }),
     carIndex: self.carIndex,
-    triggeredSkills: [],
+    event: [],
     probability: probability,
     probabilityBoostPercent: 0,
   }
@@ -102,13 +118,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
       formation: result.formation.map(d => copyDencoState(d)),
       event: [
         ...state.event,
-        ...result.triggeredSkills.map(t => {
-          let e: SkillTriggerEvent = {
-            type: "skill_trigger",
-            data: t
-          }
-          return e
-        })
+        ...result.event,
       ],
       queue: Array.from(state.queue),
     }
@@ -145,13 +155,17 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
     const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(context, state, active) : undefined
     if (next) {
       state = next
-      state.triggeredSkills.push({
-        time: state.time,
-        carIndex: s.carIndex,
-        denco: s,
-        skillName: skill.name,
-        step: "probability_check"
-      })
+      let e: SkillTriggerEvent = {
+        type: "skill_trigger",
+        data: {
+          time: state.time,
+          carIndex: s.carIndex,
+          denco: s,
+          skillName: skill.name,
+          step: "probability_check"
+        },
+      }
+      state.event.push(e)
     }
   })
 
@@ -170,15 +184,19 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
     skill: skill,
     skillPropertyReader: skill.propertyReader
   }
-  const result = evaluate(state, d)
+  const result = evaluate(context, state, d)
   state = result
-  state.triggeredSkills.push({
-    time: state.time,
-    carIndex: self.carIndex,
-    denco: self,
-    skillName: skill.name,
-    step: "self"
-  })
+  let trigger: SkillTriggerEvent = {
+    type: "skill_trigger",
+    data: {
+      time: state.time,
+      carIndex: self.carIndex,
+      denco: self,
+      skillName: skill.name,
+      step: "self"
+    },
+  }
+  state.event.push(trigger)
   context.log.log("スキル評価イベントの終了")
   return state
 }
@@ -195,6 +213,9 @@ function canSkillEvaluated(context: Context, state: SkillEventState): boolean {
     }
     const percent = state.probability
     const boost = state.probabilityBoostPercent
+    if (typeof percent === "boolean") {
+      return percent
+    }
     if (percent >= 100) {
       return true
     }
@@ -209,13 +230,57 @@ function canSkillEvaluated(context: Context, state: SkillEventState): boolean {
   }
 }
 
+export function randomeAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
+  context = fixClock(context)
+  //TODO ランダム駅の選択
+  const station: Station = {
+    name: "ランダムな駅",
+    nameKana: "らんだむなえき",
+    attr: "unknown",
+  }
+  const config: Access.AccessConfig = {
+    offense: {
+      name: state.user.name,
+      carIndex: state.carIndex,
+      formation: state.formation.map(d => copyDencoState(d)),
+      event: [],
+      queue: [],
+    },
+    station: station
+  }
+  const result = Access.startAccess(context, config)
+  if (result.offense.event.length !== 1) {
+    context.log.error(`イベント数が想定外 event:${JSON.stringify(result.offense.event)}`)
+  }
+  return {
+    time: state.time,
+    user: state.user,
+    formation: result.offense.formation.map((d, idx) => {
+      let current = state.formation[idx]
+      return {
+        ...copyDencoState(d),
+        who: current.who,
+        carIndex: current.carIndex,
+        skillInvalidated: current.skillInvalidated,
+      }
+    }),
+    carIndex: state.carIndex,
+    event: [
+      ...state.event,
+      result.offense.event[0],
+    ],
+    probability: state.probability,
+    probabilityBoostPercent: state.probabilityBoostPercent,
+  }
+}
+
 /**
  * 指定した時刻にトリガーされるスキル発動型イベント
  */
 export interface SkillEventQueueEntry {
   readonly denco: Denco
   readonly time: number
-  readonly probability: ProbabilityPercent
+  readonly probability: SkillTrigger
   readonly evaluate: EventSkillEvaluate
 }
 
@@ -245,6 +310,7 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
 export function refreshSkillEventQueue(context: Context, state: ReadonlyState<UserState>): UserState {
+  context = fixClock(context)
   let next = copyUserState(state)
   next.queue.sort((a, b) => a.time - b.time)
   const time = getCurrentTime(context)
@@ -265,6 +331,7 @@ export function refreshSkillEventQueue(context: Context, state: ReadonlyState<Us
     }
     const eventState: SkillEventState = {
       time: time,
+      user: state,
       formation: next.formation.map((d, i) => {
         return {
           ...copyDencoState(d),
@@ -274,7 +341,7 @@ export function refreshSkillEventQueue(context: Context, state: ReadonlyState<Us
         }
       }),
       carIndex: idx,
-      triggeredSkills: [],
+      event: [],
       probability: entry.probability,
       probabilityBoostPercent: 0,
     }
@@ -286,13 +353,7 @@ export function refreshSkillEventQueue(context: Context, state: ReadonlyState<Us
         formation: result.formation.map(d => copyDencoState(d)),
         event: [
           ...next.event,
-          ...result.triggeredSkills.map(t => {
-            let e: SkillTriggerEvent = {
-              type: "skill_trigger",
-              data: t
-            }
-            return e
-          })
+          ...result.event,
         ],
         queue: next.queue,
       }
