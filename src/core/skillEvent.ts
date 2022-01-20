@@ -1,9 +1,9 @@
 import * as Access from "./access";
-import { Context } from "./context";
-import { copyDencoState, DencoState } from "./denco";
+import { Context, getCurrentTime } from "./context";
+import { copyDencoState, Denco, DencoState } from "./denco";
 import { SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill } from "./skill";
-import { copyUserState, ReadonlyState, UserState } from "./user";
+import { copyUserState, ReadonlyState, User, UserState } from "./user";
 
 
 export interface SkillEventDencoState extends DencoState {
@@ -99,7 +99,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     // スキル発動による影響の反映
     return {
       name: state.name,
-      formation: result.formation,
+      formation: result.formation.map(d => copyDencoState(d)),
       event: [
         ...state.event,
         ...result.triggeredSkills.map(t => {
@@ -109,7 +109,8 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
           }
           return e
         })
-      ]
+      ],
+      queue: Array.from(state.queue),
     }
   } else {
     return copyUserState(state)
@@ -178,6 +179,7 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
     skillName: skill.name,
     step: "self"
   })
+  context.log.log("スキル評価イベントの終了")
   return state
 }
 
@@ -205,5 +207,98 @@ function canSkillEvaluated(context: Context, state: SkillEventState): boolean {
   } else {
     return true
   }
+}
+
+/**
+ * 指定した時刻にトリガーされるスキル発動型イベント
+ */
+export interface SkillEventQueueEntry {
+  readonly denco: Denco
+  readonly time: number
+  readonly probability: ProbabilityPercent
+  readonly evaluate: EventSkillEvaluate
+}
+
+/**
+ * スキル発動型イベントを指定時刻に評価するよう待機列に追加する
+ * 
+ * @param context 
+ * @param state 
+ * @param entry 
+ * @returns 待機列に追加した新しい状態
+ */
+export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserState>, entry: SkillEventQueueEntry): UserState {
+  const now = getCurrentTime(context)
+  if (now > entry.time) {
+    context.log.error(`現在時刻より前の時刻は指定できません entry: ${JSON.stringify(entry)}`)
+    throw Error()
+  }
+  const next = copyUserState(state)
+  next.queue.push(entry)
+  return refreshSkillEventQueue(context, state)
+}
+
+/**
+ * 待機列中のスキル発動型イベントの指定時刻を現在時刻に参照して必要なら評価を実行する
+ * @param context 現在時刻は`context#clock`を参照する {@see getCurrentTime}
+ * @param state 
+ * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
+ */
+export function refreshSkillEventQueue(context: Context, state: ReadonlyState<UserState>): UserState {
+  let next = copyUserState(state)
+  next.queue.sort((a, b) => a.time - b.time)
+  const time = getCurrentTime(context)
+  while (next.queue.length > 0) {
+    const entry = next.queue[0]
+    if (entry.time >= time) break
+    next.queue.splice(0, 1)
+    // start skill event
+    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${new Date(entry.time).toTimeString()} dneco: ${entry.denco.name}`)
+    const idx = next.formation.findIndex(d => d.numbering === entry.denco.numbering)
+    if (idx < 0) {
+      context.log.log(`スキル発動の主体となるでんこが編成内に居ません（終了） formation: ${next.formation.map(d => d.name)}`)
+      continue
+    }
+    if (next.formation[idx].skillHolder.type !== "possess") {
+      context.log.log(`スキル発動の主体となるでんこがスキルを保有していません（終了） skill: ${next.formation[idx].skillHolder.type}`)
+      continue
+    }
+    const eventState: SkillEventState = {
+      time: time,
+      formation: next.formation.map((d, i) => {
+        return {
+          ...copyDencoState(d),
+          who: idx === i ? "self" : "other",
+          carIndex: i,
+          skillInvalidated: false
+        }
+      }),
+      carIndex: idx,
+      triggeredSkills: [],
+      probability: entry.probability,
+      probabilityBoostPercent: 0,
+    }
+    const result = execute(context, eventState, entry.evaluate)
+    if (result) {
+      // スキル発動による影響の反映
+      next = {
+        name: next.name,
+        formation: result.formation.map(d => copyDencoState(d)),
+        event: [
+          ...next.event,
+          ...result.triggeredSkills.map(t => {
+            let e: SkillTriggerEvent = {
+              type: "skill_trigger",
+              data: t
+            }
+            return e
+          })
+        ],
+        queue: next.queue,
+      }
+    }
+    // end skill event
+  }
+  return next
 }
 

@@ -293,6 +293,7 @@ function completeAccess(context: Context, config: AccessConfig, result: Readonly
   let offense: UserState & FormationPosition = {
     ...config.offense,
     formation: Array.from(result.offense.formation).map(d => copyDencoState(d)),
+    queue: Array.from(config.offense.queue),
     event: [
       ...config.offense.event,
       {
@@ -309,6 +310,7 @@ function completeAccess(context: Context, config: AccessConfig, result: Readonly
     defense = {
       ...config.defense,
       formation: Array.from(result.defense.formation).map(d => copyDencoState(d)),
+      queue: Array.from(config.defense.queue),
       event: [
         ...config.defense.event,
         {

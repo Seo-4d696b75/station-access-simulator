@@ -3,6 +3,7 @@ import { Event, LevelupDenco, LevelupEvent } from "./event";
 import { refreshSkillState } from "./skill";
 import DencoManager from "./dencoManager"
 import { Context, getCurrentTime } from "./context";
+import { SkillEventQueueEntry } from "./skillEvent";
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
 type Builtin = Primitive | Function | Date | Error | RegExp;
@@ -33,6 +34,11 @@ export interface UserState extends User {
    * タイムライン上に表示されるイベント一覧
    */
   event: Event[]
+
+  /**
+   * 指定時刻に発動するスキル発動型イベントの待機列 FIFO
+   */
+  queue: SkillEventQueueEntry[]
 }
 
 export interface FormationPosition {
@@ -53,7 +59,8 @@ export function initUser(context: Context, userName: string, formation?: Readonl
   return changeFormation(context, {
     name: userName,
     formation: [],
-    event: []
+    event: [],
+    queue: [],
   }, formation)
 }
 
@@ -74,6 +81,7 @@ export function copyUserState(state: ReadonlyState<UserState>): UserState {
     name: state.name,
     formation: Array.from(state.formation).map(d => copyDencoState(d)),
     event: Array.from(state.event),
+    queue: Array.from(state.queue),
   }
 }
 
