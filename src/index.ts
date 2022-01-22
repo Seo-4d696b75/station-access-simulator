@@ -8,7 +8,7 @@ import { AccessConfig, startAccess } from './core/access'
 import { formatEvent, printEvents } from './core/format'
 import { initContext } from './core/context'
 import { getSkill } from './core/denco'
-import { initUser, UserState } from './core/user'
+import { initUser, refreshCurrentTime, UserState } from './core/user'
 import { activateSkill } from './core/skill'
 
 async function init() {
@@ -18,9 +18,11 @@ async function init() {
 }
 
 init().then(() => {
-  const context = initContext()
+  const context = initContext("test", "test", true)
+  const now = Date.now()
+  context.clock = now
   let reika = DencoManager.getDenco(context, "5", 80)
-  let charlotte = DencoManager.getDenco(context, "6", 50, 3)
+  let charlotte = DencoManager.getDenco(context, "6", 50, 1)
   const offense = initUser(context, "とあるマスター１", [
     reika
   ])
