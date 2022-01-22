@@ -675,6 +675,7 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     context.log.log(`ダメージ計算が終了：${damage.value}`)
 
     // 攻守ふたりに関してアクセス結果を仮決定
+    defense.damage = damage
 
     // HP0 になったらリブート
     defense.hpAfter = Math.max(defense.hpBefore - damage.value, 0)
