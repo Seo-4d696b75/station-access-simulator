@@ -1,6 +1,6 @@
 import { AccessSide, AccessState } from "./access"
 import { Denco, DencoState } from "./denco"
-import { TriggeredSkill } from "./skillEvent"
+import { EventTriggeredSkill } from "./skillEvent"
 import { LinksResult } from "./station"
 import { ReadonlyState } from "./user"
 
@@ -28,7 +28,7 @@ export type AccessEventData = Readonly<{
 
 export type AccessEvent = EventBase<"access", AccessEventData>
 export type RebootEvent = EventBase<"reboot", LinksResult>
-export type SkillTriggerEvent = EventBase<"skill_trigger", TriggeredSkill>
+export type SkillTriggerEvent = EventBase<"skill_trigger", EventTriggeredSkill>
 export type LevelupEvent = EventBase<"levelup", LevelupDenco>
 
 /**

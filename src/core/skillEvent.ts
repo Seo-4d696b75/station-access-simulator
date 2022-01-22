@@ -34,7 +34,7 @@ function copySkillEventState(state: ReadonlyState<SkillEventState>): SkillEventS
   }
 }
 
-export type TriggeredSkill = Readonly<{
+export type EventTriggeredSkill = Readonly<{
   time: number
   carIndex: number
   denco: ReadonlyState<DencoState>
@@ -300,7 +300,7 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
   }
   const next = copyUserState(state)
   next.queue.push(entry)
-  return refreshSkillEventQueue(context, state)
+  return refreshSkillEventQueue(context, next)
 }
 
 /**
@@ -316,7 +316,7 @@ export function refreshSkillEventQueue(context: Context, state: ReadonlyState<Us
   const time = getCurrentTime(context)
   while (next.queue.length > 0) {
     const entry = next.queue[0]
-    if (entry.time >= time) break
+    if (entry.time < time) break
     next.queue.splice(0, 1)
     // start skill event
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${new Date(entry.time).toTimeString()} dneco: ${entry.denco.name}`)
