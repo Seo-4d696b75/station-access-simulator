@@ -6,7 +6,7 @@ import { initUser, UserState } from "../../core/user"
 import { activateSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { getSkill } from "../../core/denco"
 import { getAccessDenco, startAccess } from "../../core/access"
-import { TriggeredSkill } from "../../core/skillEvent"
+import { EventTriggeredSkill } from "../../core/skillEvent"
 
 describe("セリアのスキル", () => {
   test("setup", async () => {
@@ -178,7 +178,7 @@ describe("セリアのスキル", () => {
     expect(defense.event.length).toBe(2)
     const heal = defense.event[1]
     expect(heal.type).toBe("skill_trigger")
-    const data = heal.data as TriggeredSkill
+    const data = heal.data as EventTriggeredSkill
     expect(data.denco).toMatchObject(seria)
     expect(data.time).toBe(result.access.time)
     expect(data.carIndex).toBe(1)
