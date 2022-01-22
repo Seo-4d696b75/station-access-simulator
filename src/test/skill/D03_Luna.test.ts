@@ -31,7 +31,7 @@ describe("ルナのスキル", () => {
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
     expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
 
-    
+
     context.clock = Date.parse('2022-01-01T23:00:00+0900')
     state = refreshSkillState(context, state)
     luna = state.formation[0]
@@ -91,11 +91,11 @@ describe("ルナのスキル", () => {
     expect(access.offense.triggeredSkills.length).toBe(0)
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)
-    expect(access.defense?.damage?.value).toBe(156)
     let accessReika = getAccessDenco(access, "defense")
     expect(accessReika.reboot).toBe(false)
     expect(accessReika.hpBefore).toBe(192)
     expect(accessReika.hpAfter).toBe(36)
+    expect(accessReika.damage?.value).toBe(156)
   })
   test("発動あり-夜", () => {
     const context = initContext("test", "test", false)
@@ -125,12 +125,12 @@ describe("ルナのスキル", () => {
     expect(trigger.step).toBe("damage_common")
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)
-    expect(access.defense?.damage?.value).toBe(150)
     expect(access.defendPercent).toBe(25)
     let accessLuna = getAccessDenco(access, "defense")
     expect(accessLuna.reboot).toBe(false)
     expect(accessLuna.hpBefore).toBe(240)
     expect(accessLuna.hpAfter).toBe(90)
+    expect(accessLuna.damage?.value).toBe(150)
   })
   test("発動あり-昼", () => {
     const context = initContext("test", "test", false)
@@ -160,11 +160,11 @@ describe("ルナのスキル", () => {
     expect(trigger.step).toBe("damage_common")
     expect(access.linkDisconncted).toBe(true)
     expect(access.linkSuccess).toBe(true)
-    expect(access.defense?.damage?.value).toBe(260)
     expect(access.defendPercent).toBe(-30)
     let accessLuna = getAccessDenco(access, "defense")
     expect(accessLuna.reboot).toBe(true)
     expect(accessLuna.hpBefore).toBe(240)
     expect(accessLuna.hpAfter).toBe(0)
+    expect(accessLuna.damage?.value).toBe(260)
   })
 })
