@@ -93,8 +93,8 @@ describe("メロのスキル", () => {
     expect(access.pinkMode).toBe(false)
     expect(access.offense.triggeredSkills.length).toBe(0)
     if (access.defense) {
-      expect(access.defense.damage?.value).toBe(200)
       let d = getAccessDenco(access, "defense")
+      expect(d.damage?.value).toBe(200)
       expect(d.hpBefore).toBe(192)
       expect(d.hpAfter).toBe(0)
       expect(d.reboot).toBe(true)
@@ -131,9 +131,9 @@ describe("メロのスキル", () => {
     expect(trigger.numbering).toBe("2")
     expect(trigger.name).toBe("mero")
     if (access.defense) {
-      expect(access.defense.damage).toBeUndefined()
       let accessReika = getAccessDenco(access, "defense")
       expect(accessReika.reboot).toBe(false)
+      expect(accessReika.damage).toBeUndefined()
     }
   })
   test("発動あり-確率ブースト", () => {
@@ -144,7 +144,7 @@ describe("メロのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [reika])
     let offense = initUser(context, "とあるマスター２", [mero, hiiru])
-    offense = activateSkill(context, {...offense, carIndex: 1})
+    offense = activateSkill(context, { ...offense, carIndex: 1 })
     hiiru = offense.formation[1]
     expect(hiiru.skillHolder.skill?.state.type).toBe("active")
     const config = {
@@ -172,9 +172,9 @@ describe("メロのスキル", () => {
     expect(trigger.numbering).toBe("2")
     expect(trigger.name).toBe("mero")
     if (access.defense) {
-      expect(access.defense.damage).toBeUndefined()
       let accessReika = getAccessDenco(access, "defense")
       expect(accessReika.reboot).toBe(false)
+      expect(accessReika.damage).toBeUndefined()
     }
   })
 })

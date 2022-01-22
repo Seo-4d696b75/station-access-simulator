@@ -108,6 +108,7 @@ describe("経験値の処理", () => {
       const accessEXP = 0
       reika = {
         ...reika,
+        link: [],
         currentExp: accessEXP
       }
       expect(defense.formation[0]).toMatchObject(reika)
