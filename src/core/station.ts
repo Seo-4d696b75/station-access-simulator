@@ -32,6 +32,7 @@ export type LinksResult = Readonly<{
   time: number
   /**
    * リブートしてリンクスコア＆経験値が加算される直前の状態
+   * リブートしたリンクは解除されている
    */
   denco: ReadonlyState<DencoState>
   which: AccessSide
