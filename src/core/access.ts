@@ -192,7 +192,10 @@ export interface AccessSideState {
    * アクセスによりリブートしたリンクのスコアは除くが、
    * リブート以外で解除したリンクスコアは含まれる
    */
+  accessScore: number
+
   score: number
+  exp: number
 }
 
 /**
@@ -260,7 +263,9 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState & For
     triggeredSkills: [],
     probabilityBoostPercent: 0,
     probabilityBoosted: false,
+    accessScore: 0,
     score: 0,
+    exp: 0,
   }
 }
 
@@ -359,11 +364,13 @@ function copyAccessDencoState(state: ReadonlyState<AccessDencoState>): AccessDen
 function copySideState(state: ReadonlyState<AccessSideState>): AccessSideState {
   return {
     carIndex: state.carIndex,
-    score: state.score,
+    accessScore: state.accessScore,
     probabilityBoostPercent: state.probabilityBoostPercent,
     probabilityBoosted: state.probabilityBoosted,
     formation: Array.from(state.formation).map(d => copyAccessDencoState(d)),
     triggeredSkills: Array.from(state.triggeredSkills),
+    score: state.score,
+    exp: state.exp,
   }
 }
 
@@ -588,7 +595,7 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
 
     // TODO アクセスによるスコアと経験値
     getAccessDenco(state, "offense").accessEXP += 100
-    state.offense.score += 100
+    state.offense.accessScore += 100
 
     // pink_check
     // フットバの確認、アイテム優先=>スキル評価
@@ -726,30 +733,17 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     context.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
     context.log.log(`守備側のリンク解除：${state.linkDisconncted}`)
 
-    // 各でんこのリンク状態を計算
-    state = completeDencoLink(context, state, "offense")
-    state = completeDencoLink(context, state, "defense")
-    // 例外的にリブートを伴わないリンク解除の場合は、リンクスコア＆経験値がアクセスのスコア＆経験値として加算
-
     // アクセスによる経験値の反映
     state = completeDencoAccessEXP(context, state, "offense")
     state = completeDencoAccessEXP(context, state, "defense")
 
-    // 守備側がリブートした場合はその駅のリンクのスコア＆経験値を表示
-    if (hasDefense(state)) {
-      const defense = getAccessDenco(state, "defense")
-      if (defense.reboot) {
-        const idx = defense.link.findIndex(l => l.name === state.station.name)
-        if (idx < 0) {
-          context.log.error(`リブートした守備側のリンクが見つかりません ${state.station.name}`)
-          throw Error()
-        }
-        const result = calcLinkResult(context, defense.link[idx], defense)
-        // アクセスの経験値として加算はするが、でんこ状態への反映はしない checkRebootLinksでまとめて加算
-        defense.accessEXP += result.score
-        state.defense.score += result.score
-      }
-    }
+    // 表示用の経験値＆スコアの計算
+    state = completeDisplayScoreExp(context, state, "offense")
+    state = completeDisplayScoreExp(context, state, "defense")
+
+    // 各でんこのリンク状態を計算
+    state = completeDencoLink(context, state, "offense")
+    state = completeDencoLink(context, state, "defense")
   }
   return state
 }
@@ -1053,7 +1047,9 @@ function turnSide(state: AccessSideState, currentSide: AccessSide, nextAccessIdx
     triggeredSkills: state.triggeredSkills,
     probabilityBoostPercent: state.probabilityBoostPercent,
     probabilityBoosted: state.probabilityBoosted,
-    score: state.score
+    accessScore: state.accessScore,
+    score: state.score,
+    exp: state.exp,
   }
 }
 
@@ -1097,10 +1093,6 @@ function completeDencoLink(context: Context, state: AccessState, which: AccessSi
         context.log.error(`リンク解除した守備側のリンクが見つかりません ${state.station.name}`)
         throw Error()
       }
-      // 特にイベントは発生せず経験値だけ追加
-      const result = calcLinkResult(context, d.link[idx], d)
-      d.accessEXP += result.score
-      side.score += result.score
       d.link.splice(idx, 1)
     }
   })
@@ -1111,11 +1103,47 @@ function completeDencoLink(context: Context, state: AccessState, which: AccessSi
 function completeDencoAccessEXP(context: Context, state: AccessState, which: AccessSide): AccessState {
   const side = which === "offense" ? state.offense : state.defense
   side?.formation?.forEach(d => {
+    if (d.who === "defense" && state.linkDisconncted && !d.reboot) {
+      // 守備側のリンク解除 フットバースなどリブートを伴わない場合
+      const idx = d.link.findIndex(link => link.name === state.station.name)
+      if (idx < 0) {
+        context.log.error(`リンク解除した守備側のリンクが見つかりません ${state.station.name}`)
+        throw Error()
+      }
+      // 特にイベントは発生せず経験値だけ追加
+      const result = calcLinkResult(context, d.link[idx], d)
+      // 例外的にリブートを伴わないリンク解除の場合は、リンクスコア＆経験値がアクセスのスコア＆経験値として加算
+      d.accessEXP += result.score
+      side.accessScore += result.score
+    }
     // アクセスによる経験値付与
     if (d.who !== "other" || d.accessEXP !== 0) {
       context.log.log(`経験値追加 ${d.name} ${d.currentExp} + ${d.accessEXP}`)
     }
     d.currentExp += d.accessEXP
   })
+  return state
+}
+
+function completeDisplayScoreExp(context: Context, state: AccessState, which: AccessSide): AccessState {
+  const side = which === "offense" ? state.offense : state.defense
+  if (side) {
+    // 基本的には直接アクセスするでんこの経験値とスコア
+    const d = side.formation[side.carIndex]
+    side.score = side.accessScore
+    side.exp = d.accessEXP
+    // 守備側がリブートした場合はその駅のリンクのスコア＆経験値を表示
+    if (d.reboot && d.who === "defense") {
+      const idx = d.link.findIndex(l => l.name === state.station.name)
+      if (idx < 0) {
+        context.log.error(`リブートした守備側のリンクが見つかりません ${state.station.name}`)
+        throw Error()
+      }
+      const result = calcLinkResult(context, d.link[idx], d)
+      // アクセスの経験値として加算はするが、でんこ状態への反映はしない checkRebootLinksでまとめて加算
+      side.score += result.score
+      side.exp += result.score
+    }
+  }
   return state
 }

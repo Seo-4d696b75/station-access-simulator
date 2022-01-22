@@ -1,4 +1,4 @@
-import { AccessSideState, AccessSide, AccessState, getAccessDenco } from "./access"
+import { AccessSideState, AccessSide, AccessState, getAccessDenco, AccessDencoState } from "./access"
 import { Context, getCurrentTime } from "./context"
 import { Denco, DencoAttribute, DencoState } from "./denco"
 import { Event } from "./event"
@@ -133,9 +133,9 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   str += formatSpace(formatSkills(rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatDamage(leftSide), tableLeft, "left")
+  str += "┃" + formatSpace(formatDamage(left), tableLeft, "left")
   str += "damage"
-  str += formatSpace(formatDamage(rightSide), tableRight, "right") + "┃\n"
+  str += formatSpace(formatDamage(right), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   str += "┃" + formatSpace(formatHP(leftSide), tableLeft, "left")
@@ -224,7 +224,7 @@ export function formatAccessEvent(result: ReadonlyState<AccessState>, which: Acc
   return str
 }
 
-function formatDamage(state?: ReadonlyState<AccessSideState> | null): string {
+function formatDamage(state?: ReadonlyState<AccessDencoState> | null): string {
   if (!state) return ""
   const d = state.damage
   if (!d) return "-"
