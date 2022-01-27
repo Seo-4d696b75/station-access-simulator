@@ -3,6 +3,7 @@ import { Event, LevelupDenco, LevelupEvent } from "./event";
 import { refreshSkillState } from "./skill";
 import DencoManager from "./dencoManager"
 import { Context, getCurrentTime } from "./context";
+import { refreshSkillEventQueue, SkillEventQueueEntry } from "./skillEvent";
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
 type Builtin = Primitive | Function | Date | Error | RegExp;
@@ -14,7 +15,7 @@ export type ReadonlyState<T> = T extends (Builtin | Event)
   : { readonly [key in keyof T]: ReadonlyState<T[key]> }
 
 export interface User {
-  name: string
+  readonly name: string
 }
 
 /**
@@ -33,6 +34,11 @@ export interface UserState extends User {
    * タイムライン上に表示されるイベント一覧
    */
   event: Event[]
+
+  /**
+   * 指定時刻に発動するスキル発動型イベントの待機列 FIFO
+   */
+  queue: SkillEventQueueEntry[]
 }
 
 export interface FormationPosition {
@@ -53,7 +59,8 @@ export function initUser(context: Context, userName: string, formation?: Readonl
   return changeFormation(context, {
     name: userName,
     formation: [],
-    event: []
+    event: [],
+    queue: [],
   }, formation)
 }
 
@@ -74,6 +81,7 @@ export function copyUserState(state: ReadonlyState<UserState>): UserState {
     name: state.name,
     formation: Array.from(state.formation).map(d => copyDencoState(d)),
     event: Array.from(state.event),
+    queue: Array.from(state.queue),
   }
 }
 
@@ -105,4 +113,19 @@ export function refreshEXPState(context: Context, state: ReadonlyState<UserState
   })
   next.formation = nextFormation
   return next
+}
+
+/**
+ * 現在時刻に依存する状態を更新する
+ * 
+ * - 指定時刻にスキル状態を変更する
+ * - 指定時刻にスキル発動型イベントを評価する
+ * 
+ * @param context 
+ * @param state 
+ * @returns 更新された新しい状態
+ */
+export function refreshCurrentTime(context: Context, state: ReadonlyState<UserState>): UserState {
+  let next = refreshSkillEventQueue(context, state)
+  return refreshSkillState(context, next)
 }

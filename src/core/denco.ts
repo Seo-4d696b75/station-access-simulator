@@ -1,4 +1,4 @@
-import { copySkillPossess, Skill, SkillPossess, SkillState } from "./skill"
+import { copySkillPossess, Skill, SkillPossess, SkillPossessType, SkillState } from "./skill"
 import { Film } from "./film"
 import { StationLink } from "./station"
 import { ReadonlyState } from "./user"
@@ -65,7 +65,7 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
   }
 }
 
-export function getSkill(denco: DencoState): Skill {
+export function getSkill<S>(denco: { skillHolder: { type: "possess", skill: NonNullable<S> } | { type: "not_aquired" | "none" } }): NonNullable<S> {
   if (denco.skillHolder.type === "possess") {
     return denco.skillHolder.skill
   }

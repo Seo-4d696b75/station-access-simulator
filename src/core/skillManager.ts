@@ -100,7 +100,9 @@ export class SkillManager {
             evaluateInPink: data.evaluateInPink,
             propertyReader: (key: string) => {
               var value = property.property.get(key)
-              if (!value) throw new Error(`skill property not found. key:${key}`)
+              if (!value && value !== 0) {
+                throw new Error(`skill property not found. key:${key}`)
+              }
               return value
             }
           }
