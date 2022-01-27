@@ -508,7 +508,7 @@ function copyFromAccessState(context: Context, state: UserState & FormationPosit
         context.log.error("リンク解除処理の失敗")
       }
       const beforeAccess = state.formation[idx]
-      const result = calcLinksResult(context, beforeAccess.link, next, which)
+      const result = calcLinksResult(context, beforeAccess.link, d, which)
       next.currentExp += result.exp
       state.event.push({
         type: "reboot",
