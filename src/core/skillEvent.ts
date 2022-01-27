@@ -34,13 +34,18 @@ function copySkillEventState(state: ReadonlyState<SkillEventState>): SkillEventS
   }
 }
 
-export type EventTriggeredSkill = Readonly<{
-  time: number
-  carIndex: number
-  denco: ReadonlyState<DencoState>
-  skillName: string
-  step: SkillEvaluationStep
-}>
+export interface EventTriggeredSkill {
+  readonly time: number
+  readonly carIndex: number
+  /**
+   * 発動したスキルを保有する本人の状態
+   * 
+   * スキルが発動して状態が更新された直後の状態
+   */
+  readonly denco: ReadonlyState<DencoState>
+  readonly skillName: string
+  readonly step: SkillEvaluationStep
+}
 
 export interface SkillEventState {
   time: number
@@ -94,6 +99,14 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     context.log.error(`指定されたでんこが直前のアクセスの状態で見つかりません`)
     throw Error()
   }
+  if (self.skillInvalidated) {
+    context.log.error(`スキルが直前のアクセスで無効化されています ${self.name}`)
+    throw Error()
+  }
+  if (!isSkillActive(self.skillHolder)) {
+    context.log.error(`スキル状態がアクティブでありません ${self.name}`)
+    throw Error()
+  }
   const eventState: SkillEventState = {
     user: state,
     time: access.time,
@@ -130,8 +143,8 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
 function execute(context: Context, state: SkillEventState, evaluate: EventSkillEvaluate): SkillEventState | undefined {
   context.log.log(`スキル評価イベントの開始`)
   let self = state.formation[state.carIndex]
-  if (!isSkillActive(self.skillHolder)) {
-    context.log.error(`アクティブなスキルを保持していません ${self.name}`)
+  if (self.skillHolder.type !== "possess") {
+    context.log.error(`スキルを保持していません ${self.name}`)
     throw Error("no active skill found")
   }
 
@@ -159,8 +172,8 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
         type: "skill_trigger",
         data: {
           time: state.time,
-          carIndex: s.carIndex,
-          denco: s,
+          carIndex: state.carIndex,
+          denco: copyDencoState(state.formation[state.carIndex]),
           skillName: skill.name,
           step: "probability_check"
         },
@@ -190,8 +203,8 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
     type: "skill_trigger",
     data: {
       time: state.time,
-      carIndex: self.carIndex,
-      denco: self,
+      carIndex: state.carIndex,
+      denco: copyDencoState(state.formation[state.carIndex]),
       skillName: skill.name,
       step: "self"
     },
@@ -316,7 +329,7 @@ export function refreshSkillEventQueue(context: Context, state: ReadonlyState<Us
   const time = getCurrentTime(context)
   while (next.queue.length > 0) {
     const entry = next.queue[0]
-    if (entry.time < time) break
+    if (time < entry.time) break
     next.queue.splice(0, 1)
     // start skill event
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${new Date(entry.time).toTimeString()} dneco: ${entry.denco.name}`)
