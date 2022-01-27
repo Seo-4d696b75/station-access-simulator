@@ -3,10 +3,11 @@ import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser, refreshCurrentTime } from "../../core/user"
-import { getSkill } from "../../core/denco"
+import { copyDencoState, getSkill } from "../../core/denco"
 import { activateSkill, refreshSkillState } from "../../core/skill"
+import { AccessState, getAccessDenco } from "../../core/access"
 
-describe("シャルのスキル", ()=>{
+describe("シャルのスキル", () => {
   test("setup", async () => {
     await StationManager.load()
     await SkillManager.load()
@@ -26,7 +27,7 @@ describe("シャルのスキル", ()=>{
     let skill = getSkill(charlotte)
     expect(skill.transitionType).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, {...state, carIndex:0})
+    state = activateSkill(context, { ...state, carIndex: 0 })
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
     // 即座に idle > active > cooldown
@@ -55,5 +56,23 @@ describe("シャルのスキル", ()=>{
     skill = getSkill(charlotte)
     expect(skill.state.type).toBe("idle")
     expect(state.event.length).toBe(2)
+    let event = state.event[0]
+    expect(event.type).toBe("access")
+    if (event.type === "access") {
+      expect(event.data.access.time).toBe(context.clock)
+      charlotte = copyDencoState(getAccessDenco(event.data.access, "offense"))
+      expect(charlotte.name).toBe("charlotte")
+    }
+    event = state.event[1]
+    expect(event.type).toBe("skill_trigger")
+    if (event.type === "skill_trigger") {
+      expect(event.data.time).toBe(context.clock)
+      expect(event.data.step).toBe("self")
+      expect(event.data.skillName).toBe(getSkill(charlotte).name)
+      expect(event.data.carIndex).toBe(0)
+      expect(event.data.denco).toMatchObject(charlotte)
+      charlotte = state.formation[0]
+      expect(event.data.denco).toMatchObject(charlotte)
+    }
   })
 })
