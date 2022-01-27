@@ -593,10 +593,6 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       context.log.log("守備側はいません")
     }
 
-    // TODO アクセスによるスコアと経験値
-    getAccessDenco(state, "offense").accessEXP += 100
-    state.offense.accessScore += 100
-
     // pink_check
     // フットバの確認、アイテム優先=>スキル評価
     if (hasDefense(state)) {
@@ -617,6 +613,10 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     context.log.log("スキルを評価：確率ブーストの確認")
     state = evaluateSkillAt(context, state, "probability_check")
   }
+
+  // TODO アクセスによるスコアと経験値
+  getAccessDenco(state, "offense").accessEXP += 100
+  state.offense.accessScore += 100
 
   // 他ピンクに関係なく発動するもの
   context.log.log("スキルを評価：アクセス開始前")
@@ -865,37 +865,47 @@ function canSkillEvaluated(context: Context, state: AccessState, step: SkillEval
   if (typeof trigger === 'boolean') {
     return trigger
   }
-  if (random(context, state, trigger, d.which)) {
-    context.log.log(`スキルが発動できます ${d.name} 確率:${trigger}%`)
+  let percent = Math.min(trigger, 100)
+  percent = Math.max(percent, 0)
+  if (percent >= 100) return true
+  if (percent <= 0) return false
+  // 上記までは確率に依存せず決定可能
+
+  const boost = d.which === "offense" ? state.offense.probabilityBoostPercent : state.defense?.probabilityBoostPercent
+  if (!boost && boost !== 0) {
+    context.log.error("存在しない守備側の確率補正計算を実行しようとしました")
+    throw Error("defense not set, but try to read probability_boost_percent")
+  }
+  if (boost !== 0) {
+    const v = percent * (1 + boost / 100.0)
+    context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
+    percent = Math.min(v, 100)
+  }
+  if (random(context, percent)) {
+    context.log.log(`スキルが発動できます ${d.name} 確率:${percent}%`)
+    if (boost !== 0) {
+      const defense = state.defense
+      if (d.which === "offense") {
+        state.offense.probabilityBoosted = true
+      } else if (defense) {
+        defense.probabilityBoosted = true
+      }
+    }
     return true
   } else {
-    context.log.log(`スキルが発動しませんでした ${d.name} 確率:${trigger}%`)
+    context.log.log(`スキルが発動しませんでした ${d.name} 確率:${percent}%`)
     return false
   }
 }
 
 /**
  * 確率ブーストも考慮して確率を乱数を計算する
- * @param state ここの確率ブースト＆乱数器を使用する
  * @param percent 100分率で指定した確立でtrueを返す
- * @param which どっちサイドの確立ブーストを適用するか
  * @returns 
  */
-export function random(context: Context, state: AccessState, percent: number, which: AccessSide): boolean {
+export function random(context: Context, percent: number): boolean {
   if (percent >= 100) return true
-  const boost = which === "offense" ? state.offense.probabilityBoostPercent : state.defense?.probabilityBoostPercent
-  if (!boost && boost !== 0) {
-    context.log.error("存在しない守備側の確率補正計算を実行しようとしました")
-    throw Error("defense not set, but try to read probability_boost_percent")
-  }
-  if (boost !== 0) {
-    const defense = state.defense
-    if (which === "offense") {
-      state.offense.probabilityBoosted = true
-    } else if (defense) {
-      defense.probabilityBoosted = true
-    }
-  }
+  if (percent <= 0) return false
   if (context.random.mode === "force") {
     context.log.log("確率計算は無視されます mode: force")
     return true
@@ -904,7 +914,7 @@ export function random(context: Context, state: AccessState, percent: number, wh
     context.log.log("確率計算は無視されます mode: ignore")
     return false
   }
-  return context.random() < (percent * (1.0 + boost / 100.0)) / 100.0
+  return context.random() < percent / 100.0
 }
 
 /**

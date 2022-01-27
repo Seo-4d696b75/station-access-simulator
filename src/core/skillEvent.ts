@@ -215,32 +215,28 @@ function execute(context: Context, state: SkillEventState, evaluate: EventSkillE
 }
 
 function canSkillEvaluated(context: Context, state: SkillEventState): boolean {
-  if (state.probability) {
-    if (context.random.mode === "force") {
-      context.log.log("確率計算は無視されます mode: force")
-      return true
-    }
-    if (context.random.mode === "ignore") {
-      context.log.log("確率計算は無視されます mode: ignore")
-      return false
-    }
-    const percent = state.probability
-    const boost = state.probabilityBoostPercent
-    if (typeof percent === "boolean") {
-      return percent
-    }
-    if (percent >= 100) {
-      return true
-    }
-    if (context.random() < (percent * (1.0 + boost / 100.0)) / 100.0) {
-      context.log.log(`スキルが発動できます 確率:${percent}%`)
-      return true
-    }
-    context.log.log(`スキルが発動しませんでした 確率:${percent}%`)
-    return false
-  } else {
+  let percent = state.probability
+  const boost = state.probabilityBoostPercent
+  if (typeof percent === "boolean") {
+    return percent
+  }
+  if (percent >= 100) {
     return true
   }
+  if (percent <= 0) {
+    return false
+  }
+  if (boost !== 0) {
+    const v = percent * (1 + boost / 100.0)
+    context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
+    percent = Math.min(v, 100)
+  }
+  if (Access.random(context, percent)) {
+    context.log.log(`スキルが発動できます 確率:${percent}%`)
+    return true
+  }
+  context.log.log(`スキルが発動しませんでした 確率:${percent}%`)
+  return false
 }
 
 export function randomeAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
