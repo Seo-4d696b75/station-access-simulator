@@ -3,7 +3,7 @@ import { Event, LevelupDenco, LevelupEvent } from "./event";
 import { refreshSkillState } from "./skill";
 import DencoManager from "./dencoManager"
 import { Context, getCurrentTime } from "./context";
-import { refreshSkillEventQueue, SkillEventQueueEntry } from "./skillEvent";
+import { refreshEventQueue, SkillEventReservation } from "./skillEvent";
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
 type Builtin = Primitive | Function | Date | Error | RegExp;
@@ -17,6 +17,16 @@ export type ReadonlyState<T> = T extends (Builtin | Event)
 export interface User {
   readonly name: string
 }
+
+interface EventQueueEntryBase<T, E = undefined> {
+  readonly type: T
+  readonly time: number
+  readonly data: E
+}
+
+export type EventQueueEntry =
+  EventQueueEntryBase<"skill", SkillEventReservation> |
+  EventQueueEntryBase<"hour_cycle">
 
 /**
  * ユーザの状態を表現する
@@ -36,9 +46,9 @@ export interface UserState extends User {
   event: Event[]
 
   /**
-   * 指定時刻に発動するスキル発動型イベントの待機列 FIFO
+   * 指定時刻に処理するイベントの待機列 FIFO
    */
-  queue: SkillEventQueueEntry[]
+  queue: EventQueueEntry[]
 }
 
 export interface FormationPosition {
@@ -56,11 +66,17 @@ export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: nu
 
 export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>): UserState {
   if (!formation) formation = []
+  const date = new Date(getCurrentTime(context))
+  const hour = date.getHours()
   return changeFormation(context, {
     name: userName,
     formation: [],
     event: [],
-    queue: [],
+    queue: [{
+      type: "hour_cycle",
+      time: date.setHours(hour + 1, 0, 0, 0),
+      data: undefined,
+    }],
   }, formation)
 }
 
@@ -126,6 +142,6 @@ export function refreshEXPState(context: Context, state: ReadonlyState<UserState
  * @returns 更新された新しい状態
  */
 export function refreshCurrentTime(context: Context, state: ReadonlyState<UserState>): UserState {
-  let next = refreshSkillEventQueue(context, state)
-  return refreshSkillState(context, next)
+  let next = refreshSkillState(context, state)
+  return refreshEventQueue(context, next)
 }

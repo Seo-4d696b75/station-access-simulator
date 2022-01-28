@@ -1,6 +1,6 @@
 import * as Access from "./access";
 import { Context, fixClock, getCurrentTime } from "./context";
-import { copyDencoState, Denco, DencoState } from "./denco";
+import { copyDencoState, Denco, DencoState, getSkill } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill, SkillTrigger } from "./skill";
 import { Station } from "./station";
@@ -286,9 +286,8 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
 /**
  * 指定した時刻にトリガーされるスキル発動型イベント
  */
-export interface SkillEventQueueEntry {
+export interface SkillEventReservation {
   readonly denco: Denco
-  readonly time: number
   readonly probability: SkillTrigger
   readonly evaluate: EventSkillEvaluate
 }
@@ -301,73 +300,127 @@ export interface SkillEventQueueEntry {
  * @param entry 
  * @returns 待機列に追加した新しい状態
  */
-export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserState>, entry: SkillEventQueueEntry): UserState {
+export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserState>, time: number, event: SkillEventReservation): UserState {
   const now = getCurrentTime(context)
-  if (now > entry.time) {
-    context.log.error(`現在時刻より前の時刻は指定できません entry: ${JSON.stringify(entry)}`)
+  if (now > time) {
+    context.log.error(`現在時刻より前の時刻は指定できません time: ${time}, event: ${JSON.stringify(event)}`)
     throw Error()
   }
   const next = copyUserState(state)
-  next.queue.push(entry)
-  return refreshSkillEventQueue(context, next)
+  next.queue.push({
+    type: "skill",
+    time: time,
+    data: event
+  })
+  next.queue.sort((a, b) => a.time - b.time)
+  return refreshEventQueue(context, next)
 }
 
 /**
- * 待機列中のスキル発動型イベントの指定時刻を現在時刻に参照して必要なら評価を実行する
+ * スキルを評価する
+ * 
+ * アクセス中のスキル発動とは別に単独で発動する場合  
+ * アクセス直後のタイミングで評価する場合は {@link evaluateSkillAfterAccess}
+ * @param context 
+ * @param state 現在の状態
+ * @param self 発動するスキル本人
+ * @param probability スキル発動確率
+ * @param evaluate 評価するスキルの効果内容
+ * @returns スキルを評価して更新した新しい状態
+ */
+export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, probability: SkillTrigger, evaluate: EventSkillEvaluate): UserState {
+  let next = copyUserState(state)
+  const idx = state.formation.findIndex(d => d.numbering === self.numbering)
+  if (idx < 0) {
+    context.log.log(`スキル発動の主体となるでんこが編成内に居ません（終了） formation: ${state.formation.map(d => d.name)}`)
+    return next
+  }
+  if (state.formation[idx].skillHolder.type !== "possess") {
+    context.log.log(`スキル発動の主体となるでんこがスキルを保有していません（終了） skill: ${state.formation[idx].skillHolder.type}`)
+    return next
+  }
+  const eventState: SkillEventState = {
+    time: getCurrentTime(context),
+    user: state,
+    formation: next.formation.map((d, i) => {
+      return {
+        ...copyDencoState(d),
+        who: idx === i ? "self" : "other",
+        carIndex: i,
+        skillInvalidated: false
+      }
+    }),
+    carIndex: idx,
+    event: [],
+    probability: probability,
+    probabilityBoostPercent: 0,
+  }
+  const result = execute(context, eventState, evaluate)
+  if (result) {
+    // スキル発動による影響の反映
+    next = {
+      name: next.name,
+      formation: result.formation.map(d => copyDencoState(d)),
+      event: [
+        ...next.event,
+        ...result.event,
+      ],
+      queue: next.queue,
+    }
+  }
+  return next
+}
+
+/**
+ * 待機列中のイベントの指定時刻を現在時刻に参照して必要なら評価を実行する
  * @param context 現在時刻は`context#clock`を参照する {@see getCurrentTime}
  * @param state 
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
-export function refreshSkillEventQueue(context: Context, state: ReadonlyState<UserState>): UserState {
+export function refreshEventQueue(context: Context, state: ReadonlyState<UserState>): UserState {
   context = fixClock(context)
   let next = copyUserState(state)
-  next.queue.sort((a, b) => a.time - b.time)
   const time = getCurrentTime(context)
   while (next.queue.length > 0) {
     const entry = next.queue[0]
     if (time < entry.time) break
     next.queue.splice(0, 1)
-    // start skill event
-    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${new Date(entry.time).toTimeString()} dneco: ${entry.denco.name}`)
-    const idx = next.formation.findIndex(d => d.numbering === entry.denco.numbering)
-    if (idx < 0) {
-      context.log.log(`スキル発動の主体となるでんこが編成内に居ません（終了） formation: ${next.formation.map(d => d.name)}`)
-      continue
-    }
-    if (next.formation[idx].skillHolder.type !== "possess") {
-      context.log.log(`スキル発動の主体となるでんこがスキルを保有していません（終了） skill: ${next.formation[idx].skillHolder.type}`)
-      continue
-    }
-    const eventState: SkillEventState = {
-      time: time,
-      user: state,
-      formation: next.formation.map((d, i) => {
-        return {
-          ...copyDencoState(d),
-          who: idx === i ? "self" : "other",
-          carIndex: i,
-          skillInvalidated: false
+    // start event
+    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${new Date(entry.time).toTimeString()} type: ${entry.type}`)
+    switch (entry.type) {
+      case "skill": {
+        next = evaluateSkillAtEvent(context, next, entry.data.denco, entry.data.probability, entry.data.evaluate)
+        break
+      }
+      case "hour_cycle": {
+        const size = next.formation.length
+        for (let i = 0; i < size; i++) {
+          const d = next.formation[i]
+          if (!isSkillActive(d.skillHolder)) continue
+          const skill = getSkill(d)
+          const callback = skill.onHourCycle
+          if (!callback) continue
+          let self = {
+            ...copyDencoState(d),
+            carIndex: i,
+            skill: skill,
+            skillPropertyReader: skill.propertyReader,
+          }
+          next = callback(context, next, self)
         }
-      }),
-      carIndex: idx,
-      event: [],
-      probability: entry.probability,
-      probabilityBoostPercent: 0,
-    }
-    const result = execute(context, eventState, entry.evaluate)
-    if (result) {
-      // スキル発動による影響の反映
-      next = {
-        name: next.name,
-        formation: result.formation.map(d => copyDencoState(d)),
-        event: [
-          ...next.event,
-          ...result.event,
-        ],
-        queue: next.queue,
+        // 次のイベント追加
+        const date = new Date(entry.time)
+        const hour = date.getHours()
+        next.queue.push({
+          type: "hour_cycle",
+          time: date.setHours(hour + 1),
+          data: undefined
+        })
+        next.queue.sort((a, b) => a.time - b.time)
+        break
       }
     }
-    // end skill event
+    // end event
   }
   return next
 }

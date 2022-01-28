@@ -1,7 +1,7 @@
 import { activateSkill, disactivateSkill, isSkillActive, refreshSkillState, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
 import { initContext } from "../core/context"
 import { DencoState, getSkill } from "../core/denco"
-import { initUser } from "../core/user"
+import { initUser, refreshCurrentTime } from "../core/user"
 
 describe("スキル処理", () => {
   test("manual-activateSkill", () => {
@@ -503,5 +503,61 @@ describe("スキル処理", () => {
     expect(canActivated.mock.calls.length).toBe(1)
     expect(getSkill(denco).state.data).toBeUndefined()
     expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+  })
+  test("onHourCycle-コールバック", () => {
+    const context = initContext("test", "test", false)
+    let now = Date.parse("2020-01-01T12:50:00.000")
+    context.clock = now
+    // mock callback
+    const onHourCycle = jest.fn((_, state, self) => state)
+    const skill: Skill = {
+      level: 1,
+      name: "test-skill",
+      transitionType: "always",
+      state: {
+        type: "not_init",
+        data: undefined
+      },
+      propertyReader: jest.fn(),
+      onHourCycle: onHourCycle,
+    }
+    let denco: DencoState = {
+      level: 5,
+      name: "denco",
+      numbering: "test",
+      currentExp: 0,
+      nextExp: 100,
+      currentHp: 50,
+      maxHp: 50,
+      ap: 10,
+      link: [],
+      film: {},
+      type: "supporter",
+      attr: "flat",
+      skillHolder: {
+        type: "possess",
+        skill: skill
+      }
+    }
+    let state = initUser(context, "test-user", [denco])
+    // check event queue
+    expect(state.queue.length).toBe(1)
+    let entry = state.queue[0]
+    expect(entry.type).toBe("hour_cycle")
+    let date = new Date(now)
+    let hour = date.getHours()
+    expect(entry.time).toBe(date.setHours(hour + 1, 0, 0, 0))
+
+    // 10分経過
+    now += 600 * 1000
+    context.clock = now
+    state = refreshCurrentTime(context, state)
+    expect(onHourCycle.mock.calls.length).toBe(1)
+    expect(state.queue.length).toBe(1)
+    entry = state.queue[0]
+    expect(entry.type).toBe("hour_cycle")
+    date = new Date(now)
+    hour = date.getHours()
+    expect(entry.time).toBe(date.setHours(hour + 1, 0, 0, 0))
   })
 })
