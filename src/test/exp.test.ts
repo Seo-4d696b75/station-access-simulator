@@ -82,7 +82,6 @@ describe("経験値の処理", () => {
     let defense = initUser(context, "とあるマスター２", [
       reika
     ])
-    defense = refreshSkillState(context, defense)
     reika = defense.formation[0]
     const config: AccessConfig = {
       offense: {
