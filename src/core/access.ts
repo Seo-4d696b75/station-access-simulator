@@ -413,20 +413,23 @@ function completeAccess(context: Context, config: AccessConfig, access: Readonly
     defense = copyFromAccessState(context, defense, access, "defense")
   }
 
-
-  // レベルアップ処理
-  offense = checkLevelup(context, offense, access)
-  defense = defense ? checkLevelup(context, defense, access) : undefined
-
-  // アクセス直後のスキル発動イベント
-  offense = checkSkillAfterAccess(context, offense, access, "offense")
-  defense = defense ? checkSkillAfterAccess(context, defense, access, "defense") : undefined
-
-  return {
+  let result: AccessResult = {
     offense: offense,
     defense: defense,
-    access: access,
+    access: access
   }
+
+
+  // レベルアップ処理
+  result = checkLevelup(context, result)
+
+  // アクセス直後のスキル発動イベント
+  result = checkSKillState(context, result)
+  result.offense = checkSkillAfterAccess(context, result.offense, access, "offense")
+  result.defense = result.defense ? checkSkillAfterAccess(context, result.defense, access, "defense") : undefined
+  result = checkSKillState(context, result)
+
+  return result
 }
 
 function checkSkillAfterAccess(context: Context, state: UserState & FormationPosition, access: ReadonlyState<AccessState>, which: AccessSide): UserState & FormationPosition {
@@ -521,11 +524,32 @@ function copyFromAccessState(context: Context, state: UserState & FormationPosit
   return state
 }
 
-function checkLevelup(context: Context, state: UserState & FormationPosition, access: ReadonlyState<AccessState>): UserState & FormationPosition {
-  return {
-    ...refreshEXPState(context, state),
-    carIndex: state.carIndex,
+function checkSKillState(context: Context, result: AccessResult): AccessResult {
+  result.offense = {
+    ...refreshSkillState(context, result.offense),
+    carIndex: result.offense.carIndex,
   }
+  if (result.defense){
+    result.defense = {
+      ...refreshSkillState(context, result.defense),
+      carIndex: result.defense.carIndex,
+    }
+  }
+  return result
+}
+
+function checkLevelup(context: Context, result: AccessResult): AccessResult{
+  result.offense = {
+    ...refreshEXPState(context, result.offense),
+    carIndex: result.offense.carIndex,
+  }
+  if (result.defense){
+    result.defense = {
+      ...refreshEXPState(context, result.defense),
+      carIndex: result.defense.carIndex,
+    }
+  }
+  return result
 }
 
 function getDenco(state: AccessState, which: AccessSide): AccessDencoState {

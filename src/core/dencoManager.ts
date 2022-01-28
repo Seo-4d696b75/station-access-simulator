@@ -1,9 +1,10 @@
 import { Context } from "./context"
 import { copyDencoState, Denco, DencoAttribute, DencoState, DencoType } from "./denco"
+import { refreshSkillState } from "./skill"
 import skillManager from "./skillManager"
 import { StationLink } from "./station"
 import stationManager from "./stationManager"
-import { ReadonlyState } from "./user"
+import { copyUserState, ReadonlyState, UserState } from "./user"
 
 interface DencoLevelStatus extends Denco {
 
@@ -87,13 +88,15 @@ class DencoManager {
     return data[level - 1]
   }
 
-  checkLevelup(formation: ReadonlyState<DencoState[]>): DencoState[] {
-    return formation.map(state => {
+  checkLevelup(context: Context, current: ReadonlyState<UserState>): UserState {
+    let levelup = false
+    const formation = current.formation.map(state => {
       let d = copyDencoState(state)
       let level = d.level
       while (d.currentExp >= d.nextExp) {
         let status = this.getDencoStatus(d.numbering, level + 1)
         if (status) {
+          levelup = true
           level += 1
           d = {
             ...status,
@@ -114,6 +117,14 @@ class DencoManager {
       }
       return d
     })
+    let next = {
+      ...copyUserState(current),
+      formation: formation
+    }
+    if (levelup) {
+      next = refreshSkillState(context, next)
+    }
+    return next
   }
 
 }

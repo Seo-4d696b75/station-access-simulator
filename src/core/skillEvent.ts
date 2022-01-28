@@ -2,7 +2,7 @@ import * as Access from "./access";
 import { Context, fixClock, getCurrentTime } from "./context";
 import { copyDencoState, Denco, DencoState, getSkill } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
-import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill, SkillTrigger } from "./skill";
+import { ActiveSkill, isSkillActive, ProbabilityPercent, refreshSkillState, Skill, SkillTrigger } from "./skill";
 import { Station } from "./station";
 import { copyUserState, ReadonlyState, User, UserState } from "./user";
 
@@ -368,7 +368,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
       queue: next.queue,
     }
   }
-  return next
+  return refreshSkillState(context, next)
 }
 
 /**

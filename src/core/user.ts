@@ -107,11 +107,9 @@ export function copyUserState(state: ReadonlyState<UserState>): UserState {
  * @returns 
  */
 export function refreshEXPState(context: Context, state: ReadonlyState<UserState>): UserState {
-  const next = copyUserState(state)
-  const formation = next.formation
-  const nextFormation = DencoManager.checkLevelup(formation)
-  formation.forEach((before, idx) => {
-    let after = nextFormation[idx]
+  const next = DencoManager.checkLevelup(context, state)
+  state.formation.forEach((before, idx) => {
+    let after = next.formation[idx]
     if (before.level < after.level) {
       let levelup: LevelupDenco = {
         time: getCurrentTime(context),
@@ -127,7 +125,6 @@ export function refreshEXPState(context: Context, state: ReadonlyState<UserState
       context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
     }
   })
-  next.formation = nextFormation
   return next
 }
 
