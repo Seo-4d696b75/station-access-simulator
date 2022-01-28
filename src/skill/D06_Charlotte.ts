@@ -15,8 +15,8 @@ const skill: SkillLogic = {
   onActivated: (context, state, self) => {
     const timer = self.skillPropertyReader("timer")
     const evaluate: EventSkillEvaluate = (context, state, self) => randomeAccess(context, state)
-    return enqueueSkillEvent(context, state, {
-      time: getCurrentTime(context) + timer * 1000,
+    const time = getCurrentTime(context) + timer * 1000
+    return enqueueSkillEvent(context, state, time, {
       denco: self,
       probability: true,
       evaluate: evaluate

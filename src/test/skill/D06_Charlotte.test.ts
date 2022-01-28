@@ -18,11 +18,11 @@ describe("シャルのスキル", () => {
   })
   test("スキル発動", () => {
     const context = initContext("test", "test", false)
+    const now = Date.parse("2020-01-01T12:50:00.000")
+    context.clock = now
     let charlotte = DencoManager.getDenco(context, "6", 80)
     expect(charlotte.skillHolder.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [charlotte])
-    const now = Date.now()
-    context.clock = now
     charlotte = state.formation[0]
     let skill = getSkill(charlotte)
     expect(skill.transitionType).toBe("manual")
@@ -32,14 +32,19 @@ describe("シャルのスキル", () => {
     skill = getSkill(charlotte)
     // 即座に idle > active > cooldown
     expect(skill.state.type).toBe("cooldown")
-    expect(state.queue.length).toBe(1)
+    expect(state.queue.length).toBe(2)
     let entry = state.queue[0]
-    // 確定発動
-    expect(entry.probability).toBe(true)
-    // 90分後に発動
-    expect(entry.time).toBe(now + 5400 * 1000)
-    expect(entry.denco.name).toBe("charlotte")
-    expect(state.event.length).toBe(0)
+    expect(entry.type).toBe("hour_cycle")
+    entry = state.queue[1]
+    expect(entry.type).toBe("skill")
+    if (entry.type === "skill") {
+      // 確定発動
+      expect(entry.data.probability).toBe(true)
+      // 90分後に発動
+      expect(entry.time).toBe(now + 5400 * 1000)
+      expect(entry.data.denco.name).toBe("charlotte")
+      expect(state.event.length).toBe(0)
+    }
 
     // 60分経過
     context.clock = now + 3600 * 1000
