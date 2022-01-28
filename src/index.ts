@@ -9,7 +9,7 @@ import { formatEvent, printEvents } from './core/format'
 import { initContext } from './core/context'
 import { getSkill } from './core/denco'
 import { initUser, refreshCurrentTime, UserState } from './core/user'
-import { activateSkill } from './core/skill'
+import { activateSkill, refreshSkillState } from './core/skill'
 
 async function init() {
   await SkillManager.load()
@@ -19,31 +19,21 @@ async function init() {
 
 init().then(() => {
   const context = initContext("test", "test", true)
-  context.random.mode = "ignore"
-  let sheena = DencoManager.getDenco(context, "7", 50, 1)
-  let hiiru = DencoManager.getDenco(context, "34", 50)
-  let charlotte = DencoManager.getDenco(context, "6", 50)
-  const offense = initUser(context, "とあるマスター１", [
-    charlotte
-  ])
-  let defense = initUser(context, "とあるマスター２", [
-    sheena, hiiru
-  ])
-  defense = activateSkill(context, { ...defense, carIndex: 1 })
-  const config: AccessConfig = {
-    offense: {
-      carIndex: 0,
-      ...offense
-    },
-    defense: {
-      carIndex: 0,
-      ...defense
-    },
-    station: sheena.link[0],
-  }
-  const result = startAccess(context, config)
-  console.log("攻撃側のタイムライン")
-  printEvents(context, result.offense, true)
-  console.log("守備側のタイムライン")
-  printEvents(context, result.defense, true)
+  const now = Date.parse("2020-01-01T12:50:00.000")
+  context.clock = now
+  let moe = DencoManager.getDenco(context, "9", 80)
+  let charlotte = DencoManager.getDenco(context, "6", 80)
+  let sheena = DencoManager.getDenco(context, "7", 50)
+  let state = initUser(context, "とあるマスター", [moe, charlotte, sheena])
+  moe = state.formation[0]
+  charlotte = state.formation[1]
+  sheena = state.formation[2]
+  moe.currentHp = Math.floor(moe.maxHp * 0.9)
+  charlotte.currentHp = Math.floor(charlotte.maxHp * 0.6)
+  sheena.currentHp = Math.floor(sheena.maxHp * 0.2)
+  state = refreshSkillState(context, state)
+  // 13:00
+  context.clock = now + 600 * 1000
+  state = refreshCurrentTime(context, state)
+  printEvents(context, state)
 })
