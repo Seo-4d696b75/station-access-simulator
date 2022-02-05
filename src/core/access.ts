@@ -34,7 +34,7 @@ import { Event } from "./event"
  * - スキルがactive状態
  * - アクセス処理の途中で無効化スキルの影響を受けていない
  */
-export type SkillEvaluationStep =
+export type AccessEvaluateStep =
   "pink_check" |
   "probability_check" |
   "before_access" |
@@ -136,7 +136,7 @@ export interface AccessDencoState extends DencoState {
 }
 
 export interface AccessTriggeredSkill extends Denco {
-  readonly step: SkillEvaluationStep
+  readonly step: AccessEvaluateStep
 }
 
 /**
@@ -772,7 +772,7 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
   return state
 }
 
-function evaluateSkillAt(context: Context, state: AccessState, step: SkillEvaluationStep): AccessState {
+function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvaluateStep): AccessState {
 
   // 編成順に スキル発動有無の確認 > 発動による状態の更新 
   // ただしアクティブなスキルの確認は初めに一括で行う（同じステップで発動するスキル無効化は互いに影響しない）
@@ -818,7 +818,7 @@ function evaluateSkillAt(context: Context, state: AccessState, step: SkillEvalua
   return state
 }
 
-function markTriggerSkill(state: AccessSideState, step: SkillEvaluationStep, denco: Denco) {
+function markTriggerSkill(state: AccessSideState, step: AccessEvaluateStep, denco: Denco) {
   const list = state.triggeredSkills
   const idx = list.findIndex(d => d.numbering === denco.numbering)
   if (idx < 0) {
@@ -840,7 +840,7 @@ function markTriggerSkill(state: AccessSideState, step: SkillEvaluationStep, den
  * @param step `undefined`の場合は`denco`の一致でのみ検索する
  * @returns true if has been triggered
  */
-export function hasSkillTriggered(state: ReadonlyState<AccessSideState>, denco: Denco, step?: SkillEvaluationStep): boolean {
+export function hasSkillTriggered(state: ReadonlyState<AccessSideState>, denco: Denco, step?: AccessEvaluateStep): boolean {
   return state.triggeredSkills.findIndex(t => {
     return t.numbering === denco.numbering && (!step || step === t.step)
   }) >= 0
@@ -884,7 +884,7 @@ function isSkillActive(skill: SkillPossess): boolean {
  * @param d 発動する可能性があるアクティブなスキル
  * @returns 
  */
-function canSkillEvaluated(context: Context, state: AccessState, step: SkillEvaluationStep, d: ReadonlyState<AccessDencoState & ActiveSkill>): boolean {
+function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>): boolean {
   const trigger = d.skill.canEvaluate ? d.skill.canEvaluate(context, state, step, d) : false
   if (typeof trigger === 'boolean') {
     return trigger

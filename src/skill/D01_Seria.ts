@@ -1,7 +1,7 @@
 import { getFormation } from "../core/access"
 import { getCurrentTime } from "../core/context"
 import { SkillLogic } from "../core/skill"
-import { evaluateSkillAfterAccess, EventSkillEvaluate } from "../core/skillEvent"
+import { evaluateSkillAfterAccess, SkillEventEvaluate } from "../core/skillEvent"
 
 const skill: SkillLogic = {
   onAccessComplete: (context, state, self, access) => {
@@ -12,7 +12,7 @@ const skill: SkillLogic = {
     if (target.length > 0) {
       const percent = self.skillPropertyReader("probability")
       const heal = self.skillPropertyReader("heal")
-      const evaluate: EventSkillEvaluate = (context, state, self) => {
+      const evaluate: SkillEventEvaluate = (context, state, self) => {
         context.log.log(`検測開始しま～す HP+${heal}`)
         return {
           ...state,

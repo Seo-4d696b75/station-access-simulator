@@ -88,12 +88,12 @@ export type SkillTrigger = boolean | ProbabilityPercent
  * 
  * 確率に依存する部分以外の判定をここで行うこと
  */
-export type SkillTriggerPredicate = (context: Context, state: ReadonlyState<access.AccessState>, step: access.SkillEvaluationStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => SkillTrigger
+export type SkillTriggerPredicate = (context: Context, state: ReadonlyState<access.AccessState>, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => SkillTrigger
 
 /**
  * アクセス時にスキルが発動した時の効果を反映する
  */
-export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.SkillEvaluationStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => access.AccessState
+export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => access.AccessState
 
 export interface SkillLogic {
   /**

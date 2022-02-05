@@ -44,7 +44,7 @@ export interface EventTriggeredSkill {
    */
   readonly denco: ReadonlyState<DencoState>
   readonly skillName: string
-  readonly step: SkillEvaluationStep
+  readonly step: SkillEventEvaluateStep
 }
 
 export interface SkillEventState {
@@ -75,11 +75,11 @@ export interface SkillEventState {
  * - スキルがactive状態
  * - アクセス直後の場合 {@link SkillLogic}#onAccessComplete は直前のアクセス処理中に無効化スキルの影響を受けていない
  */
-export type SkillEvaluationStep =
+export type SkillEventEvaluateStep =
   "probability_check" |
   "self"
 
-export type EventSkillEvaluate = (context: Context, state: SkillEventState, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => SkillEventState
+export type SkillEventEvaluate = (context: Context, state: SkillEventState, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => SkillEventState
 
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
@@ -92,7 +92,7 @@ export type EventSkillEvaluate = (context: Context, state: SkillEventState, self
  * @param evaluate スキル発動時の処理
  * @returns 
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: SkillTrigger, evaluate: EventSkillEvaluate): UserState {
+export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: SkillTrigger, evaluate: SkillEventEvaluate): UserState {
   context = fixClock(context)
   const accessFormation = (self.which === "offense") ? access.offense.formation : access.defense?.formation
   if (!accessFormation) {
@@ -140,7 +140,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
   }
 }
 
-function execute(context: Context, state: SkillEventState, evaluate: EventSkillEvaluate): SkillEventState | undefined {
+function execute(context: Context, state: SkillEventState, evaluate: SkillEventEvaluate): SkillEventState | undefined {
   context.log.log(`スキル評価イベントの開始`)
   let self = state.formation[state.carIndex]
   if (self.skillHolder.type !== "possess") {
@@ -289,7 +289,7 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
 export interface SkillEventReservation {
   readonly denco: Denco
   readonly probability: SkillTrigger
-  readonly evaluate: EventSkillEvaluate
+  readonly evaluate: SkillEventEvaluate
 }
 
 /**
@@ -328,7 +328,7 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
  * @param evaluate 評価するスキルの効果内容
  * @returns スキルを評価して更新した新しい状態
  */
-export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, probability: SkillTrigger, evaluate: EventSkillEvaluate): UserState {
+export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, probability: SkillTrigger, evaluate: SkillEventEvaluate): UserState {
   let next = copyUserState(state)
   const idx = state.formation.findIndex(d => d.numbering === self.numbering)
   if (idx < 0) {
