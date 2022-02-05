@@ -1,7 +1,7 @@
 {
   "name": "ekimemo-access-simulator",
-  "version": "1.0.0",
-  "description": "simulates access events in game 'ekimemo'.",
+  "version": "0.1.0",
+  "description": "スマートフォン向け位置ゲーム「駅メモ」におけるアクセスイベントをシミュレーションします.",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
