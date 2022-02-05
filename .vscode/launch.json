@@ -6,7 +6,7 @@
       "request": "launch",
       "name": "Launch TypeScript",
       "program": "${workspaceFolder}/src/index.ts",
-      "preLaunchTask": "npm: build",
+      "preLaunchTask": "npm: build-dev",
       "sourceMaps": true,
       "smartStep": true,
       "protocol": "inspector",
