@@ -5,6 +5,7 @@ const path = require("path");
 module.exports = merge(common, {
   entry: './src/main.ts',
   mode: 'development',
+  target: 'node',
   devtool: 'inline-source-map',
   output: {
     path: path.resolve(__dirname, "dist"),
