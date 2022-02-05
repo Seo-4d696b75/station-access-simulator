@@ -3,6 +3,7 @@ const common = require('./webpack.config.js');
 const path = require("path");
 
 module.exports = merge(common, {
+  entry: './src/main.ts',
   mode: 'development',
   devtool: 'inline-source-map',
   output: {

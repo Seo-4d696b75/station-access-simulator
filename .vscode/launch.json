@@ -5,7 +5,7 @@
       "type": "node",
       "request": "launch",
       "name": "Launch TypeScript",
-      "program": "${workspaceFolder}/src/index.ts",
+      "program": "${workspaceFolder}/src/main.ts",
       "preLaunchTask": "npm: build-dev",
       "sourceMaps": true,
       "smartStep": true,
