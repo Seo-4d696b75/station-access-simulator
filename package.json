@@ -15,6 +15,8 @@
     "watch": "ts-node-dev src/index.ts --respawn",
     "build": "npm run build-cjs && npm run build-umd",
     "build-cjs": "tsc",
+    "build-umd": "webpack --config webpack.config.js",
+    "build-dev": "webpack --config webpack.dev.js"
   },
   "author": "@Seo-4d696b75",
   "license": "MIT License",

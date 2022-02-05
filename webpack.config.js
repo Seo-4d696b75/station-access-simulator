@@ -1,8 +1,15 @@
+const path = require("path");
+
 module.exports = {
   entry: './src/index.ts',
   target: 'node',
-  mode: 'development',
-  devtool: 'inline-source-map',
+  mode: 'production',
+  output: {
+    path: path.resolve(__dirname, "umd"),
+    filename: "ekimemo-access-simulator.js",
+    library: "ekimemo-access-simulator",
+    libraryTarget: "umd"
+  },
   module: {
     rules: [
       {
