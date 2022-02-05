@@ -6,9 +6,9 @@
   "type": "commonjs",
   "scripts": {
     "test": "jest --silent",
-    "build": "webpack",
-    "prepare": "webpack --config webpack.config.js",
-    "watch": "webpack --config webpack.dev.js --watch"
+    "dev": "ts-node src/index.ts",
+    "watch": "ts-node-dev src/index.ts --respawn",
+    "build": "npm run build-cjs && npm run build-umd",
   },
   "author": "@Seo-4d696b75",
   "license": "MIT License",
