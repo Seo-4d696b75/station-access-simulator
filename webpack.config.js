@@ -6,9 +6,10 @@ module.exports = {
   mode: 'production',
   output: {
     path: path.resolve(__dirname, "umd"),
-    filename: "ekimemo-access-simulator.js",
-    library: "ekimemo-access-simulator",
-    libraryTarget: "umd"
+    filename: "simulator.min.js",
+    library: 'simulator',
+    libraryTarget: 'umd',
+    globalObject: 'this',
   },
   module: {
     rules: [
