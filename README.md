@@ -3,6 +3,7 @@
 ![npm version](https://img.shields.io/npm/v/ekimemo-access-simulator.svg)
 ![npm license](https://img.shields.io/npm/l/ekimemo-access-simulator.svg)
 ![npm types](https://img.shields.io/npm/types/ekimemo-access-simulator.svg)
+![test workflow](https://github.com/Seo-4d696b75/station-access-simulator/actions/workflows/test.yml/badge.svg)
 
 
 「駅メモ」のアクセスイベントをシミュレーションするJavaScript(TypeScript)ライブラリ
