@@ -13,7 +13,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.0/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.1/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -92,9 +92,7 @@ import { AccessConfig, printEvents, startAccess } from "ekimemo-access-simulator
 
 ここまでの処理を実行すると Console に次のような詳細な情報が出力されます
 
-<details>
-<summary>出力詳細</summary>
-<code style="white-space:nowrap;">
+```bash
 ランダムに駅を選出：品川,鶯谷,大崎
 編成を変更します [] -> [reika]
 編成を変更します [reika] -> [reika,seria]
@@ -160,5 +158,4 @@ HP確定 charlotte 228 > 0 reboot:true
 ┠──────────────────────────────────────────────────────────┨
 ┃                   reikaがリンクを開始                     ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-</code>
-</details>
+```
