@@ -26,6 +26,11 @@ $ > npm install ekimemo-access-simulator
 
 利用例：[[CodeSandbox] TypeScript + Node.js](https://codesandbox.io/s/yi-memo-akusesusimiyureta-cor73?file=/src/index.ts)
 
+# Release Note
+- v0.1.0 公開
+- v0.1.1 `node_module`で利用する場合にでんこスキルの効果内容が正しくロードされないバグを解消
+
+
 # Basic Usage
 まずはライブラリを初期化してでんこ・スキルのデータをロードします
 ```js
