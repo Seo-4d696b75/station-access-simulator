@@ -10,9 +10,10 @@ import { initContext } from './core/context'
 import { getSkill } from './core/denco'
 import { initUser, refreshCurrentTime, UserState } from './core/user'
 import { activateSkill, refreshSkillState } from './core/skill'
+import moment from "moment-timezone"
 
 init().then(() => {
-  const context = initContext("test", "test", true)
+  const context = initContext("test", "test", false)
   let reika = DencoManager.getDenco(context, "5", 80)
   let charlotte = DencoManager.getDenco(context, "6", 50, 1)
   let offense = initUser(context, "とあるマスター１", [
