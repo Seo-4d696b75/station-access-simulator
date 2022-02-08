@@ -2,6 +2,7 @@ import { Context, initContext } from "../core/context"
 import StationManager from "../core/stationManager"
 import SkillManager from "../core/skillManager"
 import DencoManager from "../core/dencoManager"
+import moment from "moment-timezone"
 
 const stations = [
   {
@@ -65,7 +66,7 @@ describe("manager", () => {
     expect(s).not.toBeUndefined()
     expect(s?.nameKana).toBe(stations[0].name_kana)
     expect(s?.attr).toBe("heat")
-    const now = Date.now()
+    const now = moment().valueOf()
     const link = StationManager.getRandomLink(context, 1, 1, 2)[0]
     expect(link.start).toBeGreaterThan(now - 2000)
     expect(link.start).toBeLessThanOrEqual(now - 1000)

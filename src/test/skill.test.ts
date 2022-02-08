@@ -2,11 +2,12 @@ import { activateSkill, disactivateSkill, isSkillActive, refreshSkillState, Skil
 import { initContext } from "../core/context"
 import { DencoState, getSkill } from "../core/denco"
 import { initUser, refreshCurrentTime } from "../core/user"
+import moment from "moment-timezone"
 
 describe("スキル処理", () => {
   test("manual-activateSkill", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const timeout: SkillActiveTimeout = {
@@ -61,7 +62,7 @@ describe("スキル処理", () => {
   })
   test("manual-condition-activateSkill", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const timeout: SkillActiveTimeout = {
@@ -120,7 +121,7 @@ describe("スキル処理", () => {
   })
   test("auto-activateSkill", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const timeout: SkillActiveTimeout = {
@@ -176,7 +177,7 @@ describe("スキル処理", () => {
 
   test("auto-condition-activateSkill", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const canActivated = jest.fn((_, state, self) => true)
@@ -226,7 +227,7 @@ describe("スキル処理", () => {
 
   test("disactivateSkill-エラー", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const timeout: SkillActiveTimeout = {
@@ -287,7 +288,7 @@ describe("スキル処理", () => {
 
   test("manual-disactivateSkill", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const timeout: SkillCooldownTimeout = {
@@ -346,7 +347,7 @@ describe("スキル処理", () => {
 
   test("manual-condition-disactivateSkill", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const timeout: SkillCooldownTimeout = {
@@ -406,7 +407,7 @@ describe("スキル処理", () => {
   })
   test("auto-disactivateSkill", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const timeout: SkillCooldownTimeout = {
@@ -464,7 +465,7 @@ describe("スキル処理", () => {
   })
   test("auto-condition-disactivateSkill", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     // mock callback
     const canActivated = jest.fn((_, state, self) => true)

@@ -6,7 +6,7 @@ import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../core/a
 import { getTargetDenco, initUser } from "../core/user"
 import { LinksResult } from "../core/station"
 import { activateSkill } from "../core/skill"
-import { Event } from "../core/event"
+import moment from "moment-timezone"
 
 describe("基本的なアクセス処理", () => {
   test("load", async () => {
@@ -170,7 +170,7 @@ describe("基本的なアクセス処理", () => {
 
   test("守備側あり-フットバースあり", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     let reika = DencoManager.getDenco(context, "5", 50)
     let charlotte = DencoManager.getDenco(context, "6", 80, 3)
@@ -230,7 +230,7 @@ describe("基本的なアクセス処理", () => {
 
   test("守備側あり-スキル発動なし-Rebootあり", () => {
     const context = initContext("test", "test", false)
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     let reika = DencoManager.getDenco(context, "5", 80)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)

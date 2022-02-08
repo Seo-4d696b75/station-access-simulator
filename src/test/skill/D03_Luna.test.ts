@@ -6,6 +6,7 @@ import { initUser } from "../../core/user"
 import { activateSkill, disactivateSkill, refreshSkillState } from "../../core/skill"
 import { getSkill } from "../../core/denco"
 import { getAccessDenco, getDefense, startAccess } from "../../core/access"
+import moment from "moment-timezone"
 
 describe("ルナのスキル", () => {
   test("setup", async () => {
@@ -21,7 +22,7 @@ describe("ルナのスキル", () => {
     let luna = DencoManager.getDenco(context, "3", 50)
     expect(luna.skillHolder.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [luna])
-    context.clock = Date.parse('2022-01-01T12:00:00+0900')
+    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
     state = refreshSkillState(context, state)
     luna = state.formation[0]
     let skill = getSkill(luna)
@@ -32,7 +33,7 @@ describe("ルナのスキル", () => {
     expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
 
 
-    context.clock = Date.parse('2022-01-01T23:00:00+0900')
+    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
     state = refreshSkillState(context, state)
     luna = state.formation[0]
     skill = getSkill(luna)
@@ -99,7 +100,7 @@ describe("ルナのスキル", () => {
   })
   test("発動あり-夜", () => {
     const context = initContext("test", "test", false)
-    context.clock = Date.parse('2022-01-01T23:00:00+0900')
+    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [luna])
@@ -134,7 +135,7 @@ describe("ルナのスキル", () => {
   })
   test("発動あり-昼", () => {
     const context = initContext("test", "test", false)
-    context.clock = Date.parse('2022-01-01T12:00:00+0900')
+    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [luna])
