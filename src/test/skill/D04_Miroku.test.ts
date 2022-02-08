@@ -5,7 +5,8 @@ import { initContext } from "../../core/context"
 import { initUser } from "../../core/user"
 import { activateSkill, disactivateSkill, refreshSkillState } from "../../core/skill"
 import { getSkill } from "../../core/denco"
-import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access"
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import moment from "moment-timezone"
 
 describe("みろくのスキル", () => {
   test("setup", async () => {
@@ -21,7 +22,8 @@ describe("みろくのスキル", () => {
     let miroku = DencoManager.getDenco(context, "4", 50)
     expect(miroku.skillHolder.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [miroku])
-    context.clock = Date.now()
+    const now = moment().valueOf()
+    context.clock = now
     state = refreshSkillState(context, state)
     miroku = state.formation[0]
     let skill = getSkill(miroku)
@@ -31,7 +33,7 @@ describe("みろくのスキル", () => {
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
     expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
 
-    
+
     context.clock = Date.now() + 600 * 1000
     state = refreshSkillState(context, state)
     miroku = state.formation[0]
@@ -92,7 +94,7 @@ describe("みろくのスキル", () => {
   })
   test("発動なし-攻撃側編成内", () => {
     const context = initContext("test", "test", false)
-    context.clock = Date.parse('2022-01-01T23:00:00+0900')
+    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -141,7 +143,7 @@ describe("みろくのスキル", () => {
   test("発動あり-Rebootなし", () => {
     // 発動の通常
     const context = initContext("test", "test", false)
-    context.clock = Date.parse('2022-01-01T23:00:00+0900')
+    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 80, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -177,7 +179,7 @@ describe("みろくのスキル", () => {
   })
   test("発動あり-ひいる", () => {
     const context = initContext("test", "test", false)
-    context.clock = Date.parse('2022-01-01T23:00:00+0900')
+    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 80, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -206,7 +208,7 @@ describe("みろくのスキル", () => {
   })
   test("発動あり-Rebootあり", () => {
     const context = initContext("test", "test", false)
-    context.clock = Date.parse('2022-01-01T12:00:00+0900')
+    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 80, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -243,7 +245,7 @@ describe("みろくのスキル", () => {
   test("発動あり-サポータAKT上昇", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
-    context.clock = Date.parse('2022-01-01T23:00:00+0900')
+    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 80, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -271,7 +273,7 @@ describe("みろくのスキル", () => {
     expect(access.linkSuccess).toBe(false)
     expect(access.attackPercent).toBe(25)
     expect(access.defendPercent).toBe(50)
-    if ( access.defense){
+    if (access.defense) {
       expect(hasSkillTriggered(access.defense, luna)).toBe(true)
     }
     expect(access.damageBase).toBe(142)
@@ -284,7 +286,7 @@ describe("みろくのスキル", () => {
   test("発動なし-１回で相手をリブート", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
-    context.clock = Date.parse('2022-01-01T12:00:00+0900')
+    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50)

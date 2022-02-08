@@ -4,6 +4,7 @@ import { refreshSkillState } from "./skill";
 import DencoManager from "./dencoManager"
 import { Context, getCurrentTime } from "./context";
 import { refreshEventQueue, SkillEventReservation } from "./skillEvent";
+import moment from "moment-timezone"
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
 type Builtin = Primitive | Function | Date | Error | RegExp;
@@ -66,15 +67,18 @@ export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: nu
 
 export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>): UserState {
   if (!formation) formation = []
-  const date = new Date(getCurrentTime(context))
-  const hour = date.getHours()
+  const date = moment(getCurrentTime(context))
+    .millisecond(0)
+    .second(0)
+    .minute(0)
+    .add(1, "h")
   return changeFormation(context, {
     name: userName,
     formation: [],
     event: [],
     queue: [{
       type: "hour_cycle",
-      time: date.setHours(hour + 1, 0, 0, 0),
+      time: date.valueOf(),
       data: undefined,
     }],
   }, formation)
@@ -112,7 +116,7 @@ export function refreshEXPState(context: Context, state: ReadonlyState<UserState
     let after = next.formation[idx]
     if (before.level < after.level) {
       let levelup: LevelupDenco = {
-        time: getCurrentTime(context),
+        time: getCurrentTime(context).valueOf(),
         after: copyDencoState(after),
         before: copyDencoState(before),
       }

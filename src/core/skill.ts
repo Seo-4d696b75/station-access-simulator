@@ -1,9 +1,11 @@
+import { TIME_FORMAT } from ".."
 import * as access from "./access"
 import { Context, fixClock, getCurrentTime } from "./context"
 import { copyDencoState, DencoState, getSkill } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
 import { copyUserState, FormationPosition, ReadonlyState, UserState } from "./user"
+import moment from "moment-timezone"
 
 /**
  * スキル状態の遷移の種類
@@ -590,13 +592,13 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
 }
 
 function refreshTimeout(context: Context, state: UserState, idx: number): UserState {
-  const time = getCurrentTime(context)
+  const time = getCurrentTime(context).valueOf()
   const denco = state.formation[idx]
   const skill = getSkill(denco)
   if (skill.state.type === "active") {
     const data = skill.state.data
     if (data && data.activeTimeout <= time) {
-      context.log.log(`スキル状態の変更：${denco.name} active -> cooldown (timeout:${new Date(data.activeTimeout).toTimeString()})`)
+      context.log.log(`スキル状態の変更：${denco.name} active -> cooldown (timeout:${moment(data.activeTimeout).format(TIME_FORMAT)})`)
       skill.state = {
         type: "cooldown",
         data: {
@@ -610,7 +612,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): UserSt
     if (data.cooldownTimeout <= time) {
       switch (skill.transitionType) {
         case "manual": {
-          context.log.log(`スキル状態の変更：${denco.name} cooldown -> idle (timeout:${new Date(data.cooldownTimeout).toTimeString()})`)
+          context.log.log(`スキル状態の変更：${denco.name} cooldown -> idle (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.state = {
             type: "idle",
             data: undefined
@@ -619,7 +621,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): UserSt
         }
         case "manual-condition": {
 
-          context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${new Date(data.cooldownTimeout).toTimeString()})`)
+          context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.state = {
             type: "idle",
             data: undefined
@@ -628,7 +630,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): UserSt
           return refreshSkillStateOne(context, state, idx)
         }
         case "auto": {
-          context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${new Date(data.cooldownTimeout).toTimeString()})`)
+          context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.state = {
             type: "idle",
             data: undefined

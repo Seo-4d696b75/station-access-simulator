@@ -7,6 +7,7 @@ import { activateSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTime
 import { getSkill } from "../../core/denco"
 import { getAccessDenco, startAccess } from "../../core/access"
 import { EventTriggeredSkill } from "../../core/skillEvent"
+import moment from "moment-timezone"
 
 describe("セリアのスキル", () => {
   test("setup", async () => {
@@ -23,7 +24,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     expect(seria.skillHolder.type).toBe("possess")
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    const now = Date.now()
+    const now = moment().valueOf()
     context.clock = now
     defense = refreshSkillState(context, defense)
     seria = defense.formation[1]

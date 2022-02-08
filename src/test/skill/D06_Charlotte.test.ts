@@ -4,8 +4,9 @@ import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser, refreshCurrentTime } from "../../core/user"
 import { copyDencoState, getSkill } from "../../core/denco"
-import { activateSkill, refreshSkillState } from "../../core/skill"
-import { AccessState, getAccessDenco } from "../../core/access"
+import { activateSkill } from "../../core/skill"
+import { getAccessDenco } from "../../core/access"
+import moment from "moment-timezone"
 
 describe("シャルのスキル", () => {
   test("setup", async () => {
@@ -18,7 +19,7 @@ describe("シャルのスキル", () => {
   })
   test("スキル発動", () => {
     const context = initContext("test", "test", false)
-    const now = Date.parse("2020-01-01T12:50:00.000")
+    const now = moment("2020-01-01T12:50:00.000").valueOf()
     context.clock = now
     let charlotte = DencoManager.getDenco(context, "6", 80)
     expect(charlotte.skillHolder.type).toBe("possess")

@@ -7,6 +7,7 @@ import { initUser, refreshEXPState } from "../core/user"
 import { AccessConfig, getDefense, startAccess } from "../core/access"
 import { LinksResult } from "../core/station"
 import { refreshSkillState } from "../core/skill"
+import moment from "moment-timezone"
 
 describe("経験値の処理", () => {
   test("setup", async () => {
@@ -27,7 +28,7 @@ describe("経験値の処理", () => {
     let state = initUser(context, "とあるマスター１", [
       reika
     ])
-    const time = Date.now()
+    const time = moment().valueOf()
     context.clock = time
     state = refreshEXPState(context, state)
     let current = state.formation[0]
@@ -51,7 +52,7 @@ describe("経験値の処理", () => {
     let state = initUser(context, "とあるマスター１", [
       reika
     ])
-    const time = Date.now()
+    const time = moment().valueOf()
     context.clock = time
     state = refreshSkillState(context, state)
     reika = state.formation[0]
@@ -65,7 +66,7 @@ describe("経験値の処理", () => {
     const event = state.event[0]
     expect(event.type).toBe("levelup")
     const data = event.data as LevelupDenco
-    expect(data.time).toBe(time)
+    expect(data.time).toBe(time.valueOf())
     expect(data.before).toMatchObject(reika)
     expect(data.after).toMatchObject(current)
   })

@@ -39,7 +39,7 @@ class StationManager {
     const duration = new Array(size).fill(null)
       .map(() => minLinkSec * 1000 + Math.floor((maxLinkSec - minLinkSec) * 1000 * context.random()))
       .sort().reverse()
-    const now = getCurrentTime(context)
+    const now = getCurrentTime(context).valueOf()
     return station.map((s, idx) => {
       let link: StationLink = {
         ...s,

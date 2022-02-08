@@ -52,7 +52,7 @@ export class SkillManager {
         return p
       })
       properties.sort((a, b) => a.skillLevel - b.skillLevel)
-      const logic = await import("../skill/" + moduleName + ".ts")
+      const logic = await import("../skill/" + moduleName)
         .then(o => o.default)
         .catch(() => {
           console.warn("fail to import skill logic", moduleName)

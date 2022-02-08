@@ -1,6 +1,6 @@
 import { AccessSideState, AccessSide, AccessState, getAccessDenco, AccessDencoState } from "./access"
 import { Context, getCurrentTime } from "./context"
-import { Denco, DencoAttribute, DencoState } from "./denco"
+import { DencoAttribute } from "./denco"
 import { Event } from "./event"
 import { LinksResult, Station, StationLink } from "./station"
 import { ReadonlyState, UserState } from "./user"
@@ -13,7 +13,7 @@ export function printEvents(context: Context, user: ReadonlyState<UserState> | u
 }
 
 export function formatEvent(context: Context, event: Event, detail: boolean = false): string {
-  const time = getCurrentTime(context)
+  const time = getCurrentTime(context).valueOf()
   if (event.type === "access") {
     return detail ? formatAccessDetail(event.data.access, event.data.which, time) : formatAccessEvent(event.data.access, event.data.which, time)
   } else if (event.type === "reboot") {
