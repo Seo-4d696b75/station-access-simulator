@@ -1,9 +1,9 @@
 import { copyDencoState, Denco, DencoState } from "./denco"
-import { SkillPossess, Skill, refreshSkillState, ActiveSkill } from "./skill"
-import { Random, Context, Logger, fixClock, getCurrentTime } from "./context"
+import { SkillPossess, refreshSkillState, ActiveSkill } from "./skill"
+import { Context, fixClock, getCurrentTime } from "./context"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
-import { copyUserState, FormationPosition, ReadonlyState, refreshEXPState, User, UserState } from "./user"
-import { Event } from "./event"
+import { copyUserState, FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
+import moment from "moment-timezone"
 
 
 /**
@@ -278,10 +278,10 @@ export type AccessResult = {
 export function startAccess(context: Context, config: AccessConfig): AccessResult {
   context = fixClock(context)
   const time = getCurrentTime(context)
-  context.log.log(`アクセス処理の開始 ${new Date(time).toTimeString()}`)
+  context.log.log(`アクセス処理の開始 ${moment(time).format("YYYY-MM-DD HH:mm:ss.SSS")}`)
 
   var state: AccessState = {
-    time: time,
+    time: time.valueOf(),
     station: config.station,
     offense: initAccessDencoState(context, config.offense, "offense"),
     defense: undefined,
@@ -312,7 +312,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
       context.log.warn(`守備側(${d.name})のリンクに対象駅(${config.station.name})が含まれていません,追加します`)
       link = {
         ...config.station,
-        start: getCurrentTime(context) - 100
+        start: getCurrentTime(context).valueOf() - 100
       }
       d.link.push(link)
     }
@@ -458,7 +458,7 @@ function checkSkillAfterAccess(context: Context, state: UserState & FormationPos
 }
 
 function calcLinkResult(context: Context, link: StationLink, d: Denco): LinkResult {
-  const time = getCurrentTime(context)
+  const time = getCurrentTime(context).valueOf()
   let duration = time - link.start
   if (duration < 0) {
     context.log.error(`リンク時間が負数です ${duration}[ms] ${JSON.stringify(link)}`)
@@ -476,7 +476,7 @@ function calcLinkResult(context: Context, link: StationLink, d: Denco): LinkResu
 }
 
 function calcLinksResult(context: Context, links: StationLink[], d: ReadonlyState<DencoState>, which: AccessSide): LinksResult {
-  const time = getCurrentTime(context)
+  const time = getCurrentTime(context).valueOf()
   const linkResult = links.map(link => calcLinkResult(context, link, d))
   // TODO combo bonus の計算
   const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b, 0)
@@ -529,7 +529,7 @@ function checkSKillState(context: Context, result: AccessResult): AccessResult {
     ...refreshSkillState(context, result.offense),
     carIndex: result.offense.carIndex,
   }
-  if (result.defense){
+  if (result.defense) {
     result.defense = {
       ...refreshSkillState(context, result.defense),
       carIndex: result.defense.carIndex,
@@ -538,12 +538,12 @@ function checkSKillState(context: Context, result: AccessResult): AccessResult {
   return result
 }
 
-function checkLevelup(context: Context, result: AccessResult): AccessResult{
+function checkLevelup(context: Context, result: AccessResult): AccessResult {
   result.offense = {
     ...refreshEXPState(context, result.offense),
     carIndex: result.offense.carIndex,
   }
-  if (result.defense){
+  if (result.defense) {
     result.defense = {
       ...refreshEXPState(context, result.defense),
       carIndex: result.defense.carIndex,
@@ -1118,7 +1118,7 @@ function completeDencoLink(context: Context, state: AccessState, which: AccessSi
       // 攻撃側のリンク成功
       d.link.push({
         ...state.station,
-        start: getCurrentTime(context),
+        start: getCurrentTime(context).valueOf(),
       })
     } else if (d.who === "defense" && state.linkDisconncted) {
       // 守備側のリンク解除 フットバースなどリブートを伴わない場合

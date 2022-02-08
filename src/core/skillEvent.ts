@@ -1,11 +1,12 @@
+import { TIME_FORMAT } from "..";
 import * as Access from "./access";
 import { Context, fixClock, getCurrentTime } from "./context";
 import { copyDencoState, Denco, DencoState, getSkill } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
-import { ActiveSkill, isSkillActive, ProbabilityPercent, refreshSkillState, Skill, SkillTrigger } from "./skill";
+import { ActiveSkill, isSkillActive, refreshSkillState, Skill, SkillTrigger } from "./skill";
 import { Station } from "./station";
 import { copyUserState, ReadonlyState, User, UserState } from "./user";
-
+import moment from "moment-timezone"
 
 export interface SkillEventDencoState extends DencoState {
   who: "self" | "other"
@@ -171,7 +172,7 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
       let e: SkillTriggerEvent = {
         type: "skill_trigger",
         data: {
-          time: state.time,
+          time: state.time.valueOf(),
           carIndex: state.carIndex,
           denco: copyDencoState(state.formation[state.carIndex]),
           skillName: skill.name,
@@ -202,7 +203,7 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
   let trigger: SkillTriggerEvent = {
     type: "skill_trigger",
     data: {
-      time: state.time,
+      time: state.time.valueOf(),
       carIndex: state.carIndex,
       denco: copyDencoState(state.formation[state.carIndex]),
       skillName: skill.name,
@@ -301,7 +302,7 @@ export interface SkillEventReservation {
  * @returns 待機列に追加した新しい状態
  */
 export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserState>, time: number, event: SkillEventReservation): UserState {
-  const now = getCurrentTime(context)
+  const now = getCurrentTime(context).valueOf()
   if (now > time) {
     context.log.error(`現在時刻より前の時刻は指定できません time: ${time}, event: ${JSON.stringify(event)}`)
     throw Error()
@@ -340,7 +341,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
     return next
   }
   const eventState: SkillEventState = {
-    time: getCurrentTime(context),
+    time: getCurrentTime(context).valueOf(),
     user: state,
     formation: next.formation.map((d, i) => {
       return {
@@ -380,13 +381,13 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
 export function refreshEventQueue(context: Context, state: ReadonlyState<UserState>): UserState {
   context = fixClock(context)
   let next = copyUserState(state)
-  const time = getCurrentTime(context)
+  const time = getCurrentTime(context).valueOf()
   while (next.queue.length > 0) {
     const entry = next.queue[0]
     if (time < entry.time) break
     next.queue.splice(0, 1)
     // start event
-    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${new Date(entry.time).toTimeString()} type: ${entry.type}`)
+    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${moment(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
         next = evaluateSkillAtEvent(context, next, entry.data.denco, entry.data.probability, entry.data.evaluate)
@@ -409,11 +410,10 @@ export function refreshEventQueue(context: Context, state: ReadonlyState<UserSta
           next = callback(context, next, self)
         }
         // 次のイベント追加
-        const date = new Date(entry.time)
-        const hour = date.getHours()
+        const date = moment(entry.time).add(1, "h")
         next.queue.push({
           type: "hour_cycle",
-          time: date.setHours(hour + 1),
+          time: date.valueOf(),
           data: undefined
         })
         next.queue.sort((a, b) => a.time - b.time)
