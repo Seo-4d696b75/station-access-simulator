@@ -1,3 +1,6 @@
+import { Moment } from "moment-timezone";
+export declare const TIME_FORMAT = "HH:mm:ss.SSS";
+export declare const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS";
 /**
  * スキル発動などtrue/falseの条件が確率に依存する場合の挙動を指定できます
  * - "normal": 疑似乱数を用いて指定された確率で計算
@@ -28,13 +31,19 @@ export interface Context {
     random: Random;
     /**
      * 処理中の現在時刻の取得方法
-     * - "now": `Date.now()`で参照（デフォルト値）
+     * - "now": `moment()`で参照（デフォルト値）
      * - number: 指定した時刻で処理
      */
     clock: "now" | number;
 }
 export declare function initContext(type?: string, seed?: string, console?: boolean): Context;
-export declare function setClock(context: Readonly<Context>, time?: number): Context;
+/**
+ * 指定した時刻に固定する
+ * @param context
+ * @param time 指定時刻 Dateクラスのタイムゾーンは"+0900"に変更する
+ * @returns タイムゾーンは Tokyo +0900 に固定される
+ */
+export declare function setClock(context: Readonly<Context>, time?: number | string | Date | Moment): Context;
 /**
  * `getCurrentTime`が返す現在時刻の値で固定する
  * @param context clock
@@ -43,7 +52,7 @@ export declare function setClock(context: Readonly<Context>, time?: number): Con
 export declare function fixClock(context: Readonly<Context>): Context;
 /**
  * 現在時刻を取得する
- * @param context clockの値に従って`Date.now()`もしくは固定された時刻を参照する
+ * @param context clockの値に従って`moment()`もしくは固定された時刻を参照する
  * @returns unix time [ms]
  */
 export declare function getCurrentTime(context: Context): number;
@@ -53,7 +62,7 @@ export declare function getCurrentTime(context: Context): number;
 export declare class Logger {
     constructor(type: string, writeConsole?: boolean);
     type: string;
-    time: number;
+    time: Moment;
     logs: Log[];
     writeConsole: boolean;
     toString(): string;
