@@ -13,7 +13,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.1/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.2/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -29,6 +29,7 @@ $ > npm install ekimemo-access-simulator
 # Release Note
 - v0.1.0 公開
 - v0.1.1 `node_module`で利用する場合にでんこスキルの効果内容が正しくロードされないバグを解消
+- v0.1.2 時刻処理におけるタイムゾーンを`Asia/Tokyo (+0900)`に固定
 
 
 # Basic Usage
