@@ -1,4 +1,11 @@
 import seedrandom from "seedrandom"
+import moment, { Moment } from "moment-timezone"
+
+// タイムゾーン指定
+moment.tz.setDefault("Asia/Tokyo")
+
+export const TIME_FORMAT = "HH:mm:ss.SSS"
+export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
 
 /**
  * スキル発動などtrue/falseの条件が確率に依存する場合の挙動を指定できます
@@ -35,7 +42,7 @@ export interface Context {
   random: Random
   /**
    * 処理中の現在時刻の取得方法
-   * - "now": `Date.now()`で参照（デフォルト値）
+   * - "now": `moment()`で参照（デフォルト値）
    * - number: 指定した時刻で処理
    */
   clock: "now" | number
@@ -49,10 +56,16 @@ export function initContext(type: string = "test", seed: string = "test", consol
   }
 }
 
-export function setClock(context: Readonly<Context>, time?: number): Context {
+/**
+ * 指定した時刻に固定する
+ * @param context 
+ * @param time 指定時刻 Dateクラスのタイムゾーンは"+0900"に変更する
+ * @returns タイムゾーンは Tokyo +0900 に固定される
+ */
+export function setClock(context: Readonly<Context>, time?: number | string | Date | Moment): Context {
   return {
     ...context,
-    clock: time ?? "now",
+    clock: time ? moment(time).valueOf() : "now",
   }
 }
 
@@ -70,11 +83,11 @@ export function fixClock(context: Readonly<Context>): Context {
 
 /**
  * 現在時刻を取得する
- * @param context clockの値に従って`Date.now()`もしくは固定された時刻を参照する
+ * @param context clockの値に従って`moment()`もしくは固定された時刻を参照する
  * @returns unix time [ms]
  */
 export function getCurrentTime(context: Context): number {
-  return context.clock === "now" ? Date.now() : context.clock
+  return context.clock === "now" ? moment().valueOf() : context.clock
 }
 
 /**
@@ -84,12 +97,12 @@ export class Logger {
 
   constructor(type: string, writeConsole: boolean = true) {
     this.type = type
-    this.time = Date.now()
+    this.time = moment()
     this.writeConsole = writeConsole
   }
 
   type: string
-  time: number
+  time: Moment
   logs: Log[] = []
   writeConsole: boolean
 
@@ -97,7 +110,7 @@ export class Logger {
     var str = ""
     str += "========================\n"
     str += `type: ${this.type}\n`
-    str += `time: ${new Date(this.time).toTimeString()}\n`
+    str += `time: ${this.time.format(DATE_TIME_FORMAT)}\n`
     str += "------------------------\n"
     this.logs.forEach(log => {
       str += `[${log.tag}] ${log.message}\n`
