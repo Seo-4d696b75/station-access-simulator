@@ -923,8 +923,16 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
 }
 
 /**
- * 確率ブーストも考慮して確率を乱数を計算する
- * @param percent 100分率で指定した確立でtrueを返す
+ * 確率計算モードを考慮してtrue/falseの条件を計算する  
+ * 
+ * {@link RandomMode} の値に応じて乱数計算を無視してtrue/falseを返す場合もある  
+ * 計算の詳細  
+ * 1. `percent <= 0` -> `false`
+ * 2. `percent >= 100` -> `true`
+ * 3. `context.random.mode === "ignore"` -> `false`
+ * 4. `context.random.mode === "force"` -> `true`
+ * 5. `context.random.mode === "normal"` -> 疑似乱数を用いて`percent`%の確率で`true`を返す
+ * @param percent 100分率で指定した確率でtrueを返す
  * @returns 
  */
 export function random(context: Context, percent: number): boolean {
