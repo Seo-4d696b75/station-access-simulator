@@ -904,10 +904,7 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
     const v = percent * (1 + boost / 100.0)
     context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
     percent = Math.min(v, 100)
-  }
-  if (random(context, percent)) {
-    context.log.log(`スキルが発動できます ${d.name} 確率:${percent}%`)
-    if (boost !== 0) {
+    // 発動の如何を問わず確率補正のスキルは発動した扱いになる
       const defense = state.defense
       if (d.which === "offense") {
         state.offense.probabilityBoosted = true
@@ -915,6 +912,8 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
         defense.probabilityBoosted = true
       }
     }
+  if (random(context, percent)) {
+    context.log.log(`スキルが発動できます ${d.name} 確率:${percent}%`)
     return true
   } else {
     context.log.log(`スキルが発動しませんでした ${d.name} 確率:${percent}%`)
