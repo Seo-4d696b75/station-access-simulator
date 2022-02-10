@@ -24,6 +24,7 @@ const skill: SkillLogic = {
 // スキル発動時の処理内容
 const evaluate: SkillEventEvaluate = (context, state, self) => {
   const links = self.link
+  const stataions = links.map(link => link.name).join(",")
   if (links.length <= 1) context.log.error("リンク数>1が必要です")
   let idx = Math.floor(links.length * context.random())
   const link = links[idx]
@@ -38,6 +39,7 @@ const evaluate: SkillEventEvaluate = (context, state, self) => {
   }
   // リンクの移譲
   state.formation[idx].link.push(link)
+  context.log.log(`渡したい駅を渡せなくてど～しよ～！！ リンク:${stataions} 移譲するリンク:${JSON.stringify(link)} 移譲相手:${state.formation[idx].name}`)
   return state
 }
 
