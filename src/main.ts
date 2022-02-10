@@ -13,26 +13,24 @@ import { activateSkill, refreshSkillState } from './core/skill'
 import moment from "moment-timezone"
 
 init().then(() => {
-  const context = initContext("test", "test", false)
-  let reika = DencoManager.getDenco(context, "5", 80)
-  let charlotte = DencoManager.getDenco(context, "6", 50, 1)
-  let offense = initUser(context, "とあるマスター１", [
-    reika
-  ])
-  offense = activateSkill(context, { ...offense, carIndex: 0 })
-  let defense = initUser(context, "とあるマスター２", [
-    charlotte
-  ])
-  const config: AccessConfig = {
+  const context = initContext("test", "test")
+  context.random.mode = "ignore"
+  let siira = DencoManager.getDenco(context, "11", 50, 1)
+  let reika = DencoManager.getDenco(context, "5", 50)
+  let hiiru = DencoManager.getDenco(context, "34", 50)
+  let offense = initUser(context, "とあるマスター", [reika])
+  let defense = initUser(context, "とあるマスター２", [hiiru, siira])
+  defense = activateSkill(context, {...defense, carIndex: 0})
+  const config = {
     offense: {
       carIndex: 0,
       ...offense
     },
     defense: {
-      carIndex: 0,
+      carIndex: 1,
       ...defense
     },
-    station: charlotte.link[0],
+    station: siira.link[0],
   }
   const result = startAccess(context, config)
   console.log("攻撃側のタイムライン")
