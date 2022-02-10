@@ -213,12 +213,34 @@ export interface AccessState {
 
   depth: number
 
+  /**
+   * `damage_common`の段階までにおけるダメージの計算値
+   * 
+   * base * (100 + ATK - DEF)/100.0 * (attr_damage_ratio) = damage
+   */
   damageBase?: number
   skipDamageFixed?: boolean
+
+  /**
+   * 固定値で加減算されるダメージ値
+   */
   damageFixed: number
 
+  /**
+   * `damage_common`の段階までに評価された`ATK`累積値
+   */
   attackPercent: number
+  
+  /**
+   * `damage_common`の段階までに評価された`DEF`累積値
+   */
   defendPercent: number
+
+  /**
+   * `damage_common`の直後に計算される基本ダメージにおける倍率
+   * 
+   * 現状ではでんこ属性による`1.3`の倍率のみ発生する
+   */
   damageRatio: number
 
   linkSuccess: boolean
@@ -905,13 +927,13 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
     context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
     percent = Math.min(v, 100)
     // 発動の如何を問わず確率補正のスキルは発動した扱いになる
-      const defense = state.defense
-      if (d.which === "offense") {
-        state.offense.probabilityBoosted = true
-      } else if (defense) {
-        defense.probabilityBoosted = true
-      }
+    const defense = state.defense
+    if (d.which === "offense") {
+      state.offense.probabilityBoosted = true
+    } else if (defense) {
+      defense.probabilityBoosted = true
     }
+  }
   if (random(context, percent)) {
     context.log.log(`スキルが発動できます ${d.name} 確率:${percent}%`)
     return true
