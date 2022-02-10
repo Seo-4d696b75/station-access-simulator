@@ -623,7 +623,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): UserSt
 
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.state = {
-            type: "idle",
+            type: "unable",
             data: undefined
           }
           // check unable <=> idle
