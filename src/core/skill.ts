@@ -237,21 +237,22 @@ export function copySkillState(state: SkillState): SkillState {
   }
 }
 
-export type SkillPossessType =
-  "possess" |
-  "not_aquired" |
-  "none"
-
-
-interface SkillHolder<T, S = undefined> {
-  type: T,
-  skill: S
+interface SkillHolderBase<T> {
+  type: T
 }
 
-export type SkillPossess =
-  SkillHolder<"possess", Skill> |
-  SkillHolder<"not_aquired"> |
-  SkillHolder<"none">
+/**
+ * スキルの保有をモデル化します
+ * 
+ * `type`の値に応じて３種類のスキル保有状態があります
+ * - "possess" : スキルを保有している
+ * - "not_acquired" : でんこのレベルが低くまだスキルを保有していない
+ * - "none" : スキルを保有していない
+ */
+export type SkillHolder =
+  SkillHolderBase<"possess"> & Skill |
+  SkillHolderBase<"not_acquired"> |
+  SkillHolderBase<"none">
 
 export function copySkillPossess(skill: SkillPossess): SkillPossess {
   if (skill.type === "possess") {
