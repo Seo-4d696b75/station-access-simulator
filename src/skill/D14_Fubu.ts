@@ -5,7 +5,7 @@ const skill: SkillLogic = {
     return step === "damage_common" && self.which === "defense"
   },
   evaluate: (context, state, step, self) => {
-    const def = self.skillPropertyReader("DEF")
+    const def = self.skill.propertyReader("DEF")
     state.defendPercent += def
     context.log.log(`まだまだこんなもんじゃないゾー DEF+${def}%`)
     return state
