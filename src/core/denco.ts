@@ -2,7 +2,6 @@ import { copySkillHolder, SkillHolder } from "./skill"
 import { Film } from "./film"
 import { StationLink } from "./station"
 import { ReadonlyState } from "./user"
-import { Skill } from ".."
 
 export type DencoType =
   "attacker" |
@@ -64,11 +63,4 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
       ...state.film
     },
   }
-}
-
-export function getSkill(denco: ReadonlyState<DencoState>): Skill {
-  if (denco.skill.type === "possess") {
-    return denco.skill
-  }
-  throw Error("skill not found")
 }

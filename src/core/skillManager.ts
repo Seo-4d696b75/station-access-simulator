@@ -13,7 +13,7 @@ interface SkillDataset {
   numbering: string
   moduleName: string
   skill: SkillLogic
-  transactionType: SkillStateTransition
+  transition: SkillStateTransition
   evaluateInPink: boolean
   skillProperties: SkillProperty[]
 }
@@ -64,7 +64,7 @@ export class SkillManager {
         moduleName: moduleName,
         skill: logic,
         skillProperties: properties,
-        transactionType: type,
+        transition: type,
         evaluateInPink: false,
       }
       this.map.set(numbering, dataset)
@@ -91,9 +91,9 @@ export class SkillManager {
           name: property.name,
           state: {
             type: "not_init",
+            transition: data.transition,
             data: undefined,
           },
-          transitionType: data.transactionType,
           evaluateInPink: data.evaluateInPink,
           propertyReader: (key: string) => {
             var value = property.property.get(key)
