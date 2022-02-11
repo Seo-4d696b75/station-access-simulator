@@ -27,7 +27,7 @@ describe("メロのスキル", () => {
     state = refreshSkillState(context, state)
     mero = state.formation[0]
     let skill = getSkill(mero)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
@@ -37,7 +37,7 @@ describe("メロのスキル", () => {
     state = refreshSkillState(context, state)
     mero = state.formation[0]
     skill = getSkill(mero)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
   })
   test("発動なし-フットバース使用", () => {

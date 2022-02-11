@@ -3,8 +3,7 @@ import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser, UserState } from "../../core/user"
-import { activateSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getSkill } from "../../core/denco"
+import { activateSkill, getSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { getAccessDenco, startAccess } from "../../core/access"
 import { EventTriggeredSkill } from "../../core/skillEvent"
 import moment from "moment-timezone"
@@ -29,7 +28,7 @@ describe("セリアのスキル", () => {
     defense = refreshSkillState(context, defense)
     seria = defense.formation[1]
     let skill = getSkill(seria)
-    expect(skill.transitionType).toBe("manual")
+    expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
     defense = activateSkill(context, { ...defense, carIndex: 1 })
     seria = defense.formation[1]

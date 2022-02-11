@@ -1,6 +1,6 @@
-import { activateSkill, disactivateSkill, isSkillActive, refreshSkillState, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
+import { activateSkill, disactivateSkill, getSkill, isSkillActive, refreshSkillState, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
 import { initContext } from "../core/context"
-import { DencoState, getSkill } from "../core/denco"
+import { DencoState } from "../core/denco"
 import { initUser, refreshCurrentTime } from "../core/user"
 import moment from "moment-timezone"
 
@@ -19,9 +19,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "manual",
       state: {
         type: "not_init",
+        transition: "manual",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -77,9 +77,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "manual-condition",
       state: {
         type: "not_init",
+        transition: "manual-condition",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -139,9 +139,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "auto",
       state: {
         type: "not_init",
+        transition: "auto",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -191,9 +191,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "auto-condition",
       state: {
         type: "not_init",
+        transition: "auto-condition",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -249,9 +249,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "manual",
       state: {
         type: "not_init",
+        transition: "manual",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -308,9 +308,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "manual",
       state: {
         type: "not_init",
+        transition: "manual",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -368,9 +368,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "manual-condition",
       state: {
         type: "not_init",
+        transition: "manual-condition",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -427,9 +427,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "auto",
       state: {
         type: "not_init",
+        transition: "auto",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -470,7 +470,7 @@ describe("スキル処理", () => {
     context.clock = now + 2000
     state = refreshSkillState(context, state)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
+    expect(getSkill(denco).state.type).toBe("unable")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
   })
   test("auto-condition-disactivateSkill", () => {
@@ -482,9 +482,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "auto-condition",
       state: {
         type: "not_init",
+        transition: "auto-condition",
         data: undefined
       },
       propertyReader: jest.fn(),
@@ -524,9 +524,9 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      transitionType: "always",
       state: {
         type: "not_init",
+        transition: "always",
         data: undefined
       },
       propertyReader: jest.fn(),

@@ -3,8 +3,7 @@ import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill, refreshSkillState } from "../../core/skill"
-import { getSkill } from "../../core/denco"
+import { activateSkill, disactivateSkill, getSkill, refreshSkillState } from "../../core/skill"
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 import moment from "moment-timezone"
 
@@ -27,7 +26,7 @@ describe("みろくのスキル", () => {
     state = refreshSkillState(context, state)
     miroku = state.formation[0]
     let skill = getSkill(miroku)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
@@ -38,7 +37,7 @@ describe("みろくのスキル", () => {
     state = refreshSkillState(context, state)
     miroku = state.formation[0]
     skill = getSkill(miroku)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
   })
   test("発動なし-フットバース使用", () => {

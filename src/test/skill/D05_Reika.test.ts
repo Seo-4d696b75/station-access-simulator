@@ -3,8 +3,7 @@ import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser } from "../../core/user"
-import { activateSkill, isSkillActive, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getSkill } from "../../core/denco"
+import { activateSkill, isSkillActive, getSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 import moment from "moment-timezone"
 
@@ -29,7 +28,7 @@ describe("レイカのスキル", () => {
     reika = defense.formation[0]
     expect(reika.name).toBe("reika")
     let skill = getSkill(reika)
-    expect(skill.transitionType).toBe("manual")
+    expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
     defense = activateSkill(context, { ...defense, carIndex: 0 })
     reika = defense.formation[0]

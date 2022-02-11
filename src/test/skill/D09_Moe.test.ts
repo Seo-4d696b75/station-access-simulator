@@ -3,8 +3,7 @@ import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser, refreshCurrentTime } from "../../core/user"
-import { getSkill } from "../../core/denco"
-import { activateSkill, disactivateSkill, refreshSkillState } from "../../core/skill"
+import { activateSkill, disactivateSkill, getSkill, refreshSkillState } from "../../core/skill"
 import moment from "moment-timezone"
 
 describe("もえのスキル", () => {
@@ -26,7 +25,7 @@ describe("もえのスキル", () => {
     moe = state.formation[0]
     let skill = getSkill(moe)
     expect(skill.state.type).toBe("unable")
-    expect(skill.transitionType).toBe("auto-condition")
+    expect(skill.state.transition).toBe("auto-condition")
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
     expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
   })

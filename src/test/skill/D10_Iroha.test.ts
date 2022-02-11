@@ -27,7 +27,7 @@ describe("いろはスキル", () => {
     state = refreshSkillState(context, state)
     iroha = state.formation[0]
     let skill = getSkill(iroha)
-    expect(skill.transitionType).toBe("manual-condition")
+    expect(skill.state.transition).toBe("manual-condition")
     expect(skill.state.type).toBe("unable")
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
 

@@ -2,9 +2,8 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
-import { getSkill } from "../../core/denco"
 import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill } from "../../core/skill"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
 import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access"
 
 describe("シーナのスキル", () => {
@@ -26,7 +25,7 @@ describe("シーナのスキル", () => {
     sheena = state.formation[0]
     let skill = getSkill(sheena)
     expect(skill.state.type).toBe("active")
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
     expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
   })
