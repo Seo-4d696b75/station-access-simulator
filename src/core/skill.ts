@@ -294,9 +294,6 @@ export function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"pos
 export function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
   context = fixClock(context)
   let next = copyUserState(state)
-  if (!checkActivateSkill(context, state)) {
-    return next
-  }
   const d = next.formation[state.carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
@@ -305,6 +302,9 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
   if (d.skill.type !== "possess") {
     context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
     throw Error()
+  }
+  if (!checkActivateSkill(context, state)) {
+    return next
   }
   const skill = d.skill
   context.log.log(`スキル状態の変更：${d.name} ${skill.state.type} -> active`)
@@ -396,6 +396,7 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
   const d = next.formation[state.carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
+    throw Error()
   }
   if (d.skill.type !== "possess") {
     context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
