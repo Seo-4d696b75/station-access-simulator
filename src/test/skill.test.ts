@@ -106,6 +106,10 @@ describe("スキル処理", () => {
     }
     expect(() => initUser(context, "test-user", [denco])).toThrowError()
     skill.canEnabled = canEnabled
+    denco.skill = {
+      type: "possess",
+      ...skill
+    }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("idle")
@@ -215,6 +219,10 @@ describe("スキル処理", () => {
     }
     expect(() => initUser(context, "test-user", [denco])).toThrowError()
     skill.canActivated = canActivated
+    denco.skill = {
+      type: "possess",
+      ...skill
+    }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("active")

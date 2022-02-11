@@ -96,7 +96,7 @@ describe("manager", () => {
     }
     // スキルをまだ取得していない
     skill = SkillManager.getSkill("3", 1)
-    expect(skill.type).toBe("not_aquired")
+    expect(skill.type).toBe("not_acquired")
     // スキルなし
     skill = SkillManager.getSkill("8", 80)
     expect(skill.type).toBe("none")
