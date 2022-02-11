@@ -3,7 +3,7 @@ import { SkillLogic } from "../core/skill";
 const skill: SkillLogic = {
   canEvaluate: (context, state, step, self) => {
     if (step === "pink_check" && !state.pinkMode) {
-      return self.skillPropertyReader("probability")
+      return self.skill.propertyReader("probability")
     }
     return false
   },

@@ -1,4 +1,4 @@
-import { SkillLogic, SkillPossess, SkillStateTransition } from "./skill"
+import { SkillLogic, SkillHolder, SkillStateTransition } from "./skill"
 
 interface SkillProperty {
   name: string
@@ -13,7 +13,7 @@ interface SkillDataset {
   numbering: string
   moduleName: string
   skill: SkillLogic
-  transactionType: SkillStateTransition
+  transition: SkillStateTransition
   evaluateInPink: boolean
   skillProperties: SkillProperty[]
 }
@@ -64,14 +64,14 @@ export class SkillManager {
         moduleName: moduleName,
         skill: logic,
         skillProperties: properties,
-        transactionType: type,
+        transition: type,
         evaluateInPink: false,
       }
       this.map.set(numbering, dataset)
     }
   }
 
-  getSkill(numbering: string, level: number): SkillPossess {
+  getSkill(numbering: string, level: number): SkillHolder {
     const data = this.map.get(numbering)
     if (data) {
       var idx = data.skillProperties.length - 1
@@ -81,39 +81,35 @@ export class SkillManager {
       }
       if (idx < 0) {
         return {
-          type: "not_aquired",
-          skill: undefined
+          type: "not_acquired",
         }
       } else if (idx < data.skillProperties.length) {
         const property = data.skillProperties[idx]
         return {
           type: "possess",
-          skill: {
-            ...data.skill,
-            level: property.skillLevel,
-            name: property.name,
-            state: {
-              type: "not_init",
-              data: undefined,
-            },
-            transitionType: data.transactionType,
-            evaluateInPink: data.evaluateInPink,
-            propertyReader: (key: string) => {
-              var value = property.property.get(key)
-              if (!value && value !== 0) {
-                throw new Error(`skill property not found. key:${key}`)
-              }
-              return value
+          level: property.skillLevel,
+          name: property.name,
+          state: {
+            type: "not_init",
+            transition: data.transition,
+            data: undefined,
+          },
+          evaluateInPink: data.evaluateInPink,
+          propertyReader: (key: string) => {
+            var value = property.property.get(key)
+            if (!value && value !== 0) {
+              throw new Error(`skill property not found. key:${key}`)
             }
-          }
+            return value
+          },
+          ...data.skill,
         }
       } else {
         throw new Error(`no skill property found for level: ${level} ${numbering}`)
       }
     } else {
       return {
-        type: "none",
-        skill: undefined
+        type: "none"
       }
     }
   }

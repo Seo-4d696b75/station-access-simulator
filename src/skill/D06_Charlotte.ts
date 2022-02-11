@@ -5,15 +5,15 @@ import { enqueueSkillEvent, SkillEventEvaluate, randomeAccess } from "../core/sk
 const skill: SkillLogic = {
   disactivateAt: (context, state, self) => {
     const time = getCurrentTime(context)
-    const active = self.skillPropertyReader("active")
-    const wait = self.skillPropertyReader("wait")
+    const active = self.skill.propertyReader("active")
+    const wait = self.skill.propertyReader("wait")
     return {
       activeTimeout: time + active * 1000,
       cooldownTimeout: time + (active + wait) * 1000,
     }
   },
   onActivated: (context, state, self) => {
-    const timer = self.skillPropertyReader("timer")
+    const timer = self.skill.propertyReader("timer")
     const evaluate: SkillEventEvaluate = (context, state, self) => randomeAccess(context, state)
     const time = getCurrentTime(context) + timer * 1000
     return enqueueSkillEvent(context, state, time, {

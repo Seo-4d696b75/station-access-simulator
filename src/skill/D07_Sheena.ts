@@ -8,7 +8,7 @@ const skill: SkillLogic = {
       self.who === "defense" &&
       !self.reboot &&
       !state.linkDisconncted) {
-      return self.skillPropertyReader("probability")
+      return self.skill.propertyReader("probability")
     }
     return false
   },

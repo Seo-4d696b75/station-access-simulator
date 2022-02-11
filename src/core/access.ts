@@ -1,5 +1,5 @@
 import { copyDencoState, Denco, DencoState } from "./denco"
-import { SkillPossess, refreshSkillState, ActiveSkill } from "./skill"
+import { SkillHolder, refreshSkillState, ActiveSkill } from "./skill"
 import { Context, fixClock, getCurrentTime } from "./context"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
 import { copyUserState, FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
@@ -230,7 +230,7 @@ export interface AccessState {
    * `damage_common`の段階までに評価された`ATK`累積値
    */
   attackPercent: number
-  
+
   /**
    * `damage_common`の段階までに評価された`DEF`累積値
    */
@@ -458,14 +458,18 @@ function checkSkillAfterAccess(context: Context, state: UserState & FormationPos
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
   filterActiveSkill(side.formation).forEach(idx => {
+    // スキル発動による状態変更を考慮して評価直前にコピー
     const d = copyAccessDencoState(getFormation(access, which)[idx])
-    const skill = d.skillHolder.skill
+    const skill = d.skill
+    if (skill.type !== "possess") {
+      context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
+      throw Error()
+    }
     const predicate = skill?.onAccessComplete
     if (skill && predicate) {
       const self = {
         ...d,
         skill: skill,
-        skillPropertyReader: skill.propertyReader
       }
       const next = predicate(context, state, self, access)
       if (next) {
@@ -804,7 +808,11 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
   offenseActive.forEach(idx => {
     // 他スキルの発動で状態が変化する場合があるので毎度参照してからコピーする
     const d = copyAccessDencoState(state.offense.formation[idx])
-    const skill = d.skillHolder.skill
+    const skill = d.skill
+    if (skill.type !== "possess") {
+      context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
+      throw Error()
+    }
     if (skill && (!state.pinkMode || skill.evaluateInPink)) {
       const active = {
         ...d,
@@ -822,7 +830,11 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
   if (defense && defenseActive) {
     defenseActive.forEach(idx => {
       const d = copyAccessDencoState(defense.formation[idx])
-      const skill = d.skillHolder.skill
+      const skill = d.skill
+      if (skill.type !== "possess") {
+        context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
+        throw Error()
+      }
       if (skill && (!state.pinkMode || skill.evaluateInPink)) {
         const active = {
           ...d,
@@ -877,7 +889,6 @@ export function hasSkillTriggered(state: ReadonlyState<AccessSideState>, denco: 
  */
 function filterActiveSkill(list: readonly ReadonlyState<AccessDencoState>[]): number[] {
   return list.filter(d => {
-    const s = d.skillHolder
     return hasActiveSkill(d)
   }).map(d => d.carIndex)
 }
@@ -888,7 +899,7 @@ function filterActiveSkill(list: readonly ReadonlyState<AccessDencoState>[]): nu
  * @returns 
  */
 function hasActiveSkill(d: ReadonlyState<AccessDencoState>): boolean {
-  return isSkillActive(d.skillHolder) && !d.skillInvalidated
+  return isSkillActive(d.skill) && !d.skillInvalidated
 }
 
 /**
@@ -896,8 +907,8 @@ function hasActiveSkill(d: ReadonlyState<AccessDencoState>): boolean {
  * @param skill 
  * @returns 
  */
-function isSkillActive(skill: SkillPossess): boolean {
-  return skill.type === "possess" && skill.skill.state.type === "active"
+function isSkillActive(skill: SkillHolder): boolean {
+  return skill.type === "possess" && skill.state.type === "active"
 }
 
 /**

@@ -3,8 +3,7 @@ import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill, refreshSkillState } from "../../core/skill"
-import { getSkill } from "../../core/denco"
+import { activateSkill, disactivateSkill, getSkill, refreshSkillState } from "../../core/skill"
 import { getAccessDenco, getDefense, startAccess } from "../../core/access"
 import moment from "moment-timezone"
 
@@ -20,13 +19,13 @@ describe("ルナのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let luna = DencoManager.getDenco(context, "3", 50)
-    expect(luna.skillHolder.type).toBe("possess")
+    expect(luna.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [luna])
     context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
     state = refreshSkillState(context, state)
     luna = state.formation[0]
     let skill = getSkill(luna)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
@@ -37,7 +36,7 @@ describe("ルナのスキル", () => {
     state = refreshSkillState(context, state)
     luna = state.formation[0]
     skill = getSkill(luna)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
   })
   test("発動なし-フットバース使用", () => {

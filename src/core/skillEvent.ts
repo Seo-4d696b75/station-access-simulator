@@ -1,7 +1,7 @@
 import { TIME_FORMAT } from "..";
 import * as Access from "./access";
 import { Context, fixClock, getCurrentTime } from "./context";
-import { copyDencoState, Denco, DencoState, getSkill } from "./denco";
+import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, refreshSkillState, Skill, SkillTrigger } from "./skill";
 import { Station } from "./station";
@@ -104,7 +104,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     context.log.error(`スキルが直前のアクセスで無効化されています ${self.name}`)
     throw Error()
   }
-  if (!isSkillActive(self.skillHolder)) {
+  if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
     throw Error()
   }
@@ -144,26 +144,30 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
 function execute(context: Context, state: SkillEventState, evaluate: SkillEventEvaluate): SkillEventState | undefined {
   context.log.log(`スキル評価イベントの開始`)
   let self = state.formation[state.carIndex]
-  if (self.skillHolder.type !== "possess") {
+  if (self.skill.type !== "possess") {
     context.log.error(`スキルを保持していません ${self.name}`)
     throw Error("no active skill found")
   }
 
-  const skill = self.skillHolder.skill
+  const skill = self.skill
   context.log.log(`${self.name} ${skill.name}`)
 
   // TODO ラッピングによる補正
 
   // 主体となるスキルとは別に事前に発動するスキル
   const others = state.formation.filter(s => {
-    return isSkillActive(s.skillHolder) && !s.skillInvalidated && s.carIndex !== self.carIndex
+    return isSkillActive(s.skill) && !s.skillInvalidated && s.carIndex !== self.carIndex
   }).map(d => d.carIndex)
   others.forEach(idx => {
+    // スキル発動による状態変更を考慮して各評価直前にコピー
     const s = copySKillEventDencoState(state.formation[idx])
-    const skill = s.skillHolder.skill as Skill
+    const skill = s.skill
+    if (skill.type !== "possess") {
+      context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${s.name} possess => ${skill.type}`)
+      throw Error()
+    }
     const active: SkillEventDencoState & ActiveSkill = {
       ...s,
-      skillPropertyReader: skill.propertyReader,
       skill: skill,
     }
     const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(context, state, active) : undefined
@@ -196,7 +200,6 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
   const d: SkillEventDencoState & ActiveSkill = {
     ...self,
     skill: skill,
-    skillPropertyReader: skill.propertyReader
   }
   const result = evaluate(context, state, d)
   state = result
@@ -336,8 +339,8 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
     context.log.log(`スキル発動の主体となるでんこが編成内に居ません（終了） formation: ${state.formation.map(d => d.name)}`)
     return next
   }
-  if (state.formation[idx].skillHolder.type !== "possess") {
-    context.log.log(`スキル発動の主体となるでんこがスキルを保有していません（終了） skill: ${state.formation[idx].skillHolder.type}`)
+  if (state.formation[idx].skill.type !== "possess") {
+    context.log.log(`スキル発動の主体となるでんこがスキルを保有していません（終了） skill: ${state.formation[idx].skill.type}`)
     return next
   }
   const eventState: SkillEventState = {
@@ -397,8 +400,8 @@ export function refreshEventQueue(context: Context, state: ReadonlyState<UserSta
         const size = next.formation.length
         for (let i = 0; i < size; i++) {
           const d = next.formation[i]
-          if (!isSkillActive(d.skillHolder)) continue
-          const skill = getSkill(d)
+          const skill = d.skill
+          if (skill.type !== "possess" || skill.state.type !== "active") continue
           const callback = skill.onHourCycle
           if (!callback) continue
           let self = {
@@ -424,4 +427,3 @@ export function refreshEventQueue(context: Context, state: ReadonlyState<UserSta
   }
   return next
 }
-

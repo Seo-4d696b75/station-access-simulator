@@ -1,7 +1,6 @@
 import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
-import moment from "moment-timezone"
 import { activateSkill, disactivateSkill, getSkill, initContext, initUser, startAccess } from "../.."
 
 describe("しいらのスキル", () => {
@@ -19,9 +18,9 @@ describe("しいらのスキル", () => {
     let state = initUser(context, "master", [siira])
     siira = state.formation[0]
     expect(siira.name).toBe("siira")
-    expect(siira.skillHolder.type).toBe("possess")
+    expect(siira.skill.type).toBe("possess")
     let skill = getSkill(siira)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
     expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
     expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
