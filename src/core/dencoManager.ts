@@ -71,7 +71,7 @@ class DencoManager {
       ...status,
       currentExp: 0,
       currentHp: status.maxHp,
-      skillHolder: skill,
+      skill: skill,
       film: {
 
       },
@@ -104,7 +104,7 @@ class DencoManager {
             currentExp: d.currentExp - d.nextExp,
             film: d.film,
             link: d.link,
-            skillHolder: skillManager.getSkill(d.numbering, level)
+            skill: skillManager.getSkill(d.numbering, level)
           }
         } else {
           // これ以上のレベルアップはなし

@@ -1,7 +1,8 @@
-import { copySkillPossess, Skill, SkillPossess, SkillPossessType, SkillState } from "./skill"
+import { copySkillHolder, SkillHolder } from "./skill"
 import { Film } from "./film"
 import { StationLink } from "./station"
 import { ReadonlyState } from "./user"
+import { Skill } from ".."
 
 export type DencoType =
   "attacker" |
@@ -39,7 +40,7 @@ export interface DencoState extends Denco {
   currentHp: number
   ap: number
 
-  skillHolder: SkillPossess
+  skill: SkillHolder
   film: Film
 
   link: StationLink[]
@@ -58,16 +59,16 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
     nextExp: state.nextExp,
     ap: state.ap,
     link: Array.from(state.link),
-    skillHolder: copySkillPossess(state.skillHolder),
+    skill: copySkillHolder(state.skill),
     film: {
       ...state.film
     },
   }
 }
 
-export function getSkill<S>(denco: { skillHolder: { type: "possess", skill: NonNullable<S> } | { type: "not_aquired" | "none" } }): NonNullable<S> {
-  if (denco.skillHolder.type === "possess") {
-    return denco.skillHolder.skill
+export function getSkill(denco: ReadonlyState<DencoState>): Skill {
+  if (denco.skill.type === "possess") {
+    return denco.skill
   }
   throw Error("skill not found")
 }

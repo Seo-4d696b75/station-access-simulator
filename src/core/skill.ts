@@ -1,7 +1,7 @@
 import { TIME_FORMAT } from ".."
 import * as access from "./access"
 import { Context, fixClock, getCurrentTime } from "./context"
-import { copyDencoState, DencoState, getSkill } from "./denco"
+import { copyDencoState, DencoState } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
 import { copyUserState, FormationPosition, ReadonlyState, UserState } from "./user"
@@ -188,11 +188,11 @@ export interface Skill extends SkillLogic {
 }
 
 /**
- * スキルの発動を評価するときに必要なスキルの各種データを定義
+ * スキルの発動を評価するときに必要なスキル情報へのアクセスを定義
  */
 export interface ActiveSkill extends FormationPosition {
+  // skill: SkillHolder だと skill.type === "possess" のチェックが必要で煩雑なのを省略する
   skill: Skill
-  skillPropertyReader: SkillPropertyReader
 }
 
 export function copySkill(skill: Skill): Skill {
@@ -254,16 +254,15 @@ export type SkillHolder =
   SkillHolderBase<"not_acquired"> |
   SkillHolderBase<"none">
 
-export function copySkillPossess(skill: SkillPossess): SkillPossess {
+export function copySkillHolder(skill: SkillHolder): SkillHolder {
   if (skill.type === "possess") {
     return {
       type: "possess",
-      skill: copySkill(skill.skill),
+      ...copySkill(skill),
     }
   }
   return {
     type: skill.type,
-    skill: undefined,
   }
 }
 
@@ -272,9 +271,9 @@ export function copySkillPossess(skill: SkillPossess): SkillPossess {
 * @param skill 
 * @returns 
 */
-export function isSkillActive(skill: SkillPossess): skill is SkillHolder<"possess", Skill> {
+export function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"possess"> & Skill {
   if (skill.type === "possess") {
-    const state = skill.skill.state
+    const state = skill.state
     if (state.type === "not_init") {
       throw Error("skill state not init")
     }
@@ -303,7 +302,11 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
     context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
     throw Error()
   }
-  const skill = getSkill(d)
+  if (d.skill.type !== "possess") {
+    context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
+    throw Error()
+  }
+  const skill = d.skill
   context.log.log(`スキル状態の変更：${d.name} ${skill.state.type} -> active`)
   let self = {
     ...d,
@@ -336,7 +339,8 @@ function checkActivateSkill(context: Context, state: ReadonlyState<UserState> & 
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
   }
-  const skill = getSkill(d)
+  const skill = d.skill
+  if (skill.type !== "possess") return false
   switch (skill.transitionType) {
     case "manual":
     case "manual-condition": {
@@ -393,7 +397,11 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
   }
-  const skill = getSkill(d)
+  if (d.skill.type !== "possess") {
+    context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
+    throw Error()
+  }
+  const skill = d.skill
   context = fixClock(context)
   switch (skill.transitionType) {
     case "manual":
@@ -415,7 +423,6 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
             ...d,
             carIndex: state.carIndex,
             skill: skill,
-            skillPropertyReader: skill.propertyReader,
           })
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
@@ -457,10 +464,10 @@ export function refreshSkillState(context: Context, state: ReadonlyState<UserSta
 
 function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
   const denco = state.formation[idx]
-  if (denco.skillHolder.type !== "possess") {
+  if (denco.skill.type !== "possess") {
     return state
   }
-  const skill = getSkill(denco)
+  const skill = denco.skill
   switch (skill.transitionType) {
     case "always": {
       if (skill.state.type === "not_init") {
@@ -595,7 +602,8 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
 function refreshTimeout(context: Context, state: UserState, idx: number): UserState {
   const time = getCurrentTime(context).valueOf()
   const denco = state.formation[idx]
-  const skill = getSkill(denco)
+  const skill = denco.skill
+  if (skill.type !== "possess") return state
   if (skill.state.type === "active") {
     const data = skill.state.data
     if (data && data.activeTimeout <= time) {
