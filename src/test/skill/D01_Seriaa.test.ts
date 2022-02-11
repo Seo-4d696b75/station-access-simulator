@@ -22,7 +22,7 @@ describe("セリアのスキル", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
-    expect(seria.skillHolder.type).toBe("possess")
+    expect(seria.skill.type).toBe("possess")
     let defense = initUser(context, "とあるマスター", [reika, seria])
     const now = moment().valueOf()
     context.clock = now

@@ -21,7 +21,7 @@ describe("レイカのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
-    expect(reika.skillHolder.type).toBe("possess")
+    expect(reika.skill.type).toBe("possess")
     let defense = initUser(context, "とあるマスター", [reika])
     const now = moment().valueOf()
     context.clock = now
@@ -94,7 +94,7 @@ describe("レイカのスキル", () => {
     let defense = initUser(context, "とあるマスター", [reika, seria])
     defense = activateSkill(context, { ...defense, carIndex: 0 })
     reika = defense.formation[0]
-    expect(isSkillActive(reika.skillHolder)).toBe(true)
+    expect(isSkillActive(reika.skill)).toBe(true)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -120,7 +120,7 @@ describe("レイカのスキル", () => {
     let offense = initUser(context, "とあるマスター", [reika, seria])
     offense = activateSkill(context, { ...offense, carIndex: 0 })
     reika = offense.formation[0]
-    expect(isSkillActive(reika.skillHolder)).toBe(true)
+    expect(isSkillActive(reika.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -146,10 +146,10 @@ describe("レイカのスキル", () => {
     let offense = initUser(context, "とあるマスター", [reika, hiiru])
     offense = activateSkill(context, { ...offense, carIndex: 0 })
     reika = offense.formation[0]
-    expect(isSkillActive(reika.skillHolder)).toBe(true)
+    expect(isSkillActive(reika.skill)).toBe(true)
     offense = activateSkill(context, { ...offense, carIndex: 1 })
     hiiru = offense.formation[1]
-    expect(isSkillActive(hiiru.skillHolder)).toBe(true)
+    expect(isSkillActive(hiiru.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -176,7 +176,7 @@ describe("レイカのスキル", () => {
     let offense = initUser(context, "とあるマスター", [reika, seria])
     offense = activateSkill(context, { ...offense, carIndex: 0 })
     reika = offense.formation[0]
-    expect(isSkillActive(reika.skillHolder)).toBe(true)
+    expect(isSkillActive(reika.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {

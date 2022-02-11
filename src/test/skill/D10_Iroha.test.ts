@@ -18,7 +18,7 @@ describe("いろはスキル", () => {
     const context = initContext("test", "test", false)
     let iroha = DencoManager.getDenco(context, "10", 50)
     expect(iroha.name).toBe("iroha")
-    expect(iroha.skillHolder.type).toBe("possess")
+    expect(iroha.skill.type).toBe("possess")
     const now = moment().valueOf()
     context.clock = now
     let state = initUser(context, "master", [iroha])

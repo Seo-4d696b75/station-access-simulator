@@ -19,7 +19,7 @@ describe("しいらのスキル", () => {
     let state = initUser(context, "master", [siira])
     siira = state.formation[0]
     expect(siira.name).toBe("siira")
-    expect(siira.skillHolder.type).toBe("possess")
+    expect(siira.skill.type).toBe("possess")
     let skill = getSkill(siira)
     expect(skill.transitionType).toBe("always")
     expect(skill.state.type).toBe("active")

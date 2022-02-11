@@ -19,9 +19,9 @@ describe("もえのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let moe = DencoManager.getDenco(context, "9", 1)
-    expect(moe.skillHolder.type).toBe("not_aquired")
+    expect(moe.skill.type).toBe("not_aquired")
     moe = DencoManager.getDenco(context, "9", 50)
-    expect(moe.skillHolder.type).toBe("possess")
+    expect(moe.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [moe])
     moe = state.formation[0]
     let skill = getSkill(moe)

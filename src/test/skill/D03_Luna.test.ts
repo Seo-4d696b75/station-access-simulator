@@ -20,7 +20,7 @@ describe("ルナのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let luna = DencoManager.getDenco(context, "3", 50)
-    expect(luna.skillHolder.type).toBe("possess")
+    expect(luna.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [luna])
     context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
     state = refreshSkillState(context, state)

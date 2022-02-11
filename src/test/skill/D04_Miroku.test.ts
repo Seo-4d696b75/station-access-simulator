@@ -20,7 +20,7 @@ describe("みろくのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let miroku = DencoManager.getDenco(context, "4", 50)
-    expect(miroku.skillHolder.type).toBe("possess")
+    expect(miroku.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [miroku])
     const now = moment().valueOf()
     context.clock = now

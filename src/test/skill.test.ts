@@ -41,20 +41,22 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     const state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
+    expect(denco.skill.type).toBe("possess")
+    let s = denco.skill as Skill
+    expect(s.state.type).toBe("idle")
     const next = activateSkill(context, { ...state, carIndex: 0 })
     // state: active変更前
     expect(disactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
-    expect(isSkillActive(denco.skillHolder)).toBe(true)
+    expect(isSkillActive(denco.skill)).toBe(true)
     expect(getSkill(denco).state.data).toMatchObject(timeout)
     expect(onActivated.mock.calls.length).toBe(1)
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
@@ -97,9 +99,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     expect(() => initUser(context, "test-user", [denco])).toThrowError()
@@ -113,7 +115,7 @@ describe("スキル処理", () => {
     expect(disactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
-    expect(isSkillActive(denco.skillHolder)).toBe(true)
+    expect(isSkillActive(denco.skill)).toBe(true)
     expect(getSkill(denco).state.data).toMatchObject(timeout)
     expect(onActivated.mock.calls.length).toBe(1)
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
@@ -155,9 +157,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     const state = initUser(context, "test-user", [denco])
@@ -168,7 +170,7 @@ describe("スキル処理", () => {
     expect(disactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
-    expect(isSkillActive(denco.skillHolder)).toBe(true)
+    expect(isSkillActive(denco.skill)).toBe(true)
     expect(getSkill(denco).state.data).toMatchObject(timeout)
     expect(onActivated.mock.calls.length).toBe(1)
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
@@ -206,9 +208,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     expect(() => initUser(context, "test-user", [denco])).toThrowError()
@@ -218,7 +220,7 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("active")
     expect(() => activateSkill(context, { ...state, carIndex: 0 }))
     expect(canActivated.mock.calls.length).toBe(1)
-    expect(isSkillActive(denco.skillHolder)).toBe(true)
+    expect(isSkillActive(denco.skill)).toBe(true)
     expect(getSkill(denco).state.data).toBeUndefined()
     expect(onActivated.mock.calls.length).toBe(1)
     expect(onActivated.mock.calls[0][1]).toMatchObject(state)
@@ -261,9 +263,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     let state = initUser(context, "test-user", [denco])
@@ -319,9 +321,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     let state = initUser(context, "test-user", [denco])
@@ -380,9 +382,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     let state = initUser(context, "test-user", [denco])
@@ -438,9 +440,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     let state = initUser(context, "test-user", [denco])
@@ -493,9 +495,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     let state = initUser(context, "test-user", [denco])
@@ -535,9 +537,9 @@ describe("スキル処理", () => {
       film: {},
       type: "supporter",
       attr: "flat",
-      skillHolder: {
+      skill: {
         type: "possess",
-        skill: skill
+        ...skill
       }
     }
     let state = initUser(context, "test-user", [denco])

@@ -22,7 +22,7 @@ describe("シャルのスキル", () => {
     const now = moment("2020-01-01T12:50:00.000").valueOf()
     context.clock = now
     let charlotte = DencoManager.getDenco(context, "6", 80)
-    expect(charlotte.skillHolder.type).toBe("possess")
+    expect(charlotte.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [charlotte])
     charlotte = state.formation[0]
     let skill = getSkill(charlotte)

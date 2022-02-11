@@ -19,9 +19,9 @@ describe("シーナのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let sheena = DencoManager.getDenco(context, "7", 1)
-    expect(sheena.skillHolder.type).toBe("not_aquired")
+    expect(sheena.skill.type).toBe("not_aquired")
     sheena = DencoManager.getDenco(context, "7", 50)
-    expect(sheena.skillHolder.type).toBe("possess")
+    expect(sheena.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [sheena])
     sheena = state.formation[0]
     let skill = getSkill(sheena)
