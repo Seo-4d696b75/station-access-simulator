@@ -12,17 +12,26 @@ import { activateSkill, getSkill, refreshSkillState } from './core/skill'
 import moment from "moment-timezone"
 
 init().then(() => {
-  const context = initContext("test", "test", false)
+  const context = initContext("test", "test")
   const now = moment().valueOf()
   context.clock = now
-  let iroha = DencoManager.getDenco(context, "10", 50, 2)
+  let fubu = DencoManager.getDenco(context, "14", 50)
   let reika = DencoManager.getDenco(context, "5", 50)
-  let state = initUser(context, "master", [iroha, reika])
-
-  state = activateSkill(context, { ...state, carIndex: 0 })
-
-  // wait終了後
-  context.clock = now + 7200 * 1000
-  state = refreshSkillState(context, state)
+  let charlotte = DencoManager.getDenco(context, "6", 50, 1)
+  let offense = initUser(context, "とあるマスター", [reika])
+  let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
+  defense = activateSkill(context, {...defense, carIndex: 1})
+  const config = {
+    offense: {
+      carIndex: 0,
+      ...offense
+    },
+    defense: {
+      carIndex: 0,
+      ...defense
+    },
+    station: charlotte.link[0],
+  }
+  const result = startAccess(context, config)
   
 })

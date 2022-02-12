@@ -108,7 +108,7 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(false)
+    expect(hasSkillTriggered(result.access.defense, reika)).toBe(false)
     expect(result.access.attackPercent).toBe(0)
   })
   test("発動あり-攻撃側", () => {
