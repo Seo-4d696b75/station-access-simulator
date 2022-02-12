@@ -20,7 +20,7 @@ init().then(() => {
   let charlotte = DencoManager.getDenco(context, "6", 50, 1)
   let offense = initUser(context, "とあるマスター", [reika])
   let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
-  defense = activateSkill(context, {...defense, carIndex: 1})
+  defense = activateSkill(context, defense, 1)
   const config = {
     offense: {
       carIndex: 0,
