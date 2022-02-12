@@ -874,7 +874,8 @@ function markTriggerSkill(state: AccessSideState, step: AccessEvaluateStep, denc
  * @param step `undefined`の場合は`denco`の一致でのみ検索する
  * @returns true if has been triggered
  */
-export function hasSkillTriggered(state: ReadonlyState<AccessSideState>, denco: Denco, step?: AccessEvaluateStep): boolean {
+export function hasSkillTriggered(state: ReadonlyState<AccessSideState> | undefined, denco: Denco, step?: AccessEvaluateStep): boolean {
+  if (!state) return false
   return state.triggeredSkills.findIndex(t => {
     return t.numbering === denco.numbering && (!step || step === t.step)
   }) >= 0
