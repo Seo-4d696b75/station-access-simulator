@@ -383,25 +383,24 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
  * @param state 
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
-export function refreshEventQueue(context: Context, state: ReadonlyState<UserState>): UserState {
+export function refreshEventQueue(context: Context, state: UserState): UserState {
   context = fixClock(context)
-  let next = copyUserState(state)
   const time = getCurrentTime(context).valueOf()
-  while (next.queue.length > 0) {
-    const entry = next.queue[0]
+  while (state.queue.length > 0) {
+    const entry = state.queue[0]
     if (time < entry.time) break
-    next.queue.splice(0, 1)
+    state.queue.splice(0, 1)
     // start event
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${moment(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
-        next = evaluateSkillAtEvent(context, next, entry.data.denco, entry.data.probability, entry.data.evaluate)
+        state = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.probability, entry.data.evaluate)
         break
       }
       case "hour_cycle": {
-        const size = next.formation.length
+        const size = state.formation.length
         for (let i = 0; i < size; i++) {
-          const d = next.formation[i]
+          const d = state.formation[i]
           const skill = d.skill
           if (skill.type !== "possess" || skill.state.type !== "active") continue
           const callback = skill.onHourCycle
@@ -412,20 +411,20 @@ export function refreshEventQueue(context: Context, state: ReadonlyState<UserSta
             skill: skill,
             skillPropertyReader: skill.propertyReader,
           }
-          next = callback(context, next, self)
+          state = callback(context, state, self)
         }
         // 次のイベント追加
         const date = moment(entry.time).add(1, "h")
-        next.queue.push({
+        state.queue.push({
           type: "hour_cycle",
           time: date.valueOf(),
           data: undefined
         })
-        next.queue.sort((a, b) => a.time - b.time)
+        state.queue.sort((a, b) => a.time - b.time)
         break
       }
     }
     // end event
   }
-  return next
+  return state
 }

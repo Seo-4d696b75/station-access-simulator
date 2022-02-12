@@ -266,7 +266,7 @@ interface AccessStateWithDefense extends AccessState {
 }
 
 function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessSideState {
-  const formation = refreshSkillState(context, f).formation.map((e, idx) => {
+  const formation = refreshSkillState(context, copyUserState(f)).formation.map((e, idx) => {
     const s: AccessDencoState = {
       ...e,
       hpBefore: e.currentHp,

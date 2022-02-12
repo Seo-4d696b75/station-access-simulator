@@ -489,12 +489,12 @@ function disactivateSkillOne(context: Context, state: UserState, carIndex: numbe
  * @param time 現在時刻
  * @returns 新しい状態
  */
-export function refreshSkillState(context: Context, state: ReadonlyState<UserState>): UserState {
+export function refreshSkillState(context: Context, state: UserState): UserState {
   const indices = state.formation.map((_, idx) => idx)
-  return indices.reduce((next, idx) => refreshSkillStateOne(context, next, idx), copyUserState(state))
+  return indices.reduce((next, idx) => refreshSkillStateOne(context, next, idx), state)
 }
 
-function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
+export function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
   const denco = state.formation[idx]
   if (denco.skill.type !== "possess") {
     return state
