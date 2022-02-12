@@ -23,8 +23,8 @@ describe("いずなのスキル", () => {
     let skill = getSkill(izuna)
     expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
   })
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)

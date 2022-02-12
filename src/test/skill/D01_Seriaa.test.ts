@@ -30,7 +30,7 @@ describe("セリアのスキル", () => {
     let skill = getSkill(seria)
     expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("active")
@@ -68,7 +68,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 10)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -94,7 +94,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 80)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -124,7 +124,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -154,7 +154,7 @@ describe("セリアのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {

@@ -28,7 +28,7 @@ describe("シャルのスキル", () => {
     let skill = getSkill(charlotte)
     expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, { ...state, carIndex: 0 })
+    state = activateSkill(context, state, 0)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
     // 即座に idle > active > cooldown

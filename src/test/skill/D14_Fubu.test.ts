@@ -26,8 +26,8 @@ describe("ふぶのスキル", () => {
     let skill = getSkill(fubu)
     expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    expect(() => disactivateSkill(context, { ...defense, carIndex: 0 })).toThrowError()
-    defense = activateSkill(context, { ...defense, carIndex: 0 })
+    expect(() => disactivateSkill(context, defense, 0)).toThrowError()
+    defense = activateSkill(context, defense, 0)
     fubu = defense.formation[0]
     skill = getSkill(fubu)
     expect(skill.state.type).toBe("active")
@@ -38,7 +38,7 @@ describe("ふぶのスキル", () => {
       expect(data.activeTimeout).toBe(now + 1800 * 1000)
       expect(data.cooldownTimeout).toBe(now + 1800 * 1000 + 7200 * 1000)
     }
-    expect(() => disactivateSkill(context, { ...defense, carIndex: 0 })).toThrowError()
+    expect(() => disactivateSkill(context, defense, 0)).toThrowError()
 
     // 10分経過
     context.clock = now + 600 * 1000
@@ -96,7 +96,7 @@ describe("ふぶのスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [reika])
     let offense = initUser(context, "とあるマスター２", [charlotte, fubu])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     fubu = offense.formation[1]
     expect(getSkill(fubu).state.type).toBe("active")
     const config = {
@@ -121,7 +121,7 @@ describe("ふぶのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let offense = initUser(context, "とあるマスター", [reika])
     let defense = initUser(context, "とあるマスター２", [fubu])
-    defense = activateSkill(context, { ...defense, carIndex: 0 })
+    defense = activateSkill(context, defense, 0)
     fubu = defense.formation[0]
     expect(getSkill(fubu).state.type).toBe("active")
     const config = {
@@ -163,7 +163,7 @@ describe("ふぶのスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [reika])
     let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     fubu = defense.formation[1]
     expect(getSkill(fubu).state.type).toBe("active")
     const config = {
@@ -206,8 +206,8 @@ describe("ふぶのスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター２", [reika])
     let defense = initUser(context, "とあるマスター", [charlotte, fubu, hiiru])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
-    defense = activateSkill(context, { ...defense, carIndex: 2 })
+    defense = activateSkill(context, defense, 1)
+    defense = activateSkill(context, defense, 2)
     fubu = defense.formation[1]
     hiiru = defense.formation[2]
     expect(getSkill(fubu).state.type).toBe("active")

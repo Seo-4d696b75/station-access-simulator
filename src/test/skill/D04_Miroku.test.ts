@@ -29,8 +29,8 @@ describe("みろくのスキル", () => {
     expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = Date.now() + 600 * 1000
@@ -185,7 +185,7 @@ describe("みろくのスキル", () => {
     let hiiru = DencoManager.getDenco(context, "34", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, hiiru])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
         carIndex: 0,
@@ -250,7 +250,7 @@ describe("みろくのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, reika])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
         carIndex: 0,
@@ -291,7 +291,7 @@ describe("みろくのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, reika])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
         carIndex: 0,

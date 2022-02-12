@@ -22,8 +22,8 @@ describe("しいらのスキル", () => {
     let skill = getSkill(siira)
     expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
   })
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
@@ -130,7 +130,7 @@ describe("しいらのスキル", () => {
     let hiiru = DencoManager.getDenco(context, "34", 50)
     let offense = initUser(context, "とあるマスター", [reika])
     let defense = initUser(context, "とあるマスター２", [hiiru, siira])
-    defense = activateSkill(context, {...defense, carIndex: 0})
+    defense = activateSkill(context, defense, 0)
     const config = {
       offense: {
         carIndex: 0,
@@ -211,7 +211,7 @@ describe("しいらのスキル", () => {
     let hiiru = DencoManager.getDenco(context, "34", 50)
     let offense = initUser(context, "とあるマスター", [reika])
     let defense = initUser(context, "とあるマスター２", [hiiru, siira])
-    defense = activateSkill(context, {...defense, carIndex: 0})
+    defense = activateSkill(context, defense, 0)
     const config = {
       offense: {
         carIndex: 0,

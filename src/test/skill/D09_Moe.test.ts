@@ -26,8 +26,8 @@ describe("もえのスキル", () => {
     let skill = getSkill(moe)
     expect(skill.state.type).toBe("unable")
     expect(skill.state.transition).toBe("auto-condition")
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
   })
   test("スキル発動-1", () => {
     const context = initContext("test", "test", false)

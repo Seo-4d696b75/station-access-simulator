@@ -336,10 +336,7 @@ describe("基本的なアクセス処理", () => {
     let offense = initUser(context, "とあるマスター１", [
       reika
     ])
-    offense = activateSkill(context, {
-      ...offense,
-      carIndex: 0,
-    })
+    offense = activateSkill(context, offense, 0)
     let defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
