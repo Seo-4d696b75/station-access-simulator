@@ -100,13 +100,13 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     context.log.error(`指定されたでんこが直前のアクセスの状態で見つかりません`)
     throw Error()
   }
-  if (self.skillInvalidated) {
-    context.log.error(`スキルが直前のアクセスで無効化されています ${self.name}`)
-    throw Error()
-  }
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
     throw Error()
+  }
+  if (self.skillInvalidated) {
+    context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
+    return copyUserState(state)
   }
   const eventState: SkillEventState = {
     user: state,
