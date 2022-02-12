@@ -15,13 +15,12 @@ init().then(() => {
   const context = initContext("test", "test")
   const now = moment().valueOf()
   context.clock = now
-  let izuna = DencoManager.getDenco(context, "13", 80, 1)
-  let luna = DencoManager.getDenco(context, "3", 50)
-  let siira = DencoManager.getDenco(context, "11", 50)
-  let mobo = DencoManager.getDenco(context, "12", 50)
+  let fubu = DencoManager.getDenco(context, "14", 50)
   let reika = DencoManager.getDenco(context, "5", 50)
+  let charlotte = DencoManager.getDenco(context, "6", 50, 1)
   let offense = initUser(context, "とあるマスター", [reika])
-  let defense = initUser(context, "とあるマスター２", [izuna, luna, siira, mobo])
+  let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
+  defense = activateSkill(context, {...defense, carIndex: 1})
   const config = {
     offense: {
       carIndex: 0,
@@ -31,7 +30,7 @@ init().then(() => {
       carIndex: 0,
       ...defense
     },
-    station: izuna.link[0],
+    station: charlotte.link[0],
   }
   const result = startAccess(context, config)
   
