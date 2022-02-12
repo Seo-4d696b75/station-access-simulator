@@ -48,12 +48,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
       usePink: true,
@@ -77,12 +77,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: miroku.link[0],
     }
@@ -102,12 +102,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika, miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -125,12 +125,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -150,12 +150,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -188,12 +188,12 @@ describe("みろくのスキル", () => {
     offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -215,12 +215,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -253,12 +253,12 @@ describe("みろくのスキル", () => {
     offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -294,12 +294,12 @@ describe("みろくのスキル", () => {
     offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }

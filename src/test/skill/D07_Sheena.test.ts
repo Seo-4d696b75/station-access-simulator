@@ -42,12 +42,12 @@ describe("シーナのスキル", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -89,12 +89,12 @@ describe("シーナのスキル", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -135,12 +135,12 @@ describe("シーナのスキル", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -186,12 +186,12 @@ describe("シーナのスキル", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -249,12 +249,12 @@ describe("シーナのスキル", () => {
     defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -315,12 +315,12 @@ describe("シーナのスキル", () => {
     defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -378,12 +378,12 @@ describe("シーナのスキル", () => {
     defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }

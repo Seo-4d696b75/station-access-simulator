@@ -34,12 +34,12 @@ describe("いずなのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -55,12 +55,12 @@ describe("いずなのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [charlotte, izuna])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -78,12 +78,12 @@ describe("いずなのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [izuna])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: izuna.link[0],
     }
@@ -114,7 +114,7 @@ describe("いずなのスキル", () => {
       izuna = defense.formation[0]
       expect(izuna.currentHp).toBe(24)
     }
-    
+
   })
   test("発動あり-ディフェンダー2", () => {
     const context = initContext("test", "test", false)
@@ -125,12 +125,12 @@ describe("いずなのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [izuna, luna])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: izuna.link[0],
     }
@@ -166,12 +166,12 @@ describe("いずなのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [izuna, luna, siira])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: izuna.link[0],
     }
@@ -208,12 +208,12 @@ describe("いずなのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [izuna, luna, siira, mobo])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: izuna.link[0],
     }

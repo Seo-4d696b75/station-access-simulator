@@ -26,8 +26,8 @@ describe("基本的なアクセス処理", () => {
     const station = StationManager.getRandomStation(context, 1)[0]
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       station: station,
     }
@@ -69,8 +69,8 @@ describe("基本的なアクセス処理", () => {
     const station = StationManager.getRandomStation(context, 1)[0]
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       station: station,
       usePink: true,
@@ -104,12 +104,12 @@ describe("基本的なアクセス処理", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -182,12 +182,12 @@ describe("基本的なアクセス処理", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
       usePink: true,
@@ -242,12 +242,12 @@ describe("基本的なアクセス処理", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -342,12 +342,12 @@ describe("基本的なアクセス処理", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -405,12 +405,12 @@ describe("基本的なアクセス処理", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -458,12 +458,12 @@ describe("基本的なアクセス処理", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -519,12 +519,12 @@ describe("基本的なアクセス処理", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }

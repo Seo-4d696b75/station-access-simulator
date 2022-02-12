@@ -72,12 +72,12 @@ describe("セリアのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -98,12 +98,12 @@ describe("セリアのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -128,12 +128,12 @@ describe("セリアのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -158,12 +158,12 @@ describe("セリアのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }

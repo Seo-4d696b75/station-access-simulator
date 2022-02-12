@@ -48,12 +48,12 @@ describe("メロのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [mero])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
       usePink: true,
@@ -78,12 +78,12 @@ describe("メロのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [mero])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -110,12 +110,12 @@ describe("メロのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [mero])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -151,12 +151,12 @@ describe("メロのスキル", () => {
     expect(skill.state.type).toBe("active")
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }

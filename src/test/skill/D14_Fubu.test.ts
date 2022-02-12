@@ -75,12 +75,12 @@ describe("ふぶのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -101,12 +101,12 @@ describe("ふぶのスキル", () => {
     expect(getSkill(fubu).state.type).toBe("active")
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -126,12 +126,12 @@ describe("ふぶのスキル", () => {
     expect(getSkill(fubu).state.type).toBe("active")
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: fubu.link[0],
     }
@@ -168,12 +168,12 @@ describe("ふぶのスキル", () => {
     expect(getSkill(fubu).state.type).toBe("active")
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -214,12 +214,12 @@ describe("ふぶのスキル", () => {
     expect(getSkill(hiiru).state.type).toBe("active")
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
