@@ -1,7 +1,7 @@
-import { activateSkill, disactivateSkill, getSkill, isSkillActive, refreshSkillState, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
+import { activateSkill, disactivateSkill, getSkill, isSkillActive, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
 import { initContext } from "../core/context"
 import { DencoState } from "../core/denco"
-import { initUser, refreshCurrentTime } from "../core/user"
+import { initUser, refreshState } from "../core/user"
 import moment from "moment-timezone"
 
 describe("スキル処理", () => {
@@ -285,11 +285,11 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.data).toMatchObject(timeout)
     expect(() => disactivateSkill(context, state, 0))
     context.clock = now + 1000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("cooldown")
     context.clock = now + 2000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("idle")
     expect(disactivateAt.mock.calls.length).toBe(1)
@@ -349,7 +349,7 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("cooldown")
     expect(getSkill(denco).state.data).toMatchObject(timeout)
     context.clock = now + 2000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("idle")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
@@ -410,7 +410,7 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("cooldown")
     expect(getSkill(denco).state.data).toMatchObject(timeout)
     context.clock = now + 2000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("idle")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
@@ -468,7 +468,7 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("cooldown")
     expect(getSkill(denco).state.data).toMatchObject(timeout)
     context.clock = now + 2000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("unable")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
@@ -562,7 +562,7 @@ describe("スキル処理", () => {
     // 10分経過
     now += 600 * 1000
     context.clock = now
-    state = refreshCurrentTime(context, state)
+    state = refreshState(context, state)
     expect(onHourCycle.mock.calls.length).toBe(1)
     expect(state.queue.length).toBe(1)
     entry = state.queue[0]

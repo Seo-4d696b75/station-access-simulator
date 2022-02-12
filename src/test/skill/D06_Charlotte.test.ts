@@ -2,7 +2,7 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
-import { initUser, refreshCurrentTime } from "../../core/user"
+import { initUser, refreshState } from "../../core/user"
 import { copyDencoState } from "../../core/denco"
 import { activateSkill, getSkill } from "../../core/skill"
 import { getAccessDenco } from "../../core/access"
@@ -49,7 +49,7 @@ describe("シャルのスキル", () => {
 
     // 60分経過
     context.clock = now + 3600 * 1000
-    state = refreshCurrentTime(context, state)
+    state = refreshState(context, state)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
     expect(skill.state.type).toBe("cooldown")
@@ -57,7 +57,7 @@ describe("シャルのスキル", () => {
 
     // 90分経過
     context.clock = now + 5400 * 1000
-    state = refreshCurrentTime(context, state)
+    state = refreshState(context, state)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
     expect(skill.state.type).toBe("idle")

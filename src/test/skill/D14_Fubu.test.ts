@@ -2,7 +2,7 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill, hasSkillTriggered, initContext, initUser, isSkillActive, refreshSkillState, startAccess } from "../.."
+import { activateSkill, disactivateSkill, getSkill, hasSkillTriggered, initContext, initUser, refreshState, startAccess } from "../.."
 
 describe("ふぶのスキル", () => {
   test("setup", async () => {
@@ -42,14 +42,14 @@ describe("ふぶのスキル", () => {
 
     // 10分経過
     context.clock = now + 600 * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     fubu = defense.formation[0]
     skill = getSkill(fubu)
     expect(skill.state.type).toBe("active")
 
     // 30分経過
     context.clock = now + 1800 * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     fubu = defense.formation[0]
     skill = getSkill(fubu)
     expect(skill.state.type).toBe("cooldown")
@@ -61,7 +61,7 @@ describe("ふぶのスキル", () => {
 
     // 30分 + 2時間経過
     context.clock = now + (1800 + 7200) * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     fubu = defense.formation[0]
     skill = getSkill(fubu)
     expect(skill.state.type).toBe("idle")

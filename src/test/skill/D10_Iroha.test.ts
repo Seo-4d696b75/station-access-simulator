@@ -1,7 +1,7 @@
 import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, getSkill, initContext, initUser, refreshSkillState } from "../.."
+import { activateSkill, getSkill, initContext, initUser, refreshState } from "../.."
 import moment from "moment-timezone"
 
 describe("いろはスキル", () => {
@@ -24,7 +24,7 @@ describe("いろはスキル", () => {
     let state = initUser(context, "master", [iroha])
 
     // リンク数0
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     iroha = state.formation[0]
     let skill = getSkill(iroha)
     expect(skill.state.transition).toBe("manual-condition")
@@ -91,7 +91,7 @@ describe("いろはスキル", () => {
     expect(reika.link[0]).toMatchObject(link)
     // wait終了後
     context.clock = now + 7200 * 1000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     iroha = state.formation[0]
     skill = getSkill(iroha)
     expect(skill.state.type).toBe("unable")
@@ -125,7 +125,7 @@ describe("いろはスキル", () => {
     expect(reika.link.length).toBe(1)
 
     context.clock = now + 7200 * 1000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     iroha = state.formation[1]
     skill = getSkill(iroha)
     expect(skill.state.type).toBe("idle")
