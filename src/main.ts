@@ -7,7 +7,7 @@ import DencoManager from "./core/dencoManager"
 import { AccessConfig, startAccess } from './core/access'
 import { formatEvent, printEvents } from './core/format'
 import { initContext } from './core/context'
-import { initUser, refreshCurrentTime, UserState } from './core/user'
+import { initUser, UserState, refreshState } from './core/user'
 import { activateSkill, getSkill, refreshSkillState } from './core/skill'
 import moment from "moment-timezone"
 

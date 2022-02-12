@@ -477,7 +477,7 @@ function disactivateSkillOne(context: Context, state: UserState, carIndex: numbe
 }
 
 /**
- * スキル状態の変化を調べて更新する
+ * スキル状態の変化を調べて更新する（破壊的）
  * 
  * 以下の状態に依存する`Skill#state`の遷移を調べる
  * - `SkillActiveTimeout` 現在時刻に依存：指定時刻を過ぎたら`cooldown`へ遷移
