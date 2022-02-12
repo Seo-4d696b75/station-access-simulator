@@ -52,7 +52,10 @@ export interface AccessConfig {
   /**
    * 攻撃側の編成
    */
-  offense: ReadonlyState<UserState & FormationPosition>
+  offense: {
+    state: ReadonlyState<UserState>
+    carIndex: number
+  }
   /**
    * アクセス先の駅
    */
@@ -60,7 +63,10 @@ export interface AccessConfig {
   /**
    * 守備側の編成
    */
-  defense?: ReadonlyState<UserState & FormationPosition>
+  defense?: {
+    state: ReadonlyState<UserState>
+    carIndex: number
+  }
   /**
    * フットバースアイテム使用の有無を指定する
    */
@@ -259,14 +265,14 @@ interface AccessStateWithDefense extends AccessState {
   defense: AccessSideState
 }
 
-function initAccessDencoState(context: Context, f: ReadonlyState<UserState & FormationPosition>, which: AccessSide): AccessSideState {
+function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessSideState {
   const formation = refreshSkillState(context, f).formation.map((e, idx) => {
     const s: AccessDencoState = {
       ...e,
       hpBefore: e.currentHp,
       hpAfter: e.currentHp,
       which: which,
-      who: idx === f.carIndex ? which : "other",
+      who: idx === carIndex ? which : "other",
       carIndex: idx,
       reboot: false,
       skillInvalidated: false,
@@ -275,12 +281,12 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState & For
     }
     return s
   })
-  const d = formation[f.carIndex]
+  const d = formation[carIndex]
   if (!d) {
-    context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${f.carIndex}, formation.legth: ${formation.length}`)
+    context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${carIndex}, formation.legth: ${formation.length}`)
   }
   return {
-    carIndex: f.carIndex,
+    carIndex: carIndex,
     formation: formation,
     triggeredSkills: [],
     probabilityBoostPercent: 0,
@@ -305,7 +311,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
   var state: AccessState = {
     time: time.valueOf(),
     station: config.station,
-    offense: initAccessDencoState(context, config.offense, "offense"),
+    offense: initAccessDencoState(context, config.offense.state, config.offense.carIndex, "offense"),
     defense: undefined,
     damageFixed: 0,
     attackPercent: 0,
@@ -327,7 +333,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
     d.link = d.link.splice(idx, 1)
   }
   if (config.defense) {
-    state.defense = initAccessDencoState(context, config.defense, "defense")
+    state.defense = initAccessDencoState(context, config.defense.state, config.defense.carIndex, "defense")
     const d = getAccessDenco(state, "defense")
     var link = d.link.find(link => link.name === config.station.name)
     if (!link) {
@@ -402,9 +408,9 @@ function completeAccess(context: Context, config: AccessConfig, access: Readonly
   // このアクセスイベントの追加
 
   let offense: UserState & FormationPosition = {
-    ...copyUserState(config.offense),
+    ...copyUserState(config.offense.state),
     event: [
-      ...config.offense.event,
+      ...config.offense.state.event,
       {
         type: "access",
         data: {
@@ -414,14 +420,14 @@ function completeAccess(context: Context, config: AccessConfig, access: Readonly
       }
     ],
     carIndex: config.offense.carIndex,
-  }
+  } 
   offense = copyFromAccessState(context, offense, access, "offense")
   let defense: UserState & FormationPosition | undefined = undefined
   if (access.defense && config.defense) {
     defense = {
-      ...copyUserState(config.defense),
+      ...copyUserState(config.defense.state),
       event: [
-        ...config.defense.event,
+        ...config.defense.state.event,
         {
           type: "access",
           data: {

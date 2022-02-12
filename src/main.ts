@@ -23,15 +23,15 @@ init().then(() => {
   defense = activateSkill(context, defense, 1)
   const config = {
     offense: {
-      carIndex: 0,
-      ...offense
+      state: offense,
+      carIndex: 0
     },
     defense: {
-      carIndex: 0,
-      ...defense
+      state: defense,
+      carIndex: 0
     },
     station: charlotte.link[0],
   }
   const result = startAccess(context, config)
-  
+
 })

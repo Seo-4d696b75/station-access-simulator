@@ -253,11 +253,13 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
   }
   const config: Access.AccessConfig = {
     offense: {
-      name: state.user.name,
-      carIndex: state.carIndex,
-      formation: state.formation.map(d => copyDencoState(d)),
-      event: [],
-      queue: [],
+      state: {
+        name: state.user.name,
+        formation: state.formation.map(d => copyDencoState(d)),
+        event: [],
+        queue: [],
+      },
+      carIndex: state.carIndex
     },
     station: station
   }
