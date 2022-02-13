@@ -23,7 +23,7 @@ describe("さやのスキル", () => {
     let state = initUser(context, "とあるマスター", [saya])
     saya = state.formation[0]
     expect(saya.skill.type).toBe("none")
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
   })
 })

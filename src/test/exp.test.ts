@@ -3,10 +3,9 @@ import StationManager from "../core/stationManager"
 import SkillManager from "../core/skillManager"
 import DencoManager from "../core/dencoManager"
 import { AccessEventData, LevelupDenco } from "../core/event"
-import { initUser, refreshEXPState } from "../core/user"
+import { initUser, refreshState } from "../core/user"
 import { AccessConfig, getDefense, startAccess } from "../core/access"
 import { LinksResult } from "../core/station"
-import { refreshSkillState } from "../core/skill"
 import moment from "moment-timezone"
 
 describe("経験値の処理", () => {
@@ -21,16 +20,14 @@ describe("経験値の処理", () => {
     expect(reika.level).toBe(1)
     expect(reika.currentExp).toBe(0)
     expect(reika.nextExp).toBe(400)
-    reika = {
-      ...reika,
-      currentExp: 500
-    }
     let state = initUser(context, "とあるマスター１", [
       reika
     ])
     const time = moment().valueOf()
     context.clock = time
-    state = refreshEXPState(context, state)
+    reika = state.formation[0]
+    reika.currentExp = 500
+    state = refreshState(context, state)
     let current = state.formation[0]
     expect(current.level).toBe(2)
     expect(current.currentExp).toBe(100)
@@ -54,10 +51,10 @@ describe("経験値の処理", () => {
     ])
     const time = moment().valueOf()
     context.clock = time
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     reika = state.formation[0]
     reika.currentExp = 44758
-    state = refreshEXPState(context, state)
+    state = refreshState(context, state)
     let current = state.formation[0]
     expect(current.level).toBe(16)
     expect(current.currentExp).toBe(5858)
@@ -86,12 +83,12 @@ describe("経験値の処理", () => {
     reika = defense.formation[0]
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -130,7 +127,7 @@ describe("経験値の処理", () => {
       expect(levelup.before).toMatchObject(reika)
       // レベルアップ後の状態
       let tmp = initUser(context, "hoge", [reika])
-      tmp = refreshEXPState(context, tmp)
+      tmp = refreshState(context, tmp)
       reika = tmp.formation[0]
       // 最終状態
       const current = result.defense.formation[0]

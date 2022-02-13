@@ -28,8 +28,8 @@ describe("ルナのスキル", () => {
     expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
@@ -47,12 +47,12 @@ describe("ルナのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
       usePink: true,
@@ -76,12 +76,12 @@ describe("ルナのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [luna])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -106,12 +106,12 @@ describe("ルナのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -141,12 +141,12 @@ describe("ルナのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }

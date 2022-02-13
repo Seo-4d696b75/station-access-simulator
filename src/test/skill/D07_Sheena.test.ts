@@ -26,8 +26,8 @@ describe("シーナのスキル", () => {
     let skill = getSkill(sheena)
     expect(skill.state.type).toBe("active")
     expect(skill.state.transition).toBe("always")
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
   })
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
@@ -42,12 +42,12 @@ describe("シーナのスキル", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -89,12 +89,12 @@ describe("シーナのスキル", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -135,12 +135,12 @@ describe("シーナのスキル", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -186,12 +186,12 @@ describe("シーナのスキル", () => {
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -242,19 +242,19 @@ describe("シーナのスキル", () => {
     let offense = initUser(context, "とあるマスター１", [
       charlotte, fubu
     ])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     let defense = initUser(context, "とあるマスター２", [
       sheena, reika
     ])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -312,15 +312,15 @@ describe("シーナのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [
       sheena, hiiru
     ])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -375,15 +375,15 @@ describe("シーナのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [
       sheena, hiiru
     ])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }

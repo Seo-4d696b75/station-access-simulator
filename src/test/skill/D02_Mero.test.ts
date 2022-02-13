@@ -30,8 +30,8 @@ describe("メロのスキル", () => {
     expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
 
     context.clock = now + 600 * 1000
     state = refreshSkillState(context, state)
@@ -48,12 +48,12 @@ describe("メロのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [mero])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
       usePink: true,
@@ -78,12 +78,12 @@ describe("メロのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [mero])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -110,12 +110,12 @@ describe("メロのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [mero])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -145,18 +145,18 @@ describe("メロのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [reika])
     let offense = initUser(context, "とあるマスター２", [mero, hiiru])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     hiiru = offense.formation[1]
     let skill = getSkill(hiiru)
     expect(skill.state.type).toBe("active")
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }

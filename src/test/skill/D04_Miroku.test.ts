@@ -29,8 +29,8 @@ describe("みろくのスキル", () => {
     expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = Date.now() + 600 * 1000
@@ -48,12 +48,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
       usePink: true,
@@ -77,12 +77,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: miroku.link[0],
     }
@@ -102,12 +102,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika, miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -125,12 +125,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -150,12 +150,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -185,15 +185,15 @@ describe("みろくのスキル", () => {
     let hiiru = DencoManager.getDenco(context, "34", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, hiiru])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -215,12 +215,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -250,15 +250,15 @@ describe("みろくのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, reika])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -291,15 +291,15 @@ describe("みろくのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, reika])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }

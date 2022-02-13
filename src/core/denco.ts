@@ -20,12 +20,12 @@ export type DencoAttribute =
  * でんこ個体の情報
  * 原則として変化する状態を持たない
  */
-export type Denco = Readonly<{
-  numbering: string
-  name: string
-  type: DencoType
-  attr: DencoAttribute
-}>
+export interface Denco {
+  readonly numbering: string
+  readonly name: string
+  readonly type: DencoType
+  readonly attr: DencoAttribute
+}
 
 /**
  * 状態を保持する

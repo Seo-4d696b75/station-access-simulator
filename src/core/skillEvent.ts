@@ -35,6 +35,9 @@ function copySkillEventState(state: ReadonlyState<SkillEventState>): SkillEventS
   }
 }
 
+/**
+ * スキル発動型のイベントの詳細
+ */
 export interface EventTriggeredSkill {
   readonly time: number
   readonly carIndex: number
@@ -48,6 +51,9 @@ export interface EventTriggeredSkill {
   readonly step: SkillEventEvaluateStep
 }
 
+/**
+ * スキル発動型イベントにおけるスキル評価中の状態
+ */
 export interface SkillEventState {
   time: number
   user: User
@@ -55,9 +61,19 @@ export interface SkillEventState {
   formation: SkillEventDencoState[]
   carIndex: number
 
+  /**
+   * このスキル発動に付随して発動する他スキルのイベント
+   * 現状だと確率補正のひいるのスキル発動イベントのみ
+   */
   event: Event[]
 
+  /**
+   * このスキルが発動する確率
+   */
   probability: SkillTrigger
+  /**
+   * 確率補正%
+   */
   probabilityBoostPercent: number
 
 }
@@ -80,10 +96,24 @@ export type SkillEventEvaluateStep =
   "probability_check" |
   "self"
 
+/**
+ * スキル発動側イベントにおいてスキル発動時の状態変更を定義
+ * 
+ * @param state 現在の状態
+ * @param self スキルが発動するでんこ本人
+ * @returns スキルが発動して効果が反映された新しい状態
+ */
 export type SkillEventEvaluate = (context: Context, state: SkillEventState, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => SkillEventState
 
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
+ * 
+ * {@link Skill onAccessComplete}からの呼び出しを想定
+ * 
+ * `probability`に{@link ProbabilityPercent}を指定した場合は確率補正も考慮して確率計算を行い  
+ * 発動が可能な場合のみ`evaluate`で指定されたスキル発動時の状態変更を適用します
+ * 
+ * 発動確率以外にも直前のアクセスで該当スキルが無効化されている場合は状態変更は行いません
  * 
  * @param context ログ・乱数等の共通状態
  * @param state 現在の状態
@@ -91,7 +121,7 @@ export type SkillEventEvaluate = (context: Context, state: SkillEventState, self
  * @param access アクセス処理の結果
  * @param probability スキル発動が確率依存かどうか
  * @param evaluate スキル発動時の処理
- * @returns 
+ * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
 export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: SkillTrigger, evaluate: SkillEventEvaluate): UserState {
   context = fixClock(context)
@@ -100,13 +130,13 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     context.log.error(`指定されたでんこが直前のアクセスの状態で見つかりません`)
     throw Error()
   }
-  if (self.skillInvalidated) {
-    context.log.error(`スキルが直前のアクセスで無効化されています ${self.name}`)
-    throw Error()
-  }
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
     throw Error()
+  }
+  if (self.skillInvalidated) {
+    context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
+    return copyUserState(state)
   }
   const eventState: SkillEventState = {
     user: state,
@@ -253,11 +283,13 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
   }
   const config: Access.AccessConfig = {
     offense: {
-      name: state.user.name,
-      carIndex: state.carIndex,
-      formation: state.formation.map(d => copyDencoState(d)),
-      event: [],
-      queue: [],
+      state: {
+        name: state.user.name,
+        formation: state.formation.map(d => copyDencoState(d)),
+        event: [],
+        queue: [],
+      },
+      carIndex: state.carIndex
     },
     station: station
   }
@@ -323,8 +355,13 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
 /**
  * スキルを評価する
  * 
- * アクセス中のスキル発動とは別に単独で発動する場合  
- * アクセス直後のタイミングで評価する場合は {@link evaluateSkillAfterAccess}
+ * アクセス中のスキル発動とは別に単独で発動する場合に使用します  
+ * - アクセス直後のタイミングで評価する場合は {@link evaluateSkillAfterAccess}を使用してください
+ * - アクセス処理中のスキル評価は{@link Skill}のコールバック関数`canEvaluate, evaluate`で行ってください
+ * 
+ * `probability`に`number`を指定した場合は確率補正も考慮して確率計算を行い  
+ * 発動が可能な場合のみ`evaluate`で指定されたスキル発動時の状態変更を適用します
+ * 
  * @param context 
  * @param state 現在の状態
  * @param self 発動するスキル本人
@@ -376,30 +413,29 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
 }
 
 /**
- * 待機列中のイベントの指定時刻を現在時刻に参照して必要なら評価を実行する
+ * 待機列中のイベントの指定時刻を現在時刻に参照して必要なら評価を実行する(破壊的)
  * @param context 現在時刻は`context#clock`を参照する {@see getCurrentTime}
  * @param state 
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
-export function refreshEventQueue(context: Context, state: ReadonlyState<UserState>): UserState {
+export function refreshEventQueue(context: Context, state: UserState): UserState {
   context = fixClock(context)
-  let next = copyUserState(state)
   const time = getCurrentTime(context).valueOf()
-  while (next.queue.length > 0) {
-    const entry = next.queue[0]
+  while (state.queue.length > 0) {
+    const entry = state.queue[0]
     if (time < entry.time) break
-    next.queue.splice(0, 1)
+    state.queue.splice(0, 1)
     // start event
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${moment(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
-        next = evaluateSkillAtEvent(context, next, entry.data.denco, entry.data.probability, entry.data.evaluate)
+        state = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.probability, entry.data.evaluate)
         break
       }
       case "hour_cycle": {
-        const size = next.formation.length
+        const size = state.formation.length
         for (let i = 0; i < size; i++) {
-          const d = next.formation[i]
+          const d = state.formation[i]
           const skill = d.skill
           if (skill.type !== "possess" || skill.state.type !== "active") continue
           const callback = skill.onHourCycle
@@ -410,20 +446,20 @@ export function refreshEventQueue(context: Context, state: ReadonlyState<UserSta
             skill: skill,
             skillPropertyReader: skill.propertyReader,
           }
-          next = callback(context, next, self)
+          state = callback(context, state, self)
         }
         // 次のイベント追加
         const date = moment(entry.time).add(1, "h")
-        next.queue.push({
+        state.queue.push({
           type: "hour_cycle",
           time: date.valueOf(),
           data: undefined
         })
-        next.queue.sort((a, b) => a.time - b.time)
+        state.queue.sort((a, b) => a.time - b.time)
         break
       }
     }
     // end event
   }
-  return next
+  return state
 }

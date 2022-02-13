@@ -326,12 +326,15 @@ export function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"pos
  * - タイプ`auto`のスキル状態を`unable > active`へ遷移させる
  * @returns `active`へ遷移した新しい状態
  */
-export function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
+export function activateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
   context = fixClock(context)
-  let next = copyUserState(state)
-  const d = next.formation[state.carIndex]
+  return carIndex.reduce((next, idx) => activateSkillOne(context, next, idx), copyUserState(state))
+}
+
+function activateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
+  const d = state.formation[carIndex]
   if (!d) {
-    context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
+    context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.legth: ${state.formation.length}`)
     throw Error()
   }
   if (d.skill.type !== "possess") {
@@ -348,10 +351,10 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
     case "manual-condition": {
       switch (skill.state.type) {
         case "idle": {
-          return activateSkillAndCallback(context, next, d, d.skill, skill.state.transition, state.carIndex)
+          return activateSkillAndCallback(context, state, d, d.skill, skill.state.transition, carIndex)
         }
         case "active": {
-          return next
+          return state
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},transition:${skill.state.transition})`)
@@ -362,10 +365,10 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState> 
     case "auto": {
       switch (skill.state.type) {
         case "unable": {
-          return activateSkillAndCallback(context, next, d, d.skill, "auto", state.carIndex)
+          return activateSkillAndCallback(context, state, d, d.skill, "auto", carIndex)
         }
         case "active": {
-          return next
+          return state
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:auto)`)
@@ -419,11 +422,15 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
  * 
  * @returns `cooldown`へ遷移した新しい状態
  */
-export function disactivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
-  const next = copyUserState(state)
-  const d = next.formation[state.carIndex]
+export function disactivateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
+  context = fixClock(context)
+  return carIndex.reduce((next, idx) => disactivateSkillOne(context, next, idx), copyUserState(state))
+}
+
+function disactivateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
+  const d = state.formation[carIndex]
   if (!d) {
-    context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
+    context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.legth: ${state.formation.length}`)
     throw Error()
   }
   if (d.skill.type !== "possess") {
@@ -449,14 +456,14 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
         skill.state = {
           type: "cooldown",
           transition: skill.state.transition,
-          data: callback(context, next, {
+          data: callback(context, state, {
             ...d,
-            carIndex: state.carIndex,
+            carIndex: carIndex,
             skill: skill,
           })
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
-        return refreshSkillState(context, next)
+        return refreshSkillState(context, state)
       } else {
         context.log.error(`スキル状態をcooldownに変更できません(state:${skill.state.type})`)
       }
@@ -470,7 +477,7 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
 }
 
 /**
- * スキル状態の変化を調べて更新する
+ * スキル状態の変化を調べて更新する（破壊的）
  * 
  * 以下の状態に依存する`Skill#state`の遷移を調べる
  * - `SkillActiveTimeout` 現在時刻に依存：指定時刻を過ぎたら`cooldown`へ遷移
@@ -482,17 +489,12 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
  * @param time 現在時刻
  * @returns 新しい状態
  */
-export function refreshSkillState(context: Context, state: ReadonlyState<UserState>): UserState {
-  const size = state.formation.length
-  let next = copyUserState(state)
-  context = fixClock(context)
-  for (let idx = 0; idx < size; idx++) {
-    next = refreshSkillStateOne(context, next, idx)
-  }
-  return next
+export function refreshSkillState(context: Context, state: UserState): UserState {
+  const indices = state.formation.map((_, idx) => idx)
+  return indices.reduce((next, idx) => refreshSkillStateOne(context, next, idx), state)
 }
 
-function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
+export function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
   const denco = state.formation[idx]
   if (denco.skill.type !== "possess") {
     return state

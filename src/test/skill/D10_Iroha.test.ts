@@ -1,7 +1,7 @@
 import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, getSkill, initContext, initUser, refreshSkillState } from "../.."
+import { activateSkill, getSkill, initContext, initUser, refreshState } from "../.."
 import moment from "moment-timezone"
 
 describe("いろはスキル", () => {
@@ -24,12 +24,12 @@ describe("いろはスキル", () => {
     let state = initUser(context, "master", [iroha])
 
     // リンク数0
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     iroha = state.formation[0]
     let skill = getSkill(iroha)
     expect(skill.state.transition).toBe("manual-condition")
     expect(skill.state.type).toBe("unable")
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
 
     // リンク数2 && 編成ひとり
     iroha = DencoManager.getDenco(context, "10", 50, 2)
@@ -67,7 +67,7 @@ describe("いろはスキル", () => {
     expect(skill.state.type).toBe("idle")
     const links = iroha.link
 
-    state = activateSkill(context, { ...state, carIndex: 0 })
+    state = activateSkill(context, state, 0)
 
     // スキル発動の確認
     expect(state.event.length).toBe(1)
@@ -91,7 +91,7 @@ describe("いろはスキル", () => {
     expect(reika.link[0]).toMatchObject(link)
     // wait終了後
     context.clock = now + 7200 * 1000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     iroha = state.formation[0]
     skill = getSkill(iroha)
     expect(skill.state.type).toBe("unable")
@@ -107,7 +107,7 @@ describe("いろはスキル", () => {
     iroha = state.formation[1]
     let skill = getSkill(iroha)
     expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, { ...state, carIndex: 1 })
+    state = activateSkill(context, state, 1)
     expect(state.event.length).toBe(1)
     let event = state.event[0]
     expect(event.type).toBe("skill_trigger")
@@ -125,7 +125,7 @@ describe("いろはスキル", () => {
     expect(reika.link.length).toBe(1)
 
     context.clock = now + 7200 * 1000
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     iroha = state.formation[1]
     skill = getSkill(iroha)
     expect(skill.state.type).toBe("idle")

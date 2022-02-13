@@ -7,7 +7,7 @@ import DencoManager from "./core/dencoManager"
 import { AccessConfig, startAccess } from './core/access'
 import { formatEvent, printEvents } from './core/format'
 import { initContext } from './core/context'
-import { initUser, refreshCurrentTime, UserState } from './core/user'
+import { initUser, UserState, refreshState } from './core/user'
 import { activateSkill, getSkill, refreshSkillState } from './core/skill'
 import moment from "moment-timezone"
 
@@ -20,18 +20,18 @@ init().then(() => {
   let charlotte = DencoManager.getDenco(context, "6", 50, 1)
   let offense = initUser(context, "とあるマスター", [reika])
   let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
-  defense = activateSkill(context, {...defense, carIndex: 1})
+  defense = activateSkill(context, defense, 1)
   const config = {
     offense: {
-      carIndex: 0,
-      ...offense
+      state: offense,
+      carIndex: 0
     },
     defense: {
-      carIndex: 0,
-      ...defense
+      state: defense,
+      carIndex: 0
     },
     station: charlotte.link[0],
   }
   const result = startAccess(context, config)
-  
+
 })

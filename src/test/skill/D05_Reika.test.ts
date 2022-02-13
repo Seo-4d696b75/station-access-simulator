@@ -30,7 +30,7 @@ describe("レイカのスキル", () => {
     let skill = getSkill(reika)
     expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    defense = activateSkill(context, { ...defense, carIndex: 0 })
+    defense = activateSkill(context, defense, 0)
     reika = defense.formation[0]
     skill = getSkill(reika)
     expect(skill.state.type).toBe("active")
@@ -71,12 +71,12 @@ describe("レイカのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -91,18 +91,18 @@ describe("レイカのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [reika, seria])
-    defense = activateSkill(context, { ...defense, carIndex: 0 })
+    defense = activateSkill(context, defense, 0)
     reika = defense.formation[0]
     expect(isSkillActive(reika.skill)).toBe(true)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -117,18 +117,18 @@ describe("レイカのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [reika, seria])
-    offense = activateSkill(context, { ...offense, carIndex: 0 })
+    offense = activateSkill(context, offense, 0)
     reika = offense.formation[0]
     expect(isSkillActive(reika.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -143,21 +143,21 @@ describe("レイカのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [reika, hiiru])
-    offense = activateSkill(context, { ...offense, carIndex: 0 })
+    offense = activateSkill(context, offense, 0)
     reika = offense.formation[0]
     expect(isSkillActive(reika.skill)).toBe(true)
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     hiiru = offense.formation[1]
     expect(isSkillActive(hiiru.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -173,18 +173,18 @@ describe("レイカのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [reika, seria])
-    offense = activateSkill(context, { ...offense, carIndex: 0 })
+    offense = activateSkill(context, offense, 0)
     reika = offense.formation[0]
     expect(isSkillActive(reika.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
-        carIndex: 1,
-        ...offense
+        state: offense,
+        carIndex: 1
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }

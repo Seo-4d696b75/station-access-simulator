@@ -15,16 +15,28 @@ interface EventBase<T, V = undefined> {
   readonly data: V
 }
 
-export type LevelupDenco = Readonly<{
-  time: number
-  after: ReadonlyState<DencoState>
-  before: ReadonlyState<DencoState>
-}>
+/**
+ * レベルアップのイベント情報
+ */
+export interface LevelupDenco {
+  readonly time: number
+  readonly after: ReadonlyState<DencoState>
+  readonly before: ReadonlyState<DencoState>
+}
 
-export type AccessEventData = Readonly<{
-  access: ReadonlyState<AccessState>
-  which: AccessSide
-}>
+/**
+ * アクセスのイベント情報
+ */
+export interface AccessEventData {
+  /**
+   * アクセスの詳細
+   */
+  readonly access: ReadonlyState<AccessState>
+  /**
+   * アクセスの攻撃側・守備側のどちら側か
+   */
+  readonly which: AccessSide
+}
 
 export type AccessEvent = EventBase<"access", AccessEventData>
 export type RebootEvent = EventBase<"reboot", LinksResult>
