@@ -140,7 +140,7 @@ describe("ふぶのスキル", () => {
     expect(access.defense).not.toBeUndefined()
     expect(hasSkillTriggered(access.defense, fubu)).toBe(true)
     expect(access.defendPercent).toBe(19)
-    expect(access.damageBase).toBe(162)
+    expect(access.damageBase?.variable).toBe(162)
     expect(access.damageRatio).toBe(1.0)
     if (access.defense) {
       // アクセス中の状態の確認
@@ -182,7 +182,7 @@ describe("ふぶのスキル", () => {
     expect(access.defense).not.toBeUndefined()
     expect(hasSkillTriggered(access.defense, fubu)).toBe(true)
     expect(access.defendPercent).toBe(19)
-    expect(access.damageBase).toBe(210)
+    expect(access.damageBase?.variable).toBe(210)
     expect(access.damageRatio).toBe(1.3)
     if (access.defense) {
       // アクセス中の状態の確認

@@ -94,7 +94,7 @@ describe("しいらのスキル", () => {
     expect(access.defense).not.toBeUndefined()
     expect(access.defense?.triggeredSkills.length).toBe(0)
     expect(access.defendPercent).toBe(0)
-    expect(access.damageBase).toBe(260)
+    expect(access.damageBase?.variable).toBe(260)
     expect(access.damageRatio).toBe(1.3)
     if (access.defense) {
       // アクセス中の状態の確認
@@ -147,7 +147,7 @@ describe("しいらのスキル", () => {
     // 基本的なダメージの確認
     expect(access.defense).not.toBeUndefined()
     expect(access.defendPercent).toBe(0)
-    expect(access.damageBase).toBe(260)
+    expect(access.damageBase?.variable).toBe(260)
     expect(access.damageRatio).toBe(1.3)
     if (access.defense) {
       // 確率補正の確認
@@ -183,7 +183,7 @@ describe("しいらのスキル", () => {
     // 基本的なダメージの確認
     expect(access.defense).not.toBeUndefined()
     expect(access.defendPercent).toBe(25)
-    expect(access.damageBase).toBe(195)
+    expect(access.damageBase?.variable).toBe(195)
     expect(access.damageRatio).toBe(1.3)
     if (access.defense) {
       // アクセス中の状態の確認
@@ -228,7 +228,7 @@ describe("しいらのスキル", () => {
     // 基本的なダメージの確認
     expect(access.defense).not.toBeUndefined()
     expect(access.defendPercent).toBe(25)
-    expect(access.damageBase).toBe(195)
+    expect(access.damageBase?.variable).toBe(195)
     expect(access.damageRatio).toBe(1.3)
     if (access.defense) {
       // アクセス中の状態の確認

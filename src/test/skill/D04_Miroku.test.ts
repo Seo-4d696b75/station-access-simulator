@@ -169,7 +169,7 @@ describe("みろくのスキル", () => {
     expect(trigger.step).toBe("after_damage")
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)
-    expect(access.damageBase).toBe(95)
+    expect(access.damageBase?.variable).toBe(95)
     let accessLuna = getAccessDenco(access, "defense")
     expect(accessLuna.reboot).toBe(false)
     expect(accessLuna.hpBefore).toBe(360)
@@ -234,7 +234,7 @@ describe("みろくのスキル", () => {
     expect(trigger.step).toBe("after_damage")
     expect(access.linkDisconncted).toBe(true)
     expect(access.linkSuccess).toBe(true)
-    expect(access.damageBase).toBe(247)
+    expect(access.damageBase?.variable).toBe(247)
     let accessLuna = getAccessDenco(access, "defense")
     expect(accessLuna.reboot).toBe(true)
     expect(accessLuna.hpBefore).toBe(360)
@@ -275,7 +275,7 @@ describe("みろくのスキル", () => {
     if (access.defense) {
       expect(hasSkillTriggered(access.defense, luna)).toBe(true)
     }
-    expect(access.damageBase).toBe(142)
+    expect(access.damageBase?.variable).toBe(142)
     let accessLuna = getAccessDenco(access, "defense")
     expect(accessLuna.reboot).toBe(false)
     expect(accessLuna.hpBefore).toBe(360)

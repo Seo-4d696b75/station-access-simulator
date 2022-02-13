@@ -93,7 +93,7 @@ describe("いずなのスキル", () => {
     expect(access.defense).not.toBeUndefined()
     expect(hasSkillTriggered(access.defense, izuna)).toBe(true)
     expect(access.defendPercent).toBe(4)
-    expect(access.damageBase).toBe(192)
+    expect(access.damageBase?.variable).toBe(192)
     expect(access.damageRatio).toBe(1.0)
     if (access.defense) {
       // アクセス中の状態の確認
@@ -140,7 +140,7 @@ describe("いずなのスキル", () => {
     expect(access.defense).not.toBeUndefined()
     expect(hasSkillTriggered(access.defense, izuna)).toBe(true)
     expect(access.defendPercent).toBe(8)
-    expect(access.damageBase).toBe(184)
+    expect(access.damageBase?.variable).toBe(184)
     expect(access.damageRatio).toBe(1.0)
     if (access.defense) {
       // アクセス中の状態の確認
@@ -181,7 +181,7 @@ describe("いずなのスキル", () => {
     expect(access.defense).not.toBeUndefined()
     expect(hasSkillTriggered(access.defense, izuna)).toBe(true)
     expect(access.defendPercent).toBe(15)
-    expect(access.damageBase).toBe(170)
+    expect(access.damageBase?.variable).toBe(170)
     expect(access.damageRatio).toBe(1.0)
     if (access.defense) {
       // アクセス中の状態の確認
@@ -223,7 +223,7 @@ describe("いずなのスキル", () => {
     expect(access.defense).not.toBeUndefined()
     expect(hasSkillTriggered(access.defense, izuna)).toBe(true)
     expect(access.defendPercent).toBe(28)
-    expect(access.damageBase).toBe(144)
+    expect(access.damageBase?.variable).toBe(144)
     expect(access.damageRatio).toBe(1.0)
     if (access.defense) {
       // アクセス中の状態の確認

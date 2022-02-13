@@ -47,7 +47,7 @@ describe("基本的なアクセス処理", () => {
     expect(access.pinkItemUsed).toBe(false)
     expect(access.attackPercent).toBe(0)
     expect(access.defendPercent).toBe(0)
-    expect(access.damageBase).toBeUndefined()
+    expect(access.damageBase?.variable).toBeUndefined()
     expect(access.damageFixed).toBe(0)
     const d = getAccessDenco(access, "offense")
     expect(d.name).toBe(reika.name)
@@ -130,7 +130,7 @@ describe("基本的なアクセス処理", () => {
     expect(access.attackPercent).toBe(0)
     expect(access.defendPercent).toBe(0)
     // ダメージ計算確認
-    expect(access.damageBase).toBe(260)
+    expect(access.damageBase?.variable).toBe(260)
     expect(access.damageFixed).toBe(0)
     let d = getAccessDenco(access, "offense")
     expect(d.name).toBe(reika.name)
@@ -207,7 +207,7 @@ describe("基本的なアクセス処理", () => {
     expect(access.pinkItemSet).toBe(true)
     expect(access.pinkItemUsed).toBe(true)
     // ダメージ計算確認
-    expect(access.damageBase).toBeUndefined()
+    expect(access.damageBase?.variable).toBeUndefined()
     expect(access.damageFixed).toBe(0)
     expect(getAccessDenco(access, "offense").damage).toBeUndefined()
     expect(getAccessDenco(access, "defense").damage).toBeUndefined()
@@ -268,7 +268,7 @@ describe("基本的なアクセス処理", () => {
     expect(access.attackPercent).toBe(0)
     expect(access.defendPercent).toBe(0)
     // ダメージ計算確認
-    expect(access.damageBase).toBe(338)
+    expect(access.damageBase?.variable).toBe(338)
     expect(access.damageFixed).toBe(0)
     let d = getAccessDenco(access, "offense")
     expect(d.name).toBe(reika.name)
@@ -371,7 +371,7 @@ describe("基本的なアクセス処理", () => {
     expect(access.attackPercent).toBe(20)
     expect(access.defendPercent).toBe(0)
     // ダメージ計算確認
-    expect(access.damageBase).toBe(180)
+    expect(access.damageBase?.variable).toBe(180)
     expect(access.damageFixed).toBe(0)
     let d = getAccessDenco(access, "offense")
     expect(d.name).toBe("reika")
@@ -432,7 +432,7 @@ describe("基本的なアクセス処理", () => {
     expect(access.attackPercent).toBe(0)
     expect(access.defendPercent).toBe(0)
     // ダメージ計算確認
-    expect(access.damageBase).toBe(200)
+    expect(access.damageBase?.variable).toBe(200)
     expect(access.damageFixed).toBe(0)
     expect(access.offense.triggeredSkills.length).toBe(0)
     expect(access.defense?.triggeredSkills.length).toBe(0)
