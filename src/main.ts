@@ -13,14 +13,11 @@ import moment from "moment-timezone"
 
 init().then(() => {
   const context = initContext("test", "test")
-  const now = moment().valueOf()
-  context.clock = now
-  let fubu = DencoManager.getDenco(context, "14", 50)
-  let reika = DencoManager.getDenco(context, "5", 50)
-  let charlotte = DencoManager.getDenco(context, "6", 50, 1)
-  let offense = initUser(context, "とあるマスター", [reika])
-  let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
-  defense = activateSkill(context, defense, 1)
+  context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+  let luna = DencoManager.getDenco(context, "3", 50, 1)
+  let ringo = DencoManager.getDenco(context, "15", 50, 1)
+  let defense = initUser(context, "とあるマスター", [luna])
+  let offense = initUser(context, "とあるマスター２", [ringo])
   const config = {
     offense: {
       state: offense,
@@ -30,7 +27,7 @@ init().then(() => {
       state: defense,
       carIndex: 0
     },
-    station: charlotte.link[0],
+    station: luna.link[0],
   }
   const result = startAccess(context, config)
 

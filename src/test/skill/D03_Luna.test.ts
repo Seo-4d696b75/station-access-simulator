@@ -2,8 +2,8 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
-import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill, getSkill, refreshSkillState } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
 import { getAccessDenco, getDefense, startAccess } from "../../core/access"
 import moment from "moment-timezone"
 
@@ -22,7 +22,7 @@ describe("ルナのスキル", () => {
     expect(luna.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [luna])
     context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     luna = state.formation[0]
     let skill = getSkill(luna)
     expect(skill.state.transition).toBe("always")
@@ -33,7 +33,7 @@ describe("ルナのスキル", () => {
 
 
     context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     luna = state.formation[0]
     skill = getSkill(luna)
     expect(skill.state.transition).toBe("always")
