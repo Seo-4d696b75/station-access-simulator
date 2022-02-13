@@ -146,7 +146,7 @@ export interface AccessTriggeredSkill extends Denco {
 }
 
 /**
- * アクセス中に発生したダメージ
+ * アクセス中に各でんこに発生したダメージ
  */
 export interface DamageState {
   /**
@@ -220,11 +220,43 @@ export interface AccessState {
   depth: number
 
   /**
-   * `damage_common`の段階までにおけるダメージの計算値
+   * `damage_common`の段階までにおける被アクセス側のダメージ計算量
    * 
-   * base * (100 + ATK - DEF)/100.0 * (attr_damage_ratio) = damage
+   * `variable + constant`の合計値が計算されたダメージ量
+   * 
+   * `damage_common, damage_special`のスキル評価後のタイミングで原則次のように計算され値がセットされる  
+   * - AP: 攻撃側のAP
+   * - ATK,DEF: ダメージ計算時の増減値% {@link attackPercent} {@link defendPercent}  
+   * `variable = AP * (100 + ATK - DEF)/100.0 * damageRation, constant = 0`
+   * 
+   * `damage_fixed`で計算する固定ダメージ値はここには含まれない
+   * 個体ダメージもスキップする場合は {@link skipDamageFixed}
+   * 
+   * ただし`damage_special`のスキル発動による特殊な計算など、
+   * `damage_special`の段階までにこの`damageBase`の値が`undefined`以外にセットされた場合は
+   * 上記の計算はスキップされる
    */
-  damageBase?: number
+  damageBase?: {
+    /**
+     * `damage_fixed`以降の段階において増減する値 
+     * 
+     * **非負数** 固定ダメージ計算の結果負数になる場合は0に固定される
+     */
+    variable: number
+    /**
+     * `damage_fixed`以降の段階においても増減しない値 **非負数**
+     * 
+     * 固定ダメージ計算を影響を受けず最終的なダメージ量にそのまま加算される
+     */
+    constant: number
+  }
+
+  /**
+   * `damage_fixed`の段階で計算される個体ダメージをスキップする
+   * 
+   * default: `false` 
+   * スキップする場合は`damage_special`の段階までに`true`を指定する
+   */
   skipDamageFixed?: boolean
 
   /**
@@ -233,12 +265,12 @@ export interface AccessState {
   damageFixed: number
 
   /**
-   * `damage_common`の段階までに評価された`ATK`累積値
+   * `damage_common`の段階までに評価された`ATK`累積値 単位：%
    */
   attackPercent: number
 
   /**
-   * `damage_common`の段階までに評価された`DEF`累積値
+   * `damage_common`の段階までに評価された`DEF`累積値 単位：%
    */
   defendPercent: number
 
@@ -420,7 +452,7 @@ function completeAccess(context: Context, config: AccessConfig, access: Readonly
       }
     ],
     carIndex: config.offense.carIndex,
-  } 
+  }
   offense = copyFromAccessState(context, offense, access, "offense")
   let defense: UserState & FormationPosition | undefined = undefined
   if (access.defense && config.defense) {
@@ -729,9 +761,10 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
 
     // 基本ダメージの計算
     if (!state.damageBase) {
-      const base = getDenco(state, "offense").ap
-      context.log.log(`基本ダメージを計算 AP:${base}`)
-      state.damageBase = calcBaseDamage(context, state, base)
+      state.damageBase = {
+        variable: getBaseDamage(context, state),
+        constant: 0,
+      }
     }
 
     // 固定ダメージの計算
@@ -750,8 +783,13 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       context.log.error("基本ダメージの値が見つかりません")
       throw Error("base damage not set")
     }
+    if (damageBase.variable < 0 || damageBase.constant < 0) {
+      context.log.error(`基本ダメージの値は非負である必要があります ${JSON.stringify(damageBase)}`)
+    }
+    // 反撃など複数回のダメージ計算が発生する場合はそのまま加算
     const damage = addDamage(defense.damage, {
-      value: Math.max(damageBase + state.damageFixed, 0),
+      // 固定ダメージで負数にはせず0以上に固定 & 確保されたダメージ量を加算
+      value: Math.max(damageBase.variable + state.damageFixed, 0) + damageBase.constant,
       attr: state.damageRatio !== 1.0
     })
     context.log.log(`ダメージ計算が終了：${damage.value}`)
@@ -1018,14 +1056,22 @@ function checkProbabilityBoost(d: AccessSideState) {
 }
 
 /**
- * 被アクセス側が受けるダメージ値のうち DAMAGE_COMMONまでに計算される基本値を参照
- * @param base APなど増減前のダメージ値
- * @param useAKT ATK増減を加味する
- * @param useDEF DEF増減を加味する
- * @param useAttr アクセス・被アクセス個体間の属性による倍率補正を加味する
- * @returns base * (100 + ATK - DEF)/100.0 * (attr_damage_ratio) = damage
+ * 被アクセス側が受けるダメージ値のうち`damage_common`までに計算される基本値を参照
+ * 
+ * `state.damageBase`が定義済みの場合はその値を返す  
+ * 
+ * 未定義の場合は次式のように計算する  
+ * `AP * (100 + ATK - DEF)/100.0 * (damageRatio)`
+ * 
+ * @param useAKT ATK増減を加味する default:`true`
+ * @param useDEF DEF増減を加味する default:`true`
+ * @param useAttr アクセス・被アクセス個体間の属性による倍率補正を加味する default:`true`
+ * @returns 
  */
-function calcBaseDamage(context: Context, state: AccessState, base: number, useAKT: boolean = true, useDEF: boolean = true, useAttr: boolean = true): number {
+export function getBaseDamage(context: Context, state: ReadonlyState<AccessState>, useAKT: boolean = true, useDEF: boolean = true, useAttr: boolean = true): number {
+  if (state.damageBase) {
+    return state.damageBase.variable + state.damageBase.constant
+  }
   let atk = 0
   let def = 0
   let ratio = 1.0
@@ -1038,8 +1084,9 @@ function calcBaseDamage(context: Context, state: AccessState, base: number, useA
   if (useAttr) {
     ratio = state.damageRatio
   }
+  const base = getAccessDenco(state, "offense").ap
   const damage = Math.floor(base * (100 + atk - def) / 100.0 * ratio)
-  context.log.log(`基本ダメージを計算 ATK:${atk}% DEF:${def}% ${base} * ${100 + atk - def}% * ${ratio} = ${damage}`)
+  context.log.log(`基本ダメージを計算 AP:${base} ATK:${atk}% DEF:${def}% DamageBase:${damage} = ${base} * ${100 + atk - def}% * ${ratio}`)
   return damage
 }
 
