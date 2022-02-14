@@ -31,11 +31,28 @@ export interface Context {
     random: Random;
     /**
      * 処理中の現在時刻の取得方法
+     *
      * - "now": `moment()`で参照（デフォルト値）
-     * - number: 指定した時刻で処理
+     * - number: 指定した時刻で処理(unix time [ms])
+     *
+     * 処理中の各時刻はUnix Time(ms)として記録し、
+     * 時刻や日付などを処理する場合のタイムゾーンは次のように固定している
+     * 変更が必要な場合は同様に再定義すること
+     * ```
+     * import moment from "moment-timezone"
+     * moment.tz.setDefault("Asia/Tokyo")
+     * ```
      */
     clock: "now" | number;
 }
+/**
+ * contextを初期化する
+ *
+ * @param type 処理の名前(ログに記録)
+ * @param seed 処理中に使用する疑似乱数列のseed値 {@link seedrandom} default: `"test"`
+ * @param console 処理中の詳細をコンソールに出力するか default: `true`
+ * @returns
+ */
 export declare function initContext(type?: string, seed?: string, console?: boolean): Context;
 /**
  * 指定した時刻に固定する
@@ -47,7 +64,7 @@ export declare function setClock(context: Readonly<Context>, time?: number | str
 /**
  * `getCurrentTime`が返す現在時刻の値で固定する
  * @param context clock
- * @returns 現在時刻で`clock`で固定した新しいcontext 他の状態は同じオブジェクトへの参照を維持する
+ * @returns 現在時刻`clock`で固定した新しいcontext 他の状態は同じオブジェクトへの参照を維持する
  */
 export declare function fixClock(context: Readonly<Context>): Context;
 /**

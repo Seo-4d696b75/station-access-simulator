@@ -1,5 +1,5 @@
 import { copyDencoState, Denco, DencoState } from "./denco"
-import { SkillPossess, refreshSkillState, ActiveSkill } from "./skill"
+import { SkillHolder, refreshSkillState, ActiveSkill } from "./skill"
 import { Context, fixClock, getCurrentTime } from "./context"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
 import { copyUserState, FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
@@ -52,7 +52,10 @@ export interface AccessConfig {
   /**
    * 攻撃側の編成
    */
-  offense: ReadonlyState<UserState & FormationPosition>
+  offense: {
+    state: ReadonlyState<UserState>
+    carIndex: number
+  }
   /**
    * アクセス先の駅
    */
@@ -60,7 +63,10 @@ export interface AccessConfig {
   /**
    * 守備側の編成
    */
-  defense?: ReadonlyState<UserState & FormationPosition>
+  defense?: {
+    state: ReadonlyState<UserState>
+    carIndex: number
+  }
   /**
    * フットバースアイテム使用の有無を指定する
    */
@@ -213,12 +219,34 @@ export interface AccessState {
 
   depth: number
 
+  /**
+   * `damage_common`の段階までにおけるダメージの計算値
+   * 
+   * base * (100 + ATK - DEF)/100.0 * (attr_damage_ratio) = damage
+   */
   damageBase?: number
   skipDamageFixed?: boolean
+
+  /**
+   * 固定値で加減算されるダメージ値
+   */
   damageFixed: number
 
+  /**
+   * `damage_common`の段階までに評価された`ATK`累積値
+   */
   attackPercent: number
+
+  /**
+   * `damage_common`の段階までに評価された`DEF`累積値
+   */
   defendPercent: number
+
+  /**
+   * `damage_common`の直後に計算される基本ダメージにおける倍率
+   * 
+   * 現状ではでんこ属性による`1.3`の倍率のみ発生する
+   */
   damageRatio: number
 
   linkSuccess: boolean
@@ -237,14 +265,14 @@ interface AccessStateWithDefense extends AccessState {
   defense: AccessSideState
 }
 
-function initAccessDencoState(context: Context, f: ReadonlyState<UserState & FormationPosition>, which: AccessSide): AccessSideState {
-  const formation = refreshSkillState(context, f).formation.map((e, idx) => {
+function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessSideState {
+  const formation = refreshSkillState(context, copyUserState(f)).formation.map((e, idx) => {
     const s: AccessDencoState = {
       ...e,
       hpBefore: e.currentHp,
       hpAfter: e.currentHp,
       which: which,
-      who: idx === f.carIndex ? which : "other",
+      who: idx === carIndex ? which : "other",
       carIndex: idx,
       reboot: false,
       skillInvalidated: false,
@@ -253,12 +281,12 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState & For
     }
     return s
   })
-  const d = formation[f.carIndex]
+  const d = formation[carIndex]
   if (!d) {
-    context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${f.carIndex}, formation.legth: ${formation.length}`)
+    context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${carIndex}, formation.legth: ${formation.length}`)
   }
   return {
-    carIndex: f.carIndex,
+    carIndex: carIndex,
     formation: formation,
     triggeredSkills: [],
     probabilityBoostPercent: 0,
@@ -283,7 +311,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
   var state: AccessState = {
     time: time.valueOf(),
     station: config.station,
-    offense: initAccessDencoState(context, config.offense, "offense"),
+    offense: initAccessDencoState(context, config.offense.state, config.offense.carIndex, "offense"),
     defense: undefined,
     damageFixed: 0,
     attackPercent: 0,
@@ -305,7 +333,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
     d.link = d.link.splice(idx, 1)
   }
   if (config.defense) {
-    state.defense = initAccessDencoState(context, config.defense, "defense")
+    state.defense = initAccessDencoState(context, config.defense.state, config.defense.carIndex, "defense")
     const d = getAccessDenco(state, "defense")
     var link = d.link.find(link => link.name === config.station.name)
     if (!link) {
@@ -380,9 +408,9 @@ function completeAccess(context: Context, config: AccessConfig, access: Readonly
   // このアクセスイベントの追加
 
   let offense: UserState & FormationPosition = {
-    ...copyUserState(config.offense),
+    ...copyUserState(config.offense.state),
     event: [
-      ...config.offense.event,
+      ...config.offense.state.event,
       {
         type: "access",
         data: {
@@ -392,14 +420,14 @@ function completeAccess(context: Context, config: AccessConfig, access: Readonly
       }
     ],
     carIndex: config.offense.carIndex,
-  }
+  } 
   offense = copyFromAccessState(context, offense, access, "offense")
   let defense: UserState & FormationPosition | undefined = undefined
   if (access.defense && config.defense) {
     defense = {
-      ...copyUserState(config.defense),
+      ...copyUserState(config.defense.state),
       event: [
-        ...config.defense.event,
+        ...config.defense.state.event,
         {
           type: "access",
           data: {
@@ -436,14 +464,18 @@ function checkSkillAfterAccess(context: Context, state: UserState & FormationPos
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
   filterActiveSkill(side.formation).forEach(idx => {
+    // スキル発動による状態変更を考慮して評価直前にコピー
     const d = copyAccessDencoState(getFormation(access, which)[idx])
-    const skill = d.skillHolder.skill
+    const skill = d.skill
+    if (skill.type !== "possess") {
+      context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
+      throw Error()
+    }
     const predicate = skill?.onAccessComplete
     if (skill && predicate) {
       const self = {
         ...d,
         skill: skill,
-        skillPropertyReader: skill.propertyReader
       }
       const next = predicate(context, state, self, access)
       if (next) {
@@ -557,7 +589,13 @@ function getDenco(state: AccessState, which: AccessSide): AccessDencoState {
   return s.formation[s.carIndex]
 }
 
-
+/**
+ * アクセスにおける編成（攻撃・守備側）を取得する
+ * @param state アクセス状態 {@link AccessState}
+ * @param which 攻撃側・守備側のどちらか指定する
+ * @throws 存在しない守備側を指定した場合はErrorを投げる
+ * @returns `AccessDencoState[]`
+ */
 export function getFormation<T>(state: { offense: { formation: T }, defense?: { formation: T } }, which: AccessSide): T {
   if (which === "offense") {
     return state.offense.formation
@@ -577,6 +615,13 @@ type AccessStateArg<T> = {
   }
 }
 
+/**
+ * アクセスにおいて直接アクセスする・アクセスを受けるでんこを取得する
+ * @param state アクセス状態 {@link AccessState}
+ * @param which 攻撃側・守備側のどちらか指定
+ * @throws 存在しない守備側を指定した場合Error
+ * @returns {@link AccessDencoState}
+ */
 export function getAccessDenco<T>(state: AccessStateArg<T>, which: AccessSide): T {
   if (which === "offense") {
     return state.offense.formation[state.offense.carIndex]
@@ -586,6 +631,12 @@ export function getAccessDenco<T>(state: AccessStateArg<T>, which: AccessSide): 
   }
 }
 
+/**
+ * アクセスの守備側の状態を取得する
+ * @param state 
+ * @returns {@link AccessSideState}
+ * @throws 守備側が存在しない場合はError
+ */
 export function getDefense<T>(state: { defense?: T }): T {
   const s = state.defense
   if (!s) {
@@ -782,7 +833,11 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
   offenseActive.forEach(idx => {
     // 他スキルの発動で状態が変化する場合があるので毎度参照してからコピーする
     const d = copyAccessDencoState(state.offense.formation[idx])
-    const skill = d.skillHolder.skill
+    const skill = d.skill
+    if (skill.type !== "possess") {
+      context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
+      throw Error()
+    }
     if (skill && (!state.pinkMode || skill.evaluateInPink)) {
       const active = {
         ...d,
@@ -800,7 +855,11 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
   if (defense && defenseActive) {
     defenseActive.forEach(idx => {
       const d = copyAccessDencoState(defense.formation[idx])
-      const skill = d.skillHolder.skill
+      const skill = d.skill
+      if (skill.type !== "possess") {
+        context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
+        throw Error()
+      }
       if (skill && (!state.pinkMode || skill.evaluateInPink)) {
         const active = {
           ...d,
@@ -840,7 +899,8 @@ function markTriggerSkill(state: AccessSideState, step: AccessEvaluateStep, denc
  * @param step `undefined`の場合は`denco`の一致でのみ検索する
  * @returns true if has been triggered
  */
-export function hasSkillTriggered(state: ReadonlyState<AccessSideState>, denco: Denco, step?: AccessEvaluateStep): boolean {
+export function hasSkillTriggered(state: ReadonlyState<AccessSideState> | undefined, denco: Denco, step?: AccessEvaluateStep): boolean {
+  if (!state) return false
   return state.triggeredSkills.findIndex(t => {
     return t.numbering === denco.numbering && (!step || step === t.step)
   }) >= 0
@@ -855,7 +915,6 @@ export function hasSkillTriggered(state: ReadonlyState<AccessSideState>, denco: 
  */
 function filterActiveSkill(list: readonly ReadonlyState<AccessDencoState>[]): number[] {
   return list.filter(d => {
-    const s = d.skillHolder
     return hasActiveSkill(d)
   }).map(d => d.carIndex)
 }
@@ -866,7 +925,7 @@ function filterActiveSkill(list: readonly ReadonlyState<AccessDencoState>[]): nu
  * @returns 
  */
 function hasActiveSkill(d: ReadonlyState<AccessDencoState>): boolean {
-  return isSkillActive(d.skillHolder) && !d.skillInvalidated
+  return isSkillActive(d.skill) && !d.skillInvalidated
 }
 
 /**
@@ -874,8 +933,8 @@ function hasActiveSkill(d: ReadonlyState<AccessDencoState>): boolean {
  * @param skill 
  * @returns 
  */
-function isSkillActive(skill: SkillPossess): boolean {
-  return skill.type === "possess" && skill.skill.state.type === "active"
+function isSkillActive(skill: SkillHolder): boolean {
+  return skill.type === "possess" && skill.state.type === "active"
 }
 
 /**
@@ -904,17 +963,16 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
     const v = percent * (1 + boost / 100.0)
     context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
     percent = Math.min(v, 100)
+    // 発動の如何を問わず確率補正のスキルは発動した扱いになる
+    const defense = state.defense
+    if (d.which === "offense") {
+      state.offense.probabilityBoosted = true
+    } else if (defense) {
+      defense.probabilityBoosted = true
+    }
   }
   if (random(context, percent)) {
     context.log.log(`スキルが発動できます ${d.name} 確率:${percent}%`)
-    if (boost !== 0) {
-      const defense = state.defense
-      if (d.which === "offense") {
-        state.offense.probabilityBoosted = true
-      } else if (defense) {
-        defense.probabilityBoosted = true
-      }
-    }
     return true
   } else {
     context.log.log(`スキルが発動しませんでした ${d.name} 確率:${percent}%`)
@@ -923,8 +981,16 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
 }
 
 /**
- * 確率ブーストも考慮して確率を乱数を計算する
- * @param percent 100分率で指定した確立でtrueを返す
+ * 確率計算モードを考慮してtrue/falseの条件を計算する  
+ * 
+ * {@link RandomMode} の値に応じて乱数計算を無視してtrue/falseを返す場合もある  
+ * 計算の詳細  
+ * 1. `percent <= 0` -> `false`
+ * 2. `percent >= 100` -> `true`
+ * 3. `context.random.mode === "ignore"` -> `false`
+ * 4. `context.random.mode === "force"` -> `true`
+ * 5. `context.random.mode === "normal"` -> 疑似乱数を用いて`percent`%の確率で`true`を返す
+ * @param percent 100分率で指定した確率でtrueを返す
  * @returns 
  */
 export function random(context: Context, percent: number): boolean {
@@ -980,7 +1046,8 @@ function calcBaseDamage(context: Context, state: AccessState, base: number, useA
 /**
  * 攻守はそのままでアクセス処理を再度実行する
  * 
- * ダメージ計算・スコアと経験値の加算など各処理を再度実行して合計値を反映した新たな状態を返す
+ * @param state 現在のアクセス状態
+ * @returns ダメージ計算・スコアと経験値の加算など各処理を再度実行して合計値を反映した新たな状態を返す
  */
 export function repeatAccess(context: Context, state: ReadonlyState<AccessState>): AccessState {
   context.log.log(`アクセス処理を再度実行 #${state.depth + 1}`)

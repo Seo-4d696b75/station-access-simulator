@@ -17,13 +17,13 @@ describe("さやのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let saya = DencoManager.getDenco(context, "8", 1)
-    expect(saya.skillHolder.type).toBe("none")
+    expect(saya.skill.type).toBe("none")
     saya = DencoManager.getDenco(context, "8", 50)
-    expect(saya.skillHolder.type).toBe("none")
+    expect(saya.skill.type).toBe("none")
     let state = initUser(context, "とあるマスター", [saya])
     saya = state.formation[0]
-    expect(saya.skillHolder.type).toBe("none")
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(saya.skill.type).toBe("none")
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
   })
 })

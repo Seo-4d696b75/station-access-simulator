@@ -2,9 +2,8 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
-import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill, refreshSkillState } from "../../core/skill"
-import { getSkill } from "../../core/denco"
+import { initUser, refreshState } from "../../core/user"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
 import { getAccessDenco, getDefense, startAccess } from "../../core/access"
 import moment from "moment-timezone"
 
@@ -20,24 +19,24 @@ describe("ルナのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let luna = DencoManager.getDenco(context, "3", 50)
-    expect(luna.skillHolder.type).toBe("possess")
+    expect(luna.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [luna])
     context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     luna = state.formation[0]
     let skill = getSkill(luna)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     luna = state.formation[0]
     skill = getSkill(luna)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
   })
   test("発動なし-フットバース使用", () => {
@@ -48,12 +47,12 @@ describe("ルナのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
       usePink: true,
@@ -77,12 +76,12 @@ describe("ルナのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [luna])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -107,12 +106,12 @@ describe("ルナのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -142,12 +141,12 @@ describe("ルナのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }

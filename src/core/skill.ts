@@ -1,7 +1,7 @@
 import { TIME_FORMAT } from ".."
 import * as access from "./access"
 import { Context, fixClock, getCurrentTime } from "./context"
-import { copyDencoState, DencoState, getSkill } from "./denco"
+import { copyDencoState, DencoState } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
 import { copyUserState, FormationPosition, ReadonlyState, UserState } from "./user"
@@ -40,9 +40,10 @@ export type SkillStateType =
   "active" |
   "cooldown"
 
-interface SkillStateBase<T, D = undefined> {
-  type: T
-  data: D
+interface SkillStateBase<Transition, Type, D = undefined> {
+  transition: Transition,
+  type: Type,
+  data: D,
 }
 
 /**
@@ -66,13 +67,36 @@ export interface SkillActiveTimeout extends SkillCooldownTimeout {
   activeTimeout: number
 }
 
-export type SkillState =
-  SkillStateBase<"not_init"> |
-  SkillStateBase<"unable"> |
-  SkillStateBase<"idle"> |
-  SkillStateBase<"active", SkillActiveTimeout | undefined> |
-  SkillStateBase<"cooldown", SkillCooldownTimeout>
+type ManualSkillState =
+  SkillStateBase<"manual", "idle"> |
+  SkillStateBase<"manual", "active", SkillActiveTimeout | undefined> |
+  SkillStateBase<"manual", "cooldown", SkillCooldownTimeout>
 
+type ManualConditionSkillState =
+  SkillStateBase<"manual-condition", "unable"> |
+  SkillStateBase<"manual-condition", "idle"> |
+  SkillStateBase<"manual-condition", "active", SkillActiveTimeout | undefined> |
+  SkillStateBase<"manual-condition", "cooldown", SkillCooldownTimeout>
+
+type AutoSkillState =
+  SkillStateBase<"auto", "unable"> |
+  SkillStateBase<"auto", "active", SkillActiveTimeout | undefined> |
+  SkillStateBase<"auto", "cooldown", SkillCooldownTimeout>
+
+type AutoConditionSkillState =
+  SkillStateBase<"auto-condition", "unable"> |
+  SkillStateBase<"auto-condition", "active">
+
+type AlwaysSkillState =
+  SkillStateBase<"always", "active">
+
+export type SkillState =
+  SkillStateBase<SkillStateTransition, "not_init"> |
+  ManualSkillState |
+  ManualConditionSkillState |
+  AutoSkillState |
+  AutoConditionSkillState |
+  AlwaysSkillState
 
 /**
  * スキルの発動確率を百分率で表現
@@ -183,16 +207,15 @@ export interface Skill extends SkillLogic {
   level: number
   name: string
   state: SkillState
-  transitionType: SkillStateTransition
   propertyReader: SkillPropertyReader
 }
 
 /**
- * スキルの発動を評価するときに必要なスキルの各種データを定義
+ * スキルの発動を評価するときに必要なスキル情報へのアクセスを定義
  */
 export interface ActiveSkill extends FormationPosition {
+  // skill: SkillHolder だと skill.type === "possess" のチェックが必要で煩雑なのを省略する
   skill: Skill
-  skillPropertyReader: SkillPropertyReader
 }
 
 export function copySkill(skill: Skill): Skill {
@@ -200,7 +223,6 @@ export function copySkill(skill: Skill): Skill {
     ...skill,
     name: skill.name,
     level: skill.level,
-    transitionType: skill.transitionType,
     propertyReader: skill.propertyReader,
     state: copySkillState(skill.state),
   }
@@ -212,6 +234,7 @@ export function copySkillState(state: SkillState): SkillState {
       if (state.data) {
         return {
           type: "active",
+          transition: state.transition,
           data: {
             ...state.data
           }
@@ -222,47 +245,59 @@ export function copySkillState(state: SkillState): SkillState {
     case "cooldown": {
       return {
         type: "cooldown",
+        transition: state.transition,
         data: {
           cooldownTimeout: state.data.cooldownTimeout
         }
       }
     }
-    default: {
-      break
+    case "not_init":
+    case "idle":
+    case "unable": {
+      return {
+        ...state
+      }
     }
   }
   return {
-    type: state.type,
-    data: undefined
+    ...state
   }
 }
 
-export type SkillPossessType =
-  "possess" |
-  "not_aquired" |
-  "none"
-
-
-interface SkillHolder<T, S = undefined> {
-  type: T,
-  skill: S
+interface SkillHolderBase<T> {
+  type: T
 }
 
-export type SkillPossess =
-  SkillHolder<"possess", Skill> |
-  SkillHolder<"not_aquired"> |
-  SkillHolder<"none">
+/**
+ * スキルの保有をモデル化します
+ * 
+ * `type`の値に応じて３種類のスキル保有状態があります
+ * - "possess" : スキルを保有している
+ * - "not_acquired" : でんこのレベルが低くまだスキルを保有していない
+ * - "none" : スキルを保有していない
+ */
+export type SkillHolder =
+  SkillHolderBase<"possess"> & Skill |
+  SkillHolderBase<"not_acquired"> |
+  SkillHolderBase<"none">
 
-export function copySkillPossess(skill: SkillPossess): SkillPossess {
+
+export function getSkill<S>(denco: { skill: S & SkillHolderBase<"possess"> | SkillHolderBase<"none"> | SkillHolderBase<"not_acquired"> }): S {
+  if (denco.skill.type === "possess") {
+    return denco.skill
+  }
+  throw Error("skill not found")
+}
+
+export function copySkillHolder(skill: SkillHolder): SkillHolder {
   if (skill.type === "possess") {
     return {
       type: "possess",
-      skill: copySkill(skill.skill),
+      ...copySkill(skill),
     }
   }
   return {
     type: skill.type,
-    skill: undefined,
   }
 }
 
@@ -271,9 +306,9 @@ export function copySkillPossess(skill: SkillPossess): SkillPossess {
 * @param skill 
 * @returns 
 */
-export function isSkillActive(skill: SkillPossess): skill is SkillHolder<"possess", Skill> {
+export function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"possess"> & Skill {
   if (skill.type === "possess") {
-    const state = skill.skill.state
+    const state = skill.state
     if (state.type === "not_init") {
       throw Error("skill state not init")
     }
@@ -291,86 +326,87 @@ export function isSkillActive(skill: SkillPossess): skill is SkillHolder<"posses
  * - タイプ`auto`のスキル状態を`unable > active`へ遷移させる
  * @returns `active`へ遷移した新しい状態
  */
-export function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
+export function activateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
   context = fixClock(context)
-  let next = copyUserState(state)
-  if (!checkActivateSkill(context, state)) {
-    return next
-  }
-  const d = next.formation[state.carIndex]
-  if (!d) {
-    context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
-    throw Error()
-  }
-  const skill = getSkill(d)
-  context.log.log(`スキル状態の変更：${d.name} ${skill.state.type} -> active`)
-  let self = {
-    ...d,
-    carIndex: state.carIndex,
-    skill: skill,
-    skillPropertyReader: skill.propertyReader,
-  }
-  skill.state = {
-    type: "active",
-    data: skill.disactivateAt?.(context, state, self)
-  }
-
-  // callback #onActivated
-  const callback = skill.onActivated
-  if (callback) {
-    // 更新したスキル状態をコピー
-    self = {
-      ...copyDencoState(d),
-      carIndex: state.carIndex,
-      skill: skill,
-      skillPropertyReader: skill.propertyReader,
-    }
-    next = callback(context, next, self)
-  }
-  return refreshSkillState(context, next)
+  return carIndex.reduce((next, idx) => activateSkillOne(context, next, idx), copyUserState(state))
 }
 
-function checkActivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): boolean {
-  const d = state.formation[state.carIndex]
+function activateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
+  const d = state.formation[carIndex]
   if (!d) {
-    context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
+    context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.legth: ${state.formation.length}`)
+    throw Error()
   }
-  const skill = getSkill(d)
-  switch (skill.transitionType) {
+  if (d.skill.type !== "possess") {
+    context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
+    throw Error()
+  }
+  if (d.skill.state.type === "not_init") {
+    context.log.error(`スキル状態が初期化されていません ${d.name}`)
+    throw Error()
+  }
+  const skill = d.skill
+  switch (skill.state.transition) {
     case "manual":
     case "manual-condition": {
       switch (skill.state.type) {
         case "idle": {
-          return true
+          return activateSkillAndCallback(context, state, d, d.skill, skill.state.transition, carIndex)
         }
         case "active": {
-          return false
+          return state
         }
         default: {
-          context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:${skill.transitionType})`)
-          return false
+          context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},transition:${skill.state.transition})`)
+          throw Error()
         }
       }
     }
     case "auto": {
       switch (skill.state.type) {
         case "unable": {
-          return true
+          return activateSkillAndCallback(context, state, d, d.skill, "auto", carIndex)
         }
         case "active": {
-          return false
+          return state
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:auto)`)
-          return false
+          throw Error()
         }
       }
     }
     default: {
-      context.log.error(`スキル状態をactiveに変更できません type:${skill.transitionType}`)
-      return false
+      context.log.error(`スキル状態をactiveに変更できません type:${skill.state.transition}`)
+      throw Error()
     }
   }
+}
+
+function activateSkillAndCallback(context: Context, state: UserState, d: DencoState, skill: Skill & SkillHolderBase<"possess">, transition: "manual" | "manual-condition" | "auto", carIndex: number): UserState {
+  context.log.log(`スキル状態の変更：${d.name} ${skill.state.type} -> active`)
+  let self = {
+    ...d,
+    carIndex: carIndex,
+    skill: skill,
+  }
+  skill.state = {
+    type: "active",
+    transition: transition,
+    data: skill.disactivateAt?.(context, state, self)
+  }
+  // callback #onActivated
+  const callback = skill.onActivated
+  if (callback) {
+    // 更新したスキル状態をコピー
+    self = {
+      ...copyDencoState(d),
+      carIndex: carIndex,
+      skill: skill,
+    }
+    state = callback(context, state, self)
+  }
+  return refreshSkillState(context, state)
 }
 
 /**
@@ -386,15 +422,24 @@ function checkActivateSkill(context: Context, state: ReadonlyState<UserState> & 
  * 
  * @returns `cooldown`へ遷移した新しい状態
  */
-export function disactivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState {
-  const next = copyUserState(state)
-  const d = next.formation[state.carIndex]
-  if (!d) {
-    context.log.error(`対象のでんこが見つかりません carIndex: ${state.carIndex}, formation.legth: ${state.formation.length}`)
-  }
-  const skill = getSkill(d)
+export function disactivateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
   context = fixClock(context)
-  switch (skill.transitionType) {
+  return carIndex.reduce((next, idx) => disactivateSkillOne(context, next, idx), copyUserState(state))
+}
+
+function disactivateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
+  const d = state.formation[carIndex]
+  if (!d) {
+    context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.legth: ${state.formation.length}`)
+    throw Error()
+  }
+  if (d.skill.type !== "possess") {
+    context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
+    throw Error()
+  }
+  const skill = d.skill
+  context = fixClock(context)
+  switch (skill.state.transition) {
     case "manual":
     case "manual-condition":
     case "auto": {
@@ -410,29 +455,29 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
         }
         skill.state = {
           type: "cooldown",
-          data: callback(context, next, {
+          transition: skill.state.transition,
+          data: callback(context, state, {
             ...d,
-            carIndex: state.carIndex,
+            carIndex: carIndex,
             skill: skill,
-            skillPropertyReader: skill.propertyReader,
           })
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
-        return refreshSkillState(context, next)
+        return refreshSkillState(context, state)
       } else {
         context.log.error(`スキル状態をcooldownに変更できません(state:${skill.state.type})`)
       }
       break
     }
     default: {
-      context.log.error(`スキル状態をcooldownに変更できません type:${skill.transitionType}`)
+      context.log.error(`スキル状態をcooldownに変更できません transition:${skill.state.transition}`)
     }
   }
   throw Error()
 }
 
 /**
- * スキル状態の変化を調べて更新する
+ * スキル状態の変化を調べて更新する（破壊的）
  * 
  * 以下の状態に依存する`Skill#state`の遷移を調べる
  * - `SkillActiveTimeout` 現在時刻に依存：指定時刻を過ぎたら`cooldown`へ遷移
@@ -444,42 +489,33 @@ export function disactivateSkill(context: Context, state: ReadonlyState<UserStat
  * @param time 現在時刻
  * @returns 新しい状態
  */
-export function refreshSkillState(context: Context, state: ReadonlyState<UserState>): UserState {
-  const size = state.formation.length
-  let next = copyUserState(state)
-  context = fixClock(context)
-  for (let idx = 0; idx < size; idx++) {
-    next = refreshSkillStateOne(context, next, idx)
-  }
-  return next
+export function refreshSkillState(context: Context, state: UserState): UserState {
+  const indices = state.formation.map((_, idx) => idx)
+  return indices.reduce((next, idx) => refreshSkillStateOne(context, next, idx), state)
 }
 
-function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
+export function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
   const denco = state.formation[idx]
-  if (denco.skillHolder.type !== "possess") {
+  if (denco.skill.type !== "possess") {
     return state
   }
-  const skill = getSkill(denco)
-  switch (skill.transitionType) {
+  const skill = denco.skill
+  switch (skill.state.transition) {
     case "always": {
       if (skill.state.type === "not_init") {
         skill.state = {
           type: "active",
-          data: undefined
+          transition: "always",
+          data: undefined,
         }
-      }
-      if (skill.state.type !== "active") {
-        context.log.error("不正なスキル状態です type:always, state: not active")
       }
       return state
     }
     case "manual": {
-      if (skill.state.type === "unable") {
-        context.log.error("不正なスキル状態です type:manual, state: unable")
-      }
       if (skill.state.type === "not_init") {
         skill.state = {
           type: "idle",
+          transition: "manual",
           data: undefined
         }
       }
@@ -489,6 +525,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
       if (skill.state.type === "not_init") {
         skill.state = {
           type: "unable",
+          transition: "manual-condition",
           data: undefined
         }
       }
@@ -509,12 +546,14 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
           context.log.log(`スキル状態の変更：${denco.name} unable -> idle`)
           skill.state = {
             type: "idle",
+            transition: "manual-condition",
             data: undefined
           }
         } else if (!enable && skill.state.type === "idle") {
           context.log.log(`スキル状態の変更：${denco.name} idle -> unable`)
           skill.state = {
             type: "unable",
+            transition: "manual-condition",
             data: undefined
           }
         }
@@ -524,27 +563,20 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
       }
     }
     case "auto": {
-      if (skill.state.type === "idle") {
-        context.log.error("不正なスキル状態です type:auto, state: idle")
-      }
       if (skill.state.type === "not_init") {
         skill.state = {
           type: "unable",
+          transition: "auto",
           data: undefined
         }
       }
       return refreshTimeout(context, state, idx)
     }
     case "auto-condition": {
-      if (skill.state.type === "idle") {
-        context.log.error("不正なスキル状態です type:auto-condition, state: idle")
-      }
-      if (skill.state.type === "cooldown") {
-        context.log.error("不正なスキル状態です type:auto-condition, state: cooldown")
-      }
       if (skill.state.type === "not_init") {
         skill.state = {
           type: "unable",
+          transition: "auto-condition",
           data: undefined
         }
       }
@@ -565,6 +597,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
         context.log.log(`スキル状態の変更：${denco.name} unable -> active`)
         skill.state = {
           type: "active",
+          transition: "auto-condition",
           data: undefined
         }
         const callback = skill.onActivated
@@ -583,6 +616,7 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)
         skill.state = {
           type: "unable",
+          transition: "auto-condition",
           data: undefined
         }
       }
@@ -594,13 +628,15 @@ function refreshSkillStateOne(context: Context, state: UserState, idx: number): 
 function refreshTimeout(context: Context, state: UserState, idx: number): UserState {
   const time = getCurrentTime(context).valueOf()
   const denco = state.formation[idx]
-  const skill = getSkill(denco)
+  const skill = denco.skill
+  if (skill.type !== "possess") return state
   if (skill.state.type === "active") {
     const data = skill.state.data
     if (data && data.activeTimeout <= time) {
       context.log.log(`スキル状態の変更：${denco.name} active -> cooldown (timeout:${moment(data.activeTimeout).format(TIME_FORMAT)})`)
       skill.state = {
         type: "cooldown",
+        transition: skill.state.transition,
         data: {
           cooldownTimeout: data.cooldownTimeout
         }
@@ -610,11 +646,12 @@ function refreshTimeout(context: Context, state: UserState, idx: number): UserSt
   if (skill.state.type === "cooldown") {
     const data = skill.state.data
     if (data.cooldownTimeout <= time) {
-      switch (skill.transitionType) {
+      switch (skill.state.transition) {
         case "manual": {
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> idle (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.state = {
             type: "idle",
+            transition: "manual",
             data: undefined
           }
           break
@@ -623,7 +660,8 @@ function refreshTimeout(context: Context, state: UserState, idx: number): UserSt
 
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.state = {
-            type: "idle",
+            type: "unable",
+            transition: "manual-condition",
             data: undefined
           }
           // check unable <=> idle
@@ -632,13 +670,11 @@ function refreshTimeout(context: Context, state: UserState, idx: number): UserSt
         case "auto": {
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.state = {
-            type: "idle",
+            type: "unable",
+            transition: "auto",
             data: undefined
           }
           break
-        }
-        default: {
-          context.log.error(`不正なスキル状態遷移タイプ ${skill.transitionType}`)
         }
       }
     }

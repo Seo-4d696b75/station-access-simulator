@@ -71,7 +71,7 @@ class DencoManager {
       ...status,
       currentExp: 0,
       currentHp: status.maxHp,
-      skillHolder: skill,
+      skill: skill,
       film: {
 
       },
@@ -86,45 +86,6 @@ class DencoManager {
       return undefined
     }
     return data[level - 1]
-  }
-
-  checkLevelup(context: Context, current: ReadonlyState<UserState>): UserState {
-    let levelup = false
-    const formation = current.formation.map(state => {
-      let d = copyDencoState(state)
-      let level = d.level
-      while (d.currentExp >= d.nextExp) {
-        let status = this.getDencoStatus(d.numbering, level + 1)
-        if (status) {
-          levelup = true
-          level += 1
-          d = {
-            ...status,
-            currentHp: status.maxHp, // 現在のHPを無視して最大HPに設定
-            currentExp: d.currentExp - d.nextExp,
-            film: d.film,
-            link: d.link,
-            skillHolder: skillManager.getSkill(d.numbering, level)
-          }
-        } else {
-          // これ以上のレベルアップはなし
-          d = {
-            ...d,
-            currentExp: d.nextExp
-          }
-          break
-        }
-      }
-      return d
-    })
-    let next = {
-      ...copyUserState(current),
-      formation: formation
-    }
-    if (levelup) {
-      next = refreshSkillState(context, next)
-    }
-    return next
   }
 
 }

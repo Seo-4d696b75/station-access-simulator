@@ -7,7 +7,7 @@ const skill: SkillLogic = {
     return idx >= 0
   },
   onHourCycle: (context, state, self) => {
-    if (isSkillActive(self.skillHolder)) {
+    if (isSkillActive(self.skill)) {
       return evaluateSkillAtEvent(context, state, self, true, evaluate)
     } else {
       return state
@@ -16,7 +16,7 @@ const skill: SkillLogic = {
 }
 
 const evaluate: SkillEventEvaluate = (context, state, self) => {
-  const heal = self.skillPropertyReader("heal")
+  const heal = self.skill.propertyReader("heal")
   context.log.log(`編成内のみなさまのHPを回復いたしますよ♪ +${heal}%`)
   state.formation.forEach( d => {
     if ( d.currentHp < d.maxHp){

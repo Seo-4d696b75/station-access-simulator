@@ -3,8 +3,7 @@ import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
 import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill, refreshSkillState } from "../../core/skill"
-import { getSkill } from "../../core/denco"
+import { activateSkill, disactivateSkill, getSkill, refreshSkillState } from "../../core/skill"
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 import moment from "moment-timezone"
 
@@ -20,25 +19,25 @@ describe("みろくのスキル", () => {
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let miroku = DencoManager.getDenco(context, "4", 50)
-    expect(miroku.skillHolder.type).toBe("possess")
+    expect(miroku.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [miroku])
     const now = moment().valueOf()
     context.clock = now
     state = refreshSkillState(context, state)
     miroku = state.formation[0]
     let skill = getSkill(miroku)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, { ...state, carIndex: 0 })).toThrowError()
-    expect(() => disactivateSkill(context, { ...state, carIndex: 0 })).toThrowError()
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = Date.now() + 600 * 1000
     state = refreshSkillState(context, state)
     miroku = state.formation[0]
     skill = getSkill(miroku)
-    expect(skill.transitionType).toBe("always")
+    expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
   })
   test("発動なし-フットバース使用", () => {
@@ -49,12 +48,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
       usePink: true,
@@ -78,12 +77,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: miroku.link[0],
     }
@@ -103,12 +102,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika, miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -126,12 +125,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: reika.link[0],
     }
@@ -151,12 +150,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -186,15 +185,15 @@ describe("みろくのスキル", () => {
     let hiiru = DencoManager.getDenco(context, "34", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, hiiru])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -216,12 +215,12 @@ describe("みろくのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [miroku])
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -251,15 +250,15 @@ describe("みろくのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, reika])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }
@@ -292,15 +291,15 @@ describe("みろくのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let defense = initUser(context, "とあるマスター", [luna])
     let offense = initUser(context, "とあるマスター２", [miroku, reika])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     const config = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: luna.link[0],
     }

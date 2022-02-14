@@ -2,12 +2,11 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
-import { getSkill } from "../../core/denco"
 import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill } from "../../core/skill"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
 import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access"
 
-describe("シーナのスキル", ()=>{
+describe("シーナのスキル", () => {
   test("setup", async () => {
     await StationManager.load()
     await SkillManager.load()
@@ -16,21 +15,21 @@ describe("シーナのスキル", ()=>{
     expect(SkillManager.map.size).toBeGreaterThan(0)
     expect(DencoManager.data.size).toBeGreaterThan(0)
   })
-  test("スキル状態", ()=>{
+  test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let sheena = DencoManager.getDenco(context, "7", 1)
-    expect(sheena.skillHolder.type).toBe("not_aquired")
+    expect(sheena.skill.type).toBe("not_acquired")
     sheena = DencoManager.getDenco(context, "7", 50)
-    expect(sheena.skillHolder.type).toBe("possess")
+    expect(sheena.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [sheena])
     sheena = state.formation[0]
     let skill = getSkill(sheena)
     expect(skill.state.type).toBe("active")
-    expect(skill.transitionType).toBe("always")
-    expect(() => activateSkill(context, {...state, carIndex: 0})).toThrowError()
-    expect(() => disactivateSkill(context, {...state, carIndex:0})).toThrowError()
+    expect(skill.state.transition).toBe("always")
+    expect(() => activateSkill(context, state, 0)).toThrowError()
+    expect(() => disactivateSkill(context, state, 0)).toThrowError()
   })
-  test("発動なし-攻撃側", ()=>{
+  test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let sheena = DencoManager.getDenco(context, "7", 50)
@@ -43,12 +42,12 @@ describe("シーナのスキル", ()=>{
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: charlotte.link[0],
     }
@@ -77,7 +76,7 @@ describe("シーナのスキル", ()=>{
     expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
   })
 
-  test("発動なし-守備側-確率", ()=>{
+  test("発動なし-守備側-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"
     let sheena = DencoManager.getDenco(context, "7", 50, 1)
@@ -90,12 +89,12 @@ describe("シーナのスキル", ()=>{
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -123,7 +122,7 @@ describe("シーナのスキル", ()=>{
     d = getAccessDenco(access, "defense")
     expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
   })
-  test("発動なし-守備側-リブート", ()=>{
+  test("発動なし-守備側-リブート", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let sheena = DencoManager.getDenco(context, "7", 50, 1)
@@ -136,19 +135,19 @@ describe("シーナのスキル", ()=>{
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
     const result = startAccess(context, config)
     expect(result.offense.event.length).toBe(1)
     expect(result.defense).not.toBeUndefined()
-    if(result.defense){
+    if (result.defense) {
       expect(result.defense.event.length).toBe(2)
       expect(result.defense.event[0].type).toBe("access")
       expect(result.defense.event[1].type).toBe("reboot")
@@ -173,8 +172,8 @@ describe("シーナのスキル", ()=>{
     d = getAccessDenco(access, "defense")
     expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
   })
-  
-  test("発動あり-守備側", ()=>{
+
+  test("発動あり-守備側", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let sheena = DencoManager.getDenco(context, "7", 50, 1)
@@ -187,12 +186,12 @@ describe("シーナのスキル", ()=>{
     ])
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -233,7 +232,7 @@ describe("シーナのスキル", ()=>{
     expect(d.accessEXP).toBeGreaterThan(0)
     expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
   })
-  test("発動あり-守備側-ATK/DEF増減", ()=>{
+  test("発動あり-守備側-ATK/DEF増減", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let sheena = DencoManager.getDenco(context, "7", 50, 1)
@@ -243,19 +242,19 @@ describe("シーナのスキル", ()=>{
     let offense = initUser(context, "とあるマスター１", [
       charlotte, fubu
     ])
-    offense = activateSkill(context, { ...offense, carIndex: 1 })
+    offense = activateSkill(context, offense, 1)
     let defense = initUser(context, "とあるマスター２", [
       sheena, reika
     ])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -300,8 +299,8 @@ describe("シーナのスキル", ()=>{
     expect(d.accessEXP).toBeGreaterThan(0)
     expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
   })
-  
-  test("発動あり-守備側-ひいる", ()=>{
+
+  test("発動あり-守備側-ひいる", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let sheena = DencoManager.getDenco(context, "7", 50, 1)
@@ -313,15 +312,15 @@ describe("シーナのスキル", ()=>{
     let defense = initUser(context, "とあるマスター２", [
       sheena, hiiru
     ])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -364,7 +363,7 @@ describe("シーナのスキル", ()=>{
     expect(d.accessEXP).toBeGreaterThan(0)
     expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
   })
-  test("発動なし-守備側-確率", ()=>{
+  test("発動なし-守備側-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"
     let sheena = DencoManager.getDenco(context, "7", 50, 1)
@@ -376,15 +375,15 @@ describe("シーナのスキル", ()=>{
     let defense = initUser(context, "とあるマスター２", [
       sheena, hiiru
     ])
-    defense = activateSkill(context, { ...defense, carIndex: 1 })
+    defense = activateSkill(context, defense, 1)
     const config: AccessConfig = {
       offense: {
-        carIndex: 0,
-        ...offense
+        state: offense,
+        carIndex: 0
       },
       defense: {
-        carIndex: 0,
-        ...defense
+        state: defense,
+        carIndex: 0
       },
       station: sheena.link[0],
     }
@@ -393,8 +392,10 @@ describe("シーナのスキル", ()=>{
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.event.length).toBe(1)
     const access = result.access
-    // 発動なし
-    expect(access.defense?.triggeredSkills.length).toBe(0)
+    // 発動なし ただし確率補正は発動
+    expect(access.defense?.triggeredSkills.length).toBe(1)
+    expect(access.defense?.triggeredSkills[0].name).toBe("hiiru")
+    expect(access.defense?.triggeredSkills[0].step).toBe("probability_check")
     // ダメージ計算
     let d = getAccessDenco(access, "defense")
     expect(d.damage?.value).toBe(170)

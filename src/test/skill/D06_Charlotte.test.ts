@@ -2,9 +2,9 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
-import { initUser, refreshCurrentTime } from "../../core/user"
-import { copyDencoState, getSkill } from "../../core/denco"
-import { activateSkill } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
+import { copyDencoState } from "../../core/denco"
+import { activateSkill, getSkill } from "../../core/skill"
 import { getAccessDenco } from "../../core/access"
 import moment from "moment-timezone"
 
@@ -22,13 +22,13 @@ describe("シャルのスキル", () => {
     const now = moment("2020-01-01T12:50:00.000").valueOf()
     context.clock = now
     let charlotte = DencoManager.getDenco(context, "6", 80)
-    expect(charlotte.skillHolder.type).toBe("possess")
+    expect(charlotte.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [charlotte])
     charlotte = state.formation[0]
     let skill = getSkill(charlotte)
-    expect(skill.transitionType).toBe("manual")
+    expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, { ...state, carIndex: 0 })
+    state = activateSkill(context, state, 0)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
     // 即座に idle > active > cooldown
@@ -49,7 +49,7 @@ describe("シャルのスキル", () => {
 
     // 60分経過
     context.clock = now + 3600 * 1000
-    state = refreshCurrentTime(context, state)
+    state = refreshState(context, state)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
     expect(skill.state.type).toBe("cooldown")
@@ -57,7 +57,7 @@ describe("シャルのスキル", () => {
 
     // 90分経過
     context.clock = now + 5400 * 1000
-    state = refreshCurrentTime(context, state)
+    state = refreshState(context, state)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
     expect(skill.state.type).toBe("idle")
