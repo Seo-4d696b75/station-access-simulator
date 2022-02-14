@@ -38,7 +38,10 @@ export interface AccessConfig {
     /**
      * 攻撃側の編成
      */
-    offense: ReadonlyState<UserState & FormationPosition>;
+    offense: {
+        state: ReadonlyState<UserState>;
+        carIndex: number;
+    };
     /**
      * アクセス先の駅
      */
@@ -46,7 +49,10 @@ export interface AccessConfig {
     /**
      * 守備側の編成
      */
-    defense?: ReadonlyState<UserState & FormationPosition>;
+    defense?: {
+        state: ReadonlyState<UserState>;
+        carIndex: number;
+    };
     /**
      * フットバースアイテム使用の有無を指定する
      */
@@ -163,11 +169,30 @@ export interface AccessState {
     offense: AccessSideState;
     defense?: AccessSideState;
     depth: number;
+    /**
+     * `damage_common`の段階までにおけるダメージの計算値
+     *
+     * base * (100 + ATK - DEF)/100.0 * (attr_damage_ratio) = damage
+     */
     damageBase?: number;
     skipDamageFixed?: boolean;
+    /**
+     * 固定値で加減算されるダメージ値
+     */
     damageFixed: number;
+    /**
+     * `damage_common`の段階までに評価された`ATK`累積値
+     */
     attackPercent: number;
+    /**
+     * `damage_common`の段階までに評価された`DEF`累積値
+     */
     defendPercent: number;
+    /**
+     * `damage_common`の直後に計算される基本ダメージにおける倍率
+     *
+     * 現状ではでんこ属性による`1.3`の倍率のみ発生する
+     */
     damageRatio: number;
     linkSuccess: boolean;
     linkDisconncted: boolean;
@@ -182,6 +207,13 @@ export declare type AccessResult = {
 };
 export declare function startAccess(context: Context, config: AccessConfig): AccessResult;
 export declare function copyAccessState(state: ReadonlyState<AccessState>): AccessState;
+/**
+ * アクセスにおける編成（攻撃・守備側）を取得する
+ * @param state アクセス状態 {@link AccessState}
+ * @param which 攻撃側・守備側のどちらか指定する
+ * @throws 存在しない守備側を指定した場合はErrorを投げる
+ * @returns `AccessDencoState[]`
+ */
 export declare function getFormation<T>(state: {
     offense: {
         formation: T;
@@ -200,7 +232,20 @@ declare type AccessStateArg<T> = {
         formation: readonly T[];
     };
 };
+/**
+ * アクセスにおいて直接アクセスする・アクセスを受けるでんこを取得する
+ * @param state アクセス状態 {@link AccessState}
+ * @param which 攻撃側・守備側のどちらか指定
+ * @throws 存在しない守備側を指定した場合Error
+ * @returns {@link AccessDencoState}
+ */
 export declare function getAccessDenco<T>(state: AccessStateArg<T>, which: AccessSide): T;
+/**
+ * アクセスの守備側の状態を取得する
+ * @param state
+ * @returns {@link AccessSideState}
+ * @throws 守備側が存在しない場合はError
+ */
 export declare function getDefense<T>(state: {
     defense?: T;
 }): T;
@@ -215,17 +260,26 @@ export declare function getDefense<T>(state: {
  * @param step `undefined`の場合は`denco`の一致でのみ検索する
  * @returns true if has been triggered
  */
-export declare function hasSkillTriggered(state: ReadonlyState<AccessSideState>, denco: Denco, step?: AccessEvaluateStep): boolean;
+export declare function hasSkillTriggered(state: ReadonlyState<AccessSideState> | undefined, denco: Denco, step?: AccessEvaluateStep): boolean;
 /**
- * 確率ブーストも考慮して確率を乱数を計算する
- * @param percent 100分率で指定した確立でtrueを返す
+ * 確率計算モードを考慮してtrue/falseの条件を計算する
+ *
+ * {@link RandomMode} の値に応じて乱数計算を無視してtrue/falseを返す場合もある
+ * 計算の詳細
+ * 1. `percent <= 0` -> `false`
+ * 2. `percent >= 100` -> `true`
+ * 3. `context.random.mode === "ignore"` -> `false`
+ * 4. `context.random.mode === "force"` -> `true`
+ * 5. `context.random.mode === "normal"` -> 疑似乱数を用いて`percent`%の確率で`true`を返す
+ * @param percent 100分率で指定した確率でtrueを返す
  * @returns
  */
 export declare function random(context: Context, percent: number): boolean;
 /**
  * 攻守はそのままでアクセス処理を再度実行する
  *
- * ダメージ計算・スコアと経験値の加算など各処理を再度実行して合計値を反映した新たな状態を返す
+ * @param state 現在のアクセス状態
+ * @returns ダメージ計算・スコアと経験値の加算など各処理を再度実行して合計値を反映した新たな状態を返す
  */
 export declare function repeatAccess(context: Context, state: ReadonlyState<AccessState>): AccessState;
 /**
