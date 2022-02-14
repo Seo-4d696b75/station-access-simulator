@@ -14,7 +14,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.2/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.3/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -31,6 +31,11 @@ $ > npm install ekimemo-access-simulator
 - v0.1.0 公開
 - v0.1.1 `node_module`で利用する場合にでんこスキルの効果内容が正しくロードされないバグを解消
 - v0.1.2 時刻処理におけるタイムゾーンを`Asia/Tokyo (+0900)`に固定
+- v0.1.3 公開している関数・型定義を変更
+  - 外部公開する関数の制限
+  - スキルに関する型定義の見直し
+  - アクセス詳細設定の型定義の見直し
+  - 状態の更新方法の統一
 
 
 # Basic Usage
@@ -67,8 +72,8 @@ import { activateSkill, changeFormation, DencoManager } from "ekimemo-access-sim
   // case 1: 編成を変える
   let seria = DencoManager.getDenco(context, "1", 50);
   master1 = changeFormation(context, master1, [reika, seria]);
-  // case 2: 編成内のレイカのスキルを有効化する (編成内の位置は0始まりで数えます)
-  master1 = activateSkill(context, { ...master1, carIndex: 0 });
+  // case 2: 編成内のレイカのスキルを有効化する (0始まりで数える編成内位置で指定します)
+  master1 = activateSkill(context, master1, 0);
 ```
 
 実際にアクセスをシミュレーションします
@@ -81,8 +86,8 @@ import { AccessConfig, printEvents, startAccess } from "ekimemo-access-simulator
   // アクセスの詳細をオブジェクトで定義して渡します
   let config: AccessConfig = {
     // master1 のレイカが master2 のシャルロッテが保持している0番目の駅にアクセスします
-    offense: { ...master1, carIndex: 0 }, 
-    defense: { ...master2, carIndex: 0 },
+    offense: { state: master1, carIndex: 0 }, 
+    defense: { state: master2, carIndex: 0 },
     station: charlotte.link[0]
   };
   // アクセスを実行
