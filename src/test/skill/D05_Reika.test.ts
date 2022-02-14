@@ -2,8 +2,8 @@ import StationManager from "../..//core/stationManager"
 import SkillManager from "../../core/skillManager"
 import DencoManager from "../../core/dencoManager"
 import { initContext } from "../../core/context"
-import { initUser } from "../../core/user"
-import { activateSkill, isSkillActive, getSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
+import { activateSkill, isSkillActive, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 import moment from "moment-timezone"
 
@@ -24,7 +24,7 @@ describe("レイカのスキル", () => {
     let defense = initUser(context, "とあるマスター", [reika])
     const now = moment().valueOf()
     context.clock = now
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     reika = defense.formation[0]
     expect(reika.name).toBe("reika")
     let skill = getSkill(reika)
@@ -41,14 +41,14 @@ describe("レイカのスキル", () => {
 
     // 10分経過
     context.clock = now + 600 * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     reika = defense.formation[0]
     skill = getSkill(reika)
     expect(skill.state.type).toBe("active")
 
     // 15分経過
     context.clock = now + 900 * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     reika = defense.formation[0]
     skill = getSkill(reika)
     expect(skill.state.type).toBe("cooldown")
@@ -57,7 +57,7 @@ describe("レイカのスキル", () => {
 
     // 1時間45分経過
     context.clock = now + (900 + 5400) * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     reika = defense.formation[0]
     skill = getSkill(reika)
     expect(skill.state.type).toBe("idle")
