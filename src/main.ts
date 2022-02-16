@@ -13,12 +13,13 @@ import moment from "moment-timezone"
 
 init().then(() => {
   const context = initContext("test", "test")
-  context.random.mode = "ignore"
+  context.random.mode = "force"
   let chiko = DencoManager.getDenco(context, "29", 50)
-  let reika = DencoManager.getDenco(context, "5", 50, 1)
+  let ichiho = DencoManager.getDenco(context, "18", 50, 1)
+  let mio = DencoManager.getDenco(context, "36", 80)
   let offense = initUser(context, "とあるマスター", [chiko])
-  offense = activateSkill(context, offense, 0)
-  let defense = initUser(context, "とあるマスター２", [reika])
+  let defense = initUser(context, "とあるマスター２", [ichiho, mio])
+  defense = activateSkill(context, defense, 1)
   const config = {
     offense: {
       state: offense,
@@ -28,7 +29,7 @@ init().then(() => {
       state: defense,
       carIndex: 0
     },
-    station: reika.link[0],
+    station: ichiho.link[0],
   }
   const result = startAccess(context, config)
 
