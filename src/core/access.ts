@@ -261,14 +261,6 @@ export interface AccessState {
   damageBase?: DamageCalcState
 
   /**
-   * `damage_fixed`の段階で計算される個体ダメージをスキップする
-   * 
-   * default: `false` 
-   * スキップする場合は`damage_special`の段階までに`true`を指定する
-   */
-  skipDamageFixed?: boolean
-
-  /**
    * 固定値で加減算されるダメージ値
    */
   damageFixed: number
@@ -403,7 +395,6 @@ export function copyAccessState(state: ReadonlyState<AccessState>): AccessState 
     damageFixed: state.damageFixed,
     damageRatio: state.damageRatio,
     damageBase: state.damageBase,
-    skipDamageFixed: state.skipDamageFixed,
     pinkItemSet: state.pinkItemSet,
     pinkItemUsed: state.pinkItemUsed,
     pinkMode: state.pinkMode,
@@ -777,13 +768,9 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     }
 
     // 固定ダメージの計算
-    if (state?.skipDamageFixed) {
-      context.log.log("固定ダメージの計算：スキップ")
-    } else {
-      context.log.log("スキルを評価：固定ダメージ")
-      state = evaluateSkillAt(context, state, "damage_fixed")
-      context.log.log(`固定ダメージの計算：${state.damageFixed}`)
-    }
+    context.log.log("スキルを評価：固定ダメージ")
+    state = evaluateSkillAt(context, state, "damage_fixed")
+    context.log.log(`固定ダメージの計算：${state.damageFixed}`)
 
     // 最終ダメージ計算 固定ダメージ等の影響でも負数にはならない
     const defense = getAccessDenco(state, "defense")
