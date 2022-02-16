@@ -211,6 +211,28 @@ export type AccessSide =
   "offense" |
   "defense"
 
+/**
+ * 被アクセス側のダメージ計算の状態
+ * 
+ * `damage_common`, `damage_special`の段階まで考慮して計算する
+ * 
+ * 固定ダメージの値は{@link AccessState damageFixed}
+ */
+export interface DamageCalcState {
+  /**
+   * `damage_fixed`以降の段階において増減する値 
+   * 
+   * **非負数** 最終てきなダメージ計算において固定ダメージ{@link AccessState damageFixed}の影響で負数になる場合は0に固定される
+   */
+  variable: number
+  /**
+   * `damage_fixed`以降の段階においても増減しない値 **非負数**
+   * 
+   * 固定ダメージ{@link AccessState damageFixed}の影響を受けず最終的なダメージ量にそのまま加算される
+   */
+  constant: number
+}
+
 export interface AccessState {
   time: number
   station: Station
@@ -236,20 +258,7 @@ export interface AccessState {
    * `damage_special`の段階までにこの`damageBase`の値が`undefined`以外にセットされた場合は
    * 上記の計算はスキップされる
    */
-  damageBase?: {
-    /**
-     * `damage_fixed`以降の段階において増減する値 
-     * 
-     * **非負数** 固定ダメージ計算の結果負数になる場合は0に固定される
-     */
-    variable: number
-    /**
-     * `damage_fixed`以降の段階においても増減しない値 **非負数**
-     * 
-     * 固定ダメージ計算を影響を受けず最終的なダメージ量にそのまま加算される
-     */
-    constant: number
-  }
+  damageBase?: DamageCalcState
 
   /**
    * `damage_fixed`の段階で計算される個体ダメージをスキップする
@@ -762,8 +771,8 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     // 基本ダメージの計算
     if (!state.damageBase) {
       state.damageBase = {
-        variable: getBaseDamage(context, state),
-        constant: 0,
+        variable: calcBaseDamage(context, state),
+        constant: 0
       }
     }
 
@@ -1058,9 +1067,23 @@ function checkProbabilityBoost(d: AccessSideState) {
 /**
  * 被アクセス側が受けるダメージ値のうち`damage_common`までに計算される基本値を参照
  * 
- * `state.damageBase`が定義済みの場合はその値を返す  
+ * - `state.damageBase`が定義済みの場合はその値を返す  
+ * - 未定義の場合は {@link calcBaseDamage}で計算して返す  
+ */
+export function getBaseDamage(context: Context, state: ReadonlyState<AccessState>, useAKT: boolean = true, useDEF: boolean = true, useAttr: boolean = true): DamageCalcState {
+  if (state.damageBase) {
+    return state.damageBase
+  }
+  return {
+    variable: calcBaseDamage(context, state),
+    constant: 0,
+  }
+}
+
+
+/**
+ * 被アクセス側が受けるダメージ値のうち`damage_common`までに計算される基本値を計算
  * 
- * 未定義の場合は次式のように計算する  
  * `AP * (100 + ATK - DEF)/100.0 * (damageRatio)`
  * 
  * @param useAKT ATK増減を加味する default:`true`
@@ -1068,10 +1091,7 @@ function checkProbabilityBoost(d: AccessSideState) {
  * @param useAttr アクセス・被アクセス個体間の属性による倍率補正を加味する default:`true`
  * @returns 
  */
-export function getBaseDamage(context: Context, state: ReadonlyState<AccessState>, useAKT: boolean = true, useDEF: boolean = true, useAttr: boolean = true): number {
-  if (state.damageBase) {
-    return state.damageBase.variable + state.damageBase.constant
-  }
+export function calcBaseDamage(context: Context, state: ReadonlyState<AccessState>, useAKT: boolean = true, useDEF: boolean = true, useAttr: boolean = true): number {
   let atk = 0
   let def = 0
   let ratio = 1.0
@@ -1085,7 +1105,8 @@ export function getBaseDamage(context: Context, state: ReadonlyState<AccessState
     ratio = state.damageRatio
   }
   const base = getAccessDenco(state, "offense").ap
-  const damage = Math.floor(base * (100 + atk - def) / 100.0 * ratio)
+  // ATK&DEF合計が0%未満になってもダメージ値は負数にはしない
+  const damage = Math.max(1, Math.floor(base * (100 + atk - def) / 100.0 * ratio))
   context.log.log(`基本ダメージを計算 AP:${base} ATK:${atk}% DEF:${def}% DamageBase:${damage} = ${base} * ${100 + atk - def}% * ${ratio}`)
   return damage
 }

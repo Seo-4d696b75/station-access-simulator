@@ -3,7 +3,8 @@ import { getBaseDamage, SkillLogic } from "..";
 const skill: SkillLogic = {
   canEvaluate: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "defense" && self.currentHp > 1) {
-      const damage = getBaseDamage(context, state)
+      const base = getBaseDamage(context, state)
+      const damage = base.variable + base.constant
       if (damage >= self.currentHp) {
         return self.skill.propertyReader("probability")
       }
