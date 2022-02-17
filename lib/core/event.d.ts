@@ -8,15 +8,27 @@ interface EventBase<T, V = undefined> {
     readonly type: T;
     readonly data: V;
 }
-export declare type LevelupDenco = Readonly<{
-    time: number;
-    after: ReadonlyState<DencoState>;
-    before: ReadonlyState<DencoState>;
-}>;
-export declare type AccessEventData = Readonly<{
-    access: ReadonlyState<AccessState>;
-    which: AccessSide;
-}>;
+/**
+ * レベルアップのイベント情報
+ */
+export interface LevelupDenco {
+    readonly time: number;
+    readonly after: ReadonlyState<DencoState>;
+    readonly before: ReadonlyState<DencoState>;
+}
+/**
+ * アクセスのイベント情報
+ */
+export interface AccessEventData {
+    /**
+     * アクセスの詳細
+     */
+    readonly access: ReadonlyState<AccessState>;
+    /**
+     * アクセスの攻撃側・守備側のどちら側か
+     */
+    readonly which: AccessSide;
+}
 export declare type AccessEvent = EventBase<"access", AccessEventData>;
 export declare type RebootEvent = EventBase<"reboot", LinksResult>;
 export declare type SkillTriggerEvent = EventBase<"skill_trigger", EventTriggeredSkill>;

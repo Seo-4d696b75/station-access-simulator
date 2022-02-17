@@ -25,8 +25,9 @@ export declare type SkillStateTransition = "manual" | "manual-condition" | "auto
  *
  */
 export declare type SkillStateType = "not_init" | "unable" | "idle" | "active" | "cooldown";
-interface SkillStateBase<T, D = undefined> {
-    type: T;
+interface SkillStateBase<Transition, Type, D = undefined> {
+    transition: Transition;
+    type: Type;
     data: D;
 }
 /**
@@ -48,7 +49,12 @@ export interface SkillActiveTimeout extends SkillCooldownTimeout {
      */
     activeTimeout: number;
 }
-export declare type SkillState = SkillStateBase<"not_init"> | SkillStateBase<"unable"> | SkillStateBase<"idle"> | SkillStateBase<"active", SkillActiveTimeout | undefined> | SkillStateBase<"cooldown", SkillCooldownTimeout>;
+declare type ManualSkillState = SkillStateBase<"manual", "idle"> | SkillStateBase<"manual", "active", SkillActiveTimeout | undefined> | SkillStateBase<"manual", "cooldown", SkillCooldownTimeout>;
+declare type ManualConditionSkillState = SkillStateBase<"manual-condition", "unable"> | SkillStateBase<"manual-condition", "idle"> | SkillStateBase<"manual-condition", "active", SkillActiveTimeout | undefined> | SkillStateBase<"manual-condition", "cooldown", SkillCooldownTimeout>;
+declare type AutoSkillState = SkillStateBase<"auto", "unable"> | SkillStateBase<"auto", "active", SkillActiveTimeout | undefined> | SkillStateBase<"auto", "cooldown", SkillCooldownTimeout>;
+declare type AutoConditionSkillState = SkillStateBase<"auto-condition", "unable"> | SkillStateBase<"auto-condition", "active">;
+declare type AlwaysSkillState = SkillStateBase<"always", "active">;
+export declare type SkillState = SkillStateBase<SkillStateTransition, "not_init"> | ManualSkillState | ManualConditionSkillState | AutoSkillState | AutoConditionSkillState | AlwaysSkillState;
 /**
  * スキルの発動確率を百分率で表現
  */
@@ -143,31 +149,38 @@ export interface Skill extends SkillLogic {
     level: number;
     name: string;
     state: SkillState;
-    transitionType: SkillStateTransition;
     propertyReader: SkillPropertyReader;
 }
 /**
- * スキルの発動を評価するときに必要なスキルの各種データを定義
+ * スキルの発動を評価するときに必要なスキル情報へのアクセスを定義
  */
 export interface ActiveSkill extends FormationPosition {
     skill: Skill;
-    skillPropertyReader: SkillPropertyReader;
 }
 export declare function copySkill(skill: Skill): Skill;
 export declare function copySkillState(state: SkillState): SkillState;
-export declare type SkillPossessType = "possess" | "not_aquired" | "none";
-interface SkillHolder<T, S = undefined> {
+interface SkillHolderBase<T> {
     type: T;
-    skill: S;
 }
-export declare type SkillPossess = SkillHolder<"possess", Skill> | SkillHolder<"not_aquired"> | SkillHolder<"none">;
-export declare function copySkillPossess(skill: SkillPossess): SkillPossess;
+/**
+ * スキルの保有をモデル化します
+ *
+ * `type`の値に応じて３種類のスキル保有状態があります
+ * - "possess" : スキルを保有している
+ * - "not_acquired" : でんこのレベルが低くまだスキルを保有していない
+ * - "none" : スキルを保有していない
+ */
+export declare type SkillHolder = SkillHolderBase<"possess"> & Skill | SkillHolderBase<"not_acquired"> | SkillHolderBase<"none">;
+export declare function getSkill<S>(denco: {
+    skill: S & SkillHolderBase<"possess"> | SkillHolderBase<"none"> | SkillHolderBase<"not_acquired">;
+}): S;
+export declare function copySkillHolder(skill: SkillHolder): SkillHolder;
 /**
 * スキル保有の有無とスキル状態を考慮してアクティブなスキルか判定
 * @param skill
 * @returns
 */
-export declare function isSkillActive(skill: SkillPossess): skill is SkillHolder<"possess", Skill>;
+export declare function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"possess"> & Skill;
 /**
  * スキル状態を`active`へ遷移させる
  *
@@ -177,7 +190,7 @@ export declare function isSkillActive(skill: SkillPossess): skill is SkillHolder
  * - タイプ`auto`のスキル状態を`unable > active`へ遷移させる
  * @returns `active`へ遷移した新しい状態
  */
-export declare function activateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState;
+export declare function activateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState;
 /**
  * スキル状態を`cooldown`へ遷移させる
  *
@@ -191,9 +204,9 @@ export declare function activateSkill(context: Context, state: ReadonlyState<Use
  *
  * @returns `cooldown`へ遷移した新しい状態
  */
-export declare function disactivateSkill(context: Context, state: ReadonlyState<UserState> & FormationPosition): UserState;
+export declare function disactivateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState;
 /**
- * スキル状態の変化を調べて更新する
+ * スキル状態の変化を調べて更新する（破壊的）
  *
  * 以下の状態に依存する`Skill#state`の遷移を調べる
  * - `SkillActiveTimeout` 現在時刻に依存：指定時刻を過ぎたら`cooldown`へ遷移
@@ -205,5 +218,6 @@ export declare function disactivateSkill(context: Context, state: ReadonlyState<
  * @param time 現在時刻
  * @returns 新しい状態
  */
-export declare function refreshSkillState(context: Context, state: ReadonlyState<UserState>): UserState;
+export declare function refreshSkillState(context: Context, state: UserState): UserState;
+export declare function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState;
 export {};

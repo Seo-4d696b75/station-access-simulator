@@ -74,7 +74,7 @@
             { "skill_level": 6, "denco_level": 70, "name": "定時メンテナンス Lv.6", "heal": 35 },
             { "skill_level": 7, "denco_level": 80, "name": "ご主人様も一緒にいかが!?", "heal": 40 }
         ] },
-    { "numbering": "10", "class": "D10_Iroha", "type": "manual", "step": { "replace": null }, "list": [
+    { "numbering": "10", "class": "D10_Iroha", "type": "manual-condition", "step": { "replace": null }, "list": [
             { "skill_level": 1, "denco_level": 5, "name": "リプレイスメント Lv.1", "active": 0, "wait": 12600, "links": 2 },
             { "skill_level": 2, "denco_level": 15, "name": "リプレイスメント Lv.2", "active": 0, "wait": 10800, "links": 2 },
             { "skill_level": 3, "denco_level": 30, "name": "リプレイスメント Lv.3", "active": 0, "wait": 9000, "links": 2 },

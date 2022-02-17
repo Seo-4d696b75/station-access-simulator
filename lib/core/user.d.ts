@@ -53,20 +53,20 @@ export declare function initUser(context: Context, userName: string, formation?:
 export declare function changeFormation(context: Context, current: ReadonlyState<UserState>, formation: ReadonlyState<DencoState[]>): UserState;
 export declare function copyUserState(state: ReadonlyState<UserState>): UserState;
 /**
- * 現在の状態の経験値の確認してレベルアップ処理を行う
- * @param next 現在の状態
+ * 現在の編成状態を更新する
+ *
+ * - 獲得経験値によるレベルアップ
+ * - 現在時刻に応じたスキル状態の変更
+ * - 現在時刻に応じて予約されたスキル発動型イベントを評価する
+ * @param context
+ * @param state 現在の状態 引数に渡した現在の状態は変更されません
+ * @returns 新しい状態 現在の状態をコピーしてから更新します
+ */
+export declare function refreshState(context: Context, state: ReadonlyState<UserState>): UserState;
+/**
+ * 現在の状態の経験値の確認してレベルアップ処理を行う(破壊的)
+ * @param state 現在の状態
  * @returns
  */
-export declare function refreshEXPState(context: Context, state: ReadonlyState<UserState>): UserState;
-/**
- * 現在時刻に依存する状態を更新する
- *
- * - 指定時刻にスキル状態を変更する
- * - 指定時刻にスキル発動型イベントを評価する
- *
- * @param context
- * @param state
- * @returns 更新された新しい状態
- */
-export declare function refreshCurrentTime(context: Context, state: ReadonlyState<UserState>): UserState;
+export declare function refreshEXPState(context: Context, state: UserState): UserState;
 export {};
