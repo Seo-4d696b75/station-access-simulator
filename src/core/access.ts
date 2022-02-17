@@ -89,22 +89,36 @@ export type AccessWho =
  * アクセス処理中の両編成の各でんこの状態
  */
 export interface AccessDencoState extends DencoState {
-  which: AccessSide
-  who: AccessWho
-  carIndex: number
+  readonly which: AccessSide
+  readonly who: AccessWho
+  readonly carIndex: number
 
   /**
    * アクセス開始時のHP
    */
-  hpBefore: number
+  readonly hpBefore: number
 
   /**
    * アクセス終了時のHP
    * 
    * `hpAfter === 0`の場合は`reboot === true`となり、
    * `currentHP`は最大HPにセットされる
+   * 
+   * **Note** アクセス完了までの値は未定義
    */
   hpAfter: number
+
+  /**
+   * アクセス処理中のHPの変化を直接指定する
+   * 
+   * このプロパティでHPを変化させるとダメージ量には加算されない  
+   * ダメージ量に加算する場合は
+   * - アクセス・被アクセスでんこ間のダメージ計算：{@link AccessState}の各種対応するプロパティ
+   * - 直接ダメージを加算する：{@link damage}（まりか反撃スキルなど）
+   * 
+   * 初期値：アクセス開始時のHP {@link hpBefore}
+   */
+  currentHp: number
 
   /**
    * アクセス処理中においてスキル無効化の影響によりこのでんこが保有するスキルが無効化されているか
@@ -793,9 +807,8 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     // 攻守ふたりに関してアクセス結果を仮決定
     defense.damage = damage
 
-    // HP0 になったらリブート
-    defense.hpAfter = Math.max(defense.hpBefore - damage.value, 0)
-    defense.reboot = damage.value >= defense.hpBefore
+    // HPの決定 & HP0 になったらリブート
+    updateDencoHP(context, defense)
 
     // 被アクセス側がリブートしたらリンク解除（ピンク除く）
     state.linkDisconncted = defense.reboot
@@ -1212,11 +1225,8 @@ function turnSide(state: AccessSideState, currentSide: AccessSide, nextAccessIdx
 function completeDencoHP(context: Context, state: AccessState, which: AccessSide): AccessState {
   const side = which === "offense" ? state.offense : state.defense
   side?.formation?.forEach(d => {
-    // HPの確定
-    const damage = d.damage?.value ?? 0
-    d.hpAfter = Math.max(d.hpBefore - damage, 0)
-    // Reboot有無の確定
-    d.reboot = (d.hpAfter === 0)
+    updateDencoHP(context, d)
+    // 新しい状態のHPを決定
     if (d.reboot) {
       d.currentHp = d.maxHp
     } else {
@@ -1227,6 +1237,26 @@ function completeDencoHP(context: Context, state: AccessState, which: AccessSide
     }
   })
   return state
+}
+
+/**
+ * hpAfter = max{0, hpCurrecnt(default:hpBefore) - damage(if any)}
+ * reboot = (hpAfter === 0)
+ * @param context 
+ * @param d 
+ */
+function updateDencoHP(context: Context, d: AccessDencoState) {
+  // HPの決定
+  const damage = d.damage?.value ?? 0
+  if (d.hpBefore !== d.currentHp) {
+    context.log.log(`ダメージ計算以外でHPが変化しています ${d.name} ${d.hpBefore} > ${d.currentHp}`)
+    if (d.currentHp < 0 || d.maxHp <= d.currentHp) {
+      context.log.error(`現在のHPの値が不正です range[0,maxHP]`)
+    }
+  }
+  d.hpAfter = Math.max(d.currentHp - damage, 0)
+  // Reboot有無の確定
+  d.reboot = (d.hpAfter === 0)
 }
 
 function completeDencoLink(context: Context, state: AccessState, which: AccessSide): AccessState {
