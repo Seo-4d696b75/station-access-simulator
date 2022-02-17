@@ -3,10 +3,38 @@ import SkillManager from "./core/skillManager"
 import DencoManager from "./core/dencoManager"
 import StationManager from "./core/stationManager"
 
+/**
+ * ライブラリを初期化する
+ * 
+ * ライブラリが使用する各種データを非同期でロードします  
+ * 最初の呼び出し時のみロード処理を実行して２回目以降の呼び出しは無視します
+ */
 export async function init() {
-  await SkillManager.load()
-  await DencoManager.load()
-  await StationManager.load()
+  if (initLib){
+    console.log("skil init")
+    return initLib
+  } 
+  const job = Promise.all([
+    SkillManager.load(),
+    DencoManager.load(),
+    StationManager.load()
+  ]).then(() => {
+    console.log("ライブラリを初期化しました")
+  })
+  initLib = job
+  return job
+}
+
+let initLib: Promise<void> | undefined = undefined
+
+/**
+ * ライブラリにロードされた全データを空にします
+ */
+export function clear() {
+  SkillManager.clear()
+  DencoManager.clear()
+  StationManager.clear()
+  initLib = undefined
 }
 
 export { default as SkillManager } from "./core/skillManager"

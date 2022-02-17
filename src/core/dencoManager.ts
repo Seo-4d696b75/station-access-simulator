@@ -1,10 +1,8 @@
 import { Context } from "./context"
-import { copyDencoState, Denco, DencoAttribute, DencoState, DencoType } from "./denco"
-import { refreshSkillState } from "./skill"
+import { Denco, DencoState } from "./denco"
 import skillManager from "./skillManager"
 import { StationLink } from "./station"
 import stationManager from "./stationManager"
-import { copyUserState, ReadonlyState, UserState } from "./user"
 
 interface DencoLevelStatus extends Denco {
 
@@ -56,6 +54,10 @@ class DencoManager {
       })
       this.data.set(e.numbering, status)
     }
+  }
+
+  clear() {
+    this.data.clear()
   }
 
   getDenco(context: Context, numbering: string, level: number = 50, link: StationLink[] | number = []): DencoState {

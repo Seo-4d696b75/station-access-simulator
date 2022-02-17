@@ -1,4 +1,4 @@
-import { SkillLogic, SkillHolder, SkillStateTransition } from "./skill"
+import { SkillHolder, SkillLogic, SkillStateTransition } from "./skill"
 
 interface SkillProperty {
   name: string
@@ -69,6 +69,10 @@ export class SkillManager {
       }
       this.map.set(numbering, dataset)
     }
+  }
+
+  clear() {
+    this.map.clear()
   }
 
   getSkill(numbering: string, level: number): SkillHolder {
