@@ -7,16 +7,17 @@ import { getTargetDenco, initUser } from "../core/user"
 import { LinksResult } from "../core/station"
 import { activateSkill } from "../core/skill"
 import moment from "moment-timezone"
+import { init } from ".."
+
+// デフォルトの計算式を使用する
+const accessScore = 100
+const linkSuccessScore = 100
+// ダメージ量に応じたスコア = Math.flor(damage)
+// リンクスコア = Math.flow(リンク時間[ms]/100)
+// 経験値 = score総量
 
 describe("基本的なアクセス処理", () => {
-  test("load", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
+  beforeAll(init)
   test("守備側なし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -55,9 +56,14 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpBefore).toBe(192)
     expect(d.hpAfter).toBe(192)
     expect(d.currentHp).toBe(192)
-    expect(d.currentExp).toBe(reika.currentExp + d.exp.access + d.exp.skill)
     expect(d.link.length).toBe(1)
     expect(d.link[0]).toMatchObject(station)
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + linkSuccessScore)
+    expect(access.offense.displayedScore).toBe(accessScore + linkSuccessScore)
+    expect(d.exp.access).toBe(accessScore + linkSuccessScore)
+    expect(d.exp.skill).toBe(0)
+    expect(d.currentExp).toBe(reika.currentExp + accessScore + linkSuccessScore)
     expect(() => getAccessDenco(access, "defense")).toThrowError()
   })
   test("守備側なし-フットバースあり", () => {
@@ -91,6 +97,13 @@ describe("基本的なアクセス処理", () => {
     reika = result.offense.formation[0]
     expect(reika.link.length).toBe(1)
     expect(reika.link[0]).toMatchObject(station)
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + linkSuccessScore)
+    expect(access.offense.displayedScore).toBe(accessScore + linkSuccessScore)
+    let d = getAccessDenco(access, "offense")
+    expect(d.exp.access).toBe(accessScore + linkSuccessScore)
+    expect(d.exp.skill).toBe(0)
+    expect(d.currentExp).toBe(accessScore + linkSuccessScore)
   })
   test("守備側あり-スキル発動なし-Rebootなし", () => {
     const context = initContext("test", "test", false)
@@ -132,6 +145,14 @@ describe("基本的なアクセス処理", () => {
     // ダメージ計算確認
     expect(access.damageBase?.variable).toBe(260)
     expect(access.damageFixed).toBe(0)
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + 260)// アクセス＋ダメージ量のスコア
+    expect(access.offense.displayedScore).toBe(accessScore + 260)
+    expect(access.offense.displayedExp).toBe(accessScore + 260)
+    expect(access.defense?.score).toBe(0)
+    expect(access.defense?.displayedScore).toBe(0)
+    expect(access.defense?.displayedExp).toBe(0)
+    // 攻守でんこのアクセス状態
     let d = getAccessDenco(access, "offense")
     expect(d.name).toBe(reika.name)
     expect(d.numbering).toBe(reika.numbering)
@@ -139,7 +160,9 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpAfter).toBe(192)
     expect(d.damage).toBeUndefined()
     expect(d.currentHp).toBe(192)
-    expect(d.currentExp).toBe(reika.currentExp + d.exp.access + d.exp.skill)
+    expect(d.exp.access).toBe(accessScore + 260)
+    expect(d.exp.skill).toBe(0)
+    expect(d.currentExp).toBe(reika.currentExp + accessScore + 260)
     expect(d.ap).toBe(200)
     expect(d.link.length).toBe(0)
     d = getAccessDenco(access, "defense")
@@ -150,21 +173,23 @@ describe("基本的なアクセス処理", () => {
     expect(d.damage?.value).toBe(260)
     expect(d.damage?.attr).toBe(true)
     expect(d.currentHp).toBe(64)
-    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
+    expect(d.exp.access).toBe(0)
+    expect(d.exp.skill).toBe(0)
+    expect(d.currentExp).toBe(charlotte.currentExp + 0)
     expect(d.link.length).toBe(3)
     // 最新の状態
     let reikaNow = result.offense.formation[0]
     expect(reikaNow.name).toBe("reika")
     expect(reikaNow.numbering).toBe("5")
     let exp = getAccessDenco(access, "offense").exp
-    expect(reikaNow.currentExp).toBe(reika.currentExp + exp.access + exp.skill)
+    expect(reikaNow.currentExp).toBe(reika.currentExp + accessScore + 260)
     expect(reikaNow.currentHp).toBe(192)
     if (result.defense) {
       let charlotteNow = result.defense.formation[0]
       expect(charlotteNow.name).toBe("charlotte")
       expect(charlotteNow.numbering).toBe("6")
       exp = getAccessDenco(access, "defense").exp
-      expect(charlotteNow.currentExp).toBe(charlotte.currentExp + exp.access + exp.skill)
+      expect(charlotteNow.currentExp).toBe(charlotte.currentExp + 0)
       expect(charlotteNow.currentHp).toBe(64)
     }
   })
@@ -176,6 +201,9 @@ describe("基本的なアクセス処理", () => {
     context.clock = now
     let reika = DencoManager.getDenco(context, "5", 50)
     let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+    // レベルアップ阻害
+    charlotte.nextExp = Number.MAX_SAFE_INTEGER
+    const link = charlotte.link[0]
     const offense = initUser(context, "とあるマスター１", [
       reika
     ])
@@ -191,7 +219,7 @@ describe("基本的なアクセス処理", () => {
         state: defense,
         carIndex: 0
       },
-      station: charlotte.link[0],
+      station: link,
       usePink: true,
     }
     const result = startAccess(context, config)
@@ -211,22 +239,36 @@ describe("基本的なアクセス処理", () => {
     // ダメージ計算確認
     expect(access.damageBase?.variable).toBeUndefined()
     expect(access.damageFixed).toBe(0)
-    expect(getAccessDenco(access, "offense").damage).toBeUndefined()
-    expect(getAccessDenco(access, "defense").damage).toBeUndefined()
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + linkSuccessScore)// アクセス＋リンク成功スコア
+    expect(access.offense.displayedScore).toBe(accessScore + linkSuccessScore)
+    expect(access.offense.displayedExp).toBe(accessScore + linkSuccessScore)
+    const linkScore = Math.floor((now - link.start) / 100)
+    expect(access.defense?.score).toBe(linkScore) // 解除したリンクスコア
+    expect(access.defense?.displayedScore).toBe(linkScore)
+    expect(access.defense?.displayedExp).toBe(linkScore)
+    // 攻守でんこ
+    let d = getAccessDenco(access, "offense")
+    expect(d.damage).toBeUndefined()
+    expect(d.exp.access).toBe(accessScore + linkSuccessScore)
+    expect(d.exp.skill).toBe(0)
+    d = getAccessDenco(access, "defense")
+    expect(d.damage).toBeUndefined()
+    expect(d.exp.access).toBe(linkScore)
+    expect(d.exp.skill).toBe(0)
     // リンク
     reika = result.offense.formation[0]
     expect(reika.link.length).toBe(1)
-    expect(reika.link[0]).toMatchObject({ ...charlotte.link[0], start: now })
+    expect(reika.link[0]).toMatchObject({ ...link, start: now })
     // 最終状態の確認
     expect(result.defense).not.toBeUndefined()
     if (result.defense) {
       const charlotteResult = getTargetDenco(result.defense)
       charlotte = defense.formation[0]
-      let exp = getAccessDenco(access, "defense").exp
       expect(charlotteResult).toMatchObject({
         ...charlotte,
         link: charlotte.link.slice(1),
-        currentExp: charlotte.currentExp + exp.access + exp.skill,
+        currentExp: charlotte.currentExp + linkScore,
       })
     }
   })
@@ -236,7 +278,10 @@ describe("基本的なアクセス処理", () => {
     const now = moment().valueOf()
     context.clock = now
     let reika = DencoManager.getDenco(context, "5", 80)
-    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
+    let charlotte = DencoManager.getDenco(context, "6", 50, 3)
+    // レベルアップ阻害
+    charlotte.nextExp = Number.MAX_SAFE_INTEGER
+    const link = charlotte.link[0]
     const offense = initUser(context, "とあるマスター１", [
       reika
     ])
@@ -252,7 +297,7 @@ describe("基本的なアクセス処理", () => {
         state: defense,
         carIndex: 0
       },
-      station: charlotte.link[0],
+      station: link,
     }
     const result = startAccess(context, config)
     expect(result.offense.event.length).toBe(1)
@@ -273,28 +318,39 @@ describe("基本的なアクセス処理", () => {
     // ダメージ計算確認
     expect(access.damageBase?.variable).toBe(338)
     expect(access.damageFixed).toBe(0)
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + 338 + linkSuccessScore)// アクセス＋ダメージ量＋リンク成功スコア
+    expect(access.offense.displayedScore).toBe(accessScore + 338 + linkSuccessScore)
+    expect(access.offense.displayedExp).toBe(accessScore + 338 + linkSuccessScore)
+    const linkScore = Math.floor((now - link.start) / 100)
+    expect(access.defense?.score).toBe(0) // リブートで解除したリンクスコアは含まず
+    expect(access.defense?.displayedScore).toBe(linkScore)
+    expect(access.defense?.displayedExp).toBe(linkScore)
     let d = getAccessDenco(access, "offense")
-    expect(d.name).toBe(reika.name)
+    expect(d.name).toBe("reika")
     expect(d.numbering).toBe(reika.numbering)
     expect(d.hpBefore).toBe(312)
     expect(d.hpAfter).toBe(312)
     expect(d.currentHp).toBe(312)
-    expect(d.currentExp).toBe(reika.currentExp + d.exp.access + d.exp.skill)
+    expect(d.exp.access).toBe(accessScore + 338 + linkSuccessScore)
+    expect(d.exp.skill).toBe(0)
+    expect(d.currentExp).toBe(reika.currentExp + accessScore + 338 + linkSuccessScore)
     expect(d.ap).toBe(260)
     expect(d.damage).toBeUndefined()
     // リンク
     expect(d.link.length).toBe(1)
-    expect(d.link[0]).toMatchObject({ ...charlotte.link[0], start: now })
-    // アクセスのEXP
-    expect(d.currentExp).toBe(reika.currentExp + 100)
+    expect(d.link[0]).toMatchObject({ ...link, start: now })
     d = getAccessDenco(access, "defense")
-    expect(d.name).toBe(charlotte.name)
+    expect(d.name).toBe("charlotte")
     expect(d.numbering).toBe(charlotte.numbering)
     expect(d.hpBefore).toBe(228)
     expect(d.hpAfter).toBe(0)
     expect(d.currentHp).toBe(228)
     expect(d?.damage?.value).toBe(338)
     expect(d?.damage?.attr).toBe(true)
+    expect(d.exp.access).toBe(0)
+    expect(d.exp.skill).toBe(0)
+    expect(d.currentExp).toBe(charlotte.currentExp) // リブートで解除したリンクスコアはまだ加算されていない
     // リブート確認
     expect(d.link.length).toBe(0)
     let e = result.defense?.event[1]
@@ -302,27 +358,23 @@ describe("基本的なアクセス処理", () => {
     expect(e?.type === "reboot")
     let data = e?.data as LinksResult
     expect(data.denco.name).toBe(charlotte.name)
-    expect(data.link.length).toBe(1)
-    expect(data.link[0]).toMatchObject(charlotte.link[0])
-    // アクセスのEXP
-    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
+    expect(data.link.length).toBe(3)
+    expect(data.link[0]).toMatchObject(link)
     // アクセス後の状態
     expect(result.defense).not.toBeUndefined()
     if (result.defense) {
       charlotte = defense.formation[0]
       let charlotteResult = getTargetDenco(result.defense)
-      let exp = getAccessDenco(access, "defense").exp
       expect(charlotteResult).toMatchObject({
         ...charlotte,
-        currentExp: charlotte.currentExp + exp.access + exp.skill + data.exp,
+        currentExp: charlotte.currentExp + data.exp, // 解除された全リンクの経験値
         link: [],
       })
       reika = offense.formation[0]
       let reikaResult = getTargetDenco(result.offense)
-      exp = getAccessDenco(access, "offense").exp
       expect(reikaResult).toMatchObject({
         ...reika,
-        currentExp: reika.currentExp + exp.access + exp.skill,
+        currentExp: reika.currentExp + accessScore + 338 + linkSuccessScore,
         link: [
           {
             ...charlotte.link[0],
@@ -378,12 +430,21 @@ describe("基本的なアクセス処理", () => {
     // ダメージ計算確認
     expect(access.damageBase?.variable).toBe(180)
     expect(access.damageFixed).toBe(0)
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + 180) // アクセス＋ダメージ量
+    expect(access.offense.displayedScore).toBe(accessScore + 180)
+    expect(access.offense.displayedExp).toBe(accessScore + 180)
+    expect(access.defense?.score).toBe(0) 
+    expect(access.defense?.displayedScore).toBe(0)
+    expect(access.defense?.displayedExp).toBe(0)
     let d = getAccessDenco(access, "offense")
     expect(d.name).toBe("reika")
     expect(d.hpBefore).toBe(165)
     expect(d.hpAfter).toBe(165)
     expect(d.currentHp).toBe(165)
     expect(d.damage).toBeUndefined()
+    expect(d.exp.access).toBe(accessScore + 180)
+    expect(d.exp.skill).toBe(0)
     expect(access.offense.triggeredSkills.length).toBe(1)
     expect(access.offense.triggeredSkills[0].name).toBe("reika")
     expect(access.offense.triggeredSkills[0].step).toBe("damage_common")
@@ -395,6 +456,8 @@ describe("基本的なアクセス処理", () => {
     expect(d.link.length).toBe(3)
     expect(d.damage?.value).toBe(180)
     expect(d.damage?.attr).toBe(true)
+    expect(d.exp.access).toBe(0)
+    expect(d.exp.skill).toBe(0)
   })
 
 
@@ -441,6 +504,14 @@ describe("基本的なアクセス処理", () => {
     expect(access.damageFixed).toBe(0)
     expect(access.offense.triggeredSkills.length).toBe(0)
     expect(access.defense?.triggeredSkills.length).toBe(0)
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + 200) // アクセス＋ダメージ量
+    expect(access.offense.displayedScore).toBe(accessScore + 200)
+    expect(access.offense.displayedExp).toBe(accessScore + 200)
+    expect(access.defense?.score).toBe(0) 
+    expect(access.defense?.displayedScore).toBe(0)
+    expect(access.defense?.displayedExp).toBe(0)
+    // 被アクセス側詳細
     let d = getAccessDenco(access, "defense")
     expect(d.name).toBe("sheena")
     expect(d.hpBefore).toBe(264)
@@ -494,6 +565,14 @@ describe("基本的なアクセス処理", () => {
     expect(access.defense?.triggeredSkills.length).toBe(1)
     expect(access.defense?.triggeredSkills[0].name).toBe("sheena")
     expect(access.defense?.triggeredSkills[0].step).toBe("after_damage")
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + 200) // アクセス＋ダメージ量
+    expect(access.offense.displayedScore).toBe(accessScore + 200)
+    expect(access.offense.displayedExp).toBe(accessScore + 200)
+    expect(access.defense?.score).toBe(160) // 反撃によるダメージ量スコア
+    expect(access.defense?.displayedScore).toBe(160)
+    expect(access.defense?.displayedExp).toBe(160)
+    // 攻守詳細
     let d = getAccessDenco(access, "defense")
     expect(d.name).toBe("sheena")
     expect(d.hpBefore).toBe(264)
@@ -501,6 +580,8 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(64)
     expect(d.damage?.value).toBe(200)
     expect(d.damage?.attr).toBe(false)
+    expect(d.exp.access).toBe(160)
+    expect(d.exp.skill).toBe(0)
     d = getAccessDenco(access, "offense")
     expect(d.name).toBe("reika")
     expect(d.hpBefore).toBe(192)
@@ -508,6 +589,8 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(32)
     expect(d.damage?.value).toBe(160)
     expect(d.damage?.attr).toBe(false)
+    expect(d.exp.access).toBe(accessScore + 200)
+    expect(d.exp.skill).toBe(0)
   })
 
 
@@ -516,6 +599,8 @@ describe("基本的なアクセス処理", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let sheena = DencoManager.getDenco(context, "7", 80, 3)
+    reika.nextExp = Number.MAX_SAFE_INTEGER
+    sheena.nextExp = Number.MAX_SAFE_INTEGER
     let offense = initUser(context, "とあるマスター１", [
       reika
     ])
@@ -555,6 +640,14 @@ describe("基本的なアクセス処理", () => {
     expect(access.defense?.triggeredSkills.length).toBe(1)
     expect(access.defense?.triggeredSkills[0].name).toBe("sheena")
     expect(access.defense?.triggeredSkills[0].step).toBe("after_damage")
+    // スコア＆経験値
+    expect(access.offense.score).toBe(accessScore + 200) // アクセス＋ダメージ量
+    expect(access.offense.displayedScore).toBe(accessScore + 200) // アクセス側のリブートリンクスコアは含まない
+    expect(access.offense.displayedExp).toBe(accessScore + 200)
+    expect(access.defense?.score).toBe(250) // 反撃によるダメージ量スコア
+    expect(access.defense?.displayedScore).toBe(250)
+    expect(access.defense?.displayedExp).toBe(250)
+    // 攻守詳細
     let d = getAccessDenco(access, "defense")
     expect(d.name).toBe("sheena")
     expect(d.hpBefore).toBe(420)
@@ -562,6 +655,8 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(220)
     expect(d.damage?.value).toBe(200)
     expect(d.damage?.attr).toBe(false)
+    expect(d.exp.access).toBe(250)
+    expect(d.exp.skill).toBe(0)
     d = getAccessDenco(access, "offense")
     expect(d.name).toBe("reika")
     expect(d.hpBefore).toBe(192)
@@ -569,6 +664,8 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(192)
     expect(d.damage?.value).toBe(250)
     expect(d.damage?.attr).toBe(false)
+    expect(d.exp.access).toBe(accessScore + 200)
+    expect(d.exp.skill).toBe(0)
     let e = result.offense.event[1]
     expect(e.type).toBe("reboot")
     let reboot = e.data as LinksResult

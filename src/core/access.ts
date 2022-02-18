@@ -170,6 +170,47 @@ export interface AccessDencoState extends DencoState {
   }
 }
 
+/**
+ * スコアの計算方法を定義します
+ * 
+ * スコアの値を元に経験値も計算されます
+ */
+export interface ScorePredicate {
+  /**
+   * アクセス開始時にアクセス側が取得するスコアを計算
+   * 
+   * アクセス相手ユーザ・でんこやリンク成功可否などに依存しない
+   * @param state アクセスする本人を含む編成の現在の状態
+   * @param station アクセスする駅
+   */
+  calcAccessScore: (context: Context, state: ReadonlyState<AccessSideState>, station: Station) => number
+
+  /**
+   * アクセス側がリンク成功時に取得するスコアを計算  
+   * @param state アクセスする本人を含む編成の現在の状態
+   * @param access アクセスの状態
+   */
+  calcLinkSuccessScore: (context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>) => number
+
+  /**
+   * アクセス側が与えたダメージ量に応じたスコアを計算
+   */
+  calcDamageScore: (context: Context, damage: number) => number
+  /**
+   * リンク保持によるスコアを計算
+   * 
+   * コンボボーナス・属性ボーナスの値は含まずリンクによる基本スコア値のみ計算する
+   */
+  calcLinkScore: (context: Context, link: StationLink) => number
+}
+
+const DEFAULT_SCORE_PREDICATE: ScorePredicate = {
+  calcAccessScore: (context, state, station) => 100,
+  calcLinkSuccessScore: (context, state, access) => 100,
+  calcDamageScore: (context, damage) => Math.floor(damage),
+  calcLinkScore: (context, link) => Math.floor((getCurrentTime(context) - link.start) / 100)
+}
+
 export interface AccessTriggeredSkill extends Denco {
   readonly step: AccessEvaluateStep
 }
@@ -569,47 +610,68 @@ function checkSkillAfterAccess(context: Context, state: UserState & FormationPos
   return state
 }
 
-function calcLinkResult(context: Context, link: StationLink, d: Denco): LinkResult {
-  const time = getCurrentTime(context).valueOf()
-  let duration = time - link.start
+function calcLinkResult(context: Context, link: StationLink, d: Denco, idx: number): LinkResult {
+  const time = getCurrentTime(context)
+  const duration = time - link.start
   if (duration < 0) {
     context.log.error(`リンク時間が負数です ${duration}[ms] ${JSON.stringify(link)}`)
-    throw Error("link duration < 0")
   }
-  let attr = (link.attr === d.attr)
-  let score = Math.floor(duration / 100)
+  const predicate = context.scorePredicate?.calcLinkScore ?? DEFAULT_SCORE_PREDICATE.calcLinkScore
+  const score = predicate(context, link)
+  const attr = (link.attr === d.attr)
+  const ratio = (idx < LINK_COMBO_RATIO.length) ?
+    LINK_COMBO_RATIO[idx] : LINK_COMBO_RATIO[LINK_COMBO_RATIO.length - 1]
+  const match = attr ? Math.floor(score * 0.15) : 0
+  const combo = Math.floor(score * (ratio - 1))
   return {
     ...link,
     end: time,
     duration: duration,
-    score: score,
-    matchBonus: attr ? Math.floor(score * 0.3) : undefined
+    linkScore: score,
+    matchAttr: attr,
+    matchBonus: match,
+    comboBonus: combo,
+    totatlScore: score + match + combo,
   }
 }
 
+const LINK_COMBO_RATIO = [
+  1.0, 1.1, 1.2, 1.3, 1.4,
+  1.6, 1, 7, 1.9, 2.1, 2.3,
+  2.5, 2.8, 3.1, 3.4, 3.7,
+  4.1, 4.5, 5.0, 5.5, 6.1,
+  6.7, 7.4, 8.1, 8.9, 9.8,
+  10.8, 11.9, 13.1, 14.4, 15.8,
+  17.4, 19.1, 20.0
+]
+
 function calcLinksResult(context: Context, links: StationLink[], d: ReadonlyState<DencoState>, which: AccessSide): LinksResult {
   const time = getCurrentTime(context).valueOf()
-  const linkResult = links.map(link => calcLinkResult(context, link, d))
-  // TODO combo bonus の計算
-  const linkScore = linkResult.map(link => link.score).reduce((a, b) => a + b, 0)
-  const match = linkResult.map(link => link.matchBonus).filter(e => !!e) as number[]
-  const matchBonus = match.reduce((a, b) => a + b, 0)
-  const totalScore = linkScore + matchBonus
-  // TODO 経験値の計算
-  const exp = totalScore
+  const linkResult = links.map((link, idx) => calcLinkResult(context, link, d, idx))
+  const linkScore = linkResult.map(link => link.linkScore).reduce((a, b) => a + b, 0)
+  const match = linkResult.filter(link => link.matchAttr)
+  const matchBonus = match.map(link => link.matchBonus).reduce((a, b) => a + b, 0)
+  const comboBonus = linkResult.map(link => link.comboBonus).reduce((a, b) => a + b, 0)
+  const totalScore = linkScore + matchBonus + comboBonus
+  const exp = calcExp(totalScore)
   const result: LinksResult = {
     time: time,
     denco: copyDencoState(d),
     which: which,
     totalScore: totalScore,
     linkScore: linkScore,
-    comboBonus: 0,
+    comboBonus: comboBonus,
     matchBonus: matchBonus,
     matchCnt: match.length,
     exp: exp,
     link: linkResult,
   }
   return result
+}
+
+function calcExp(score: number): number {
+  // TODO 経験値増加の加味
+  return score
 }
 
 function copyFromAccessState(context: Context, state: UserState & FormationPosition, access: ReadonlyState<AccessState>, which: AccessSide): UserState & FormationPosition {
@@ -767,11 +829,18 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     // 確率補正の可能性 とりあえず発動させて後で調整
     context.log.log("スキルを評価：確率ブーストの確認")
     state = evaluateSkillAt(context, state, "probability_check")
-  }
 
-  // TODO アクセスによるスコアと経験値
-  getAccessDenco(state, "offense").exp.access += 100
-  state.offense.score += 100
+
+    // アクセスによるスコアと経験値
+    const predicate = context.scorePredicate?.calcAccessScore ?? DEFAULT_SCORE_PREDICATE.calcAccessScore
+    const score = predicate(context, state.offense, state.station)
+    const exp = calcExp(score)
+    const accessDenco = getAccessDenco(state, "offense")
+    accessDenco.exp.access += exp
+    state.offense.score += score
+    context.log.log(`アクセスによる追加 ${accessDenco.name} score:${score} exp:${exp}`)
+
+  }
 
   // 他ピンクに関係なく発動するもの
   context.log.log("スキルを評価：アクセス開始前")
@@ -830,16 +899,25 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     if (damageBase.variable < 0 || damageBase.constant < 0) {
       context.log.error(`基本ダメージの値は非負である必要があります ${JSON.stringify(damageBase)}`)
     }
-    // 反撃など複数回のダメージ計算が発生する場合はそのまま加算
-    const damage = addDamage(defense.damage, {
+    const damage = {
       // 固定ダメージで負数にはせず0以上に固定 & 確保されたダメージ量を加算
       value: Math.max(damageBase.variable + state.damageFixed, 0) + damageBase.constant,
       attr: state.damageRatio !== 1.0
-    })
-    context.log.log(`ダメージ計算が終了：${damage.value}`)
+    }
+    // ダメージ量に応じたスコア＆経験値の追加
+    const predicate = context.scorePredicate?.calcDamageScore ?? DEFAULT_SCORE_PREDICATE.calcDamageScore
+    const score = predicate(context, damage.value)
+    const exp = calcExp(score)
+    const accessDenco = getAccessDenco(state, "offense")
+    accessDenco.exp.access += exp
+    state.offense.score += score
+    context.log.log(`ダメージ量による追加 ${accessDenco.name} score:${score} exp:${exp}`)
+    // 反撃など複数回のダメージ計算が発生する場合はそのまま加算
+    const damageSum = addDamage(defense.damage, damage)
+    context.log.log(`ダメージ計算が終了：${damageSum.value}`)
 
     // 攻守ふたりに関してアクセス結果を仮決定
-    defense.damage = damage
+    defense.damage = damageSum
 
     // HPの決定 & HP0 になったらリブート
     updateDencoHP(context, defense)
@@ -888,6 +966,17 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     }
     context.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
     context.log.log(`守備側のリンク解除：${state.linkDisconncted}`)
+
+    if (state.linkSuccess) {
+      // リンク成功によるスコア＆経験値の付与
+      const predicate = context.scorePredicate?.calcLinkSuccessScore ?? DEFAULT_SCORE_PREDICATE.calcLinkSuccessScore
+      const score = predicate(context, state.offense, state)
+      const exp = calcExp(score)
+      const linkDenco = getAccessDenco(state, "offense")
+      linkDenco.exp.access += exp
+      state.offense.score += score
+      context.log.log(`リンク成功による追加 ${linkDenco.name} score:${score} exp:${exp}`)
+    }
 
     // アクセスによる経験値の反映
     state = completeDencoAccessEXP(context, state, "offense")
@@ -1332,15 +1421,15 @@ function completeDencoAccessEXP(context: Context, state: AccessState, which: Acc
         throw Error()
       }
       // 特にイベントは発生せず経験値だけ追加
-      const result = calcLinkResult(context, d.link[idx], d)
+      const result = calcLinkResult(context, d.link[idx], d, 0)
       // 例外的にリブートを伴わないリンク解除の場合は、リンクスコア＆経験値がアクセスのスコア＆経験値として加算
-      d.exp.access += result.score
-      side.score += result.score
+      d.exp.access += calcExp(result.totatlScore)
+      side.score += result.totatlScore
     }
     // アクセスによる経験値付与
     const exp = d.exp.access + d.exp.skill
     if (d.who !== "other" || exp !== 0) {
-      context.log.log(`経験値追加 ${d.name} ${d.currentExp} += ${exp}(skill:${d.exp.skill})`)
+      context.log.log(`経験値追加 ${d.name} ${d.currentExp}(current) + ${exp}(skill:${d.exp.skill}) -> ${d.currentExp + exp}`)
     }
     d.currentExp += exp
   })
@@ -1361,10 +1450,10 @@ function completeDisplayScoreExp(context: Context, state: AccessState, which: Ac
         context.log.error(`リブートした守備側のリンクが見つかりません ${state.station.name}`)
         throw Error()
       }
-      const result = calcLinkResult(context, d.link[idx], d)
+      const result = calcLinkResult(context, d.link[idx], d, 0)
       // アクセスの経験値として加算はするが、でんこ状態への反映はしない checkRebootLinksでまとめて加算
-      side.displayedScore += result.score
-      side.displayedExp += result.score
+      side.displayedScore += result.totatlScore
+      side.displayedExp += calcExp(result.totatlScore)
     }
   }
   return state

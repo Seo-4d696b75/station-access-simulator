@@ -59,7 +59,7 @@ export function formatRebootDetail(result: LinksResult, time: number, width: num
     str += link.matchBonus ? formatAttr(result.denco.attr, 8) : " ".repeat(8)
     str += "┃\n"
     let duration = formatLinkTime(time, link)
-    let pt = formatSpace(formatPt(link.score), width - 2 - len(duration), "right")
+    let pt = formatSpace(formatPt(link.totatlScore), width - 2 - len(duration), "right")
     str += "┃" + duration + pt + "┃\n"
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   })
