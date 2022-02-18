@@ -151,7 +151,8 @@ describe("ふぶのスキル", () => {
       expect(accessFubu.hpBefore).toBe(228)
       expect(accessFubu.hpAfter).toBe(66)
       expect(accessFubu.reboot).toBe(false)
-      expect(accessFubu.accessEXP).toBe(0)
+      expect(accessFubu.exp).toMatchObject({access: 0, skill: 0})
+      expect(access.defense.displayedExp).toBe(0)
     }
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)
@@ -193,7 +194,8 @@ describe("ふぶのスキル", () => {
       expect(accessCharlotte.hpBefore).toBe(228)
       expect(accessCharlotte.hpAfter).toBe(18)
       expect(accessCharlotte.reboot).toBe(false)
-      expect(accessCharlotte.accessEXP).toBe(0)
+      expect(accessCharlotte.exp).toMatchObject({access: 0, skill: 0})
+      expect(access.defense.displayedExp).toBe(0)
     }
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)

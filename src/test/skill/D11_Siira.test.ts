@@ -105,7 +105,7 @@ describe("しいらのスキル", () => {
       expect(accessSiira.hpBefore).toBe(252)
       expect(accessSiira.hpAfter).toBe(0)
       expect(accessSiira.reboot).toBe(true)
-      expect(accessSiira.accessEXP).toBe(0)
+      expect(accessSiira.exp).toMatchObject({access: 0, skill: 0})
     }
     expect(access.linkDisconncted).toBe(true)
     expect(access.linkSuccess).toBe(true)
@@ -119,6 +119,7 @@ describe("しいらのスキル", () => {
       expect(event.type).toBe("reboot")
       if (event.type === "reboot") {
         expect(siira.currentExp).toBe(0 + event.data.exp)
+        expect(access.defense?.displayedExp).toBe(0 + event.data.exp)
       }
     }
   })
@@ -198,7 +199,8 @@ describe("しいらのスキル", () => {
       expect(accessSiira.hpBefore).toBe(252)
       expect(accessSiira.hpAfter).toBe(57)
       expect(accessSiira.reboot).toBe(false)
-      expect(accessSiira.accessEXP).toBe(0)
+      expect(accessSiira.exp).toMatchObject({access: 0, skill: 0})
+      expect(access.defense.displayedExp).toBe(0)
     }
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)

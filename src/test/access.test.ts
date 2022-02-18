@@ -55,7 +55,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpBefore).toBe(192)
     expect(d.hpAfter).toBe(192)
     expect(d.currentHp).toBe(192)
-    expect(d.currentExp).toBe(reika.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(reika.currentExp + d.exp.access + d.exp.skill)
     expect(d.link.length).toBe(1)
     expect(d.link[0]).toMatchObject(station)
     expect(() => getAccessDenco(access, "defense")).toThrowError()
@@ -139,7 +139,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpAfter).toBe(192)
     expect(d.damage).toBeUndefined()
     expect(d.currentHp).toBe(192)
-    expect(d.currentExp).toBe(reika.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(reika.currentExp + d.exp.access + d.exp.skill)
     expect(d.ap).toBe(200)
     expect(d.link.length).toBe(0)
     d = getAccessDenco(access, "defense")
@@ -150,19 +150,21 @@ describe("基本的なアクセス処理", () => {
     expect(d.damage?.value).toBe(260)
     expect(d.damage?.attr).toBe(true)
     expect(d.currentHp).toBe(64)
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     expect(d.link.length).toBe(3)
     // 最新の状態
     let reikaNow = result.offense.formation[0]
     expect(reikaNow.name).toBe("reika")
     expect(reikaNow.numbering).toBe("5")
-    expect(reikaNow.currentExp).toBe(reika.currentExp + getAccessDenco(access, "offense").accessEXP)
+    let exp = getAccessDenco(access, "offense").exp
+    expect(reikaNow.currentExp).toBe(reika.currentExp + exp.access + exp.skill)
     expect(reikaNow.currentHp).toBe(192)
     if (result.defense) {
       let charlotteNow = result.defense.formation[0]
       expect(charlotteNow.name).toBe("charlotte")
       expect(charlotteNow.numbering).toBe("6")
-      expect(charlotteNow.currentExp).toBe(charlotte.currentExp + getAccessDenco(access, "defense").accessEXP)
+      exp = getAccessDenco(access, "defense").exp
+      expect(charlotteNow.currentExp).toBe(charlotte.currentExp + exp.access + exp.skill)
       expect(charlotteNow.currentHp).toBe(64)
     }
   })
@@ -220,10 +222,11 @@ describe("基本的なアクセス処理", () => {
     if (result.defense) {
       const charlotteResult = getTargetDenco(result.defense)
       charlotte = defense.formation[0]
+      let exp = getAccessDenco(access, "defense").exp
       expect(charlotteResult).toMatchObject({
         ...charlotte,
         link: charlotte.link.slice(1),
-        currentExp: charlotte.currentExp + getAccessDenco(access, "defense").accessEXP,
+        currentExp: charlotte.currentExp + exp.access + exp.skill,
       })
     }
   })
@@ -276,7 +279,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.hpBefore).toBe(312)
     expect(d.hpAfter).toBe(312)
     expect(d.currentHp).toBe(312)
-    expect(d.currentExp).toBe(reika.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(reika.currentExp + d.exp.access + d.exp.skill)
     expect(d.ap).toBe(260)
     expect(d.damage).toBeUndefined()
     // リンク
@@ -302,22 +305,24 @@ describe("基本的なアクセス処理", () => {
     expect(data.link.length).toBe(1)
     expect(data.link[0]).toMatchObject(charlotte.link[0])
     // アクセスのEXP
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     // アクセス後の状態
     expect(result.defense).not.toBeUndefined()
     if (result.defense) {
       charlotte = defense.formation[0]
       let charlotteResult = getTargetDenco(result.defense)
+      let exp = getAccessDenco(access, "defense").exp
       expect(charlotteResult).toMatchObject({
         ...charlotte,
-        currentExp: charlotte.currentExp + getAccessDenco(access, "defense").accessEXP + data.exp,
+        currentExp: charlotte.currentExp + exp.access + exp.skill + data.exp,
         link: [],
       })
       reika = offense.formation[0]
       let reikaResult = getTargetDenco(result.offense)
+      exp = getAccessDenco(access, "offense").exp
       expect(reikaResult).toMatchObject({
         ...reika,
-        currentExp: reika.currentExp + getAccessDenco(access, "offense").accessEXP,
+        currentExp: reika.currentExp + exp.access + exp.skill,
         link: [
           {
             ...charlotte.link[0],

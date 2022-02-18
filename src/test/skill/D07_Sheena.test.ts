@@ -1,10 +1,10 @@
 import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser } from "../../core/user"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
 import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access"
+import { initContext } from "../../core/context"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import SkillManager from "../../core/skillManager"
+import { initUser } from "../../core/user"
 
 describe("シーナのスキル", () => {
   test("setup", async () => {
@@ -71,9 +71,9 @@ describe("シーナのスキル", () => {
     expect(access.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(access, "offense")
-    expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill)
     d = getAccessDenco(access, "defense")
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
   })
 
   test("発動なし-守備側-確率", () => {
@@ -118,9 +118,9 @@ describe("シーナのスキル", () => {
     expect(access.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(access, "offense")
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     d = getAccessDenco(access, "defense")
-    expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill)
   })
   test("発動なし-守備側-リブート", () => {
     const context = initContext("test", "test", false)
@@ -168,9 +168,9 @@ describe("シーナのスキル", () => {
     expect(access.linkSuccess).toBe(true)
     // 経験値
     d = getAccessDenco(access, "offense")
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     d = getAccessDenco(access, "defense")
-    expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill)
   })
 
   test("発動あり-守備側", () => {
@@ -227,10 +227,10 @@ describe("シーナのスキル", () => {
     expect(access.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(access, "offense")
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     d = getAccessDenco(access, "defense")
-    expect(d.accessEXP).toBeGreaterThan(0)
-    expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
+    expect(d.exp.access).toBeGreaterThan(0)
+    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill)
   })
   test("発動あり-守備側-ATK/DEF増減", () => {
     const context = initContext("test", "test", false)
@@ -294,10 +294,10 @@ describe("シーナのスキル", () => {
     expect(access.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(access, "offense")
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     d = getAccessDenco(access, "defense")
-    expect(d.accessEXP).toBeGreaterThan(0)
-    expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
+    expect(d.exp.access).toBeGreaterThan(0)
+    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill)
   })
 
   test("発動あり-守備側-ひいる", () => {
@@ -358,10 +358,10 @@ describe("シーナのスキル", () => {
     expect(access.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(access, "offense")
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     d = getAccessDenco(access, "defense")
-    expect(d.accessEXP).toBeGreaterThan(0)
-    expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
+    expect(d.exp.access).toBeGreaterThan(0)
+    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill)
   })
   test("発動なし-守備側-確率", () => {
     const context = initContext("test", "test", false)
@@ -409,8 +409,8 @@ describe("シーナのスキル", () => {
     expect(access.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(access, "offense")
-    expect(d.currentExp).toBe(charlotte.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     d = getAccessDenco(access, "defense")
-    expect(d.currentExp).toBe(sheena.currentExp + d.accessEXP)
+    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill)
   })
 })

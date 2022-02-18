@@ -104,7 +104,8 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.hpBefore).toBe(216)
       expect(accessIzuna.hpAfter).toBe(24)
       expect(accessIzuna.reboot).toBe(false)
-      expect(accessIzuna.accessEXP).toBe(0)
+      expect(accessIzuna.exp).toMatchObject({access: 0, skill: 0})
+      expect(access.defense.displayedExp).toBe(0)
     }
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)
@@ -151,7 +152,8 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.hpBefore).toBe(216)
       expect(accessIzuna.hpAfter).toBe(32)
       expect(accessIzuna.reboot).toBe(false)
-      expect(accessIzuna.accessEXP).toBe(0)
+      expect(accessIzuna.exp).toMatchObject({access: 0, skill: 0})
+      expect(access.defense.displayedExp).toBe(0)
     }
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)
@@ -192,7 +194,8 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.hpBefore).toBe(256)
       expect(accessIzuna.hpAfter).toBe(86)
       expect(accessIzuna.reboot).toBe(false)
-      expect(accessIzuna.accessEXP).toBe(0)
+      expect(accessIzuna.exp).toMatchObject({access: 0, skill: 0})
+      expect(access.defense.displayedExp).toBe(0)
     }
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)
@@ -234,7 +237,8 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.hpBefore).toBe(336)
       expect(accessIzuna.hpAfter).toBe(192)
       expect(accessIzuna.reboot).toBe(false)
-      expect(accessIzuna.accessEXP).toBe(0)
+      expect(accessIzuna.exp).toMatchObject({access: 0, skill: 0})
+      expect(access.defense.displayedExp).toBe(0)
     }
     expect(access.linkDisconncted).toBe(false)
     expect(access.linkSuccess).toBe(false)

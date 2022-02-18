@@ -143,17 +143,31 @@ export interface AccessDencoState extends DencoState {
   /**
    * このアクセス時に発生する経験値  
    * 
+   * `access + skill`の合計値が経験値総量
+   * 
    * - アクセス開始時に付与される経験値
    * - リンク成功時に付与される経験値
    * - スキルによる経験値付与
    * - リブートした場合を除くリンク解除時の経験値付与
    * 
-   * アクセスによってリブートしたリンクの経験値は含まない
+   * **アクセスによってリブートしたリンクの経験値は含まない**
    * 
    * 通常はアクセス開始時の攻守ふたりのみ経験値が付与されるが、
-   * 反撃・スキルなど編成内他でんこに経験値が付与される場合もある
+   * 反撃・スキルなど編成内他でんこに経験値が付与される場合もある  
+   * そのためスコアと異なり経験値はでんこ毎に計算される
+   * see: {@link AccessState score}
    */
-  accessEXP: number
+  exp: {
+    /**
+     * スキル以外の理由で加算される経験値
+     */
+    access: number
+    /**
+     * スキルの効果により加算される経験値  
+     * **スキルによる経験値配布の対象外**
+     */
+    skill: number
+  }
 }
 
 export interface AccessTriggeredSkill extends Denco {
@@ -213,11 +227,24 @@ export interface AccessSideState {
    * 
    * アクセスによりリブートしたリンクのスコアは除くが、
    * リブート以外で解除したリンクスコアは含まれる
+   * 
+   * でんこ毎に計算される経験値と異なりスコアはユーザ単位で計算される
    */
-  accessScore: number
-
   score: number
-  exp: number
+
+  /**
+   * アクセス表示用のスコア値
+   * 
+   * アクセスで発生したスコア{@link score} + 守備側でリブートした場合のその駅のリンクスコア
+   */
+  displayedScore: number
+
+  /**
+   * アクセス表示用の経験値値
+   * 
+   * 直接アクセス・被アクセスするでんこがアクセス中に得た経験値{@link } + 守備側でリブートした場合のその駅のリンク経験値
+   */
+  displayedExp: number
 }
 
 /**
@@ -326,7 +353,10 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
       reboot: false,
       skillInvalidated: false,
       damage: undefined,
-      accessEXP: 0,
+      exp: {
+        access: 0,
+        skill: 0
+      }
     }
     return s
   })
@@ -341,9 +371,9 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
     triggeredSkills: [],
     probabilityBoostPercent: 0,
     probabilityBoosted: false,
-    accessScore: 0,
     score: 0,
-    exp: 0,
+    displayedScore: 0,
+    displayedExp: 0,
   }
 }
 
@@ -434,7 +464,7 @@ function copyAccessDencoState(state: ReadonlyState<AccessDencoState>): AccessDen
     reboot: state.reboot,
     skillInvalidated: state.skillInvalidated,
     damage: state.damage ? { ...state.damage } : undefined,
-    accessEXP: state.accessEXP,
+    exp: state.exp,
   }
 }
 
@@ -442,13 +472,13 @@ function copySideState(state: ReadonlyState<AccessSideState>): AccessSideState {
   return {
     user: copyUserParam(state.user),
     carIndex: state.carIndex,
-    accessScore: state.accessScore,
+    score: state.score,
     probabilityBoostPercent: state.probabilityBoostPercent,
     probabilityBoosted: state.probabilityBoosted,
     formation: Array.from(state.formation).map(d => copyAccessDencoState(d)),
     triggeredSkills: Array.from(state.triggeredSkills),
-    score: state.score,
-    exp: state.exp,
+    displayedScore: state.displayedScore,
+    displayedExp: state.displayedExp,
   }
 }
 
@@ -740,8 +770,8 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
   }
 
   // TODO アクセスによるスコアと経験値
-  getAccessDenco(state, "offense").accessEXP += 100
-  state.offense.accessScore += 100
+  getAccessDenco(state, "offense").exp.access += 100
+  state.offense.score += 100
 
   // 他ピンクに関係なく発動するもの
   context.log.log("スキルを評価：アクセス開始前")
@@ -1221,9 +1251,9 @@ function turnSide(state: AccessSideState, currentSide: AccessSide, nextAccessIdx
     triggeredSkills: state.triggeredSkills,
     probabilityBoostPercent: state.probabilityBoostPercent,
     probabilityBoosted: state.probabilityBoosted,
-    accessScore: state.accessScore,
     score: state.score,
-    exp: state.exp,
+    displayedScore: state.displayedScore,
+    displayedExp: state.displayedExp,
   }
 }
 
@@ -1304,14 +1334,15 @@ function completeDencoAccessEXP(context: Context, state: AccessState, which: Acc
       // 特にイベントは発生せず経験値だけ追加
       const result = calcLinkResult(context, d.link[idx], d)
       // 例外的にリブートを伴わないリンク解除の場合は、リンクスコア＆経験値がアクセスのスコア＆経験値として加算
-      d.accessEXP += result.score
-      side.accessScore += result.score
+      d.exp.access += result.score
+      side.score += result.score
     }
     // アクセスによる経験値付与
-    if (d.who !== "other" || d.accessEXP !== 0) {
-      context.log.log(`経験値追加 ${d.name} ${d.currentExp} + ${d.accessEXP}`)
+    const exp = d.exp.access + d.exp.skill
+    if (d.who !== "other" || exp !== 0) {
+      context.log.log(`経験値追加 ${d.name} ${d.currentExp} += ${exp}(skill:${d.exp.skill})`)
     }
-    d.currentExp += d.accessEXP
+    d.currentExp += exp
   })
   return state
 }
@@ -1321,8 +1352,8 @@ function completeDisplayScoreExp(context: Context, state: AccessState, which: Ac
   if (side) {
     // 基本的には直接アクセスするでんこの経験値とスコア
     const d = side.formation[side.carIndex]
-    side.score = side.accessScore
-    side.exp = d.accessEXP
+    side.displayedScore = side.score
+    side.displayedExp = d.exp.access + d.exp.skill
     // 守備側がリブートした場合はその駅のリンクのスコア＆経験値を表示
     if (d.reboot && d.who === "defense") {
       const idx = d.link.findIndex(l => l.name === state.station.name)
@@ -1332,8 +1363,8 @@ function completeDisplayScoreExp(context: Context, state: AccessState, which: Ac
       }
       const result = calcLinkResult(context, d.link[idx], d)
       // アクセスの経験値として加算はするが、でんこ状態への反映はしない checkRebootLinksでまとめて加算
-      side.score += result.score
-      side.exp += result.score
+      side.displayedScore += result.score
+      side.displayedExp += result.score
     }
   }
   return state
