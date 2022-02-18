@@ -1,9 +1,10 @@
-import { copyDencoState, Denco, DencoState } from "./denco"
-import { SkillHolder, refreshSkillState, ActiveSkill } from "./skill"
-import { Context, fixClock, getCurrentTime } from "./context"
-import { LinkResult, LinksResult, Station, StationLink } from "./station"
-import { copyUserState, FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
 import moment from "moment-timezone"
+import { UserParam } from ".."
+import { Context, fixClock, getCurrentTime } from "./context"
+import { copyDencoState, Denco, DencoState } from "./denco"
+import { ActiveSkill, refreshSkillState, SkillHolder } from "./skill"
+import { LinkResult, LinksResult, Station, StationLink } from "./station"
+import { copyUserParam, copyUserState, FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
 
 
 /**
@@ -188,6 +189,7 @@ function addDamage(src: DamageState | undefined, damage: DamageState): DamageSta
  * アクセスの攻守ふたりの状態
  */
 export interface AccessSideState {
+  user: UserParam
   /**
    * 自身側の編成一覧
    */
@@ -333,6 +335,7 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
     context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${carIndex}, formation.legth: ${formation.length}`)
   }
   return {
+    user: copyUserParam(f),
     carIndex: carIndex,
     formation: formation,
     triggeredSkills: [],
@@ -437,6 +440,7 @@ function copyAccessDencoState(state: ReadonlyState<AccessDencoState>): AccessDen
 
 function copySideState(state: ReadonlyState<AccessSideState>): AccessSideState {
   return {
+    user: copyUserParam(state.user),
     carIndex: state.carIndex,
     accessScore: state.accessScore,
     probabilityBoostPercent: state.probabilityBoostPercent,
@@ -1211,6 +1215,7 @@ function turnSide(state: AccessSideState, currentSide: AccessSide, nextAccessIdx
     return next
   })
   return {
+    user: state.user,
     carIndex: nextAccessIdx,
     formation: nextFormation,
     triggeredSkills: state.triggeredSkills,

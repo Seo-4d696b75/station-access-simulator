@@ -42,7 +42,7 @@ export { default as DencoManager } from "./core/dencoManager"
 export { default as StationManager } from "./core/stationManager"
 export {
   ReadonlyState,
-  User,
+  UserParam,
   EventQueueEntry,
   UserState,
   FormationPosition,

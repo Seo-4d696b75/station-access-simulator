@@ -16,10 +16,6 @@ export type ReadonlyState<T> = T extends (Builtin | Event)
   ? T
   : { readonly [key in keyof T]: ReadonlyState<T[key]> }
 
-export interface User {
-  readonly name: string
-}
-
 interface EventQueueEntryBase<T, E = undefined> {
   readonly type: T
   readonly time: number
@@ -31,12 +27,24 @@ export type EventQueueEntry =
   EventQueueEntryBase<"hour_cycle">
 
 /**
+ * ユーザの状態のうちライブラリ側で操作しない情報
+ * 
+ * このオブジェクトのプロパティはライブラリ側からは参照のみ
+ */
+export interface UserParam {
+  name: string
+  /**
+   * アクセス時の移動距離 単位：km
+   */
+  dailyDistance: number
+}
+
+/**
  * ユーザの状態を表現する
  * 
  * 原則としてこの状態変数が操作の起点になる
  */
-export interface UserState extends User {
-
+export interface UserState extends UserParam {
   /**
    * 現在の編成状態
    */
@@ -66,7 +74,7 @@ export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: nu
   return state.formation[state.carIndex]
 }
 
-export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>): UserState {
+export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, param?: Partial<UserParam>): UserState {
   if (!formation) formation = []
   const date = moment(getCurrentTime(context))
     .millisecond(0)
@@ -74,7 +82,8 @@ export function initUser(context: Context, userName: string, formation?: Readonl
     .minute(0)
     .add(1, "h")
   return changeFormation(context, {
-    name: userName,
+    name: param?.name ?? userName,
+    dailyDistance: param?.dailyDistance ?? 0,
     formation: [],
     event: [],
     queue: [{
@@ -99,13 +108,19 @@ export function changeFormation(context: Context, current: ReadonlyState<UserSta
 
 export function copyUserState(state: ReadonlyState<UserState>): UserState {
   return {
-    name: state.name,
+    ...copyUserParam(state),
     formation: Array.from(state.formation).map(d => copyDencoState(d)),
     event: Array.from(state.event),
     queue: Array.from(state.queue),
   }
 }
 
+export function copyUserParam(param: ReadonlyState<UserParam>): UserParam {
+  return {
+    name: param.name,
+    dailyDistance: param.dailyDistance
+  }
+}
 /**
  * 現在の編成状態を更新する
  * 

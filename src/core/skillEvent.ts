@@ -5,7 +5,7 @@ import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, refreshSkillState, Skill, SkillTrigger } from "./skill";
 import { Station } from "./station";
-import { copyUserState, ReadonlyState, User, UserState } from "./user";
+import { copyUserParam, copyUserState, ReadonlyState, UserParam, UserState } from "./user";
 import moment from "moment-timezone"
 
 export interface SkillEventDencoState extends DencoState {
@@ -56,7 +56,7 @@ export interface EventTriggeredSkill {
  */
 export interface SkillEventState {
   time: number
-  user: User
+  user: UserParam
 
   formation: SkillEventDencoState[]
   carIndex: number
@@ -139,7 +139,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     return copyUserState(state)
   }
   const eventState: SkillEventState = {
-    user: state,
+    user: copyUserParam(state),
     time: access.time,
     formation: state.formation.map((d, idx) => {
       return {
@@ -158,7 +158,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
   if (result) {
     // スキル発動による影響の反映
     return {
-      name: state.name,
+      ...result.user,
       formation: result.formation.map(d => copyDencoState(d)),
       event: [
         ...state.event,
@@ -284,7 +284,7 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
   const config: Access.AccessConfig = {
     offense: {
       state: {
-        name: state.user.name,
+        ...state.user,
         formation: state.formation.map(d => copyDencoState(d)),
         event: [],
         queue: [],
@@ -400,7 +400,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
   if (result) {
     // スキル発動による影響の反映
     next = {
-      name: next.name,
+      ...result.user,
       formation: result.formation.map(d => copyDencoState(d)),
       event: [
         ...next.event,
