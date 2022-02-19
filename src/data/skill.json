@@ -1,8 +1,8 @@
 [
-  {"numbering":"0","class":"D00_Nozomi","type":"manual","step":{"damage_common":null},"list":[
+  {"numbering":"0","class":"D00_Nozomi","type":"manual","list":[
     {"skill_level":1,"denco_level":1,"name":"目指せステーションマスター♪","ATK":50,"DEF":50,"active":1200,"wait":1800}
   ]},
-  {"numbering":"1","class":"D01_Seria","type":"manual","step":{"after_access":"probability"},"list":[
+  {"numbering":"1","class":"D01_Seria","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"検測開始しま～す♡ Lv.1","active":1800,"wait":10800,"heal":15,"probability":20},
     {"skill_level":2,"denco_level":15,"name":"検測開始しま～す♡ Lv.2","active":1800,"wait":10800,"heal":25,"probability":25},
     {"skill_level":3,"denco_level":30,"name":"検測開始しま～す♡ Lv.3","active":1800,"wait":10800,"heal":35,"probability":30},
@@ -11,7 +11,7 @@
     {"skill_level":6,"denco_level":70,"name":"検測開始しま～す♡ Lv.6","active":1800,"wait":10800,"heal":65,"probability":45},
     {"skill_level":7,"denco_level":80,"name":"幸せの黄色い検測","active":1800,"wait":10800,"heal":80,"probability":50}
   ]},
-  {"numbering":"2","class":"D02_Mero","type":"always","step":{"pick_check":"probability"},"list":[
+  {"numbering":"2","class":"D02_Mero","type":"always","list":[
     {"skill_level":1,"denco_level":5, "name":"きゃのんぱんち Lv.1","probability":1.0},
     {"skill_level":2,"denco_level":15, "name":"きゃのんぱんち Lv.2","probability":1.2},
     {"skill_level":3,"denco_level":30, "name":"きゃのんぱんち Lv.3","probability":1.4},
@@ -20,7 +20,7 @@
     {"skill_level":6,"denco_level":70, "name":"きゃのんぱんち Lv.6","probability":2.0},
     {"skill_level":7,"denco_level":80, "name":"すーぱーぎがんとぱんち","probability":2.5}
   ]},
-  {"numbering":"3","class":"D03_Luna","type":"always","step":{"damage_common":"probability"},"list":[
+  {"numbering":"3","class":"D03_Luna","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ナイトライダー Lv.1","DEF_night":5,"DEF_morning":-30},
     {"skill_level":2,"denco_level":15,"name":"ナイトライダー Lv.2","DEF_night":10,"DEF_morning":-30},
     {"skill_level":3,"denco_level":30,"name":"ナイトライダー Lv.3","DEF_night":15,"DEF_morning":-30},
@@ -38,7 +38,7 @@
     {"skill_level":6,"denco_level":70,"name":"ダブルアクセス Lv.6","probability":4.5},
     {"skill_level":7,"denco_level":80,"name":"ディーゼルＤアクセス","probability":5.0}
   ]},
-  {"numbering":"5","class":"D05_Reika","type":"manual","step":{"damage_common":null},"list":[
+  {"numbering":"5","class":"D05_Reika","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"起動加速度向上 Lv.1","ATK":10,"active":900,"wait":5400},
     {"skill_level":2,"denco_level":15,"name":"起動加速度向上 Lv.2","ATK":15,"active":900,"wait":5400},
     {"skill_level":3,"denco_level":30,"name":"起動加速度向上 Lv.3","ATK":20,"active":900,"wait":5400},
@@ -47,7 +47,7 @@
     {"skill_level":6,"denco_level":70,"name":"起動加速度向上 Lv.6","ATK":35,"active":900,"wait":5400},
     {"skill_level":7,"denco_level":80,"name":"大起動加速度向上薬注入","ATK":45,"active":900,"wait":5400}
   ]},
-  {"numbering":"6","class":"D06_Charlotte","type":"manual","step":{"random_access":null},"list":[
+  {"numbering":"6","class":"D06_Charlotte","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"きまぐれアクセス Lv.1","timer":21600,"active":0,"wait":21600},
     {"skill_level":2,"denco_level":15,"name":"きまぐれアクセス Lv.2","timer":19800,"active":0,"wait":19800},
     {"skill_level":3,"denco_level":30,"name":"きまぐれアクセス Lv.3","timer":16200,"active":0,"wait":16200},
@@ -56,7 +56,7 @@
     {"skill_level":6,"denco_level":70,"name":"きまぐれアクセス Lv.6","timer":7200,"active":0,"wait":7200},
     {"skill_level":7,"denco_level":80,"name":"風の吹くまま気の向くまま","timer":5400,"active":0,"wait":5400}
   ]},
-  {"numbering":"7","class":"D07_Sheena","type":"always","step":{"after_damage":"probability"},"list":[
+  {"numbering":"7","class":"D07_Sheena","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ディファーレ Lv.1","probability":2.0},
     {"skill_level":2,"denco_level":15,"name":"ディファーレ Lv.2","probability":3.5},
     {"skill_level":3,"denco_level":30,"name":"ディファーレ Lv.3","probability":5.0},
@@ -65,7 +65,7 @@
     {"skill_level":6,"denco_level":70,"name":"ディファーレ Lv.6","probability":9.5},
     {"skill_level":7,"denco_level":80,"name":"レッツトエントリヒ","probability":11.0}
   ]},
-  {"numbering":"9","class":"D09_Moe","type":"auto-condition","step":{"one_hour":"probability"},"list":[
+  {"numbering":"9","class":"D09_Moe","type":"auto-condition","list":[
     {"skill_level":1,"denco_level":5,"name":"定時メンテナンス Lv.1","heal":10},
     {"skill_level":2,"denco_level":15,"name":"定時メンテナンス Lv.2","heal":15},
     {"skill_level":3,"denco_level":30,"name":"定時メンテナンス Lv.3","heal":20},
@@ -74,7 +74,7 @@
     {"skill_level":6,"denco_level":70,"name":"定時メンテナンス Lv.6","heal":35},
     {"skill_level":7,"denco_level":80,"name":"ご主人様も一緒にいかが!?","heal":40}
   ]},
-  {"numbering":"10","class":"D10_Iroha","type":"manual-condition","step":{"replace":null},"list":[
+  {"numbering":"10","class":"D10_Iroha","type":"manual-condition","list":[
     {"skill_level":1,"denco_level":5,"name":"リプレイスメント Lv.1","active":0,"wait":12600,"links":2},
     {"skill_level":2,"denco_level":15,"name":"リプレイスメント Lv.2","active":0,"wait":10800,"links":2},
     {"skill_level":3,"denco_level":30,"name":"リプレイスメント Lv.3","active":0,"wait":9000,"links":2},
@@ -83,7 +83,7 @@
     {"skill_level":6,"denco_level":70,"name":"リプレイスメント Lv.6","active":0,"wait":3600,"links":2},
     {"skill_level":7,"denco_level":80,"name":"ディストリビューション","active":0,"wait":1800,"links":2}
   ]},
-  {"numbering":"11","class":"D11_Siira","type":"always","step":{"damage_common":"probability"},"list":[
+  {"numbering":"11","class":"D11_Siira","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ペインガード Lv.1","probability":20,"DEF":10},
     {"skill_level":2,"denco_level":15,"name":"ペインガード Lv.2","probability":20,"DEF":15},
     {"skill_level":3,"denco_level":30,"name":"ペインガード Lv.3","probability":25,"DEF":20},
@@ -92,7 +92,7 @@
     {"skill_level":6,"denco_level":70,"name":"ペインガード Lv.6","probability":30,"DEF":40},
     {"skill_level":7,"denco_level":80,"name":"ジョイフルガード","probability":30,"DEF":50}
   ]},
-  {"numbering":"13","class":"D13_Izuna","type":"always","step":{"damage_common":null},"list":[
+  {"numbering":"13","class":"D13_Izuna","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"重連壁 Lv.1","DEF":1},
     {"skill_level":2,"denco_level":15,"name":"重連壁 Lv.2","DEF":2},
     {"skill_level":3,"denco_level":30,"name":"重連壁 Lv.3","DEF":3},
@@ -101,7 +101,7 @@
     {"skill_level":6,"denco_level":70,"name":"重連壁 Lv.6","DEF":6},
     {"skill_level":7,"denco_level":80,"name":"私が本務機です♪","DEF":7}
   ]},
-  {"numbering":"14","class":"D14_Fubu","type":"manual","step":{"damage_common":null},"list":[
+  {"numbering":"14","class":"D14_Fubu","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"根性入れてやるかー Lv.1","active":1800,"wait":7200,"DEF":4},
     {"skill_level":2,"denco_level":15,"name":"根性入れてやるかー Lv.2","active":1800,"wait":7200,"DEF":9},
     {"skill_level":3,"denco_level":30,"name":"根性入れてやるかー Lv.3","active":1800,"wait":7200,"DEF":14},
@@ -110,7 +110,7 @@
     {"skill_level":6,"denco_level":70,"name":"根性入れてやるかー Lv.6","active":1800,"wait":7200,"DEF":29},
     {"skill_level":7,"denco_level":80,"name":"まだまだこんなもんじゃないゾー","active":1800,"wait":7200,"DEF":35}
   ]},
-  {"numbering":"15","class":"D15_Ringo","type":"always","step":{"damage_common":null},"list":[
+  {"numbering":"15","class":"D15_Ringo","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"夜更かしはお肌の敵 Lv.1","ATK":8,"DEF":-30},
     {"skill_level":2,"denco_level":15,"name":"夜更かしはお肌の敵 Lv.2","ATK":13,"DEF":-30},
     {"skill_level":3,"denco_level":30,"name":"夜更かしはお肌の敵 Lv.3","ATK":18,"DEF":-30},
@@ -128,10 +128,10 @@
     {"skill_level":6,"denco_level":70,"name":"友だち一杯つくるのニャ Lv.6","add":12},
     {"skill_level":7,"denco_level":80,"name":"友愛の轍","add":15}
   ]},
-  {"numbering":"17","class":"D17_Dachu","type":"always","step":{"login":"robability"},"list":[
+  {"numbering":"17","class":"D17_Dachu","type":"always","list":[
     {"skill_level":1,"denco_level":10,"name":"どいてもらうでチュー","probability":75,"footbath":1}
   ]},
-  {"numbering":"18","class":"D18_Ichiho","type":"always","step":{"damage_special":"probability"},"list":[
+  {"numbering":"18","class":"D18_Ichiho","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"根性だけが取り柄ですぅ Lv.1","probability":10},
     {"skill_level":2,"denco_level":15,"name":"根性だけが取り柄ですぅ Lv.2","probability":15},
     {"skill_level":3,"denco_level":30,"name":"根性だけが取り柄ですぅ Lv.3","probability":20},
@@ -140,7 +140,7 @@
     {"skill_level":6,"denco_level":70,"name":"根性だけが取り柄ですぅ Lv.6","probability":35},
     {"skill_level":7,"denco_level":80,"name":"マスターとの約束","probability":40}
   ]},
-  {"numbering":"19","class":"D19_Imura","type":"manual","step":{"damage_common":null},"list":[
+  {"numbering":"19","class":"D19_Imura","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"紫電一閃 Lv.1","active":900,"wait":3600,"ATK":20},
     {"skill_level":2,"denco_level":15,"name":"紫電一閃 Lv.2","active":900,"wait":3600,"ATK":25},
     {"skill_level":3,"denco_level":30,"name":"紫電一閃 Lv.3","active":900,"wait":3600,"ATK":30},
@@ -149,7 +149,7 @@
     {"skill_level":6,"denco_level":70,"name":"紫電一閃 Lv.6","active":900,"wait":3600,"ATK":45},
     {"skill_level":7,"denco_level":80,"name":"画竜点睛","active":900,"wait":3600,"ATK":50}
   ]},
-  {"numbering":"20","class":"D20_Nikoro","type":"always","step":{"after_access":null},"list":[
+  {"numbering":"20","class":"D20_Nikoro","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"デリバリーカーゴ Lv.1","EXP":10},
     {"skill_level":2,"denco_level":15,"name":"デリバリーカーゴ Lv.2","EXP":15},
     {"skill_level":3,"denco_level":30,"name":"デリバリーカーゴ Lv.3","EXP":20},
@@ -158,7 +158,7 @@
     {"skill_level":6,"denco_level":70,"name":"デリバリーカーゴ Lv.6","EXP":35},
     {"skill_level":7,"denco_level":80,"name":"一分のスキも無い配達","EXP":40}
   ]},
-  {"numbering":"21","class":"D21_Sigure","type":"always","step":{"damage_common":"probability"},"list":[
+  {"numbering":"21","class":"D21_Sigure","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"加圧式シールド Lv.1","probability":55,"DEF":5},
     {"skill_level":2,"denco_level":15,"name":"加圧式シールド Lv.2","probability":55,"DEF":9},
     {"skill_level":3,"denco_level":30,"name":"加圧式シールド Lv.3","probability":55,"DEF":13},
@@ -167,7 +167,7 @@
     {"skill_level":6,"denco_level":70,"name":"加圧式シールド Lv.6","probability":55,"DEF":23},
     {"skill_level":7,"denco_level":80,"name":"エメラルドシールド","probability":55,"DEF":26}
   ]},
-  {"numbering":"22","class":"D22_Ren","type":"manual","step":{"before_access":null},
+  {"numbering":"22","class":"D22_Ren","type":"manual",
     "invalidated":["3","7","11","13","18","24","27","31","33","35","39","41","49","50","56","58","67","70"],
     "list":[
     {"skill_level":1,"denco_level":5,"name":"こけおどし Lv.1","active":600,"wait":5400},
@@ -178,7 +178,7 @@
     {"skill_level":6,"denco_level":70,"name":"こけおどし Lv.6","active":2100,"wait":5400},
     {"skill_level":7,"denco_level":80,"name":"はったりかましまくり","active":2400,"wait":5400}
   ]},
-  {"numbering":"23","class":"D23_Mirai","type":"always","step":{"damage_common":"probability"},"list":[
+  {"numbering":"23","class":"D23_Mirai","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ランブルアタック Lv.1","probability":80,"ATK_lower":-18,"ATK_upper":30},
     {"skill_level":2,"denco_level":15,"name":"ランブルアタック Lv.2","probability":80,"ATK_lower":-25,"ATK_upper":40},
     {"skill_level":3,"denco_level":30,"name":"ランブルアタック Lv.3","probability":80,"ATK_lower":-32,"ATK_upper":50},
@@ -187,7 +187,7 @@
     {"skill_level":6,"denco_level":70,"name":"ランブルアタック Lv.6","probability":80,"ATK_lower":-53,"ATK_upper":80},
     {"skill_level":7,"denco_level":80,"name":"フラストレーション","probability":80,"ATK_lower":-60,"ATK_upper":90}
   ]},
-  {"numbering":"24","class":"D24_Beatrice","type":"manual","step":{"damage_common":null},"list":[
+  {"numbering":"24","class":"D24_Beatrice","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"パワーレジスト Lv.1","DEF":75,"active":3600,"wait":3600},
     {"skill_level":2,"denco_level":15,"name":"パワーレジスト Lv.2","DEF":75,"active":7200,"wait":3600},
     {"skill_level":3,"denco_level":30,"name":"パワーレジスト Lv.3","DEF":75,"active":10800,"wait":3600},
@@ -196,7 +196,7 @@
     {"skill_level":6,"denco_level":70,"name":"パワーレジスト Lv.6","DEF":75,"active":21600,"wait":3600},
     {"skill_level":7,"denco_level":80,"name":"グランレジストサルーン","DEF":75,"active":25200,"wait":3600}
   ]},
-  {"numbering":"25","class":"D25_Urara","type":"manual","step":{"reboot":"probability"},"list":[
+  {"numbering":"25","class":"D25_Urara","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"じかんあっしゅく Lv.1","probability":25,"active":0,"wait":7200},
     {"skill_level":2,"denco_level":15,"name":"じかんあっしゅく Lv.2","probability":30,"active":0,"wait":7200},
     {"skill_level":3,"denco_level":30,"name":"じかんあっしゅく Lv.3","probability":40,"active":0,"wait":7200},
@@ -205,7 +205,7 @@
     {"skill_level":6,"denco_level":70,"name":"じかんあっしゅく Lv.6","probability":70,"active":0,"wait":7200},
     {"skill_level":7,"denco_level":80,"name":"さよならタイソン","probability":80,"active":0,"wait":7200}
   ]},
-  {"numbering":"26","class":"D26_Hokone","type":"manual","step":{"damage_common":"probability","damage_fixed":null},"list":[
+  {"numbering":"26","class":"D26_Hokone","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"妹愛バースト Lv.1","ATK":30,"active":1200,"wait":7200,"heal":40},
     {"skill_level":2,"denco_level":15,"name":"妹愛バースト Lv.2","ATK":34,"active":1200,"wait":7200,"heal":40},
     {"skill_level":3,"denco_level":30,"name":"妹愛バースト Lv.3","ATK":38,"active":1200,"wait":7200,"heal":40},
@@ -214,7 +214,7 @@
     {"skill_level":6,"denco_level":70,"name":"妹愛バースト Lv.6","ATK":50,"active":1200,"wait":7200,"heal":40},
     {"skill_level":7,"denco_level":80,"name":"妹愛インフェルノ","ATK":55,"active":1200,"wait":7200,"heal":40}
   ]},
-  {"numbering":"27","class":"D27_Yachiyo","type":"always","step":{"damage_common":null},"list":[
+  {"numbering":"27","class":"D27_Yachiyo","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ラブホームズ Lv.1","DEF":15},
     {"skill_level":2,"denco_level":15,"name":"ラブホームズ Lv.2","DEF":18},
     {"skill_level":3,"denco_level":30,"name":"ラブホームズ Lv.3","DEF":21},
@@ -223,7 +223,7 @@
     {"skill_level":6,"denco_level":70,"name":"ラブホームズ Lv.6","DEF":30},
     {"skill_level":7,"denco_level":80,"name":"お家大好きひきこもり","DEF":35}
   ]},
-  {"numbering":"28","class":"D28_Riona","type":"manual","step":{"damage_common":null},"list":[
+  {"numbering":"28","class":"D28_Riona","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"データアクセラレーター Lv.1","ATK":55,"active":600,"wait":7200},
     {"skill_level":2,"denco_level":15,"name":"データアクセラレーター Lv.2","ATK":55,"active":900,"wait":7200},
     {"skill_level":3,"denco_level":30,"name":"データアクセラレーター Lv.3","ATK":55,"active":1200,"wait":7200},
@@ -232,7 +232,7 @@
     {"skill_level":6,"denco_level":70,"name":"データアクセラレーター Lv.6","ATK":55,"active":2400,"wait":7200},
     {"skill_level":7,"denco_level":80,"name":"データは万代の宝なり ","ATK":55,"active":3000,"wait":7200}
   ]},
-  {"numbering":"29","class":"D29_Chiko","type":"manual","step":{"damage_special":"probability"},"list":[
+  {"numbering":"29","class":"D29_Chiko","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"ラッシュアワー Lv.1","probability":12,"active":600,"wait":10800},
     {"skill_level":2,"denco_level":15,"name":"ラッシュアワー Lv.2","probability":15,"active":600,"wait":10800},
     {"skill_level":3,"denco_level":30,"name":"ラッシュアワー Lv.3","probability":18,"active":600,"wait":10800},
@@ -241,7 +241,7 @@
     {"skill_level":6,"denco_level":70,"name":"ラッシュアワー Lv.6","probability":27,"active":900,"wait":10800},
     {"skill_level":7,"denco_level":80,"name":"負けを認めるまでチコは引かない！","probability":30,"active":900,"wait":10800}
   ]},
-  {"numbering":"30","class":"D30_Reno","type":"always","step":{"damage_common":null},"list":[
+  {"numbering":"30","class":"D30_Reno","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ナイトレイダー Lv.1","ATK":30,"DEF":-30},
     {"skill_level":2,"denco_level":15,"name":"ナイトレイダー Lv.2","ATK":35,"DEF":-30},
     {"skill_level":3,"denco_level":30,"name":"ナイトレイダー Lv.3","ATK":40,"DEF":-30},
@@ -250,7 +250,7 @@
     {"skill_level":6,"denco_level":70,"name":"ナイトレイダー Lv.6","ATK":55,"DEF":-30},
     {"skill_level":7,"denco_level":80,"name":"ナイトメア","ATK":60,"DEF":-30}
   ]},
-  {"numbering":"31","class":"D31_Alice","type":"auto-condition","step":{"damage_common":"probability"},"list":[
+  {"numbering":"31","class":"D31_Alice","type":"auto-condition","list":[
     {"skill_level":1,"denco_level":5,"name":"ハッピーホリデイ Lv.1","DEF":10,"probability":75},
     {"skill_level":2,"denco_level":15,"name":"ハッピーホリデイ Lv.2","DEF":15,"probability":75},
     {"skill_level":3,"denco_level":30,"name":"ハッピーホリデイ Lv.3","DEF":20,"probability":75},
@@ -259,7 +259,7 @@
     {"skill_level":6,"denco_level":70,"name":"ハッピーホリデイ Lv.6","DEF":35,"probability":85},
     {"skill_level":7,"denco_level":80,"name":"休日にお休みするのは仕事です","DEF":40,"probability":85}
   ]},
-  {"numbering":"32","class":"D32_Kotan","type":"","step":{"damage_common":null},"list":[
+  {"numbering":"32","class":"D32_Kotan","type":"","list":[
     {"skill_level":1,"denco_level":5,"name":"ボイラー出力上昇 Lv.1","ATK":20,"sations":50},
     {"skill_level":2,"denco_level":15,"name":"ボイラー出力上昇 Lv.2","ATK":30,"sations":50},
     {"skill_level":3,"denco_level":30,"name":"ボイラー出力上昇 Lv.3","ATK":40,"sations":50},
@@ -268,7 +268,7 @@
     {"skill_level":6,"denco_level":70,"name":"ボイラー出力上昇 Lv.6","ATK":70,"sations":50},
     {"skill_level":7,"denco_level":80,"name":"エンジンブラストオフ","ATK":80,"sations":50}
   ]},
-  {"numbering":"33","class":"D33_Eria","type":"","step":{"before_access":null},
+  {"numbering":"33","class":"D33_Eria","type":"",
     "invalidated":["15","19","26","28","30","32","42","44","46","53","59","64","66","68","72","75","76","78","80"],
     "list":[
     {"skill_level":1,"denco_level":5,"name":"天真爛漫 Lv.1","active":3600,"wait":3600},
@@ -279,7 +279,7 @@
     {"skill_level":6,"denco_level":70,"name":"天真爛漫 Lv.6","active":21600,"wait":3600},
     {"skill_level":7,"denco_level":80,"name":"ピュリファイヤ","active":25200,"wait":3600}
   ]},
-  {"numbering":"34","class":"D34_Hiiru","type":"manual","step":{"probability_check":null},"list":[
+  {"numbering":"34","class":"D34_Hiiru","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"テンションAGEAGE↑↑ Lv.1","boost":8,"active":1800,"wait":5400},
     {"skill_level":2,"denco_level":15,"name":"テンションAGEAGE↑↑ Lv.2","boost":12,"active":1800,"wait":5400},
     {"skill_level":3,"denco_level":30,"name":"テンションAGEAGE↑↑ Lv.3","boost":16,"active":1800,"wait":5400},
@@ -288,7 +288,7 @@
     {"skill_level":6,"denco_level":70,"name":"テンションAGEAGE↑↑ Lv.6","boost":28,"active":3600,"wait":5400},
     {"skill_level":7,"denco_level":80,"name":"イケイケDONDONフィーバー","boost":32,"active":3600,"wait":5400}
   ]},
-  {"numbering":"35","class":"D35_Iori","type":"always","step":{"damage_common":null},
+  {"numbering":"35","class":"D35_Iori","type":"always",
     "station_max":5,"name_key":"本","list":[
     {"skill_level":1,"denco_level":5,"name":"ビブリオフィル Lv.1","DEF":5},
     {"skill_level":2,"denco_level":15,"name":"ビブリオフィル Lv.2","DEF":6},
@@ -298,7 +298,7 @@
     {"skill_level":6,"denco_level":70,"name":"ビブリオフィル Lv.6","DEF":10},
     {"skill_level":7,"denco_level":80,"name":"ビブリオマニア","DEF":11}
   ]},
-  {"numbering":"36","class":"D36_Mio","type":"manual","step":{"damage_special":"probability"},"list":[
+  {"numbering":"36","class":"D36_Mio","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"スタンドイン Lv.1","probability":25,"active":1800,"wait":10800},
     {"skill_level":2,"denco_level":15,"name":"スタンドイン Lv.2","probability":30,"active":1800,"wait":10800},
     {"skill_level":3,"denco_level":30,"name":"スタンドイン Lv.3","probability":35,"active":1800,"wait":10800},
@@ -307,7 +307,7 @@
     {"skill_level":6,"denco_level":70,"name":"スタンドイン Lv.6","probability":50,"active":3600,"wait":10800},
     {"skill_level":7,"denco_level":80,"name":"鉄の意思","probability":55,"active":3600,"wait":10800}
   ]},
-  {"numbering":"37","class":"D37_Mikoto","type":"always","step":{"damage_common":"probability"},"list":[
+  {"numbering":"37","class":"D37_Mikoto","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"惻隠之心 Lv.1","probability":70,"ATK":5},
     {"skill_level":2,"denco_level":15,"name":"惻隠之心 Lv.2","probability":70,"ATK":7},
     {"skill_level":3,"denco_level":30,"name":"惻隠之心 Lv.3","probability":70,"ATK":10},
@@ -316,7 +316,7 @@
     {"skill_level":6,"denco_level":70,"name":"惻隠之心 Lv.6","probability":70,"ATK":17},
     {"skill_level":7,"denco_level":80,"name":"胆大心小","probability":70,"ATK":20}
   ]},
-  {"numbering":"38","class":"D38_Kuni","type":"manual","step":{"after_damage":null,"after_access":"probability"},"list":[
+  {"numbering":"38","class":"D38_Kuni","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"シスターガード Lv.1","active":1800,"wait":7200,"HP_TH":30,"heal":10,"probability":25},
     {"skill_level":2,"denco_level":15,"name":"シスターガード Lv.2","active":1800,"wait":7200,"HP_TH":30,"heal":15,"probability":25},
     {"skill_level":3,"denco_level":30,"name":"シスターガード Lv.3","active":1800,"wait":7200,"HP_TH":30,"heal":20,"probability":25},
@@ -325,7 +325,7 @@
     {"skill_level":6,"denco_level":70,"name":"シスターガード Lv.6","active":1800,"wait":7200,"HP_TH":30,"heal":50,"probability":35},
     {"skill_level":7,"denco_level":80,"name":"マイディアシスター","active":1800,"wait":7200,"HP_TH":30,"heal":60,"probability":35}
   ]},
-  {"numbering":"39","class":"D39_Lulu","type":"always","step":{"damage_special":"probability"},"list":[
+  {"numbering":"39","class":"D39_Lulu","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"るるだけのお時間♪ Lv.1","probability":12},
     {"skill_level":2,"denco_level":15,"name":"るるだけのお時間♪ Lv.2","probability":15},
     {"skill_level":3,"denco_level":30,"name":"るるだけのお時間♪ Lv.3","probability":18},
@@ -334,7 +334,7 @@
     {"skill_level":6,"denco_level":70,"name":"るるだけのお時間♪ Lv.6","probability":27},
     {"skill_level":7,"denco_level":80,"name":"まいぺーすが一番♪","probability":30}
   ]},
-  {"numbering":"40","class":"D40_Haru","type":"","step":{"before_access":"probability"},"list":[
+  {"numbering":"40","class":"D40_Haru","type":"","list":[
     {"skill_level":1,"denco_level":5,"name":"ウィルパワー Lv.1","probability":10},
     {"skill_level":2,"denco_level":15,"name":"ウィルパワー Lv.2","probability":15},
     {"skill_level":3,"denco_level":30,"name":"ウィルパワー Lv.3","probability":20},
@@ -343,7 +343,7 @@
     {"skill_level":6,"denco_level":70,"name":"ウィルパワー Lv.6","probability":35},
     {"skill_level":7,"denco_level":80,"name":"好きにやらせて！","probability":40}
   ]},
-  {"numbering":"41","class":"D41_Nichina","type":"manual","step":{"after_damage":null},"list":[
+  {"numbering":"41","class":"D41_Nichina","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"にちなの祈り Lv.1","active":1800,"wait":5400},
     {"skill_level":2,"denco_level":15,"name":"にちなの祈り Lv.2","active":3600,"wait":5400},
     {"skill_level":3,"denco_level":30,"name":"にちなの祈り Lv.3","active":5400,"wait":5400},
@@ -352,7 +352,7 @@
     {"skill_level":6,"denco_level":70,"name":"にちなの祈り Lv.6","active":10800,"wait":5400},
     {"skill_level":7,"denco_level":80,"name":"思い出だけは譲れません","active":12600,"wait":5400}
   ]},
-  {"numbering":"42","class":"D42_Sora","type":"auto-condition","step":{"damage_common":"probability"},
+  {"numbering":"42","class":"D42_Sora","type":"auto-condition",
     "list":[
     {"skill_level":1,"denco_level":5,"name":"タイムフォーワーク Lv.1","ATK":20,"probability":70},
     {"skill_level":2,"denco_level":15,"name":"タイムフォーワーク Lv.2","ATK":30,"probability":70},
@@ -362,7 +362,7 @@
     {"skill_level":6,"denco_level":70,"name":"タイムフォーワーク Lv.6","ATK":50,"probability":70},
     {"skill_level":7,"denco_level":80,"name":"ワークライフバランス！","ATK":60,"probability":70}
   ]},
-  {"numbering":"43","class":"D43_Asa","type":"manual","step":{"activate":null},"list":[
+  {"numbering":"43","class":"D43_Asa","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"一心精進 Lv.1","active":0,"wait":9000,"extend":5},
     {"skill_level":2,"denco_level":15,"name":"一心精進 Lv.2","active":0,"wait":9000,"extend":10},
     {"skill_level":3,"denco_level":30,"name":"一心精進 Lv.3","active":0,"wait":9000,"extend":15},
@@ -371,7 +371,7 @@
     {"skill_level":6,"denco_level":70,"name":"一心精進 Lv.6","active":0,"wait":9000,"extend":30},
     {"skill_level":7,"denco_level":80,"name":"精神一到！","active":0,"wait":9000,"extend":35}
   ]},
-  {"numbering":"44","class":"D44_Saika","type":"always","step":{"damage_common":null},
+  {"numbering":"44","class":"D44_Saika","type":"always",
     "threshold1":100,"threshold2":360,"list":[
     {"skill_level":1,"denco_level":5,"name":"エナジーロード Lv.1","ATK1":0.16,"ATK2":0.10},
     {"skill_level":2,"denco_level":15,"name":"エナジーロード Lv.2","ATK1":0.20,"ATK2":0.10},
@@ -381,7 +381,7 @@
     {"skill_level":6,"denco_level":70,"name":"エナジーロード Lv.6","ATK1":0.36,"ATK2":0.26},
     {"skill_level":7,"denco_level":80,"name":"さいかは走るよどこまでも","ATK1":0.40,"ATK2":0.26}
   ]},
-  {"numbering":"61","class":"D61_Chitose","type":"manual","step":{"before_access":"probability"},"list":[
+  {"numbering":"61","class":"D61_Chitose","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"うつろうひととせ Lv.1","probability":30,"active":900,"wait":14400},
     {"skill_level":2,"denco_level":15,"name":"うつろうひととせ Lv.2","probability":35,"active":900,"wait":14400},
     {"skill_level":3,"denco_level":30,"name":"うつろうひととせ Lv.3","probability":40,"active":900,"wait":14400},
@@ -390,7 +390,7 @@
     {"skill_level":6,"denco_level":70,"name":"うつろうひととせ Lv.6","probability":85,"active":1800,"wait":14400},
     {"skill_level":7,"denco_level":80,"name":"見果てぬ景色","probability":100,"active":1800,"wait":14400}
   ]},
-  {"numbering":"66","class":"D66_Minamo","type":"auto","step":{"damage_common":null,"activate":null},"list":[
+  {"numbering":"66","class":"D66_Minamo","type":"auto","list":[
     {"skill_level":1,"denco_level":5,"name":"みんなでショウ・タイム Lv.1","damage":30,"links":2,"active":1800,"wait":0},
     {"skill_level":2,"denco_level":15,"name":"みんなでショウ・タイム Lv.2","damage":45,"links":2,"active":1800,"wait":0},
     {"skill_level":3,"denco_level":30,"name":"みんなでショウ・タイム Lv.3","damage":60,"links":2,"active":1800,"wait":0},
@@ -399,7 +399,18 @@
     {"skill_level":6,"denco_level":70,"name":"みんなでショウ・タイム Lv.6","damage":105,"links":2,"active":1800,"wait":0},
     {"skill_level":7,"denco_level":80,"name":"ランウェイオンザレール","damage":120,"links":2,"active":1800,"wait":0}
   ]},
-  {"numbering":"77","class":"D77_Reto","type":"always","step":{"reboot":"probability"},"list":[
+  {"numbering":"69","class":"D69_Miyu","type":"always",
+    "distMax": 100,
+    "list":[
+    {"skill_level":1,"denco_level":5,"name":"きらきらリスペクト Lv.1","expMax":50,"expFixed":100},
+    {"skill_level":2,"denco_level":15,"name":"きらきらリスペクト Lv.2","expMax":75,"expFixed":110},
+    {"skill_level":3,"denco_level":30,"name":"きらきらリスペクト Lv.3","expMax":100,"expFixed":120},
+    {"skill_level":4,"denco_level":50,"name":"きらきらリスペクト Lv.4","expMax":150,"expFixed":140},
+    {"skill_level":5,"denco_level":60,"name":"きらきらリスペクト Lv.5","expMax":200,"expFixed":160},
+    {"skill_level":6,"denco_level":70,"name":"きらきらリスペクト Lv.6","expMax":250,"expFixed":180},
+    {"skill_level":7,"denco_level":80,"name":"はしれヒストリカル・ロード","expMax":300,"expFixed":200}
+  ]},
+  {"numbering":"77","class":"D77_Reto","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ワンダーエスケープ Lv.1","active":0,"wait":0,"probability":8},
     {"skill_level":2,"denco_level":15,"name":"ワンダーエスケープ Lv.2","active":0,"wait":0,"probability":10},
     {"skill_level":3,"denco_level":30,"name":"ワンダーエスケープ Lv.3","active":0,"wait":0,"probability":12},
