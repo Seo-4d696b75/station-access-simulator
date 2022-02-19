@@ -36,7 +36,7 @@ init().then(() => {
     station: charlotte.link[0],
   }
   const result = startAccess(context, config)
-  //printEvents(context, result.offense, true)
+  printEvents(context, result.offense, true)
   //printEvents(context, result.defense, true)
 
 })
