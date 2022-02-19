@@ -7,7 +7,15 @@ interface SkillProperty {
   property: Map<string, number>
 }
 
-export type SkillPropertyReader = (key: string) => number
+/**
+ * スキルのレベルに応じたプロパティを参照する
+ * 
+ * see `src/data/skill.json`
+ * @param key key値 jsonのkey-valueに対応
+ * @param defaultValue 指定したkeyに対するvalueが無い場合のデフォルト値
+ * @throws 指定したkeyに対するvalueが無く、デフォルト値も指定が無い場合
+ */
+export type SkillPropertyReader = (key: string, defaultValue?: number) => number
 
 interface SkillDataset {
   numbering: string
@@ -16,6 +24,7 @@ interface SkillDataset {
   transition: SkillStateTransition
   evaluateInPink: boolean
   skillProperties: SkillProperty[]
+  skillDefaultProperties: Map<string, number>
 }
 
 export class SkillManager {
@@ -33,17 +42,18 @@ export class SkillManager {
       const moduleName = e.class as string
       const type = e.type as SkillStateTransition
       const properties = (e.list as any[]).map(d => {
-        var skill = d.skill_level as number
-        var denco = d.denco_level as number
-        var name = d.name as string
-        delete d.skill_level
-        delete d.denco_level
-        delete d.name
-        var map = new Map<string, number>()
-        for (var [key, value] of Object.entries(d)) {
-          map.set(key, value as number)
+        let skill = d.skill_level as number
+        let denco = d.denco_level as number
+        let name = d.name as string
+        const values = Object.assign({}, d)
+        delete values.skill_level
+        delete values.denco_level
+        delete values.name
+        let map = new Map<string, number>()
+        for (let [key, value] of Object.entries(values)) {
+          map.set(key, Number(value))
         }
-        var p: SkillProperty = {
+        let p: SkillProperty = {
           name: name,
           skillLevel: skill,
           dencoLevel: denco,
@@ -58,12 +68,23 @@ export class SkillManager {
           console.warn("fail to import skill logic", moduleName)
           return {}
         })
-      // TODO
-      var dataset: SkillDataset = {
+      // default property
+      const defaultValue = Object.assign({}, e)
+      delete defaultValue.numbering
+      delete defaultValue.class
+      delete defaultValue.type
+      delete defaultValue.list
+      delete defaultValue.step
+      let map = new Map<string, number>()
+      for (let [key, value] of Object.entries(defaultValue)) {
+        map.set(key, Number(value))
+      }
+      let dataset: SkillDataset = {
         numbering: numbering,
         moduleName: moduleName,
         skill: logic,
         skillProperties: properties,
+        skillDefaultProperties: map,
         transition: type,
         evaluateInPink: false,
       }
@@ -78,7 +99,7 @@ export class SkillManager {
   getSkill(numbering: string, level: number): SkillHolder {
     const data = this.map.get(numbering)
     if (data) {
-      var idx = data.skillProperties.length - 1
+      let idx = data.skillProperties.length - 1
       while (idx >= 0) {
         if (level >= data.skillProperties[idx].dencoLevel) break
         idx -= 1
@@ -99,8 +120,14 @@ export class SkillManager {
             data: undefined,
           },
           evaluateInPink: data.evaluateInPink,
-          propertyReader: (key: string) => {
-            var value = property.property.get(key)
+          propertyReader: (key: string, defaultValue?: number) => {
+            let value = property.property.get(key)
+            if (!value && value !== 0) {
+              value = data.skillDefaultProperties.get(key)
+            }
+            if (!value && value !== 0) {
+              value = defaultValue
+            }
             if (!value && value !== 0) {
               throw new Error(`skill property not found. key:${key}`)
             }
@@ -121,7 +148,7 @@ export class SkillManager {
   readSkillProperty(numbering: string, level: number): SkillProperty | null {
     const dataset = this.map.get(numbering)
     if (!dataset) throw new Error(`no skill property found: ${numbering}`)
-    for (var property of dataset.skillProperties) {
+    for (let property of dataset.skillProperties) {
       if (level <= property.dencoLevel) {
         return property
       }
