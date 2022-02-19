@@ -1,18 +1,9 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
+import { activateSkill, disactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill, getSkill, hasSkillTriggered, initContext, initUser, startAccess } from "../.."
 
 
 describe("いずなのスキル", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
+  beforeAll(init)
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let izuna = DencoManager.getDenco(context, "13", 50)

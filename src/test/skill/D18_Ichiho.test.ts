@@ -1,22 +1,13 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
-import { activateSkill, disactivateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 import moment from "moment-timezone"
-import { copyDencoState, DencoState } from "../.."
+import { copyDencoState, DencoState, init } from "../.."
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { initContext } from "../../core/context"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
 
 describe("いちほのスキル", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
+  beforeAll(init)
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let ichiho = DencoManager.getDenco(context, "18", 50)

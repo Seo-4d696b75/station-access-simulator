@@ -1,13 +1,15 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
-import { getAccessDenco, getDefense, startAccess } from "../../core/access"
 import moment from "moment-timezone"
+import { init } from "../.."
+import StationManager from "../..//core/stationManager"
+import { getAccessDenco, getDefense, startAccess } from "../../core/access"
+import { initContext } from "../../core/context"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import SkillManager from "../../core/skillManager"
+import { initUser, refreshState } from "../../core/user"
 
 describe("ルナのスキル", () => {
+  beforeAll(init)
   test("setup", async () => {
     await StationManager.load()
     await SkillManager.load()

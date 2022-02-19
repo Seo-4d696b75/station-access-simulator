@@ -1,19 +1,14 @@
+import moment from "moment-timezone"
+import { init } from ".."
+import { AccessConfig, getDefense, startAccess } from "../core/access"
 import { initContext } from "../core/context"
-import StationManager from "../core/stationManager"
-import SkillManager from "../core/skillManager"
 import DencoManager from "../core/dencoManager"
 import { AccessEventData, LevelupDenco } from "../core/event"
-import { initUser, refreshState } from "../core/user"
-import { AccessConfig, getDefense, startAccess } from "../core/access"
 import { LinksResult } from "../core/station"
-import moment from "moment-timezone"
+import { initUser, refreshState } from "../core/user"
 
 describe("経験値の処理", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-  })
+  beforeAll(init)
   test("レベルアップ1", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 1)

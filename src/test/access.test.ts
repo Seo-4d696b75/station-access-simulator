@@ -1,13 +1,12 @@
-import StationManager from "../core/stationManager"
-import SkillManager from "../core/skillManager"
-import DencoManager from "../core/dencoManager"
-import { initContext } from "../core/context"
-import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../core/access"
-import { getTargetDenco, initUser } from "../core/user"
-import { LinksResult } from "../core/station"
-import { activateSkill } from "../core/skill"
 import moment from "moment-timezone"
 import { init } from ".."
+import { AccessConfig, getAccessDenco, startAccess } from "../core/access"
+import { initContext } from "../core/context"
+import DencoManager from "../core/dencoManager"
+import { activateSkill } from "../core/skill"
+import { LinksResult } from "../core/station"
+import StationManager from "../core/stationManager"
+import { getTargetDenco, initUser } from "../core/user"
 
 // デフォルトの計算式を使用する
 const accessScore = 100

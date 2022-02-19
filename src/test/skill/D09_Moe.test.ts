@@ -1,20 +1,12 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
-import { activateSkill, disactivateSkill, getSkill, refreshSkillState } from "../../core/skill"
 import moment from "moment-timezone"
+import { init } from "../.."
+import { initContext } from "../../core/context"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, disactivateSkill, getSkill, refreshSkillState } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
 
 describe("もえのスキル", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
+  beforeAll(init)
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let moe = DencoManager.getDenco(context, "9", 1)

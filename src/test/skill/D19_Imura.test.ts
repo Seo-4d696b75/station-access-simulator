@@ -1,8 +1,7 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { activateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, SkillActiveTimeout, SkillCooldownTimeout, startAccess } from "../.."
 import moment from "moment-timezone"
+import { activateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, SkillActiveTimeout, SkillCooldownTimeout, startAccess } from "../.."
+import StationManager from "../..//core/stationManager"
+import DencoManager from "../../core/dencoManager"
 
 
 describe("イムラのスキル", () => {

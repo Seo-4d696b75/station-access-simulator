@@ -1,22 +1,14 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser, UserState } from "../../core/user"
-import { activateSkill, getSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getAccessDenco, startAccess } from "../../core/access"
-import { EventTriggeredSkill } from "../../core/skillEvent"
 import moment from "moment-timezone"
+import { init } from "../.."
+import { getAccessDenco, startAccess } from "../../core/access"
+import { initContext } from "../../core/context"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, getSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { EventTriggeredSkill } from "../../core/skillEvent"
+import { initUser, UserState } from "../../core/user"
 
 describe("セリアのスキル", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
+  beforeAll(init)
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)
