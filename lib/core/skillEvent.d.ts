@@ -3,7 +3,7 @@ import { Context } from "./context";
 import { Denco, DencoState } from "./denco";
 import { Event } from "./event";
 import { ActiveSkill, SkillTrigger } from "./skill";
-import { ReadonlyState, User, UserState } from "./user";
+import { ReadonlyState, UserParam, UserState } from "./user";
 export interface SkillEventDencoState extends DencoState {
     who: "self" | "other";
     carIndex: number;
@@ -29,7 +29,7 @@ export interface EventTriggeredSkill {
  */
 export interface SkillEventState {
     time: number;
-    user: User;
+    user: UserParam;
     formation: SkillEventDencoState[];
     carIndex: number;
     /**

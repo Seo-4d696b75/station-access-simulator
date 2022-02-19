@@ -10,6 +10,7 @@ interface DencoLevelStatus extends Denco {
 declare class DencoManager {
     data: Map<string, DencoLevelStatus[]>;
     load(data?: string): Promise<void>;
+    clear(): void;
     getDenco(context: Context, numbering: string, level?: number, link?: StationLink[] | number): DencoState;
     getDencoStatus(numbering: string, level: number): DencoLevelStatus | undefined;
 }

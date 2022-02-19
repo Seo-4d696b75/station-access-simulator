@@ -10,9 +10,6 @@ declare type Builtin = Primitive | Function | Date | Error | RegExp;
 export declare type ReadonlyState<T> = T extends (Builtin | Event) ? T : {
     readonly [key in keyof T]: ReadonlyState<T[key]>;
 };
-export interface User {
-    readonly name: string;
-}
 interface EventQueueEntryBase<T, E = undefined> {
     readonly type: T;
     readonly time: number;
@@ -20,11 +17,23 @@ interface EventQueueEntryBase<T, E = undefined> {
 }
 export declare type EventQueueEntry = EventQueueEntryBase<"skill", SkillEventReservation> | EventQueueEntryBase<"hour_cycle">;
 /**
+ * ユーザの状態のうちライブラリ側で操作しない情報
+ *
+ * このオブジェクトのプロパティはライブラリ側からは参照のみ
+ */
+export interface UserParam {
+    name: string;
+    /**
+     * アクセス時の移動距離 単位：km
+     */
+    dailyDistance: number;
+}
+/**
  * ユーザの状態を表現する
  *
  * 原則としてこの状態変数が操作の起点になる
  */
-export interface UserState extends User {
+export interface UserState extends UserParam {
     /**
      * 現在の編成状態
      */
@@ -49,9 +58,10 @@ export declare function getTargetDenco<T>(state: {
     formation: readonly T[];
     carIndex: number;
 }): T;
-export declare function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>): UserState;
+export declare function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, param?: Partial<UserParam>): UserState;
 export declare function changeFormation(context: Context, current: ReadonlyState<UserState>, formation: ReadonlyState<DencoState[]>): UserState;
 export declare function copyUserState(state: ReadonlyState<UserState>): UserState;
+export declare function copyUserParam(param: ReadonlyState<UserParam>): UserParam;
 /**
  * 現在の編成状態を更新する
  *
