@@ -139,8 +139,8 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     return copyUserState(state)
   }
   const eventState: SkillEventState = {
-    user: copyUserParam(state),
-    time: access.time,
+    user: copyUserParam(state.user),
+    time: getCurrentTime(context),
     formation: state.formation.map((d, idx) => {
       return {
         ...copyDencoState(d),
@@ -284,7 +284,7 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
   const config: Access.AccessConfig = {
     offense: {
       state: {
-        ...state.user,
+        user: state.user,
         formation: state.formation.map(d => copyDencoState(d)),
         event: [],
         queue: [],
@@ -382,7 +382,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
   }
   const eventState: SkillEventState = {
     time: getCurrentTime(context).valueOf(),
-    user: state,
+    user: state.user,
     formation: next.formation.map((d, i) => {
       return {
         ...copyDencoState(d),
@@ -400,7 +400,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
   if (result) {
     // スキル発動による影響の反映
     next = {
-      ...result.user,
+      user: result.user,
       formation: result.formation.map(d => copyDencoState(d)),
       event: [
         ...next.event,

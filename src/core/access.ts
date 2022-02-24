@@ -406,7 +406,7 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
     context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${carIndex}, formation.legth: ${formation.length}`)
   }
   return {
-    user: copyUserParam(f),
+    user: copyUserParam(f.user),
     carIndex: carIndex,
     formation: formation,
     triggeredSkills: [],

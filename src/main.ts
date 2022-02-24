@@ -20,7 +20,7 @@ init().then(() => {
   const offense = initUser(context, "とあるマスター１", [
     reika, miyu
   ])
-  offense.dailyDistance = 50
+  offense.user.dailyDistance = 50
   const defense = initUser(context, "とあるマスター２", [
     charlotte
   ])

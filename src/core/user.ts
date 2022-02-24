@@ -44,7 +44,11 @@ export interface UserParam {
  * 
  * 原則としてこの状態変数が操作の起点になる
  */
-export interface UserState extends UserParam {
+export interface UserState {
+  /**
+   * ユーザの詳細情報
+   */
+  user: UserParam
   /**
    * 現在の編成状態
    */
@@ -82,8 +86,10 @@ export function initUser(context: Context, userName: string, formation?: Readonl
     .minute(0)
     .add(1, "h")
   return changeFormation(context, {
+    user: {
     name: param?.name ?? userName,
     dailyDistance: param?.dailyDistance ?? 0,
+    },
     formation: [],
     event: [],
     queue: [{
@@ -108,8 +114,8 @@ export function changeFormation(context: Context, current: ReadonlyState<UserSta
 
 export function copyUserState(state: ReadonlyState<UserState>): UserState {
   return {
-    ...copyUserParam(state),
-    formation: Array.from(state.formation).map(d => copyDencoState(d)),
+    user: copyUserParam(state.user),
+    formation: state.formation.map(d => copyDencoState(d)),
     event: Array.from(state.event),
     queue: Array.from(state.queue),
   }
