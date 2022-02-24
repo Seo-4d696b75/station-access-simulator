@@ -1,12 +1,12 @@
-import { TIME_FORMAT } from "..";
+import moment from "moment-timezone";
+import { AccessUserResult, copyAccessUserResult, TIME_FORMAT } from "..";
 import * as Access from "./access";
 import { Context, fixClock, getCurrentTime } from "./context";
 import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
-import { ActiveSkill, isSkillActive, refreshSkillState, Skill, SkillTrigger } from "./skill";
+import { ActiveSkill, isSkillActive, SkillTrigger } from "./skill";
 import { Station } from "./station";
-import { copyUserParam, copyUserState, ReadonlyState, UserParam, UserState } from "./user";
-import moment from "moment-timezone"
+import { copyUserParam, copyUserState, copyUserStateFrom, ReadonlyState, UserParam, UserState, _refreshState } from "./user";
 
 export interface SkillEventDencoState extends DencoState {
   who: "self" | "other"
@@ -124,18 +124,14 @@ export type SkillEventEvaluate = (context: Context, state: SkillEventState, self
  */
 export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<Access.AccessDencoResult & ActiveSkill>, probability: SkillTrigger, evaluate: SkillEventEvaluate): AccessUserResult {
   context = fixClock(context)
-  const accessFormation = (self.which === "offense") ? access.offense.formation : access.defense?.formation
-  if (!accessFormation) {
-    context.log.error(`指定されたでんこが直前のアクセスの状態で見つかりません`)
-    throw Error()
-  }
+  let next = copyAccessUserResult(state)
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
     throw Error()
   }
   if (self.skillInvalidated) {
     context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
-    return copyUserState(state)
+    return next
   }
   const eventState: SkillEventState = {
     user: copyUserParam(state.user),
@@ -145,7 +141,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
         ...copyDencoState(d),
         who: idx === self.carIndex ? "self" : "other",
         carIndex: idx,
-        skillInvalidated: accessFormation[idx].skillInvalidated
+        skillInvalidated: self.skillInvalidated
       }
     }),
     carIndex: self.carIndex,
@@ -156,14 +152,20 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
   const result = execute(context, eventState, evaluate)
   if (result) {
     // スキル発動による影響の反映
-    return {
-      ...result.user,
-      formation: result.formation.map(d => copyDencoState(d)),
+    next = {
+      ...next,
+      formation: result.formation.map((d,idx) => {
+        // 編成内位置は不変と仮定
+        let access = state.formation[idx]
+        return {
+          ...access,           // アクセス中の詳細など
+          ...copyDencoState(d) // でんこ最新状態(順番注意)
+        }
+      }),
       event: [
         ...state.event,
         ...result.event,
       ],
-      queue: Array.from(state.queue),
     }
   }
   _refreshState(context, next)
