@@ -524,8 +524,8 @@ export function copyAccessState(state: ReadonlyState<AccessState>): AccessState 
     pinkMode: state.pinkMode,
     linkSuccess: state.linkSuccess,
     linkDisconncted: state.linkDisconncted,
-    offense: copySideState(state.offense),
-    defense: state.defense ? copySideState(state.defense) : undefined,
+    offense: copyAccessSideState(state.offense),
+    defense: state.defense ? copyAccessSideState(state.defense) : undefined,
     depth: state.depth,
   }
 }
@@ -541,15 +541,22 @@ function copyAccessDencoState(state: ReadonlyState<AccessDencoState>): AccessDen
     reboot: state.reboot,
     skillInvalidated: state.skillInvalidated,
     damage: state.damage ? { ...state.damage } : undefined,
-    exp: state.exp,
+    exp: { ...state.exp },
   }
 }
 
-function copySideState(state: ReadonlyState<AccessSideState>): AccessSideState {
+function copyAccessDencoResult(state: ReadonlyState<AccessDencoResult>): AccessDencoResult {
+  return {
+    ...copyAccessDencoState(state),
+    disconnetedLink: state.disconnetedLink
+  }
+}
+
+export function copyAccessSideState(state: ReadonlyState<AccessSideState>): AccessSideState {
   return {
     user: copyUserParam(state.user),
     carIndex: state.carIndex,
-    score: state.score,
+    score: { ...state.score },
     probabilityBoostPercent: state.probabilityBoostPercent,
     probabilityBoosted: state.probabilityBoosted,
     formation: Array.from(state.formation).map(d => copyAccessDencoState(d)),
@@ -559,20 +566,17 @@ function copySideState(state: ReadonlyState<AccessSideState>): AccessSideState {
   }
 }
 
-function completeAccess(context: Context, config: AccessConfig, access: ReadonlyState<AccessState>): AccessResult {
-
-
-  // このアクセスイベントの追加
-
-  let offense: UserState & FormationPosition = {
-    ...copyUserState(config.offense.state),
-    event: [
-      ...config.offense.state.event,
-      {
-        type: "access",
-        data: {
-          access: access,
-          which: "offense"
+export function copyAccessUserResult(state: ReadonlyState<AccessUserResult>): AccessUserResult {
+  return {
+    ...copyUserState(state),
+    carIndex: state.carIndex,
+    score: state.score,
+    probabilityBoostPercent: state.probabilityBoostPercent,
+    probabilityBoosted: state.probabilityBoosted,
+    formation: state.formation.map(d => copyAccessDencoResult(d)),
+    triggeredSkills: Array.from(state.triggeredSkills),
+    displayedScore: state.displayedScore,
+    displayedExp: state.displayedExp,
         }
       }
     ],
@@ -1281,8 +1285,8 @@ export function repeatAccess(context: Context, state: ReadonlyState<AccessState>
   const next: AccessState = {
     time: state.time,
     station: state.station,
-    offense: copySideState(state.offense),
-    defense: state.defense ? copySideState(state.defense) : undefined,
+    offense: copyAccessSideState(state.offense),
+    defense: state.defense ? copyAccessSideState(state.defense) : undefined,
     damageFixed: 0,
     attackPercent: 0,
     defendPercent: 0,
