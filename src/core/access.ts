@@ -753,15 +753,9 @@ function checkSKillState(context: Context, result: AccessResult): AccessResult {
 }
 
 function checkLevelup(context: Context, result: AccessResult): AccessResult {
-  result.offense = {
-    ...refreshEXPState(context, result.offense),
-    carIndex: result.offense.carIndex,
-  }
+  refreshEXPState(context, result.offense)
   if (result.defense) {
-    result.defense = {
-      ...refreshEXPState(context, result.defense),
-      carIndex: result.defense.carIndex,
-    }
+    refreshEXPState(context, result.defense)
   }
   return result
 }
