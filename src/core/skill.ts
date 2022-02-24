@@ -406,7 +406,8 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
     }
     state = callback(context, state, self)
   }
-  return refreshSkillState(context, state)
+  refreshSkillState(context, state)
+  return state
 }
 
 /**
@@ -463,7 +464,8 @@ function disactivateSkillOne(context: Context, state: UserState, carIndex: numbe
           })
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
-        return refreshSkillState(context, state)
+        refreshSkillState(context, state)
+        return state
       } else {
         context.log.error(`スキル状態をcooldownに変更できません(state:${skill.state.type})`)
       }
@@ -489,15 +491,15 @@ function disactivateSkillOne(context: Context, state: UserState, carIndex: numbe
  * @param time 現在時刻
  * @returns 新しい状態
  */
-export function refreshSkillState(context: Context, state: UserState): UserState {
+export function refreshSkillState(context: Context, state: UserState) {
   const indices = state.formation.map((_, idx) => idx)
-  return indices.reduce((next, idx) => refreshSkillStateOne(context, next, idx), state)
+  indices.forEach(idx => refreshSkillStateOne(context, state, idx))
 }
 
-export function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState {
+export function refreshSkillStateOne(context: Context, state: UserState, idx: number) {
   const denco = state.formation[idx]
   if (denco.skill.type !== "possess") {
-    return state
+    return
   }
   const skill = denco.skill
   switch (skill.state.transition) {
@@ -509,7 +511,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           data: undefined,
         }
       }
-      return state
+      return
     }
     case "manual": {
       if (skill.state.type === "not_init") {
@@ -519,7 +521,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           data: undefined
         }
       }
-      return refreshTimeout(context, state, idx)
+      refreshTimeout(context, state, idx)
+      return
     }
     case "manual-condition": {
       if (skill.state.type === "not_init") {
@@ -557,9 +560,10 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
             data: undefined
           }
         }
-        return state
+        return
       } else {
-        return refreshTimeout(context, state, idx)
+        refreshTimeout(context, state, idx)
+        return
       }
     }
     case "auto": {
@@ -570,7 +574,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           data: undefined
         }
       }
-      return refreshTimeout(context, state, idx)
+      refreshTimeout(context, state, idx)
+      return
     }
     case "auto-condition": {
       if (skill.state.type === "not_init") {
@@ -609,8 +614,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
             skill: skill,
             skillPropertyReader: skill.propertyReader,
           }
-          state = callback(context, state, self)
-          state = copyUserState(state)
+          const next = callback(context, state, self)
+          copyUserStateFrom(next, state)
         }
       } else if (!active && skill.state.type === "active") {
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)
@@ -620,16 +625,16 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           data: undefined
         }
       }
-      return state
+      return
     }
   }
 }
 
-function refreshTimeout(context: Context, state: UserState, idx: number): UserState {
+function refreshTimeout(context: Context, state: UserState, idx: number) {
   const time = getCurrentTime(context).valueOf()
   const denco = state.formation[idx]
   const skill = denco.skill
-  if (skill.type !== "possess") return state
+  if (skill.type !== "possess") return
   if (skill.state.type === "active") {
     const data = skill.state.data
     if (data && data.activeTimeout <= time) {
@@ -665,7 +670,8 @@ function refreshTimeout(context: Context, state: UserState, idx: number): UserSt
             data: undefined
           }
           // check unable <=> idle
-          return refreshSkillStateOne(context, state, idx)
+          refreshSkillStateOne(context, state, idx)
+          return state
         }
         case "auto": {
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)

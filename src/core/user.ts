@@ -87,8 +87,8 @@ export function initUser(context: Context, userName: string, formation?: Readonl
     .add(1, "h")
   return changeFormation(context, {
     user: {
-    name: param?.name ?? userName,
-    dailyDistance: param?.dailyDistance ?? 0,
+      name: param?.name ?? userName,
+      dailyDistance: param?.dailyDistance ?? 0,
     },
     formation: [],
     event: [],
@@ -101,15 +101,23 @@ export function initUser(context: Context, userName: string, formation?: Readonl
 }
 
 export function changeFormation(context: Context, current: ReadonlyState<UserState>, formation: ReadonlyState<DencoState[]>): UserState {
-  let state = {
-    ...current,
+  const state: UserState = {
+    ...copyUserState(current),
     event: Array.from(current.event),
-    formation: Array.from(formation)
+    formation: formation.map(d => copyDencoState(d)),
   }
   let before = current.formation.map(d => d.name).join(",")
   let after = formation.map(d => d.name).join(",")
   context.log.log(`編成を変更します [${before}] -> [${after}]`)
-  return refreshState(context, state)
+  _refreshState(context, state)
+  return state
+}
+
+export function copyUserStateFrom(src: ReadonlyState<UserState>, dst: UserState) {
+  dst.user = copyUserParam(src.user)
+  dst.formation = src.formation.map(d => copyDencoState(d))
+  dst.event = Array.from(src.event)
+  dst.queue = Array.from(src.queue)
 }
 
 export function copyUserState(state: ReadonlyState<UserState>): UserState {
@@ -140,10 +148,20 @@ export function copyUserParam(param: ReadonlyState<UserParam>): UserParam {
 export function refreshState(context: Context, state: ReadonlyState<UserState>): UserState {
   context = fixClock(context)
   let next = copyUserState(state)
-  next = refreshSkillState(context, next)
-  next = refreshEventQueue(context, next)
-  next = refreshEXPState(context, next)
+  refreshSkillState(context, next)
+  refreshEventQueue(context, next)
+  refreshEXPState(context, next)
   return next
+}
+
+/**
+ * {@link refreshState} の破壊的バージョン
+ */
+export function _refreshState(context: Context, state: UserState) {
+  context = fixClock(context)
+  refreshSkillState(context, state)
+  refreshEventQueue(context, state)
+  refreshEXPState(context, state)
 }
 
 /**
@@ -151,18 +169,18 @@ export function refreshState(context: Context, state: ReadonlyState<UserState>):
  * @param state 現在の状態
  * @returns 
  */
-export function refreshEXPState(context: Context, state: UserState): UserState {
+export function refreshEXPState(context: Context, state: UserState) {
   const indices = state.formation.map((_, idx) => idx)
-  return indices.reduce((next, idx) => refreshEXPStateOne(context, next, idx), state)
+  indices.forEach(idx => refreshEXPStateOne(context, state, idx))
 }
 
-function refreshEXPStateOne(context: Context, state: UserState, idx: number): UserState {
+function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
   const before = state.formation[idx]
   const after = checkLevelup(context, before)
   if (after) {
     state.formation[idx] = after
     // 新規にスキル獲得した場合はスキル状態を初期化
-    state = refreshSkillStateOne(context, state, idx)
+    refreshSkillStateOne(context, state, idx)
     let event: LevelupEvent = {
       type: "levelup",
       data: {
@@ -175,7 +193,6 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number): Us
     context.log.log(`レベルアップ：${after.name} Lv.${before.level}->Lv.${after.level}`)
     context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
   }
-  return state
 }
 
 function checkLevelup(context: Context, denco: ReadonlyState<DencoState>): DencoState | undefined {

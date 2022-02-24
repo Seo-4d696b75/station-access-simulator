@@ -166,9 +166,9 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
       ],
       queue: Array.from(state.queue),
     }
-  } else {
-    return copyUserState(state)
   }
+  _refreshState(context, next)
+  return next
 }
 
 function execute(context: Context, state: SkillEventState, evaluate: SkillEventEvaluate): SkillEventState | undefined {
@@ -349,7 +349,8 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
     data: event
   })
   next.queue.sort((a, b) => a.time - b.time)
-  return refreshEventQueue(context, next)
+  refreshEventQueue(context, next)
+  return next
 }
 
 /**
@@ -409,7 +410,8 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
       queue: next.queue,
     }
   }
-  return refreshSkillState(context, next)
+  _refreshState(context, next)
+  return next
 }
 
 /**
@@ -418,7 +420,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
  * @param state 
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
-export function refreshEventQueue(context: Context, state: UserState): UserState {
+export function refreshEventQueue(context: Context, state: UserState) {
   context = fixClock(context)
   const time = getCurrentTime(context).valueOf()
   while (state.queue.length > 0) {
@@ -429,7 +431,8 @@ export function refreshEventQueue(context: Context, state: UserState): UserState
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${moment(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
-        state = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.probability, entry.data.evaluate)
+        const next = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.probability, entry.data.evaluate)
+        copyUserStateFrom(next, state)
         break
       }
       case "hour_cycle": {
@@ -446,7 +449,8 @@ export function refreshEventQueue(context: Context, state: UserState): UserState
             skill: skill,
             skillPropertyReader: skill.propertyReader,
           }
-          state = callback(context, state, self)
+          const next = callback(context, state, self)
+          copyUserStateFrom(next, state)
         }
         // 次のイベント追加
         const date = moment(entry.time).add(1, "h")
@@ -461,5 +465,4 @@ export function refreshEventQueue(context: Context, state: UserState): UserState
     }
     // end event
   }
-  return state
 }
