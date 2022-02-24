@@ -168,6 +168,29 @@ export interface AccessDencoState extends DencoState {
      */
     skill: number
   }
+
+/**
+ * アクセス終了後の状態
+ * 
+ * アクセス直後に発生した他のイベント  
+ * - リブートによるリンクの解除・リンクスコア＆経験値の追加
+ * - 経験値の追加によるレベルアップ
+ * - アクセス直後に発動したスキル
+ * による状態の変化も含まれる
+ */
+export interface AccessDencoResult extends AccessDencoState {
+  /**
+   * アクセスによってリブートしたリンク
+   * 
+   * リブート（{@link AccessDencoState reboot} === true）した場合は解除したすべてのリンク結果、  
+   * リブートを伴わないフットバースの場合は解除したひとつのリンク結果
+   */
+  disconnetedLink?: LinksResult
+
+  /**
+   * 現在のHP
+   */
+  currentHp: number
 }
 
 /**
@@ -289,6 +312,13 @@ export interface AccessSideState {
 }
 
 /**
+ * アクセス時の攻守各側の詳細と結果
+ */
+export interface AccessUserResult extends AccessSideState, UserState {
+  formation: AccessDencoResult[]
+}
+
+/**
  * アクセス中において攻撃・守備側のどちらの編成か判断する値
  */
 export type AccessSide =
@@ -374,6 +404,16 @@ export interface AccessState {
   pinkItemUsed: boolean
 }
 
+/**
+ * アクセスの結果
+ * 
+ * アクセスによって更新された攻守両側の状態は`offense, defense`を参照すること
+ */
+export interface AccessResult extends AccessState {
+  offense: AccessUserResult
+  defense?: AccessUserResult
+}
+
 function hasDefense(state: AccessState): state is AccessStateWithDefense {
   return !!state.defense
 }
@@ -418,12 +458,6 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
     displayedScore: 0,
     displayedExp: 0,
   }
-}
-
-export type AccessResult = {
-  access: ReadonlyState<AccessState>
-  offense: UserState & FormationPosition
-  defense?: UserState & FormationPosition
 }
 
 export function startAccess(context: Context, config: AccessConfig): AccessResult {

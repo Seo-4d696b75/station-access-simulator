@@ -118,12 +118,11 @@ export type SkillEventEvaluate = (context: Context, state: SkillEventState, self
  * @param context ログ・乱数等の共通状態
  * @param state 現在の状態
  * @param self スキル発動の主体
- * @param access アクセス処理の結果
  * @param probability スキル発動が確率依存かどうか
  * @param evaluate スキル発動時の処理
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: SkillTrigger, evaluate: SkillEventEvaluate): UserState {
+export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<Access.AccessDencoResult & ActiveSkill>, probability: SkillTrigger, evaluate: SkillEventEvaluate): AccessUserResult {
   context = fixClock(context)
   const accessFormation = (self.which === "offense") ? access.offense.formation : access.defense?.formation
   if (!accessFormation) {

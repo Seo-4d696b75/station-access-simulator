@@ -1,10 +1,10 @@
-import { TIME_FORMAT } from ".."
+import { AccessUserResult, TIME_FORMAT } from ".."
 import * as access from "./access"
 import { Context, fixClock, getCurrentTime } from "./context"
 import { copyDencoState, DencoState } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
-import { copyUserState, FormationPosition, ReadonlyState, UserState } from "./user"
+import { copyUserState, copyUserStateFrom, FormationPosition, ReadonlyState, UserState } from "./user"
 import moment from "moment-timezone"
 
 /**
@@ -142,7 +142,7 @@ export interface SkillLogic {
    * 
    * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
    */
-  onAccessComplete?: (context: Context, state: UserState, self: ReadonlyState<access.AccessDencoState & ActiveSkill>, access: ReadonlyState<access.AccessState>) => undefined | UserState
+  onAccessComplete?: (context: Context, state: AccessUserResult, self: ReadonlyState<access.AccessDencoResult & ActiveSkill>, access: ReadonlyState<access.AccessState>) => undefined | AccessUserResult
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
