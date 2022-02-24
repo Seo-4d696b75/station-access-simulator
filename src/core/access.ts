@@ -579,35 +579,25 @@ export function copyAccessUserResult(state: ReadonlyState<AccessUserResult>): Ac
     displayedExp: state.displayedExp,
         }
       }
-    ],
-    carIndex: config.offense.carIndex,
-  }
-  offense = copyFromAccessState(context, offense, access, "offense")
-  let defense: UserState & FormationPosition | undefined = undefined
-  if (access.defense && config.defense) {
-    defense = {
-      ...copyUserState(config.defense.state),
-      event: [
-        ...config.defense.state.event,
-        {
-          type: "access",
-          data: {
-            access: access,
-            which: "defense"
-          }
-        },
-      ],
-      carIndex: config.defense.carIndex,
-    }
-    defense = copyFromAccessState(context, defense, access, "defense")
-  }
 
+function completeAccess(context: Context, config: AccessConfig, access: ReadonlyState<AccessState>): AccessResult {
   let result: AccessResult = {
-    offense: offense,
-    defense: defense,
-    access: access
+    ...copyAccessState(access),
+    offense: initUserResult(context, config.offense.state, access, "offense"),
+    defense: config.defense ? initUserResult(context, config.defense.state, access, "defense") : undefined,
   }
 
+  // 各でんこのリンク状態を計算
+  result = completeDencoLink(context, result, "offense")
+  result = completeDencoLink(context, result, "defense")
+
+  // 経験値の反映
+  result = completeDencoEXP(context, result, "offense")
+  result = completeDencoEXP(context, result, "defense")
+
+  // アクセスイベントを追加
+  result = addAccessEvent(context, config.offense.state, result, "offense")
+  result = addAccessEvent(context, config.defense?.state, result, "defense")
 
   // レベルアップ処理
   result = checkLevelup(context, result)
@@ -618,15 +608,16 @@ export function copyAccessUserResult(state: ReadonlyState<AccessUserResult>): Ac
   result.defense = result.defense ? checkSkillAfterAccess(context, result.defense, access, "defense") : undefined
   result = checkSKillState(context, result)
 
+
   return result
 }
 
-function checkSkillAfterAccess(context: Context, state: UserState & FormationPosition, access: ReadonlyState<AccessState>, which: AccessSide): UserState & FormationPosition {
+function checkSkillAfterAccess(context: Context, state: AccessUserResult, access: ReadonlyState<AccessState>, which: AccessSide): AccessUserResult {
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) return state
   filterActiveSkill(side.formation).forEach(idx => {
     // スキル発動による状態変更を考慮して評価直前にコピー
-    const d = copyAccessDencoState(getFormation(access, which)[idx])
+    const d = copyAccessDencoResult(state.formation[idx])
     const skill = d.skill
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
@@ -641,8 +632,17 @@ function checkSkillAfterAccess(context: Context, state: UserState & FormationPos
       const next = predicate(context, state, self, access)
       if (next) {
         state = {
-          ...next,
-          carIndex: state.carIndex,
+          ...copyAccessSideState(side),
+          user: next.user,
+          event: next.event,
+          queue: next.queue,
+          formation: next.formation.map(dd => {
+            let nextDenco: AccessDencoResult = {
+              ...d,
+              ...dd
+            }
+            return nextDenco
+          }),
         }
       }
     }
@@ -675,7 +675,7 @@ function calcLinkResult(context: Context, link: StationLink, d: Denco, idx: numb
   }
 }
 
-const LINK_COMBO_RATIO = [
+const LINK_COMBO_RATIO: readonly number[] = [
   1.0, 1.1, 1.2, 1.3, 1.4,
   1.6, 1, 7, 1.9, 2.1, 2.3,
   2.5, 2.8, 3.1, 3.4, 3.7,
@@ -685,7 +685,7 @@ const LINK_COMBO_RATIO = [
   17.4, 19.1, 20.0
 ]
 
-function calcLinksResult(context: Context, links: StationLink[], d: ReadonlyState<DencoState>, which: AccessSide): LinksResult {
+function calcLinksResult(context: Context, links: readonly StationLink[], d: ReadonlyState<DencoState>, which: AccessSide): LinksResult {
   const time = getCurrentTime(context).valueOf()
   const linkResult = links.map((link, idx) => calcLinkResult(context, link, d, idx))
   const linkScore = linkResult.map(link => link.linkScore).reduce((a, b) => a + b, 0)
@@ -714,40 +714,45 @@ function calcExp(score: number): number {
   return score
 }
 
-function copyFromAccessState(context: Context, state: UserState & FormationPosition, access: ReadonlyState<AccessState>, which: AccessSide): UserState & FormationPosition {
+function initUserResult(context: Context, state: ReadonlyState<UserState>, access: ReadonlyState<AccessState>, which: AccessSide): AccessUserResult {
   const side = (which === "offense") ? access.offense : access.defense
-  if (!side) return state
-  // 編成全員を確認する
-  const nextFormation = side.formation.map((d, idx) => {
-    const next = copyDencoState(d)
-    if (d.reboot) {
-      if (d.link.length !== 0) {
-        context.log.error("リンク解除処理の失敗")
+  if (!side) {
+    context.log.error(`アクセス結果の初期化に失敗`)
+    throw Error()
+  }
+
+  return {
+    // UserState
+    ...copyUserState(state),
+    event: [],
+    // AccessSideState
+    ...copyAccessSideState(side),
+  }
       }
-      const beforeAccess = state.formation[idx]
-      const result = calcLinksResult(context, beforeAccess.link, d, which)
-      next.currentExp += result.exp
-      state.event.push({
-        type: "reboot",
-        data: result,
-      })
+
+function addAccessEvent(context: Context, origin: ReadonlyState<UserState> | undefined, result: AccessResult, which: AccessSide): AccessResult {
+  const side = (which === "offense") ? result.offense : result.defense
+  if (!side || !origin) return result
+  const copy = copyAccessState(result)
+  side.event = [
+    ...origin.event,
+    {
+      // このアクセスイベントを追加
+      type: "access",
+      data: {
+        access: copy,
+        which: which
     }
-    return next
-  })
-  state.formation = nextFormation
-  return state
+    },
+    ...side.event
+  ]
+  return result
 }
 
 function checkSKillState(context: Context, result: AccessResult): AccessResult {
-  result.offense = {
-    ...refreshSkillState(context, result.offense),
-    carIndex: result.offense.carIndex,
-  }
+  refreshSkillState(context, result.offense)
   if (result.defense) {
-    result.defense = {
-      ...refreshSkillState(context, result.defense),
-      carIndex: result.defense.carIndex,
-    }
+    refreshSkillState(context, result.defense)
   }
   return result
 }
@@ -1008,21 +1013,14 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       const exp = calcExp(score)
       const linkDenco = getAccessDenco(state, "offense")
       linkDenco.exp.access += exp
-      state.offense.score += score
+      state.offense.score.access += score
       context.log.log(`リンク成功による追加 ${linkDenco.name} score:${score} exp:${exp}`)
     }
-
-    // アクセスによる経験値の反映
-    state = completeDencoAccessEXP(context, state, "offense")
-    state = completeDencoAccessEXP(context, state, "defense")
 
     // 表示用の経験値＆スコアの計算
     state = completeDisplayScoreExp(context, state, "offense")
     state = completeDisplayScoreExp(context, state, "defense")
 
-    // 各でんこのリンク状態を計算
-    state = completeDencoLink(context, state, "offense")
-    state = completeDencoLink(context, state, "defense")
   }
   return state
 }
@@ -1417,13 +1415,18 @@ function updateDencoHP(context: Context, d: AccessDencoState) {
   d.reboot = (d.hpAfter === 0)
 }
 
-function completeDencoLink(context: Context, state: AccessState, which: AccessSide): AccessState {
+function completeDencoLink(context: Context, state: AccessResult, which: AccessSide): AccessResult {
   const side = which === "offense" ? state.offense : state.defense
-  side?.formation?.forEach(d => {
-    // リンク追加・解除
+  // 編成全員のリンク解除を確認する
+  side?.formation.map(d => {
     if (d.reboot) {
-      // リブートは全リンク解除
+      // リブートにより全リンク解除
+      const linkResult = calcLinksResult(context, d.link, d, which)
       d.link = []
+      side.event.push({
+        type: "reboot",
+        data: linkResult,
+      })
     } else if (d.who === "offense" && state.linkSuccess) {
       // 攻撃側のリンク成功
       d.link.push({
@@ -1443,23 +1446,9 @@ function completeDencoLink(context: Context, state: AccessState, which: AccessSi
   return state
 }
 
-
-function completeDencoAccessEXP(context: Context, state: AccessState, which: AccessSide): AccessState {
+function completeDencoEXP(context: Context, state: AccessResult, which: AccessSide): AccessResult {
   const side = which === "offense" ? state.offense : state.defense
   side?.formation?.forEach(d => {
-    if (d.who === "defense" && state.linkDisconncted && !d.reboot) {
-      // 守備側のリンク解除 フットバースなどリブートを伴わない場合
-      const idx = d.link.findIndex(link => link.name === state.station.name)
-      if (idx < 0) {
-        context.log.error(`リンク解除した守備側のリンクが見つかりません ${state.station.name}`)
-        throw Error()
-      }
-      // 特にイベントは発生せず経験値だけ追加
-      const result = calcLinkResult(context, d.link[idx], d, 0)
-      // 例外的にリブートを伴わないリンク解除の場合は、リンクスコア＆経験値がアクセスのスコア＆経験値として加算
-      d.exp.access += calcExp(result.totatlScore)
-      side.score += result.totatlScore
-    }
     // アクセスによる経験値付与
     const exp = d.exp.access + d.exp.skill
     if (d.who !== "other" || exp !== 0) {
@@ -1477,15 +1466,14 @@ function completeDisplayScoreExp(context: Context, state: AccessState, which: Ac
     const d = side.formation[side.carIndex]
     side.displayedScore = side.score
     side.displayedExp = d.exp.access + d.exp.skill
-    // 守備側がリブートした場合はその駅のリンクのスコア＆経験値を表示
-    if (d.reboot && d.who === "defense") {
+    // 守備側がリンク解除（フットバースorリブート）した場合はその駅のリンクのスコア＆経験値を表示
+    if (state.linkDisconncted && d.who === "defense") {
       const idx = d.link.findIndex(l => l.name === state.station.name)
       if (idx < 0) {
         context.log.error(`リブートした守備側のリンクが見つかりません ${state.station.name}`)
         throw Error()
       }
       const result = calcLinkResult(context, d.link[idx], d, 0)
-      // アクセスの経験値として加算はするが、でんこ状態への反映はしない checkRebootLinksでまとめて加算
       side.displayedScore += result.totatlScore
       side.displayedExp += calcExp(result.totatlScore)
     }
