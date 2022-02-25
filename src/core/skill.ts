@@ -4,7 +4,7 @@ import { Context, fixClock, getCurrentTime } from "./context"
 import { copyDencoState, DencoState } from "./denco"
 import * as event from "./skillEvent"
 import { SkillPropertyReader } from "./skillManager"
-import { copyUserState, copyUserStateFrom, FormationPosition, ReadonlyState, UserState } from "./user"
+import { copyUserState, copyUserStateTo, FormationPosition, ReadonlyState, UserState } from "./user"
 import moment from "moment-timezone"
 
 /**
@@ -218,16 +218,6 @@ export interface ActiveSkill extends FormationPosition {
   skill: Skill
 }
 
-export function copySkill(skill: Skill): Skill {
-  return {
-    ...skill,
-    name: skill.name,
-    level: skill.level,
-    propertyReader: skill.propertyReader,
-    state: copySkillState(skill.state),
-  }
-}
-
 export function copySkillState(state: SkillState): SkillState {
   switch (state.type) {
     case "active": {
@@ -289,11 +279,19 @@ export function getSkill<S>(denco: { skill: S & SkillHolderBase<"possess"> | Ski
   throw Error("skill not found")
 }
 
-export function copySkillHolder(skill: SkillHolder): SkillHolder {
+/**
+ * 関数プロパティは参照コピーのみ
+ * @param skill 
+ * @returns 
+ */
+export function copySkill(skill: SkillHolder): SkillHolder {
   if (skill.type === "possess") {
     return {
-      type: "possess",
-      ...copySkill(skill),
+      ...skill,
+      name: skill.name,
+      level: skill.level,
+      propertyReader: skill.propertyReader,
+      state: copySkillState(skill.state),
     }
   }
   return {
@@ -614,8 +612,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
             skill: skill,
             skillPropertyReader: skill.propertyReader,
           }
-          const next = callback(context, state, self)
-          copyUserStateFrom(next, state)
+          const next = callback(context, copyUserState(state), self)
+          copyUserStateTo(next, state)
         }
       } else if (!active && skill.state.type === "active") {
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)
@@ -671,7 +669,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number) {
           }
           // check unable <=> idle
           refreshSkillStateOne(context, state, idx)
-          return state
+          return
         }
         case "auto": {
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
@@ -685,5 +683,4 @@ function refreshTimeout(context: Context, state: UserState, idx: number) {
       }
     }
   }
-  return state
 }

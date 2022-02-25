@@ -6,7 +6,7 @@ import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, SkillTrigger } from "./skill";
 import { Station } from "./station";
-import { copyUserParam, copyUserState, copyUserStateFrom, ReadonlyState, UserParam, UserState, _refreshState } from "./user";
+import { copyUserParam, copyUserState, copyUserStateTo, ReadonlyState, UserParam, UserState, _refreshState } from "./user";
 
 export interface SkillEventDencoState extends DencoState {
   who: "self" | "other"
@@ -433,7 +433,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     switch (entry.type) {
       case "skill": {
         const next = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.probability, entry.data.evaluate)
-        copyUserStateFrom(next, state)
+        copyUserStateTo(next, state)
         break
       }
       case "hour_cycle": {
@@ -451,7 +451,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
             skillPropertyReader: skill.propertyReader,
           }
           const next = callback(context, state, self)
-          copyUserStateFrom(next, state)
+          copyUserStateTo(next, state)
         }
         // 次のイベント追加
         const date = moment(entry.time).add(1, "h")

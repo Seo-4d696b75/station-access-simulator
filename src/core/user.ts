@@ -5,7 +5,7 @@ import DencoManager from "./dencoManager"
 import { Context, getCurrentTime } from "./context";
 import { refreshEventQueue, SkillEventReservation } from "./skillEvent";
 import moment from "moment-timezone"
-import { Denco, fixClock, SkillManager } from "..";
+import { copyDencoStateTo, Denco, fixClock, SkillManager } from "..";
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
 type Builtin = Primitive | Function | Date | Error | RegExp;
@@ -113,9 +113,9 @@ export function changeFormation(context: Context, current: ReadonlyState<UserSta
   return state
 }
 
-export function copyUserStateFrom(src: ReadonlyState<UserState>, dst: UserState) {
+export function copyUserStateTo(src: ReadonlyState<UserState>, dst: UserState) {
   dst.user = copyUserParam(src.user)
-  dst.formation = src.formation.map(d => copyDencoState(d))
+  dst.formation.forEach((d, idx) => copyDencoStateTo(src.formation[idx], d))
   dst.event = Array.from(src.event)
   dst.queue = Array.from(src.queue)
 }
@@ -175,23 +175,25 @@ export function refreshEXPState(context: Context, state: UserState) {
 }
 
 function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
-  const before = state.formation[idx]
-  const after = checkLevelup(context, before)
-  if (after) {
-    state.formation[idx] = after
+  const d = state.formation[idx]
+  const levelup = checkLevelup(context, d)
+  if (levelup) {
+    const before = copyDencoState(d)
+    // copy
+    copyDencoStateTo(levelup, d)
     // 新規にスキル獲得した場合はスキル状態を初期化
     refreshSkillStateOne(context, state, idx)
     let event: LevelupEvent = {
       type: "levelup",
       data: {
         time: getCurrentTime(context),
-        after: copyDencoState(after),
+        after: copyDencoState(d),
         before: before,
       }
     }
     state.event.push(event)
-    context.log.log(`レベルアップ：${after.name} Lv.${before.level}->Lv.${after.level}`)
-    context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
+    context.log.log(`レベルアップ：${levelup.name} Lv.${d.level}->Lv.${levelup.level}`)
+    context.log.log(`現在の経験値：${levelup.name} ${levelup.currentExp}/${levelup.nextExp}`)
   }
 }
 
