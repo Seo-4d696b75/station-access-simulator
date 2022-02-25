@@ -102,7 +102,10 @@ describe("経験値の処理", () => {
       expect(event.type).toBe("reboot")
       const links = event.data as LinksResult
       const linksEXP = links.exp
-      expect(links.denco).toMatchObject(reika)
+      expect(links.denco).toMatchObject({
+        ...reika,
+        link: []  // リンク解除済み
+      })
       // レベルアップ
       event = state.event[2]
       expect(event.type).toBe("levelup")
@@ -122,7 +125,8 @@ describe("経験値の処理", () => {
       const current = result.defense.formation[0]
       expect(current.level).toBe(reika.level)
       expect(current.currentExp).toBe(reika.currentExp)
-      expect(levelup.after).toMatchObject(current)
+      expect(levelup.before.level).toBe(10)
+      expect(current).toMatchObject(levelup.after)
     }
   })
 })
