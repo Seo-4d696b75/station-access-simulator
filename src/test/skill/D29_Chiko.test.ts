@@ -73,16 +73,15 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.offense, chiko)).toBe(true)
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(192)
-    expect(access.damageFixed).toBe(0)
-    let d = getAccessDenco(access, "defense")
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(192)
+    expect(result.damageFixed).toBe(0)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(d.hpBefore).toBe(192)
     expect(d.hpAfter).toBe(0)
@@ -109,16 +108,15 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.offense, chiko)).toBe(false)
-    expect(access.damageBase?.variable).toBe(253)
-    expect(access.damageBase?.constant).toBe(0)
-    expect(access.damageFixed).toBe(0)
-    let d = getAccessDenco(access, "defense")
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, chiko)).toBe(false)
+    expect(result.damageBase?.variable).toBe(253)
+    expect(result.damageBase?.constant).toBe(0)
+    expect(result.damageFixed).toBe(0)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(d.hpBefore).toBe(192)
     expect(d.hpAfter).toBe(0)
@@ -146,17 +144,16 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.offense, chiko)).toBe(true)
-    expect(hasSkillTriggered(access.offense, hiiru)).toBe(true)
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(192)
-    expect(access.damageFixed).toBe(0)
-    let d = getAccessDenco(access, "defense")
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(192)
+    expect(result.damageFixed).toBe(0)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(d.hpBefore).toBe(192)
     expect(d.hpAfter).toBe(0)
@@ -184,17 +181,16 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.offense, chiko)).toBe(false)
-    expect(hasSkillTriggered(access.offense, hiiru)).toBe(true)
-    expect(access.damageBase?.variable).toBe(253)
-    expect(access.damageBase?.constant).toBe(0)
-    expect(access.damageFixed).toBe(0)
-    let d = getAccessDenco(access, "defense")
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, chiko)).toBe(false)
+    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(result.damageBase?.variable).toBe(253)
+    expect(result.damageBase?.constant).toBe(0)
+    expect(result.damageFixed).toBe(0)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(d.hpBefore).toBe(192)
     expect(d.hpAfter).toBe(0)
@@ -222,17 +218,16 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.offense, chiko)).toBe(true)
-    expect(hasSkillTriggered(access.offense, test)).toBe(true)
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(192)
-    expect(access.damageFixed).toBe(10)
-    let d = getAccessDenco(access, "defense")
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(hasSkillTriggered(result.offense, test)).toBe(true)
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(192)
+    expect(result.damageFixed).toBe(10)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(d.hpBefore).toBe(192)
     expect(d.hpAfter).toBe(0)
@@ -245,7 +240,7 @@ describe("チコのスキル", () => {
 /**
  * 固定ダメージ追加スキルのでんこ（ダミー）
  */
- const test1: DencoState = {
+const test1: DencoState = {
   numbering: "test1",
   name: "test1",
   type: "supporter",
@@ -272,6 +267,6 @@ describe("チコのスキル", () => {
     evaluate: (context, state, step, self) => {
       state.damageFixed += 10
       return state
-    } 
+    }
   }
 }

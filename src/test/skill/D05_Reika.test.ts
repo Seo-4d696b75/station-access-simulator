@@ -74,8 +74,8 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(false)
-    expect(result.access.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, reika)).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動なし-守備側", () => {
     const context = initContext("test", "test", false)
@@ -100,8 +100,8 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.defense, reika)).toBe(false)
-    expect(result.access.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, reika)).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動あり-攻撃側", () => {
     const context = initContext("test", "test", false)
@@ -126,8 +126,8 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(true)
-    expect(result.access.attackPercent).toBe(25)
+    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(result.attackPercent).toBe(25)
   })
   test("発動あり-確率ブースト", () => {
     const context = initContext("test", "test", false)
@@ -155,9 +155,9 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(true)
-    expect(hasSkillTriggered(result.access.offense, hiiru)).toBe(false)
-    expect(result.access.attackPercent).toBe(25)
+    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+    expect(result.attackPercent).toBe(25)
   })
   test("発動あり-編成内", () => {
     const context = initContext("test", "test", false)
@@ -182,9 +182,9 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(true)
-    expect(result.access.attackPercent).toBe(25)
-    let accessSeria = getAccessDenco(result.access, "offense")
+    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(result.attackPercent).toBe(25)
+    let accessSeria = getAccessDenco(result, "offense")
     expect(accessSeria.name).toBe("seria")
   })
 })

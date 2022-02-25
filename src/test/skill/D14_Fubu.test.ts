@@ -77,8 +77,8 @@ describe("ふぶのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.defense, fubu)).toBe(false)
-    expect(result.access.defendPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
+    expect(result.defendPercent).toBe(0)
   })
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
@@ -103,8 +103,8 @@ describe("ふぶのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, fubu)).toBe(false)
-    expect(result.access.defendPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, fubu)).toBe(false)
+    expect(result.defendPercent).toBe(0)
   })
   test("発動あり-守備側", () => {
     const context = initContext("test", "test", false)
@@ -126,27 +126,27 @@ describe("ふぶのスキル", () => {
       },
       station: fubu.link[0],
     }
-    const { access } = startAccess(context, config)
+    const result = startAccess(context, config)
     // 基本的なダメージの確認
-    expect(access.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(access.defense, fubu)).toBe(true)
-    expect(access.defendPercent).toBe(19)
-    expect(access.damageBase?.variable).toBe(162)
-    expect(access.damageRatio).toBe(1.0)
-    if (access.defense) {
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
+    expect(result.defendPercent).toBe(19)
+    expect(result.damageBase?.variable).toBe(162)
+    expect(result.damageRatio).toBe(1.0)
+    if (result.defense) {
       // アクセス中の状態の確認
-      let accessFubu = access.defense.formation[0]
+      let accessFubu = result.defense.formation[0]
       expect(accessFubu.damage).not.toBeUndefined()
       expect(accessFubu.damage?.value).toBe(162)
       expect(accessFubu.damage?.attr).toBe(false)
       expect(accessFubu.hpBefore).toBe(228)
       expect(accessFubu.hpAfter).toBe(66)
       expect(accessFubu.reboot).toBe(false)
-      expect(accessFubu.exp).toMatchObject({access: 0, skill: 0})
-      expect(access.defense.displayedExp).toBe(0)
+      expect(accessFubu.exp).toMatchObject({ access: 0, skill: 0 })
+      expect(result.defense.displayedExp).toBe(0)
     }
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-守備側編成内", () => {
     const context = initContext("test", "test", false)
@@ -169,27 +169,27 @@ describe("ふぶのスキル", () => {
       },
       station: charlotte.link[0],
     }
-    const { access } = startAccess(context, config)
+    const result = startAccess(context, config)
     // 基本的なダメージの確認
-    expect(access.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(access.defense, fubu)).toBe(true)
-    expect(access.defendPercent).toBe(19)
-    expect(access.damageBase?.variable).toBe(210)
-    expect(access.damageRatio).toBe(1.3)
-    if (access.defense) {
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
+    expect(result.defendPercent).toBe(19)
+    expect(result.damageBase?.variable).toBe(210)
+    expect(result.damageRatio).toBe(1.3)
+    if (result.defense) {
       // アクセス中の状態の確認
-      let accessCharlotte = access.defense.formation[0]
+      let accessCharlotte = result.defense.formation[0]
       expect(accessCharlotte.damage).not.toBeUndefined()
       expect(accessCharlotte.damage?.value).toBe(210)
       expect(accessCharlotte.damage?.attr).toBe(true)
       expect(accessCharlotte.hpBefore).toBe(228)
       expect(accessCharlotte.hpAfter).toBe(18)
       expect(accessCharlotte.reboot).toBe(false)
-      expect(accessCharlotte.exp).toMatchObject({access: 0, skill: 0})
-      expect(access.defense.displayedExp).toBe(0)
+      expect(accessCharlotte.exp).toMatchObject({ access: 0, skill: 0 })
+      expect(result.defense.displayedExp).toBe(0)
     }
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-確率ブースト", () => {
     const context = initContext("test", "test", false)
@@ -218,8 +218,8 @@ describe("ふぶのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.defense, fubu)).toBe(true)
-    expect(hasSkillTriggered(result.access.defense, hiiru)).toBe(false)
-    expect(result.access.defendPercent).toBe(19)
+    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
+    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    expect(result.defendPercent).toBe(19)
   })
 })

@@ -96,14 +96,7 @@ describe("経験値の処理", () => {
       let event = state.event[0]
       expect(event.type).toBe("access")
       const accessResult = event.data as AccessEventData
-      let defense = getDefense(accessResult.access)
-      const accessEXP = 0
-      reika = {
-        ...reika,
-        link: [],
-        currentExp: accessEXP
-      }
-      expect(defense.formation[0]).toMatchObject(reika)
+      let afterAccess = getDefense(accessResult.access).formation[0]
       // リブート
       event = state.event[1]
       expect(event.type).toBe("reboot")
@@ -117,9 +110,10 @@ describe("経験値の処理", () => {
       reika = {
         ...reika,
         link: [],
-        currentExp: accessEXP + linksEXP
+        currentExp: linksEXP
       }
       expect(levelup.before).toMatchObject(reika)
+      expect(afterAccess).toMatchObject(reika)
       // レベルアップ後の状態
       let tmp = initUser(context, "hoge", [reika])
       tmp = refreshState(context, tmp)

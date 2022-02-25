@@ -33,8 +33,8 @@ describe("しいらのスキル", () => {
       },
       station: reika.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.offense.triggeredSkills.length).toBe(0)
+    const result = startAccess(context, config)
+    expect(result.offense.triggeredSkills.length).toBe(0)
   })
   test("発動なし-自身以外が被アクセス", () => {
     const context = initContext("test", "test", false)
@@ -54,10 +54,10 @@ describe("しいらのスキル", () => {
       },
       station: charlotte.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.defense).not.toBeUndefined()
-    if (access.defense) {
-      expect(access.defense.triggeredSkills.length).toBe(0)
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    if (result.defense) {
+      expect(result.defense.triggeredSkills.length).toBe(0)
     }
   })
   test("発動なし-確率", () => {
@@ -80,26 +80,25 @@ describe("しいらのスキル", () => {
       station: siira.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
     // 基本的なダメージの確認
-    expect(access.defense).not.toBeUndefined()
-    expect(access.defense?.triggeredSkills.length).toBe(0)
-    expect(access.defendPercent).toBe(0)
-    expect(access.damageBase?.variable).toBe(260)
-    expect(access.damageRatio).toBe(1.3)
-    if (access.defense) {
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defense?.triggeredSkills.length).toBe(0)
+    expect(result.defendPercent).toBe(0)
+    expect(result.damageBase?.variable).toBe(260)
+    expect(result.damageRatio).toBe(1.3)
+    if (result.defense) {
       // アクセス中の状態の確認
-      let accessSiira = access.defense.formation[1]
+      let accessSiira = result.defense.formation[1]
       expect(accessSiira.damage).not.toBeUndefined()
       expect(accessSiira.damage?.value).toBe(260)
       expect(accessSiira.damage?.attr).toBe(true)
       expect(accessSiira.hpBefore).toBe(252)
       expect(accessSiira.hpAfter).toBe(0)
       expect(accessSiira.reboot).toBe(true)
-      expect(accessSiira.exp).toMatchObject({access: 0, skill: 0})
+      expect(accessSiira.exp).toMatchObject({ access: 0, skill: 0 })
     }
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
     if (result.defense) {
       // リブート確認
       defense = result.defense
@@ -110,7 +109,7 @@ describe("しいらのスキル", () => {
       expect(event.type).toBe("reboot")
       if (event.type === "reboot") {
         expect(siira.currentExp).toBe(0 + event.data.exp)
-        expect(access.defense?.displayedExp).toBe(0 + event.data.exp)
+        expect(result.defense?.displayedExp).toBe(0 + event.data.exp)
       }
     }
   })
@@ -135,21 +134,20 @@ describe("しいらのスキル", () => {
       station: siira.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
     // 基本的なダメージの確認
-    expect(access.defense).not.toBeUndefined()
-    expect(access.defendPercent).toBe(0)
-    expect(access.damageBase?.variable).toBe(260)
-    expect(access.damageRatio).toBe(1.3)
-    if (access.defense) {
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defendPercent).toBe(0)
+    expect(result.damageBase?.variable).toBe(260)
+    expect(result.damageRatio).toBe(1.3)
+    if (result.defense) {
       // 確率補正の確認
-      expect(access.defense.triggeredSkills.length).toBe(1)
-      let tirgger = access.defense.triggeredSkills[0]
+      expect(result.defense.triggeredSkills.length).toBe(1)
+      let tirgger = result.defense.triggeredSkills[0]
       expect(tirgger.name).toBe(hiiru.name)
       expect(tirgger.step).toBe("probability_check")
     }
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
   })
   test("発動あり", () => {
     const context = initContext("test", "test", false)
@@ -171,30 +169,29 @@ describe("しいらのスキル", () => {
       station: siira.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
     // 基本的なダメージの確認
-    expect(access.defense).not.toBeUndefined()
-    expect(access.defendPercent).toBe(25)
-    expect(access.damageBase?.variable).toBe(195)
-    expect(access.damageRatio).toBe(1.3)
-    if (access.defense) {
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defendPercent).toBe(25)
+    expect(result.damageBase?.variable).toBe(195)
+    expect(result.damageRatio).toBe(1.3)
+    if (result.defense) {
       // アクセス中の状態の確認
-      expect(access.defense.triggeredSkills.length).toBe(1)
-      let tirgger = access.defense.triggeredSkills[0]
+      expect(result.defense.triggeredSkills.length).toBe(1)
+      let tirgger = result.defense.triggeredSkills[0]
       expect(tirgger.name).toBe(siira.name)
       expect(tirgger.step).toBe("damage_common")
-      let accessSiira = access.defense.formation[1]
+      let accessSiira = result.defense.formation[1]
       expect(accessSiira.damage).not.toBeUndefined()
       expect(accessSiira.damage?.value).toBe(195)
       expect(accessSiira.damage?.attr).toBe(true)
       expect(accessSiira.hpBefore).toBe(252)
       expect(accessSiira.hpAfter).toBe(57)
       expect(accessSiira.reboot).toBe(false)
-      expect(accessSiira.exp).toMatchObject({access: 0, skill: 0})
-      expect(access.defense.displayedExp).toBe(0)
+      expect(accessSiira.exp).toMatchObject({ access: 0, skill: 0 })
+      expect(result.defense.displayedExp).toBe(0)
     }
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-確率補正あり", () => {
     const context = initContext("test", "test", false)
@@ -217,23 +214,22 @@ describe("しいらのスキル", () => {
       station: siira.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
     // 基本的なダメージの確認
-    expect(access.defense).not.toBeUndefined()
-    expect(access.defendPercent).toBe(25)
-    expect(access.damageBase?.variable).toBe(195)
-    expect(access.damageRatio).toBe(1.3)
-    if (access.defense) {
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defendPercent).toBe(25)
+    expect(result.damageBase?.variable).toBe(195)
+    expect(result.damageRatio).toBe(1.3)
+    if (result.defense) {
       // アクセス中の状態の確認
-      expect(access.defense.triggeredSkills.length).toBe(2)
-      let tirgger = access.defense.triggeredSkills[0]
+      expect(result.defense.triggeredSkills.length).toBe(2)
+      let tirgger = result.defense.triggeredSkills[0]
       expect(tirgger.name).toBe(hiiru.name)
       expect(tirgger.step).toBe("probability_check")
-      tirgger = access.defense.triggeredSkills[1]
+      tirgger = result.defense.triggeredSkills[1]
       expect(tirgger.name).toBe(siira.name)
       expect(tirgger.step).toBe("damage_common")
     }
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
   })
 })

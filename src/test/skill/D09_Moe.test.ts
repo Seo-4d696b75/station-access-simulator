@@ -2,7 +2,7 @@ import moment from "moment-timezone"
 import { init } from "../.."
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill, getSkill, refreshSkillState } from "../../core/skill"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
 
 describe("もえのスキル", () => {
@@ -43,7 +43,7 @@ describe("もえのスキル", () => {
     expect(state.queue[0].time).toBe(moment("2020-01-01T14:00:00.000").valueOf())
     charlotte = state.formation[1]
     charlotte.currentHp = Math.floor(charlotte.maxHp * 0.9)
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     moe = state.formation[0]
     skill = getSkill(moe)
     expect(skill.state.type).toBe("active")
@@ -90,7 +90,7 @@ describe("もえのスキル", () => {
     sheena.currentHp = Math.floor(sheena.maxHp * 0.2)
 
     // update skill state
-    state = refreshSkillState(context, state)
+    state = refreshState(context, state)
     moe = state.formation[0]
     skill = getSkill(moe)
     expect(skill.state.type).toBe("active")

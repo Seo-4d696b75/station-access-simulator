@@ -51,16 +51,15 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(true)
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(199)
-    expect(access.damageFixed).toBe(0)
-    let d = getAccessDenco(access, "defense")
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(199)
+    expect(result.damageFixed).toBe(0)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(false)
     expect(d.hpBefore).toBe(200)
     expect(d.hpAfter).toBe(1)
@@ -93,17 +92,17 @@ describe("いちほのスキル", () => {
       },
       station: ichiho.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(access.defense, hiiru)).toBe(true)
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(199)
-    expect(access.damageFixed).toBe(0)
-    let d = getAccessDenco(access, "defense")
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(199)
+    expect(result.damageFixed).toBe(0)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(false)
     expect(d.hpBefore).toBe(200)
     expect(d.hpAfter).toBe(1)
@@ -130,15 +129,15 @@ describe("いちほのスキル", () => {
       },
       station: ichiho.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(false)
-    expect(hasSkillTriggered(access.defense, hiiru)).toBe(true)
-    expect(access.damageBase?.variable).toBe(260)
-    expect(access.damageBase?.constant).toBe(0)
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(false)
+    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(result.damageBase?.variable).toBe(260)
+    expect(result.damageBase?.constant).toBe(0)
   })
   test("発動なし-確率-補正あり", () => {
     const context = initContext("test", "test", false)
@@ -158,14 +157,14 @@ describe("いちほのスキル", () => {
       },
       station: ichiho.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(false)
-    expect(access.damageBase?.variable).toBe(260)
-    expect(access.damageBase?.constant).toBe(0)
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(false)
+    expect(result.damageBase?.variable).toBe(260)
+    expect(result.damageBase?.constant).toBe(0)
   })
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
@@ -185,10 +184,10 @@ describe("いちほのスキル", () => {
       },
       station: reika.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.offense, ichiho)).toBe(false)
+    const result = startAccess(context, config)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, ichiho)).toBe(false)
   })
   test("発動なし-守備側編成内", () => {
     const context = initContext("test", "test", false)
@@ -210,11 +209,11 @@ describe("いちほのスキル", () => {
       },
       station: hiiru.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(false)
-    expect(hasSkillTriggered(access.defense, hiiru)).toBe(false)
+    const result = startAccess(context, config)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(false)
+    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
   })
   test("発動あり-攻撃側-シーナ反撃", () => {
     const context = initContext("test", "test", false)
@@ -236,27 +235,27 @@ describe("いちほのスキル", () => {
       },
       station: sheena.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
     // いちほ -> シーナへのダメージ計算詳細
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(access.damageBase?.variable).toBe(190)
-    expect(access.damageBase?.constant).toBe(0)
-    expect(access.damageFixed).toBe(0)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(result.damageBase?.variable).toBe(190)
+    expect(result.damageBase?.constant).toBe(0)
+    expect(result.damageFixed).toBe(0)
     // 発動スキル（カウンターも含む)
-    expect(hasSkillTriggered(access.offense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(access.defense, sheena)).toBe(true)
-    expect(hasSkillTriggered(access.defense, reika)).toBe(true)
-    let accessSheena = getAccessDenco(access, "defense")
+    expect(hasSkillTriggered(result.offense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
+    expect(hasSkillTriggered(result.defense, reika)).toBe(true)
+    let accessSheena = getAccessDenco(result, "defense")
     expect(accessSheena.reboot).toBe(false)
     expect(accessSheena.hpBefore).toBe(264)
     expect(accessSheena.hpAfter).toBe(74)
     expect(accessSheena.damage?.value).toBe(190)
     expect(accessSheena.damage?.attr).toBe(false)
     // カウンター攻撃で発生したダメージ
-    let accessIchiho = getAccessDenco(access, "offense")
+    let accessIchiho = getAccessDenco(result, "offense")
     expect(accessIchiho.reboot).toBe(false)
     expect(accessIchiho.hpBefore).toBe(200)
     expect(accessIchiho.hpAfter).toBe(1)
@@ -282,20 +281,20 @@ describe("いちほのスキル", () => {
       },
       station: ichiho.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.offense, chiko)).toBe(true)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(true)
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
     /* `damage_special` の同一段階で発動スキルどうしの場合は
       守備側のいちほが後に評価されたダメージ量を上書きする
     */
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(199)
-    expect(access.damageFixed).toBe(0)
-    let d = getAccessDenco(access, "defense")
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(199)
+    expect(result.damageFixed).toBe(0)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(false)
     expect(d.hpBefore).toBe(200)
     expect(d.hpAfter).toBe(1)
@@ -322,19 +321,19 @@ describe("いちほのスキル", () => {
       },
       station: ichiho.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(25)
-    expect(hasSkillTriggered(access.offense, reika)).toBe(true)
-    expect(hasSkillTriggered(access.offense, test)).toBe(true)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(true)
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(25)
+    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result.offense, test)).toBe(true)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
     // 固定ダメージで貫通
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(199)
-    expect(access.damageFixed).toBe(10)
-    let d = getAccessDenco(access, "defense")
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(199)
+    expect(result.damageFixed).toBe(10)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(d.hpBefore).toBe(200)
     expect(d.hpAfter).toBe(0)
@@ -361,19 +360,19 @@ describe("いちほのスキル", () => {
       },
       station: ichiho.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.offense, chiko)).toBe(true)
-    expect(hasSkillTriggered(access.offense, test)).toBe(true)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(true)
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(hasSkillTriggered(result.offense, test)).toBe(true)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
     // 固定ダメージで貫通
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(199)
-    expect(access.damageFixed).toBe(10)
-    let d = getAccessDenco(access, "defense")
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(199)
+    expect(result.damageFixed).toBe(10)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(d.hpBefore).toBe(200)
     expect(d.hpAfter).toBe(0)
@@ -399,18 +398,18 @@ describe("いちほのスキル", () => {
       },
       station: ichiho.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(access.defense, test)).toBe(true)
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result.defense, test)).toBe(true)
     // 固定ダメージ軽減は damageBase.constant には効かない
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(199)
-    expect(access.damageFixed).toBe(-20)
-    let d = getAccessDenco(access, "defense")
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(199)
+    expect(result.damageFixed).toBe(-20)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(false)
     expect(d.hpBefore).toBe(200)
     expect(d.hpAfter).toBe(1)
@@ -437,19 +436,19 @@ describe("いちほのスキル", () => {
       },
       station: ichiho.link[0],
     }
-    const { access } = startAccess(context, config)
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
-    expect(access.defendPercent).toBe(0)
-    expect(access.attackPercent).toBe(0)
-    expect(hasSkillTriggered(access.defense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(access.defense, cut)).toBe(true)
-    expect(hasSkillTriggered(access.offense, add)).toBe(true)
+    const result = startAccess(context, config)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result.defense, cut)).toBe(true)
+    expect(hasSkillTriggered(result.offense, add)).toBe(true)
     // 固定ダメージ増減は damageBase.variable にのみ作用して負数は0に固定
-    expect(access.damageBase?.variable).toBe(0)
-    expect(access.damageBase?.constant).toBe(199)
-    expect(access.damageFixed).toBe(-10)
-    let d = getAccessDenco(access, "defense")
+    expect(result.damageBase?.variable).toBe(0)
+    expect(result.damageBase?.constant).toBe(199)
+    expect(result.damageFixed).toBe(-10)
+    let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(false)
     expect(d.hpBefore).toBe(200)
     expect(d.hpAfter).toBe(1)
@@ -488,7 +487,7 @@ const test1: DencoState = {
     evaluate: (context, state, step, self) => {
       state.damageFixed += 10
       return state
-    } 
+    }
   }
 }
 
@@ -522,6 +521,6 @@ const test2: DencoState = {
     evaluate: (context, state, step, self) => {
       state.damageFixed -= 20
       return state
-    } 
+    }
   }
 }

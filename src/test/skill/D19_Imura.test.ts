@@ -70,8 +70,8 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, imura)).toBe(false)
-    expect(result.access.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, imura)).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動なし-守備側", () => {
     const context = initContext("test", "test", false)
@@ -94,8 +94,8 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.defense, imura)).toBe(false)
-    expect(result.access.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, imura)).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃編成内", () => {
     const context = initContext("test", "test", false)
@@ -118,8 +118,8 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, imura)).toBe(false)
-    expect(result.access.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, imura)).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動なし-相手不在", () => {
     const context = initContext("test", "test", false)
@@ -136,7 +136,7 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, imura)).toBe(false)
+    expect(hasSkillTriggered(result.offense, imura)).toBe(false)
   })
   test("発動なし-フットバース", () => {
     const context = initContext("test", "test", false)
@@ -160,8 +160,8 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, imura)).toBe(false)
-    expect(result.access.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, imura)).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動あり", () => {
     const context = initContext("test", "test", false)
@@ -184,9 +184,9 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, imura)).toBe(true)
-    expect(result.access.attackPercent).toBe(35)
-    let d = getAccessDenco(result.access, "offense")
+    expect(hasSkillTriggered(result.offense, imura)).toBe(true)
+    expect(result.attackPercent).toBe(35)
+    let d = getAccessDenco(result, "offense")
     expect(d.damage).toBeUndefined() // ダメージ扱いしない
     const hp = d.hpBefore
     expect(d.hpAfter).toBe(Math.floor(hp / 2)) // アクセス中にHPが半減する
@@ -218,20 +218,20 @@ describe("イムラのスキル", () => {
       },
       station: sheena.link[0],
     }
-    const {access} = startAccess(context, config)
-    expect(access.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(access.offense, imura)).toBe(true)
-    expect(hasSkillTriggered(access.defense, sheena)).toBe(true)
-    expect(hasSkillTriggered(access.defense, mio)).toBe(true)
-    expect(access.attackPercent).toBe(50)
-    expect(access.defendPercent).toBe(0)
-    let d = getAccessDenco(access, "defense")
+    const resut = startAccess(context, config)
+    expect(resut.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(resut.offense, imura)).toBe(true)
+    expect(hasSkillTriggered(resut.defense, sheena)).toBe(true)
+    expect(hasSkillTriggered(resut.defense, mio)).toBe(true)
+    expect(resut.attackPercent).toBe(50)
+    expect(resut.defendPercent).toBe(0)
+    let d = getAccessDenco(resut, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(157) // ミオが軽減
     expect(d.damage?.attr).toBe(false)
     expect(d.hpBefore).toBe(420)
     expect(d.hpAfter).toBe(263) // no reboot
-    d = getAccessDenco(access, "offense")
+    d = getAccessDenco(resut, "offense")
     expect(d.damage).not.toBeUndefined() // カウンター攻撃
     expect(d.damage?.value).toBe(263) // ふぶが効いている
     expect(d.damage?.attr).toBe(true)
