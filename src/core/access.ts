@@ -701,6 +701,14 @@ const LINK_COMBO_RATIO: readonly number[] = [
   17.4, 19.1, 20.0
 ]
 
+/**
+ * 指定したリンクを解除したリンク結果を計算する
+ * @param context 
+ * @param links 解除するリンク
+ * @param d 対象のリンクを解除した直後の状態
+ * @param which アクセス時にどちら側か
+ * @returns 
+ */
 function calcLinksResult(context: Context, links: readonly StationLink[], d: ReadonlyState<DencoState>, which: AccessSide): LinksResult {
   const time = getCurrentTime(context).valueOf()
   const linkResult = links.map((link, idx) => calcLinkResult(context, link, d, idx))
@@ -1437,8 +1445,9 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
   side?.formation.map(d => {
     if (d.reboot) {
       // リブートにより全リンク解除
-      const linkResult = calcLinksResult(context, d.link, d, which)
+      const disconnetedLink = d.link
       d.link = []
+      const linkResult = calcLinksResult(context, disconnetedLink, d, which)
       d.exp.link = linkResult.exp
       d.disconnetedLink = linkResult
       side.score.link = linkResult.totalScore
@@ -1460,8 +1469,9 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
         throw Error()
       }
       // 対象リンクのみ解除
-      const linkResult = calcLinksResult(context, [d.link[idx]], d, "defense")
+      const disconnetedLink = d.link[idx]
       d.link.splice(idx, 1)
+      const linkResult = calcLinksResult(context, [disconnetedLink], d, "defense")
       // 特にイベントは発生せず経験値だけ追加
       d.exp.link = linkResult.exp
       d.disconnetedLink = linkResult
