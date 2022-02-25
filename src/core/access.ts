@@ -620,20 +620,21 @@ function completeAccess(context: Context, config: AccessConfig, access: Readonly
 
   // アクセス直後のスキル発動イベント
   result = checkSKillState(context, result)
-  result.offense = checkSkillAfterAccess(context, result.offense, access, "offense")
-  result.defense = result.defense ? checkSkillAfterAccess(context, result.defense, access, "defense") : undefined
+  result = checkSkillAfterAccess(context, result, "offense")
+  result = checkSkillAfterAccess(context, result, "defense")
   result = checkSKillState(context, result)
 
 
   return result
 }
 
-function checkSkillAfterAccess(context: Context, state: AccessUserResult, access: ReadonlyState<AccessState>, which: AccessSide): AccessUserResult {
-  const side = (which === "offense") ? access.offense : access.defense
+function checkSkillAfterAccess(context: Context, state: AccessResult, which: AccessSide): AccessResult {
+  const side = (which === "offense") ? state.offense : state.defense
   if (!side) return state
+  let formation = side
   filterActiveSkill(side.formation).forEach(idx => {
     // スキル発動による状態変更を考慮して評価直前にコピー
-    const d = copyAccessDencoResult(state.formation[idx])
+    const d = copyAccessDencoResult(formation.formation[idx])
     const skill = d.skill
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
@@ -645,24 +646,17 @@ function checkSkillAfterAccess(context: Context, state: AccessUserResult, access
         ...d,
         skill: skill,
       }
-      const next = predicate(context, state, self, access)
+      const next = predicate(context, formation, self, state)
       if (next) {
-        state = {
-          ...copyAccessSideState(side),
-          user: next.user,
-          event: next.event,
-          queue: next.queue,
-          formation: next.formation.map(dd => {
-            let nextDenco: AccessDencoResult = {
-              ...d,
-              ...dd
-            }
-            return nextDenco
-          }),
-        }
+        formation = next
       }
     }
   })
+  if (which === "offense") {
+    state.offense = formation
+  } else {
+    state.defense = formation
+  }
   return state
 }
 
