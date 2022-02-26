@@ -14,7 +14,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.3/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.4/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -28,15 +28,14 @@ $ > npm install ekimemo-access-simulator
 利用例：[[CodeSandbox] TypeScript + Node.js](https://codesandbox.io/s/yi-memo-akusesusimiyureta-cor73?file=/src/index.ts)
 
 # Release Note
-- v0.1.0 公開
-- v0.1.1 `node_module`で利用する場合にでんこスキルの効果内容が正しくロードされないバグを解消
-- v0.1.2 時刻処理におけるタイムゾーンを`Asia/Tokyo (+0900)`に固定
-- v0.1.3 公開している関数・型定義を変更
-  - 外部公開する関数の制限
-  - スキルに関する型定義の見直し
-  - アクセス詳細設定の型定義の見直し
-  - 状態の更新方法の統一
-
+[各バージョンの差分詳細はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
+**v0.1.4**  
+- スキルの追加
+- 特殊なダメージ計算の実装追加
+- アクセス中のダメージ以外のHP変化を実装
+- ユーザ情報の追加
+- スコア・経験値の計算方法の変更・機能追加
+- アクセス結果の型変更
 
 # Basic Usage
 まずはライブラリを初期化してでんこ・スキルのデータをロードします
