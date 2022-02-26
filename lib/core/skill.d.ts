@@ -1,3 +1,4 @@
+import { AccessUserResult } from "..";
 import * as access from "./access";
 import { Context } from "./context";
 import { DencoState } from "./denco";
@@ -93,7 +94,7 @@ export interface SkillLogic {
      *
      * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
      */
-    onAccessComplete?: (context: Context, state: UserState, self: ReadonlyState<access.AccessDencoState & ActiveSkill>, access: ReadonlyState<access.AccessState>) => undefined | UserState;
+    onAccessComplete?: (context: Context, state: AccessUserResult, self: ReadonlyState<access.AccessDencoResult & ActiveSkill>, access: ReadonlyState<access.AccessState>) => undefined | AccessUserResult;
     /**
      * フットバースでも発動するスキルの場合はtrueを指定
      * 一部のスキル発動ステップはフットバース時はスキップされる
@@ -157,7 +158,6 @@ export interface Skill extends SkillLogic {
 export interface ActiveSkill extends FormationPosition {
     skill: Skill;
 }
-export declare function copySkill(skill: Skill): Skill;
 export declare function copySkillState(state: SkillState): SkillState;
 interface SkillHolderBase<T> {
     type: T;
@@ -174,7 +174,12 @@ export declare type SkillHolder = SkillHolderBase<"possess"> & Skill | SkillHold
 export declare function getSkill<S>(denco: {
     skill: S & SkillHolderBase<"possess"> | SkillHolderBase<"none"> | SkillHolderBase<"not_acquired">;
 }): S;
-export declare function copySkillHolder(skill: SkillHolder): SkillHolder;
+/**
+ * 関数プロパティは参照コピーのみ
+ * @param skill
+ * @returns
+ */
+export declare function copySkill(skill: SkillHolder): SkillHolder;
 /**
 * スキル保有の有無とスキル状態を考慮してアクティブなスキルか判定
 * @param skill
@@ -218,6 +223,6 @@ export declare function disactivateSkill(context: Context, state: ReadonlyState<
  * @param time 現在時刻
  * @returns 新しい状態
  */
-export declare function refreshSkillState(context: Context, state: UserState): UserState;
-export declare function refreshSkillStateOne(context: Context, state: UserState, idx: number): UserState;
+export declare function refreshSkillState(context: Context, state: UserState): void;
+export declare function refreshSkillStateOne(context: Context, state: UserState, idx: number): void;
 export {};

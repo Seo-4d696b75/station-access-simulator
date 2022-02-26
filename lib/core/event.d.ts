@@ -22,6 +22,11 @@ export interface LevelupDenco {
 export interface AccessEventData {
     /**
      * アクセスの詳細
+     *
+     * 各でんこの状態はアクセス処理終了直後の状態であり、
+     * - アクセスによるリンクの解除は反映済
+     * - 解除されたリンクスコア・経験値は追加済み
+     * - 追加された経験値によるレベルアップ直前
      */
     readonly access: ReadonlyState<AccessState>;
     /**

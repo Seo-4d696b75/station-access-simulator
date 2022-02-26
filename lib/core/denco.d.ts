@@ -29,3 +29,4 @@ export interface DencoState extends Denco {
     link: StationLink[];
 }
 export declare function copyDencoState(state: ReadonlyState<DencoState>): DencoState;
+export declare function copyDencoStateTo(src: ReadonlyState<DencoState>, dst: DencoState): void;

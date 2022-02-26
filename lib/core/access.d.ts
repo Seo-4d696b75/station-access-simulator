@@ -1,8 +1,8 @@
 import { UserParam } from "..";
 import { Context } from "./context";
 import { Denco, DencoState } from "./denco";
-import { Station, StationLink } from "./station";
-import { FormationPosition, ReadonlyState, UserState } from "./user";
+import { LinksResult, Station, StationLink } from "./station";
+import { ReadonlyState, UserState } from "./user";
 /**
  * アクセスにおけるスキルの評価ステップ
  *
@@ -131,17 +131,51 @@ export interface AccessDencoState extends DencoState {
      * そのためスコアと異なり経験値はでんこ毎に計算される
      * see: {@link AccessState score}
      */
-    exp: {
-        /**
-         * スキル以外の理由で加算される経験値
-         */
-        access: number;
-        /**
-         * スキルの効果により加算される経験値
-         * **スキルによる経験値配布の対象外**
-         */
-        skill: number;
-    };
+    exp: ScoreExpState;
+}
+/**
+* アクセス中に発生したスコア・経験値
+*
+* - アクセス開始時に付与される経験値
+* - リンク成功時に付与される経験値
+* - スキルによる経験値付与
+* - リブートした場合を除くリンク解除時の経験値付与
+*/
+export interface ScoreExpState {
+    /**
+     * アクセスの開始時・リンク成功時に付与される値
+       */
+    access: number;
+    /**
+   * スキルによる付与値
+     */
+    skill: number;
+    /**
+     * アクセスによって解除されたリンクスコア・経験値
+     */
+    link: number;
+}
+/**
+ * アクセス終了後の状態
+ *
+ * アクセス直後に発生した他のイベント
+ * - リブートによるリンクの解除・リンクスコア＆経験値の追加
+ * - 経験値の追加によるレベルアップ
+ * - アクセス直後に発動したスキル
+ * による状態の変化も含まれる
+ */
+export interface AccessDencoResult extends AccessDencoState {
+    /**
+     * アクセスによってリブートしたリンク
+     *
+     * リブート（{@link AccessDencoState reboot} === true）した場合は解除したすべてのリンク結果、
+     * リブートを伴わないフットバースの場合は解除したひとつのリンク結果
+     */
+    disconnetedLink?: LinksResult;
+    /**
+     * 現在のHP
+     */
+    currentHp: number;
 }
 /**
  * スコアの計算方法を定義します
@@ -212,24 +246,27 @@ export interface AccessSideState {
     /**
      * アクセス中に発生したスコア
      *
-     * アクセスによりリブートしたリンクのスコアは除くが、
-     * リブート以外で解除したリンクスコアは含まれる
-     *
      * でんこ毎に計算される経験値と異なりスコアはユーザ単位で計算される
      */
-    score: number;
+    score: ScoreExpState;
     /**
      * アクセス表示用のスコア値
      *
-     * アクセスで発生したスコア{@link score} + 守備側でリブートした場合のその駅のリンクスコア
+     * アクセスで発生したスコア（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
      */
     displayedScore: number;
     /**
      * アクセス表示用の経験値値
      *
-     * 直接アクセス・被アクセスするでんこがアクセス中に得た経験値{@link } + 守備側でリブートした場合のその駅のリンク経験値
+      * アクセス・被アクセスするでんこがアクセス中に得た経験値（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
      */
     displayedExp: number;
+}
+/**
+ * アクセス時の攻守各側の詳細と結果
+ */
+export interface AccessUserResult extends AccessSideState, UserState {
+    formation: AccessDencoResult[];
 }
 /**
  * アクセス中において攻撃・守備側のどちらの編成か判断する値
@@ -304,13 +341,19 @@ export interface AccessState {
     pinkItemSet: boolean;
     pinkItemUsed: boolean;
 }
-export declare type AccessResult = {
-    access: ReadonlyState<AccessState>;
-    offense: UserState & FormationPosition;
-    defense?: UserState & FormationPosition;
-};
+/**
+ * アクセスの結果
+ *
+ * アクセスによって更新された攻守両側の状態は`offense, defense`を参照すること
+ */
+export interface AccessResult extends AccessState {
+    offense: AccessUserResult;
+    defense?: AccessUserResult;
+}
 export declare function startAccess(context: Context, config: AccessConfig): AccessResult;
 export declare function copyAccessState(state: ReadonlyState<AccessState>): AccessState;
+export declare function copyAccessSideState(state: ReadonlyState<AccessSideState>): AccessSideState;
+export declare function copyAccessUserResult(state: ReadonlyState<AccessUserResult>): AccessUserResult;
 /**
  * アクセスにおける編成（攻撃・守備側）を取得する
  * @param state アクセス状態 {@link AccessState}

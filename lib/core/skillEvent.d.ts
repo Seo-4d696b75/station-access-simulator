@@ -1,3 +1,4 @@
+import { AccessUserResult } from "..";
 import * as Access from "./access";
 import { Context } from "./context";
 import { Denco, DencoState } from "./denco";
@@ -82,12 +83,11 @@ export declare type SkillEventEvaluate = (context: Context, state: SkillEventSta
  * @param context ログ・乱数等の共通状態
  * @param state 現在の状態
  * @param self スキル発動の主体
- * @param access アクセス処理の結果
  * @param probability スキル発動が確率依存かどうか
  * @param evaluate スキル発動時の処理
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export declare function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: SkillTrigger, evaluate: SkillEventEvaluate): UserState;
+export declare function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<Access.AccessDencoResult & ActiveSkill>, probability: SkillTrigger, evaluate: SkillEventEvaluate): AccessUserResult;
 export declare function randomeAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState;
 /**
  * 指定した時刻にトリガーされるスキル発動型イベント
@@ -130,4 +130,4 @@ export declare function evaluateSkillAtEvent(context: Context, state: ReadonlySt
  * @param state
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
-export declare function refreshEventQueue(context: Context, state: UserState): UserState;
+export declare function refreshEventQueue(context: Context, state: UserState): void;

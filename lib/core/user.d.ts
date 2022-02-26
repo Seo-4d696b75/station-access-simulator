@@ -33,7 +33,11 @@ export interface UserParam {
  *
  * 原則としてこの状態変数が操作の起点になる
  */
-export interface UserState extends UserParam {
+export interface UserState {
+    /**
+     * ユーザの詳細情報
+     */
+    user: UserParam;
     /**
      * 現在の編成状態
      */
@@ -60,6 +64,7 @@ export declare function getTargetDenco<T>(state: {
 }): T;
 export declare function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, param?: Partial<UserParam>): UserState;
 export declare function changeFormation(context: Context, current: ReadonlyState<UserState>, formation: ReadonlyState<DencoState[]>): UserState;
+export declare function copyUserStateTo(src: ReadonlyState<UserState>, dst: UserState): void;
 export declare function copyUserState(state: ReadonlyState<UserState>): UserState;
 export declare function copyUserParam(param: ReadonlyState<UserParam>): UserParam;
 /**
@@ -74,9 +79,13 @@ export declare function copyUserParam(param: ReadonlyState<UserParam>): UserPara
  */
 export declare function refreshState(context: Context, state: ReadonlyState<UserState>): UserState;
 /**
+ * {@link refreshState} の破壊的バージョン
+ */
+export declare function _refreshState(context: Context, state: UserState): void;
+/**
  * 現在の状態の経験値の確認してレベルアップ処理を行う(破壊的)
  * @param state 現在の状態
  * @returns
  */
-export declare function refreshEXPState(context: Context, state: UserState): UserState;
+export declare function refreshEXPState(context: Context, state: UserState): void;
 export {};
