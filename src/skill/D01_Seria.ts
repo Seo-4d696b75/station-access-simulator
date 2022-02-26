@@ -32,7 +32,7 @@ const skill: SkillLogic = {
           })
         }
       }
-      return evaluateSkillAfterAccess(context, state, self, access, percent, evaluate)
+      return evaluateSkillAfterAccess(context, state, self, percent, evaluate)
     }
   },
   disactivateAt: (context, state, self) => {

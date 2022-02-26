@@ -1,19 +1,14 @@
+import moment from "moment-timezone"
+import { init } from ".."
+import { AccessConfig, getDefense, startAccess } from "../core/access"
 import { initContext } from "../core/context"
-import StationManager from "../core/stationManager"
-import SkillManager from "../core/skillManager"
 import DencoManager from "../core/dencoManager"
 import { AccessEventData, LevelupDenco } from "../core/event"
-import { initUser, refreshState } from "../core/user"
-import { AccessConfig, getDefense, startAccess } from "../core/access"
 import { LinksResult } from "../core/station"
-import moment from "moment-timezone"
+import { initUser, refreshState } from "../core/user"
 
 describe("経験値の処理", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-  })
+  beforeAll(init)
   test("レベルアップ1", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 1)
@@ -101,20 +96,16 @@ describe("経験値の処理", () => {
       let event = state.event[0]
       expect(event.type).toBe("access")
       const accessResult = event.data as AccessEventData
-      let defense = getDefense(accessResult.access)
-      const accessEXP = 0
-      reika = {
-        ...reika,
-        link: [],
-        currentExp: accessEXP
-      }
-      expect(defense.formation[0]).toMatchObject(reika)
+      let afterAccess = getDefense(accessResult.access).formation[0]
       // リブート
       event = state.event[1]
       expect(event.type).toBe("reboot")
       const links = event.data as LinksResult
       const linksEXP = links.exp
-      expect(links.denco).toMatchObject(reika)
+      expect(links.denco).toMatchObject({
+        ...reika,
+        link: []  // リンク解除済み
+      })
       // レベルアップ
       event = state.event[2]
       expect(event.type).toBe("levelup")
@@ -122,9 +113,10 @@ describe("経験値の処理", () => {
       reika = {
         ...reika,
         link: [],
-        currentExp: accessEXP + linksEXP
+        currentExp: linksEXP
       }
       expect(levelup.before).toMatchObject(reika)
+      expect(afterAccess).toMatchObject(reika)
       // レベルアップ後の状態
       let tmp = initUser(context, "hoge", [reika])
       tmp = refreshState(context, tmp)
@@ -133,7 +125,8 @@ describe("経験値の処理", () => {
       const current = result.defense.formation[0]
       expect(current.level).toBe(reika.level)
       expect(current.currentExp).toBe(reika.currentExp)
-      expect(levelup.after).toMatchObject(current)
+      expect(levelup.before.level).toBe(10)
+      expect(current).toMatchObject(levelup.after)
     }
   })
 })

@@ -1,22 +1,14 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
-import { copyDencoState } from "../../core/denco"
-import { activateSkill, getSkill } from "../../core/skill"
-import { getAccessDenco } from "../../core/access"
 import moment from "moment-timezone"
+import { init } from "../.."
+import { getAccessDenco } from "../../core/access"
+import { initContext } from "../../core/context"
+import { copyDencoState } from "../../core/denco"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, getSkill } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
 
 describe("シャルのスキル", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
+  beforeAll(init)
   test("スキル発動", () => {
     const context = initContext("test", "test", false)
     const now = moment("2020-01-01T12:50:00.000").valueOf()

@@ -1,7 +1,8 @@
-import { Denco, DencoState } from "./denco";
+import { UserParam } from "..";
 import { Context } from "./context";
-import { Station } from "./station";
-import { FormationPosition, ReadonlyState, UserState } from "./user";
+import { Denco, DencoState } from "./denco";
+import { LinksResult, Station, StationLink } from "./station";
+import { ReadonlyState, UserState } from "./user";
 /**
  * アクセスにおけるスキルの評価ステップ
  *
@@ -70,20 +71,33 @@ export declare type AccessWho = "offense" | "defense" | "other";
  * アクセス処理中の両編成の各でんこの状態
  */
 export interface AccessDencoState extends DencoState {
-    which: AccessSide;
-    who: AccessWho;
-    carIndex: number;
+    readonly which: AccessSide;
+    readonly who: AccessWho;
+    readonly carIndex: number;
     /**
      * アクセス開始時のHP
      */
-    hpBefore: number;
+    readonly hpBefore: number;
     /**
      * アクセス終了時のHP
      *
      * `hpAfter === 0`の場合は`reboot === true`となり、
      * `currentHP`は最大HPにセットされる
+     *
+     * **Note** アクセス完了までの値は未定義
      */
     hpAfter: number;
+    /**
+     * アクセス処理中のHPの変化を直接指定する
+     *
+     * このプロパティでHPを変化させるとダメージ量には加算されない
+     * ダメージ量に加算する場合は
+     * - アクセス・被アクセスでんこ間のダメージ計算：{@link AccessState}の各種対応するプロパティ
+     * - 直接ダメージを加算する：{@link damage}（まりか反撃スキルなど）
+     *
+     * 初期値：アクセス開始時のHP {@link hpBefore}
+     */
+    currentHp: number;
     /**
      * アクセス処理中においてスキル無効化の影響によりこのでんこが保有するスキルが無効化されているか
      */
@@ -103,23 +117,102 @@ export interface AccessDencoState extends DencoState {
     /**
      * このアクセス時に発生する経験値
      *
+     * `access + skill`の合計値が経験値総量
+     *
      * - アクセス開始時に付与される経験値
      * - リンク成功時に付与される経験値
      * - スキルによる経験値付与
      * - リブートした場合を除くリンク解除時の経験値付与
      *
-     * アクセスによってリブートしたリンクの経験値は含まない
+     * **アクセスによってリブートしたリンクの経験値は含まない**
      *
      * 通常はアクセス開始時の攻守ふたりのみ経験値が付与されるが、
      * 反撃・スキルなど編成内他でんこに経験値が付与される場合もある
+     * そのためスコアと異なり経験値はでんこ毎に計算される
+     * see: {@link AccessState score}
      */
-    accessEXP: number;
+    exp: ScoreExpState;
+}
+/**
+* アクセス中に発生したスコア・経験値
+*
+* - アクセス開始時に付与される経験値
+* - リンク成功時に付与される経験値
+* - スキルによる経験値付与
+* - リブートした場合を除くリンク解除時の経験値付与
+*/
+export interface ScoreExpState {
+    /**
+     * アクセスの開始時・リンク成功時に付与される値
+       */
+    access: number;
+    /**
+   * スキルによる付与値
+     */
+    skill: number;
+    /**
+     * アクセスによって解除されたリンクスコア・経験値
+     */
+    link: number;
+}
+/**
+ * アクセス終了後の状態
+ *
+ * アクセス直後に発生した他のイベント
+ * - リブートによるリンクの解除・リンクスコア＆経験値の追加
+ * - 経験値の追加によるレベルアップ
+ * - アクセス直後に発動したスキル
+ * による状態の変化も含まれる
+ */
+export interface AccessDencoResult extends AccessDencoState {
+    /**
+     * アクセスによってリブートしたリンク
+     *
+     * リブート（{@link AccessDencoState reboot} === true）した場合は解除したすべてのリンク結果、
+     * リブートを伴わないフットバースの場合は解除したひとつのリンク結果
+     */
+    disconnetedLink?: LinksResult;
+    /**
+     * 現在のHP
+     */
+    currentHp: number;
+}
+/**
+ * スコアの計算方法を定義します
+ *
+ * スコアの値を元に経験値も計算されます
+ */
+export interface ScorePredicate {
+    /**
+     * アクセス開始時にアクセス側が取得するスコアを計算
+     *
+     * アクセス相手ユーザ・でんこやリンク成功可否などに依存しない
+     * @param state アクセスする本人を含む編成の現在の状態
+     * @param station アクセスする駅
+     */
+    calcAccessScore: (context: Context, state: ReadonlyState<AccessSideState>, station: Station) => number;
+    /**
+     * アクセス側がリンク成功時に取得するスコアを計算
+     * @param state アクセスする本人を含む編成の現在の状態
+     * @param access アクセスの状態
+     */
+    calcLinkSuccessScore: (context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>) => number;
+    /**
+     * アクセス側が与えたダメージ量に応じたスコアを計算
+     */
+    calcDamageScore: (context: Context, damage: number) => number;
+    /**
+     * リンク保持によるスコアを計算
+     *
+     * コンボボーナス・属性ボーナスの値は含まずリンクによる基本スコア値のみ計算する
+     */
+    calcLinkScore: (context: Context, link: StationLink) => number;
 }
 export interface AccessTriggeredSkill extends Denco {
     readonly step: AccessEvaluateStep;
 }
 /**
- * アクセス中に発生したダメージ
+ * アクセス中に各でんこに発生したダメージ
  */
 export interface DamageState {
     /**
@@ -135,6 +228,7 @@ export interface DamageState {
  * アクセスの攻守ふたりの状態
  */
 export interface AccessSideState {
+    user: UserParam;
     /**
      * 自身側の編成一覧
      */
@@ -152,17 +246,53 @@ export interface AccessSideState {
     /**
      * アクセス中に発生したスコア
      *
-     * アクセスによりリブートしたリンクのスコアは除くが、
-     * リブート以外で解除したリンクスコアは含まれる
+     * でんこ毎に計算される経験値と異なりスコアはユーザ単位で計算される
      */
-    accessScore: number;
-    score: number;
-    exp: number;
+    score: ScoreExpState;
+    /**
+     * アクセス表示用のスコア値
+     *
+     * アクセスで発生したスコア（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
+     */
+    displayedScore: number;
+    /**
+     * アクセス表示用の経験値値
+     *
+      * アクセス・被アクセスするでんこがアクセス中に得た経験値（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
+     */
+    displayedExp: number;
+}
+/**
+ * アクセス時の攻守各側の詳細と結果
+ */
+export interface AccessUserResult extends AccessSideState, UserState {
+    formation: AccessDencoResult[];
 }
 /**
  * アクセス中において攻撃・守備側のどちらの編成か判断する値
  */
 export declare type AccessSide = "offense" | "defense";
+/**
+ * 被アクセス側のダメージ計算の状態
+ *
+ * `damage_common`, `damage_special`の段階まで考慮して計算する
+ *
+ * 固定ダメージの値は{@link AccessState damageFixed}
+ */
+export interface DamageCalcState {
+    /**
+     * `damage_fixed`以降の段階において増減する値
+     *
+     * **非負数** 最終てきなダメージ計算において固定ダメージ{@link AccessState damageFixed}の影響で負数になる場合は0に固定される
+     */
+    variable: number;
+    /**
+     * `damage_fixed`以降の段階においても増減しない値 **非負数**
+     *
+     * 固定ダメージ{@link AccessState damageFixed}の影響を受けず最終的なダメージ量にそのまま加算される
+     */
+    constant: number;
+}
 export interface AccessState {
     time: number;
     station: Station;
@@ -170,22 +300,33 @@ export interface AccessState {
     defense?: AccessSideState;
     depth: number;
     /**
-     * `damage_common`の段階までにおけるダメージの計算値
+     * `damage_common`の段階までにおける被アクセス側のダメージ計算量
      *
-     * base * (100 + ATK - DEF)/100.0 * (attr_damage_ratio) = damage
+     * `variable + constant`の合計値が計算されたダメージ量
+     *
+     * `damage_common, damage_special`のスキル評価後のタイミングで原則次のように計算され値がセットされる
+     * - AP: 攻撃側のAP
+     * - ATK,DEF: ダメージ計算時の増減値% {@link attackPercent} {@link defendPercent}
+     * `variable = AP * (100 + ATK - DEF)/100.0 * damageRation, constant = 0`
+     *
+     * `damage_fixed`で計算する固定ダメージ値はここには含まれない
+     * 個体ダメージもスキップする場合は {@link skipDamageFixed}
+     *
+     * ただし`damage_special`のスキル発動による特殊な計算など、
+     * `damage_special`の段階までにこの`damageBase`の値が`undefined`以外にセットされた場合は
+     * 上記の計算はスキップされる
      */
-    damageBase?: number;
-    skipDamageFixed?: boolean;
+    damageBase?: DamageCalcState;
     /**
      * 固定値で加減算されるダメージ値
      */
     damageFixed: number;
     /**
-     * `damage_common`の段階までに評価された`ATK`累積値
+     * `damage_common`の段階までに評価された`ATK`累積値 単位：%
      */
     attackPercent: number;
     /**
-     * `damage_common`の段階までに評価された`DEF`累積値
+     * `damage_common`の段階までに評価された`DEF`累積値 単位：%
      */
     defendPercent: number;
     /**
@@ -200,13 +341,19 @@ export interface AccessState {
     pinkItemSet: boolean;
     pinkItemUsed: boolean;
 }
-export declare type AccessResult = {
-    access: ReadonlyState<AccessState>;
-    offense: UserState & FormationPosition;
-    defense?: UserState & FormationPosition;
-};
+/**
+ * アクセスの結果
+ *
+ * アクセスによって更新された攻守両側の状態は`offense, defense`を参照すること
+ */
+export interface AccessResult extends AccessState {
+    offense: AccessUserResult;
+    defense?: AccessUserResult;
+}
 export declare function startAccess(context: Context, config: AccessConfig): AccessResult;
 export declare function copyAccessState(state: ReadonlyState<AccessState>): AccessState;
+export declare function copyAccessSideState(state: ReadonlyState<AccessSideState>): AccessSideState;
+export declare function copyAccessUserResult(state: ReadonlyState<AccessUserResult>): AccessUserResult;
 /**
  * アクセスにおける編成（攻撃・守備側）を取得する
  * @param state アクセス状態 {@link AccessState}
@@ -275,6 +422,24 @@ export declare function hasSkillTriggered(state: ReadonlyState<AccessSideState> 
  * @returns
  */
 export declare function random(context: Context, percent: number): boolean;
+/**
+ * 被アクセス側が受けるダメージ値のうち`damage_common`までに計算される基本値を参照
+ *
+ * - `state.damageBase`が定義済みの場合はその値を返す
+ * - 未定義の場合は {@link calcBaseDamage}で計算して返す
+ */
+export declare function getBaseDamage(context: Context, state: ReadonlyState<AccessState>, useAKT?: boolean, useDEF?: boolean, useAttr?: boolean): DamageCalcState;
+/**
+ * 被アクセス側が受けるダメージ値のうち`damage_common`までに計算される基本値を計算
+ *
+ * `AP * (100 + ATK - DEF)/100.0 * (damageRatio)`
+ *
+ * @param useAKT ATK増減を加味する default:`true`
+ * @param useDEF DEF増減を加味する default:`true`
+ * @param useAttr アクセス・被アクセス個体間の属性による倍率補正を加味する default:`true`
+ * @returns
+ */
+export declare function calcBaseDamage(context: Context, state: ReadonlyState<AccessState>, useAKT?: boolean, useDEF?: boolean, useAttr?: boolean): number;
 /**
  * 攻守はそのままでアクセス処理を再度実行する
  *

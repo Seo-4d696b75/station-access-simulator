@@ -1,12 +1,12 @@
-import { TIME_FORMAT } from "..";
+import moment from "moment-timezone";
+import { AccessUserResult, copyAccessUserResult, TIME_FORMAT } from "..";
 import * as Access from "./access";
 import { Context, fixClock, getCurrentTime } from "./context";
 import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
-import { ActiveSkill, isSkillActive, refreshSkillState, Skill, SkillTrigger } from "./skill";
+import { ActiveSkill, isSkillActive, SkillTrigger } from "./skill";
 import { Station } from "./station";
-import { copyUserState, ReadonlyState, User, UserState } from "./user";
-import moment from "moment-timezone"
+import { copyUserParam, copyUserState, copyUserStateTo, ReadonlyState, UserParam, UserState, _refreshState } from "./user";
 
 export interface SkillEventDencoState extends DencoState {
   who: "self" | "other"
@@ -56,7 +56,7 @@ export interface EventTriggeredSkill {
  */
 export interface SkillEventState {
   time: number
-  user: User
+  user: UserParam
 
   formation: SkillEventDencoState[]
   carIndex: number
@@ -118,35 +118,30 @@ export type SkillEventEvaluate = (context: Context, state: SkillEventState, self
  * @param context ログ・乱数等の共通状態
  * @param state 現在の状態
  * @param self スキル発動の主体
- * @param access アクセス処理の結果
  * @param probability スキル発動が確率依存かどうか
  * @param evaluate スキル発動時の処理
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<Access.AccessDencoState & ActiveSkill>, access: ReadonlyState<Access.AccessState>, probability: SkillTrigger, evaluate: SkillEventEvaluate): UserState {
+export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<Access.AccessDencoResult & ActiveSkill>, probability: SkillTrigger, evaluate: SkillEventEvaluate): AccessUserResult {
   context = fixClock(context)
-  const accessFormation = (self.which === "offense") ? access.offense.formation : access.defense?.formation
-  if (!accessFormation) {
-    context.log.error(`指定されたでんこが直前のアクセスの状態で見つかりません`)
-    throw Error()
-  }
+  let next = copyAccessUserResult(state)
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
     throw Error()
   }
   if (self.skillInvalidated) {
     context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
-    return copyUserState(state)
+    return next
   }
   const eventState: SkillEventState = {
-    user: state,
-    time: access.time,
+    user: copyUserParam(state.user),
+    time: getCurrentTime(context),
     formation: state.formation.map((d, idx) => {
       return {
         ...copyDencoState(d),
         who: idx === self.carIndex ? "self" : "other",
         carIndex: idx,
-        skillInvalidated: accessFormation[idx].skillInvalidated
+        skillInvalidated: self.skillInvalidated
       }
     }),
     carIndex: self.carIndex,
@@ -157,18 +152,24 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
   const result = execute(context, eventState, evaluate)
   if (result) {
     // スキル発動による影響の反映
-    return {
-      name: state.name,
-      formation: result.formation.map(d => copyDencoState(d)),
+    next = {
+      ...next,
+      formation: result.formation.map((d,idx) => {
+        // 編成内位置は不変と仮定
+        let access = state.formation[idx]
+        return {
+          ...access,           // アクセス中の詳細など
+          ...copyDencoState(d) // でんこ最新状態(順番注意)
+        }
+      }),
       event: [
         ...state.event,
         ...result.event,
       ],
-      queue: Array.from(state.queue),
     }
-  } else {
-    return copyUserState(state)
   }
+  _refreshState(context, next)
+  return next
 }
 
 function execute(context: Context, state: SkillEventState, evaluate: SkillEventEvaluate): SkillEventState | undefined {
@@ -284,7 +285,7 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
   const config: Access.AccessConfig = {
     offense: {
       state: {
-        name: state.user.name,
+        user: state.user,
         formation: state.formation.map(d => copyDencoState(d)),
         event: [],
         queue: [],
@@ -349,7 +350,8 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
     data: event
   })
   next.queue.sort((a, b) => a.time - b.time)
-  return refreshEventQueue(context, next)
+  refreshEventQueue(context, next)
+  return next
 }
 
 /**
@@ -382,7 +384,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
   }
   const eventState: SkillEventState = {
     time: getCurrentTime(context).valueOf(),
-    user: state,
+    user: state.user,
     formation: next.formation.map((d, i) => {
       return {
         ...copyDencoState(d),
@@ -400,7 +402,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
   if (result) {
     // スキル発動による影響の反映
     next = {
-      name: next.name,
+      user: result.user,
       formation: result.formation.map(d => copyDencoState(d)),
       event: [
         ...next.event,
@@ -409,7 +411,8 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
       queue: next.queue,
     }
   }
-  return refreshSkillState(context, next)
+  _refreshState(context, next)
+  return next
 }
 
 /**
@@ -418,7 +421,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
  * @param state 
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
-export function refreshEventQueue(context: Context, state: UserState): UserState {
+export function refreshEventQueue(context: Context, state: UserState) {
   context = fixClock(context)
   const time = getCurrentTime(context).valueOf()
   while (state.queue.length > 0) {
@@ -429,7 +432,8 @@ export function refreshEventQueue(context: Context, state: UserState): UserState
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${moment(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
-        state = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.probability, entry.data.evaluate)
+        const next = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.probability, entry.data.evaluate)
+        copyUserStateTo(next, state)
         break
       }
       case "hour_cycle": {
@@ -446,7 +450,8 @@ export function refreshEventQueue(context: Context, state: UserState): UserState
             skill: skill,
             skillPropertyReader: skill.propertyReader,
           }
-          state = callback(context, state, self)
+          const next = callback(context, state, self)
+          copyUserStateTo(next, state)
         }
         // 次のイベント追加
         const date = moment(entry.time).add(1, "h")
@@ -461,5 +466,4 @@ export function refreshEventQueue(context: Context, state: UserState): UserState
     }
     // end event
   }
-  return state
 }

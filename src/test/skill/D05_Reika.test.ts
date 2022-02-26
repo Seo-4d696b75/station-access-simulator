@@ -1,21 +1,13 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser } from "../../core/user"
-import { activateSkill, isSkillActive, getSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 import moment from "moment-timezone"
+import { init } from "../.."
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { initContext } from "../../core/context"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, getSkill, isSkillActive, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
 
 describe("レイカのスキル", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
+  beforeAll(init)
 
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
@@ -24,7 +16,7 @@ describe("レイカのスキル", () => {
     let defense = initUser(context, "とあるマスター", [reika])
     const now = moment().valueOf()
     context.clock = now
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     reika = defense.formation[0]
     expect(reika.name).toBe("reika")
     let skill = getSkill(reika)
@@ -41,14 +33,14 @@ describe("レイカのスキル", () => {
 
     // 10分経過
     context.clock = now + 600 * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     reika = defense.formation[0]
     skill = getSkill(reika)
     expect(skill.state.type).toBe("active")
 
     // 15分経過
     context.clock = now + 900 * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     reika = defense.formation[0]
     skill = getSkill(reika)
     expect(skill.state.type).toBe("cooldown")
@@ -57,7 +49,7 @@ describe("レイカのスキル", () => {
 
     // 1時間45分経過
     context.clock = now + (900 + 5400) * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     reika = defense.formation[0]
     skill = getSkill(reika)
     expect(skill.state.type).toBe("idle")
@@ -82,8 +74,8 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(false)
-    expect(result.access.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.offense, reika)).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動なし-守備側", () => {
     const context = initContext("test", "test", false)
@@ -108,8 +100,8 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.defense, reika)).toBe(false)
-    expect(result.access.attackPercent).toBe(0)
+    expect(hasSkillTriggered(result.defense, reika)).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動あり-攻撃側", () => {
     const context = initContext("test", "test", false)
@@ -134,8 +126,8 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(true)
-    expect(result.access.attackPercent).toBe(25)
+    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(result.attackPercent).toBe(25)
   })
   test("発動あり-確率ブースト", () => {
     const context = initContext("test", "test", false)
@@ -163,9 +155,9 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(true)
-    expect(hasSkillTriggered(result.access.offense, hiiru)).toBe(false)
-    expect(result.access.attackPercent).toBe(25)
+    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+    expect(result.attackPercent).toBe(25)
   })
   test("発動あり-編成内", () => {
     const context = initContext("test", "test", false)
@@ -190,9 +182,9 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.access.offense, reika)).toBe(true)
-    expect(result.access.attackPercent).toBe(25)
-    let accessSeria = getAccessDenco(result.access, "offense")
+    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(result.attackPercent).toBe(25)
+    let accessSeria = getAccessDenco(result, "offense")
     expect(accessSeria.name).toBe("seria")
   })
 })

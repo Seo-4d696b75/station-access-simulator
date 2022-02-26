@@ -59,7 +59,7 @@ export function formatRebootDetail(result: LinksResult, time: number, width: num
     str += link.matchBonus ? formatAttr(result.denco.attr, 8) : " ".repeat(8)
     str += "┃\n"
     let duration = formatLinkTime(time, link)
-    let pt = formatSpace(formatPt(link.score), width - 2 - len(duration), "right")
+    let pt = formatSpace(formatPt(link.totatlScore), width - 2 - len(duration), "right")
     str += "┃" + duration + pt + "┃\n"
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   })
@@ -148,14 +148,14 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   str += formatSpace(formatAccessLinkTime(result.station, time, rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatPt(leftSide?.score), tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.displayedScore), tableLeft, "left")
   str += " score"
-  str += formatSpace(formatPt(rightSide.score), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.displayedScore), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatPt(leftSide?.exp), tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.displayedExp), tableLeft, "left")
   str += "  exp "
-  str += formatSpace(formatPt(rightSide.exp), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.displayedExp), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   var mes = ""

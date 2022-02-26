@@ -1,4 +1,5 @@
 import { Moment } from "moment-timezone";
+import { ScorePredicate } from "..";
 export declare const TIME_FORMAT = "HH:mm:ss.SSS";
 export declare const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS";
 /**
@@ -44,6 +45,10 @@ export interface Context {
      * ```
      */
     clock: "now" | number;
+    /**
+     * スコア・経験値の計算方法を指定します
+     */
+    scorePredicate?: Partial<ScorePredicate>;
 }
 /**
  * contextを初期化する

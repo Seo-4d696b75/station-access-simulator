@@ -20,6 +20,10 @@ class StationManager {
     }
   }
 
+  clear() {
+    this.data.splice(0)
+  }
+
   getRandomStation(context: Context, size: number): Station[] {
     if (size === 0) return []
     if (size > this.data.length) {

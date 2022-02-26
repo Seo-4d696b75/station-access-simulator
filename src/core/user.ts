@@ -5,7 +5,7 @@ import DencoManager from "./dencoManager"
 import { Context, getCurrentTime } from "./context";
 import { refreshEventQueue, SkillEventReservation } from "./skillEvent";
 import moment from "moment-timezone"
-import { Denco, fixClock, SkillManager } from "..";
+import { copyDencoStateTo, Denco, fixClock, SkillManager } from "..";
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
 type Builtin = Primitive | Function | Date | Error | RegExp;
@@ -15,10 +15,6 @@ type Builtin = Primitive | Function | Date | Error | RegExp;
 export type ReadonlyState<T> = T extends (Builtin | Event)
   ? T
   : { readonly [key in keyof T]: ReadonlyState<T[key]> }
-
-export interface User {
-  readonly name: string
-}
 
 interface EventQueueEntryBase<T, E = undefined> {
   readonly type: T
@@ -31,12 +27,28 @@ export type EventQueueEntry =
   EventQueueEntryBase<"hour_cycle">
 
 /**
+ * ユーザの状態のうちライブラリ側で操作しない情報
+ * 
+ * このオブジェクトのプロパティはライブラリ側からは参照のみ
+ */
+export interface UserParam {
+  name: string
+  /**
+   * アクセス時の移動距離 単位：km
+   */
+  dailyDistance: number
+}
+
+/**
  * ユーザの状態を表現する
  * 
  * 原則としてこの状態変数が操作の起点になる
  */
-export interface UserState extends User {
-
+export interface UserState {
+  /**
+   * ユーザの詳細情報
+   */
+  user: UserParam
   /**
    * 現在の編成状態
    */
@@ -66,7 +78,7 @@ export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: nu
   return state.formation[state.carIndex]
 }
 
-export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>): UserState {
+export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, param?: Partial<UserParam>): UserState {
   if (!formation) formation = []
   const date = moment(getCurrentTime(context))
     .millisecond(0)
@@ -74,7 +86,10 @@ export function initUser(context: Context, userName: string, formation?: Readonl
     .minute(0)
     .add(1, "h")
   return changeFormation(context, {
-    name: userName,
+    user: {
+      name: param?.name ?? userName,
+      dailyDistance: param?.dailyDistance ?? 0,
+    },
     formation: [],
     event: [],
     queue: [{
@@ -86,26 +101,40 @@ export function initUser(context: Context, userName: string, formation?: Readonl
 }
 
 export function changeFormation(context: Context, current: ReadonlyState<UserState>, formation: ReadonlyState<DencoState[]>): UserState {
-  let state = {
-    ...current,
+  const state: UserState = {
+    ...copyUserState(current),
     event: Array.from(current.event),
-    formation: Array.from(formation)
+    formation: formation.map(d => copyDencoState(d)),
   }
   let before = current.formation.map(d => d.name).join(",")
   let after = formation.map(d => d.name).join(",")
   context.log.log(`編成を変更します [${before}] -> [${after}]`)
-  return refreshState(context, state)
+  _refreshState(context, state)
+  return state
+}
+
+export function copyUserStateTo(src: ReadonlyState<UserState>, dst: UserState) {
+  dst.user = copyUserParam(src.user)
+  dst.formation.forEach((d, idx) => copyDencoStateTo(src.formation[idx], d))
+  dst.event = Array.from(src.event)
+  dst.queue = Array.from(src.queue)
 }
 
 export function copyUserState(state: ReadonlyState<UserState>): UserState {
   return {
-    name: state.name,
-    formation: Array.from(state.formation).map(d => copyDencoState(d)),
+    user: copyUserParam(state.user),
+    formation: state.formation.map(d => copyDencoState(d)),
     event: Array.from(state.event),
     queue: Array.from(state.queue),
   }
 }
 
+export function copyUserParam(param: ReadonlyState<UserParam>): UserParam {
+  return {
+    name: param.name,
+    dailyDistance: param.dailyDistance
+  }
+}
 /**
  * 現在の編成状態を更新する
  * 
@@ -119,10 +148,20 @@ export function copyUserState(state: ReadonlyState<UserState>): UserState {
 export function refreshState(context: Context, state: ReadonlyState<UserState>): UserState {
   context = fixClock(context)
   let next = copyUserState(state)
-  next = refreshSkillState(context, next)
-  next = refreshEventQueue(context, next)
-  next = refreshEXPState(context, next)
+  refreshSkillState(context, next)
+  refreshEventQueue(context, next)
+  refreshEXPState(context, next)
   return next
+}
+
+/**
+ * {@link refreshState} の破壊的バージョン
+ */
+export function _refreshState(context: Context, state: UserState) {
+  context = fixClock(context)
+  refreshSkillState(context, state)
+  refreshEventQueue(context, state)
+  refreshEXPState(context, state)
 }
 
 /**
@@ -130,31 +169,32 @@ export function refreshState(context: Context, state: ReadonlyState<UserState>):
  * @param state 現在の状態
  * @returns 
  */
-export function refreshEXPState(context: Context, state: UserState): UserState {
+export function refreshEXPState(context: Context, state: UserState) {
   const indices = state.formation.map((_, idx) => idx)
-  return indices.reduce((next, idx) => refreshEXPStateOne(context, next, idx), state)
+  indices.forEach(idx => refreshEXPStateOne(context, state, idx))
 }
 
-function refreshEXPStateOne(context: Context, state: UserState, idx: number): UserState {
-  const before = state.formation[idx]
-  const after = checkLevelup(context, before)
-  if (after) {
-    state.formation[idx] = after
+function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
+  const d = state.formation[idx]
+  const levelup = checkLevelup(context, d)
+  if (levelup) {
+    const before = copyDencoState(d)
+    // copy
+    copyDencoStateTo(levelup, d)
     // 新規にスキル獲得した場合はスキル状態を初期化
-    state = refreshSkillStateOne(context, state, idx)
+    refreshSkillStateOne(context, state, idx)
     let event: LevelupEvent = {
       type: "levelup",
       data: {
         time: getCurrentTime(context),
-        after: copyDencoState(after),
+        after: copyDencoState(d),
         before: before,
       }
     }
     state.event.push(event)
-    context.log.log(`レベルアップ：${after.name} Lv.${before.level}->Lv.${after.level}`)
-    context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
+    context.log.log(`レベルアップ：${levelup.name} Lv.${d.level}->Lv.${levelup.level}`)
+    context.log.log(`現在の経験値：${levelup.name} ${levelup.currentExp}/${levelup.nextExp}`)
   }
-  return state
 }
 
 function checkLevelup(context: Context, denco: ReadonlyState<DencoState>): DencoState | undefined {

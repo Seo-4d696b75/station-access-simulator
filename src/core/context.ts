@@ -1,5 +1,6 @@
 import seedrandom from "seedrandom"
 import moment, { Moment } from "moment-timezone"
+import { ScorePredicate } from ".."
 
 // タイムゾーン指定
 moment.tz.setDefault("Asia/Tokyo")
@@ -55,6 +56,11 @@ export interface Context {
    * ```
    */
   clock: "now" | number
+
+  /**
+   * スコア・経験値の計算方法を指定します
+   */
+  scorePredicate?: Partial<ScorePredicate>
 }
 
 /**

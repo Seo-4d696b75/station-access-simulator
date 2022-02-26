@@ -1,13 +1,15 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
-import { getAccessDenco, getDefense, startAccess } from "../../core/access"
 import moment from "moment-timezone"
+import { init } from "../.."
+import StationManager from "../..//core/stationManager"
+import { getAccessDenco, getDefense, startAccess } from "../../core/access"
+import { initContext } from "../../core/context"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import SkillManager from "../../core/skillManager"
+import { initUser, refreshState } from "../../core/user"
 
 describe("ルナのスキル", () => {
+  beforeAll(init)
   test("setup", async () => {
     await StationManager.load()
     await SkillManager.load()
@@ -58,14 +60,13 @@ describe("ルナのスキル", () => {
       usePink: true,
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.pinkItemSet).toBe(true)
-    expect(access.pinkItemUsed).toBe(true)
-    expect(access.pinkMode).toBe(true)
-    expect(access.defense?.triggeredSkills.length).toBe(0)
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    let accessLuna = getAccessDenco(access, "defense")
+    expect(result.pinkItemSet).toBe(true)
+    expect(result.pinkItemUsed).toBe(true)
+    expect(result.pinkMode).toBe(true)
+    expect(result.defense?.triggeredSkills.length).toBe(0)
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    let accessLuna = getAccessDenco(result, "defense")
     expect(accessLuna.reboot).toBe(false)
   })
   test("発動なし-攻撃側", () => {
@@ -86,12 +87,11 @@ describe("ルナのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.pinkMode).toBe(false)
-    expect(access.offense.triggeredSkills.length).toBe(0)
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
-    let accessReika = getAccessDenco(access, "defense")
+    expect(result.pinkMode).toBe(false)
+    expect(result.offense.triggeredSkills.length).toBe(0)
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
+    let accessReika = getAccessDenco(result, "defense")
     expect(accessReika.reboot).toBe(false)
     expect(accessReika.hpBefore).toBe(192)
     expect(accessReika.hpAfter).toBe(36)
@@ -116,17 +116,16 @@ describe("ルナのスキル", () => {
       station: luna.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.pinkMode).toBe(false)
-    expect(access.defense?.triggeredSkills.length).toBe(1)
-    let trigger = getDefense(access).triggeredSkills[0]
+    expect(result.pinkMode).toBe(false)
+    expect(result.defense?.triggeredSkills.length).toBe(1)
+    let trigger = getDefense(result).triggeredSkills[0]
     expect(trigger.numbering).toBe("3")
     expect(trigger.name).toBe("luna")
     expect(trigger.step).toBe("damage_common")
-    expect(access.linkDisconncted).toBe(false)
-    expect(access.linkSuccess).toBe(false)
-    expect(access.defendPercent).toBe(25)
-    let accessLuna = getAccessDenco(access, "defense")
+    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkSuccess).toBe(false)
+    expect(result.defendPercent).toBe(25)
+    let accessLuna = getAccessDenco(result, "defense")
     expect(accessLuna.reboot).toBe(false)
     expect(accessLuna.hpBefore).toBe(240)
     expect(accessLuna.hpAfter).toBe(90)
@@ -151,17 +150,16 @@ describe("ルナのスキル", () => {
       station: luna.link[0],
     }
     const result = startAccess(context, config)
-    const access = result.access
-    expect(access.pinkMode).toBe(false)
-    expect(access.defense?.triggeredSkills.length).toBe(1)
-    let trigger = getDefense(access).triggeredSkills[0]
+    expect(result.pinkMode).toBe(false)
+    expect(result.defense?.triggeredSkills.length).toBe(1)
+    let trigger = getDefense(result).triggeredSkills[0]
     expect(trigger.numbering).toBe("3")
     expect(trigger.name).toBe("luna")
     expect(trigger.step).toBe("damage_common")
-    expect(access.linkDisconncted).toBe(true)
-    expect(access.linkSuccess).toBe(true)
-    expect(access.defendPercent).toBe(-30)
-    let accessLuna = getAccessDenco(access, "defense")
+    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkSuccess).toBe(true)
+    expect(result.defendPercent).toBe(-30)
+    let accessLuna = getAccessDenco(result, "defense")
     expect(accessLuna.reboot).toBe(true)
     expect(accessLuna.hpBefore).toBe(240)
     expect(accessLuna.hpAfter).toBe(0)

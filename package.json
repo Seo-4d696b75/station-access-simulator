@@ -16,7 +16,7 @@
     "build": "npm run build-cjs && npm run build-umd",
     "build-cjs": "tsc",
     "build-umd": "webpack --config webpack.config.js",
-    "build-dev": "webpack --config webpack.dev.js"
+    "build-debug": "tsc --project tsconfig.debug.json"
   },
   "author": "@Seo-4d696b75",
   "license": "MIT License",

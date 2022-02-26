@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch TypeScript",
+      "name": "main.ts (tscトランスパイル)",
       "program": "${workspaceFolder}/src/main.ts",
-      "preLaunchTask": "npm: build-dev",
+      "preLaunchTask": "npm: build-debug",
       "sourceMaps": true,
       "smartStep": true,
       "protocol": "inspector",
@@ -17,6 +17,38 @@
       "outFiles": [
         "${workspaceFolder}/dist/**/*.js"
       ]
+    },
+    {
+      "name": "main.ts (ts-node)",
+      "type":  "pwa-node", 
+      "request": "launch", 
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"], // ts-nodeを読み込みます(nolazyは無くても動きます。V8エンジンにスクリプト解析を延滞させないためのオプション(指定しないとブレークポイントスキップする可能性があるため))
+      "args": ["${workspaceFolder}/src/main.ts", "--transpile-only"], // デバッグを開始するファイルを指定する。
+      "skipFiles": ["<node_internals>/**", "node_modules/**"],
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
+      },
+      "console": "integratedTerminal",
+      "stopOnEntry": false,
+      "smartStep": true,
+    },
+    {
+      "type": "node",
+      "name": "jest (active file)",      
+      "request": "launch",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/jest/bin/jest.js",
+        "--runInBand"
+      ],
+      "args": [
+        "${fileBasename}", // jest.config.tsで指定するテスト対象に含まれるファイルのみ有効 絶対パスだとだめ
+        "--silent",
+      ],
+      "console": "integratedTerminal",
+      "smartStep": true,
+      "internalConsoleOptions": "neverOpen",
+      "port": 9229
     }
   ]
 }

@@ -1,22 +1,14 @@
-import StationManager from "../..//core/stationManager"
-import SkillManager from "../../core/skillManager"
-import DencoManager from "../../core/dencoManager"
-import { initContext } from "../../core/context"
-import { initUser, UserState } from "../../core/user"
-import { activateSkill, getSkill, refreshSkillState, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getAccessDenco, startAccess } from "../../core/access"
-import { EventTriggeredSkill } from "../../core/skillEvent"
 import moment from "moment-timezone"
+import { copyDencoState, init, refreshState } from "../.."
+import { getAccessDenco, startAccess } from "../../core/access"
+import { initContext } from "../../core/context"
+import DencoManager from "../../core/dencoManager"
+import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { EventTriggeredSkill } from "../../core/skillEvent"
+import { initUser, UserState } from "../../core/user"
 
 describe("セリアのスキル", () => {
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
+  beforeAll(init)
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)
@@ -25,7 +17,7 @@ describe("セリアのスキル", () => {
     let defense = initUser(context, "とあるマスター", [reika, seria])
     const now = moment().valueOf()
     context.clock = now
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     seria = defense.formation[1]
     let skill = getSkill(seria)
     expect(skill.state.transition).toBe("manual")
@@ -41,14 +33,14 @@ describe("セリアのスキル", () => {
 
     // 10分経過
     context.clock = now + 600 * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("active")
 
     // 30分経過
     context.clock = now + 1800 * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("cooldown")
@@ -57,7 +49,7 @@ describe("セリアのスキル", () => {
 
     // 30分+3時間経過
     context.clock = now + (1800 + 10800) * 1000
-    defense = refreshSkillState(context, defense)
+    defense = refreshState(context, defense)
     seria = defense.formation[1]
     skill = getSkill(seria)
     expect(skill.state.type).toBe("idle")
@@ -108,7 +100,7 @@ describe("セリアのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const accessReika = getAccessDenco(result.access, "defense")
+    const accessReika = getAccessDenco(result, "defense")
     expect(accessReika.hpAfter).toBe(0)
     expect(accessReika.reboot).toBe(true)
     expect(result.defense).not.toBeUndefined()
@@ -138,7 +130,7 @@ describe("セリアのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const accessReika = getAccessDenco(result.access, "defense")
+    const accessReika = getAccessDenco(result, "defense")
     expect(accessReika.hpAfter).toBe(22)
     expect(accessReika.reboot).toBe(false)
     expect(result.defense).not.toBeUndefined()
@@ -168,22 +160,25 @@ describe("セリアのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    const accessReika = getAccessDenco(result.access, "defense")
+    const accessReika = getAccessDenco(result, "defense")
     expect(accessReika.hpAfter).toBe(22)
     expect(accessReika.reboot).toBe(false)
     expect(result.defense).not.toBeUndefined()
-    defense = result.defense as UserState
-    ([reika, seria] = defense.formation)
-    expect(reika.currentHp).toBe(22 + 45)
-    expect(defense.event.length).toBe(2)
-    const heal = defense.event[1]
-    expect(heal.type).toBe("skill_trigger")
-    const data = heal.data as EventTriggeredSkill
-    expect(data.denco).toMatchObject(seria)
-    expect(data.time).toBe(result.access.time)
-    expect(data.carIndex).toBe(1)
-    const skill = getSkill(seria)
-    expect(data.skillName).toBe(skill.name)
-    expect(data.step).toBe("self")
+    if (result.defense) {
+      ([reika, seria] = result.defense.formation)
+      expect(reika.currentHp).toBe(22 + 45)
+      expect(result.defense.event.length).toBe(2)
+      const heal = result.defense.event[1]
+      expect(heal.type).toBe("skill_trigger")
+      if (heal.type === "skill_trigger") {
+        const data = heal.data
+        expect(seria).toMatchObject(data.denco)
+        expect(data.time).toBe(result.time)
+        expect(data.carIndex).toBe(1)
+        const skill = getSkill(seria)
+        expect(data.skillName).toBe(skill.name)
+        expect(data.step).toBe("self")
+      }
+    }
   })
 })
