@@ -288,12 +288,12 @@ export interface AccessSideState {
   formation: AccessDencoState[]
 
   /**
-   * 編成内における自身の位置
+   * 直接アクセス・被アクセスするでんこの編成内における位置
    */
   carIndex: number
 
   /**
-   * アクセス中に発動したスキル一覧
+   * アクセス中にスキルが発動した編成内でんこの一覧
    */
   triggeredSkills: AccessTriggeredSkill[]
 
