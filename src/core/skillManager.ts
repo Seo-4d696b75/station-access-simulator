@@ -4,7 +4,7 @@ interface SkillLevelProperty {
   name: string
   skillLevel: number
   dencoLevel: number
-  property: Map<string, SkillPropertyValue>
+  property: Map<string, any>
 }
 
 /**
@@ -17,26 +17,26 @@ interface SkillLevelProperty {
  */
 export type SkillPropertyReader<T> = (key: string, defaultValue?: T) => T
 
-type SkillPropertyType<T> = T extends number ? "number" : 
-  T extends string ? "string" :
-  T extends boolean ? "boolean" :
-  T extends number[] ? "numberArray" :
-  T extends string[] ? "stringArray" : "never"
-
-interface TypedValue<T> {
-  type: SkillPropertyType<T>
-  value: T
+interface SkillPropertyValues {
+  number: number
+  string: string
+  boolean: boolean
+  numberArray: number[]
+  stringArray: string[]
 }
 
-type SkillPropertyValue =
-  TypedValue<number> |
-  TypedValue<string> |
-  TypedValue<boolean> |
-  TypedValue<number[]> |
-  TypedValue<string[]>
-
+/**
+ * スキルに関する各種データへアクセスするインターフェース  
+ * 
+ * サポートするデータの型は次の通り  
+ * - number
+ * - string
+ * - boolean
+ * - number[]
+ * - string[]
+ */
 export type SkillProperty = {
-  readonly [Value in SkillPropertyValue as `read${Capitalize<Value["type"]>}`]: SkillPropertyReader<Value["value"]>
+  readonly [key in keyof SkillPropertyValues as `read${Capitalize<key>}`]: SkillPropertyReader<SkillPropertyValues[key]>
 }
 
 interface SkillDataset {
@@ -46,50 +46,29 @@ interface SkillDataset {
   transition: SkillStateTransition
   evaluateInPink: boolean
   skillProperties: SkillLevelProperty[]
-  skillDefaultProperties: Map<string, SkillPropertyValue>
+  skillDefaultProperties: Map<string, any>
 }
 
-function parseSkillPropertyType(value: any): SkillPropertyValue {
-  if (typeof value === "number") {
-    return {
-      type: "number",
-      value: value
-    }
-  } else if (typeof value === "string") {
-    return {
-      type: "string",
-      value: value
-    }
-  } else if (typeof value === "boolean") {
-    return {
-      type: "boolean",
-      value: value
-    }
-  } else if (Array.isArray(value)) {
-    if (value.every(e => typeof e === "number")) {
-      return {
-        type: "numberArray",
-        value: value as number[]
-      }
-    } else if (value.every(e => typeof e === "string")) {
-      return {
-        type: "stringArray",
-        value: value as string[]
-      }
-    }
+function isPrimitive<T>(typeName: string): (value: any) => value is T {
+  let func = (value: any): value is T => {
+    return typeof value === typeName
   }
-  throw Error(`fail to load skill property: ${value}`)
+  return func
 }
-function getSkillPropertyReader<V extends SkillPropertyValue>(property: Map<string, SkillPropertyValue>, defaultProperty: Map<string, SkillPropertyValue>, type: V["type"]): SkillPropertyReader<V["value"]> {
+
+function isPrimitiveArray<T>(typeName: string): (array: any) => array is T[] {
+  let func = (array: any): array is T[] => {
+    return Array.isArray(array) && array.every(e => typeof e === typeName)
+  }
+  return func
+}
+
+function getSkillPropertyReader<V>(property: Map<string, any>, defaultProperty: Map<string, any>, typeGuard: (v: any) => v is V): SkillPropertyReader<V> {
   return (key, defaultValue) => {
-    let typedValue = property.get(key)
-    if (typedValue === undefined) {
-      typedValue = defaultProperty.get(key)
+    let value = property.get(key)
+    if (value === undefined) {
+      value = defaultProperty.get(key)
     }
-    if (typedValue && typedValue.type !== type) {
-      throw new Error(`skill property type mismatched. exptected:${type} actual:${typedValue.type}`)
-    }
-    let value = typedValue?.value
     // if (!value) {
     // Note typeKey === "number"　の場合だと0でうまく機能しない
     if (value === undefined) {
@@ -97,6 +76,9 @@ function getSkillPropertyReader<V extends SkillPropertyValue>(property: Map<stri
     }
     if (value === undefined) {
       throw new Error(`skill property not found. key:${key}`)
+    }
+    if (!typeGuard(value)) {
+      throw new Error(`skill property type mismatched. key:${key} actual:${value}`)
     }
     return value
   }
@@ -124,9 +106,9 @@ export class SkillManager {
         delete values.skill_level
         delete values.denco_level
         delete values.name
-        let map = new Map<string, SkillPropertyValue>()
+        let map = new Map<string, any>()
         for (let [key, value] of Object.entries(values)) {
-          map.set(key, parseSkillPropertyType(value))
+          map.set(key, value)
         }
         let p: SkillLevelProperty = {
           name: name,
@@ -150,9 +132,9 @@ export class SkillManager {
       delete defaultValue.type
       delete defaultValue.list
       delete defaultValue.step
-      let map = new Map<string, SkillPropertyValue>()
+      let map = new Map<string, any>()
       for (let [key, value] of Object.entries(defaultValue)) {
-        map.set(key, parseSkillPropertyType(value))
+        map.set(key, value)
       }
       let dataset: SkillDataset = {
         numbering: numbering,
@@ -196,11 +178,11 @@ export class SkillManager {
           },
           evaluateInPink: data.evaluateInPink,
           property: {
-            readBoolean: getSkillPropertyReader<TypedValue<boolean>>(property.property, data.skillDefaultProperties, "boolean"),
-            readString: getSkillPropertyReader<TypedValue<string>>(property.property, data.skillDefaultProperties, "string"),
-            readNumber: getSkillPropertyReader<TypedValue<number>>(property.property, data.skillDefaultProperties, "number"),
-            readStringArray: getSkillPropertyReader<TypedValue<string[]>>(property.property, data.skillDefaultProperties, "stringArray"),
-            readNumberArray: getSkillPropertyReader<TypedValue<number[]>>(property.property, data.skillDefaultProperties, "numberArray")
+            readBoolean: getSkillPropertyReader<boolean>(property.property, data.skillDefaultProperties, isPrimitive("boolean")),
+            readString: getSkillPropertyReader<string>(property.property, data.skillDefaultProperties, isPrimitive("string")),
+            readNumber: getSkillPropertyReader<number>(property.property, data.skillDefaultProperties, isPrimitive("number")),
+            readStringArray: getSkillPropertyReader<string[]>(property.property, data.skillDefaultProperties, isPrimitiveArray("string")),
+            readNumberArray: getSkillPropertyReader<number[]>(property.property, data.skillDefaultProperties, isPrimitiveArray("number"))
           },
           ...data.skill,
         }
