@@ -8,12 +8,44 @@ interface SkillLevelProperty {
 }
 
 /**
- * スキルのレベルに応じたプロパティを参照する
+ * スキルのレベルに応じたデータを参照する
  * 
- * see `src/data/skill.json`
+ * `src/data/skill.json`に定義された各でんこのスキルデータから読み出します  
+ * 参照されるデータの決定方法  
+ * (例)スキルデータ  
+ * ```json
+ * [
+ *   {
+ *     "numbering":"1",
+ *     "key": "value2",
+ *     "list": [
+ *       {
+ *         "skill_level": 1,
+ *         "denco_level": 5,
+ *         "key": "value1"
+ *       },
+ *       {
+ *         "skill_level": 2,
+ *         "denco_level": 15
+ *       }
+ *     ]
+ *   }
+ * ]
+ * ```
+ * 1. 対応するスキルレベルのJSON Objectを調べて指定した`key`が存在すれば返す  
+ *    （例）"skill_level": 1 の場合は "value1"
+ * 2. スキルデータ直下のJSON Objectを調べて指定した`key`が存在すれば値を返す  
+ *    （例）"skill_level": 2 の場合は "value2"
+ * 3. デフォルト値`defaultValue`を返す
+ * 
+ * **例外の発生**  
+ * - 1.2. において指定した`key`で見つかった値が予期した型と異なる場合
+ * - 指定した`key`に対する値が存在せず、かつデフォルト値も指定が無い場合
+ * 
+ * @see `src/data/skill.json`
  * @param key key値 jsonのkey-valueに対応
  * @param defaultValue 指定したkeyに対するvalueが無い場合のデフォルト値
- * @throws 指定したkeyに対するvalueが無く、デフォルト値も指定が無い場合
+ * @throws jsonファイルから読み出されたデータ型が一致しない場合・対応するデータが見つからない場合
  */
 export type SkillPropertyReader<T> = (key: string, defaultValue?: T) => T
 

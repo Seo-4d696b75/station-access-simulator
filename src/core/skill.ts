@@ -121,6 +121,13 @@ export type SkillTriggerPredicate = (context: Context, state: ReadonlyState<acce
  */
 export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => access.AccessState
 
+/**
+ * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
+ * 
+ * スキルレベルに依存するデータは各コールバック関数の引数に渡される{@link Skill property}オブジェクトから参照できます  
+ * （例）引数`self: ActiveSkill`に対して`self.skill.property`からアクセスできる
+ * 
+ */
 export interface SkillLogic {
   /**
    * アクセス時の各段階でスキルが発動するか判定する
@@ -203,10 +210,29 @@ export interface SkillLogic {
   onDencoReboot?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
 }
 
+/**
+ * スキルレベルに依存するデータとスキル発動に関するロジックを保有する
+ */
 export interface Skill extends SkillLogic {
+  /**
+   * スキルレベル 1始まりの整数でカウントする
+   */
   level: number
+  /**
+   * スキルの名称「*** Lv.1」など
+   */
   name: string
+  /**
+   * スキルの状態
+   * 
+   * **この状態を直接操作しないでください** {@link activateSkill} {@link disactivateSkill}などの関数を利用してください    
+   * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
+   */
   state: SkillState
+  /**
+   * スキルレベルや各でんこに依存するデータへのアクセス方法を提供します
+   * @see {@link SkillProperty}
+   */
   property: SkillProperty
 }
 
