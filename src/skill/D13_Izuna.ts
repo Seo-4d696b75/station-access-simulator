@@ -8,7 +8,7 @@ const skill: SkillLogic = {
   },
   evaluate: (context, state, step, self) => {
     // ディフェンダー数ごとに増加するDEF定数　
-    const def = self.skill.propertyReader("DEF")
+    const def = self.skill.property.readNumber("DEF")
     // 編成内のディフェンダー数 self.who === "defense"
     const cnt = getDefense(state).formation.filter(d => d.type === "defender").length
     state.defendPercent += cnt * def

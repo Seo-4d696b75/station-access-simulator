@@ -6,14 +6,14 @@ const skill: SkillLogic = {
     return step === "damage_common" && self.which === "offense"
   },
   evaluate: (context, state, step, self) => {
-    const atk = self.skill.propertyReader("ATK")
+    const atk = self.skill.property.readNumber("ATK")
     state.attackPercent += atk
     context.log.log(`べ、別にあんたの為じゃないんだからね！ ATK+${atk}%`)
     return state
   },
   disactivateAt: (context, state, self) => {
-    const active = self.skill.propertyReader("active")
-    const wait = self.skill.propertyReader("wait")
+    const active = self.skill.property.readNumber("active")
+    const wait = self.skill.property.readNumber("wait")
     const now = getCurrentTime(context)
     return {
       activeTimeout: now + active * 1000,

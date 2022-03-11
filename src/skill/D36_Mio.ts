@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       const base = getBaseDamage(context, state)
       // 肩代わりできるダメージの有無を確認
       if (base.variable > 0) {
-        return self.skill.propertyReader("probability")
+        return self.skill.property.readNumber("probability")
       }
     }
     return false
@@ -43,8 +43,8 @@ const skill: SkillLogic = {
     return state
   },
   disactivateAt: (context, state, self) => {
-    const active = self.skill.propertyReader("active")
-    const wait = self.skill.propertyReader("wait")
+    const active = self.skill.property.readNumber("active")
+    const wait = self.skill.property.readNumber("wait")
     const now = getCurrentTime(context)
     return {
       activeTimeout: now + active * 1000,

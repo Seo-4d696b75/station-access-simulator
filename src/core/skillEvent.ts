@@ -448,7 +448,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
             ...copyDencoState(d),
             carIndex: i,
             skill: skill,
-            skillPropertyReader: skill.propertyReader,
+            skillPropertyReader: skill.property,
           }
           const next = callback(context, state, self)
           copyUserStateTo(next, state)

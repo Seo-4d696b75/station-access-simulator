@@ -13,7 +13,7 @@ const skill: SkillLogic = {
       // 再配布できる場合
       if (target.currentExp < target.nextExp) {
         const evaluate: SkillEventEvaluate = (context, state, self) => {
-          const percent = self.skill.propertyReader("EXP")
+          const percent = self.skill.property.readNumber("EXP")
           let dst = state.formation[idx] // 編成位置は変わらない前提
           const value = Math.floor(exp * percent / 100)
           context.log.log(`経験値の再配布 ${exp} * ${percent}% = ${value}`)

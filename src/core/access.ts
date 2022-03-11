@@ -1062,7 +1062,7 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
       const active = {
         ...d,
         skill: skill,
-        skillPropertyReader: skill.propertyReader,
+        skillPropertyReader: skill.property,
       }
       // 状態に依存するスキル発動有無の判定は毎度行う
       if (canSkillEvaluated(context, state, step, active)) {
@@ -1084,7 +1084,7 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
         const active = {
           ...d,
           skill: skill,
-          skillPropertyReader: skill.propertyReader,
+          skillPropertyReader: skill.property,
         }
         if (canSkillEvaluated(context, state, step, active)) {
           markTriggerSkill(defense, step, d)

@@ -3,7 +3,7 @@ import { getAccessDenco, getCurrentTime, SkillLogic } from "..";
 const skill: SkillLogic = {
   canEvaluate: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "offense") {
-      return self.skill.propertyReader("probability")
+      return self.skill.property.readNumber("probability")
     }
     return false
   },
@@ -57,8 +57,8 @@ const skill: SkillLogic = {
   },
   disactivateAt: (context, state, self) => {
     const now = getCurrentTime(context)
-    const active = self.skill.propertyReader("active")
-    const wait = self.skill.propertyReader("wait")
+    const active = self.skill.property.readNumber("active")
+    const wait = self.skill.property.readNumber("wait")
     return {
       activeTimeout: now + active * 1000,
       cooldownTimeout: now + (active + wait) * 1000,

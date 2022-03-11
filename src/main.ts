@@ -36,34 +36,3 @@ init().then(() => {
 
 })
 
-
-const test1: DencoState = {
-  numbering: "test1",
-  name: "test1",
-  type: "supporter",
-  attr: "flat",
-  level: 50,
-  currentExp: 0,
-  nextExp: 100000,
-  currentHp: 100,
-  maxHp: 100,
-  film: {},
-  ap: 100,
-  link: [],
-  skill: {
-    type: "possess",
-    level: 1,
-    name: "test-skill1",
-    propertyReader: () => 0,
-    state: {
-      type: "active",
-      transition: "always",
-      data: undefined
-    },
-    canEvaluate: (context, state, step, self) => step === "damage_fixed" && self.which === "offense",
-    evaluate: (context, state, step, self) => {
-      state.damageFixed += 10
-      return state
-    } 
-  }
-}

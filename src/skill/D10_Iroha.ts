@@ -3,12 +3,12 @@ import { evaluateSkillAtEvent, getCurrentTime, SkillEventEvaluate, SkillLogic } 
 const skill: SkillLogic = {
   canEnabled: (context, state, self) => {
     // 自身がcnt数以上のリンクを保持している
-    const cnt = self.skill.propertyReader("links")
+    const cnt = self.skill.property.readNumber("links")
     return self.link.length >= cnt && state.formation.length > 1
   },
   disactivateAt: (context, state, self) => {
-    const active = self.skill.propertyReader("active")
-    const wait = self.skill.propertyReader("wait")
+    const active = self.skill.property.readNumber("active")
+    const wait = self.skill.property.readNumber("wait")
     const now = getCurrentTime(context)
     return {
       activeTimeout: now + active * 1000,

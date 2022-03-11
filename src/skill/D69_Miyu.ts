@@ -10,10 +10,10 @@ const skill: SkillLogic = {
   },
   evaluate: (context, state, step, self) => {
     const dist = state.offense.user.dailyDistance
-    const distMax = self.skill.propertyReader("distMax")
-    const expMax = self.skill.propertyReader("expMax")
+    const distMax = self.skill.property.readNumber("distMax")
+    const expMax = self.skill.property.readNumber("expMax")
     const expDist = Math.floor(expMax * Math.min(1.0, dist / distMax))
-    const expFixed = dist >= distMax ? self.skill.propertyReader("expFixed") : 0
+    const expFixed = dist >= distMax ? self.skill.property.readNumber("expFixed") : 0
     const accessDenco = getAccessDenco(state, "offense")
     accessDenco.exp.skill += expDist
     if (expFixed > 0) {

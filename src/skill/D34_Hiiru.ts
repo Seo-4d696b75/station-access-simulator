@@ -5,7 +5,7 @@ const skill: SkillLogic = {
     return step === "probability_check"
   },
   evaluate: (context, state, step, self) => {
-    const boost = self.skill.propertyReader("boost")
+    const boost = self.skill.property.readNumber("boost")
     context.log.log(`テンション上げていこう↑↑ boost:${boost}%`)
     if (self.which === "offense") {
       state.offense.probabilityBoostPercent += boost
@@ -15,7 +15,7 @@ const skill: SkillLogic = {
     return state
   },
   evaluateOnEvent: (context, state, self) => {
-    const boost = self.skill.propertyReader("boost")
+    const boost = self.skill.property.readNumber("boost")
     context.log.log(`テンション上げていこう↑↑ boost:${boost}%`)
     state.probabilityBoostPercent += boost
     return state

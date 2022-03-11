@@ -8,7 +8,7 @@ const skill: SkillLogic = {
       self.currentHp > 1
   },
   evaluate: (context, state, step, self) => {
-    const atk = self.skill.propertyReader("ATK")
+    const atk = self.skill.property.readNumber("ATK")
     state.attackPercent += atk
     // HPの半減はダメージとしては記録せずHPを直接操作する
     const d = state.offense.formation[self.carIndex]
@@ -20,8 +20,8 @@ const skill: SkillLogic = {
   },
   disactivateAt: (context, state, self) => {
     const now = getCurrentTime(context)
-    const active = self.skill.propertyReader("active")
-    const wait = self.skill.propertyReader("wait")
+    const active = self.skill.property.readNumber("active")
+    const wait = self.skill.property.readNumber("wait")
     return {
       activeTimeout: now + active * 1000,
       cooldownTimeout: now + (active + wait) * 1000

@@ -11,8 +11,8 @@ const skill: SkillLogic = {
     const formation = getFormation(access, self.which)
     const target = formation.filter(d => d.hpBefore !== d.currentHp && d.currentHp <= d.maxHp * 0.3)
     if (target.length > 0) {
-      const percent = self.skill.propertyReader("probability")
-      const heal = self.skill.propertyReader("heal")
+      const percent = self.skill.property.readNumber("probability")
+      const heal = self.skill.property.readNumber("heal")
       // lambdaからAccessStateを参照
       const evaluate: SkillEventEvaluate = (context, state, self) => {
         context.log.log(`検測開始しま～す HP+${heal}`)
@@ -36,8 +36,8 @@ const skill: SkillLogic = {
     }
   },
   disactivateAt: (context, state, self) => {
-    const active = self.skill.propertyReader("active")
-    const wait = self.skill.propertyReader("wait")
+    const active = self.skill.property.readNumber("active")
+    const wait = self.skill.property.readNumber("wait")
     const time = getCurrentTime(context)
     return {
       activeTimeout: time + active * 1000,

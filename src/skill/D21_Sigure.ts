@@ -8,13 +8,13 @@ const skill: SkillLogic = {
             state.defense) {
             const defense = state.defense.formation[state.defense.carIndex]
             if (defense.type === "attacker") {
-                return self.skill.propertyReader("probability")
+                return self.skill.property.readNumber("probability")
             }
         }
         return false
     },
     evaluate: (context, state, step, self) => {
-        const def = self.skill.propertyReader("DEF")
+        const def = self.skill.property.readNumber("DEF")
         state.defendPercent += def
         context.log.log(`わたしのスキルはアタッカーさんの受けるダメージを軽減します DEF+${def}%`)
         return state
