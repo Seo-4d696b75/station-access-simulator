@@ -1,10 +1,10 @@
 import { SkillHolder, SkillLogic, SkillStateTransition } from "./skill"
 
-interface SkillProperty {
+interface SkillLevelProperty {
   name: string
   skillLevel: number
   dencoLevel: number
-  property: Map<string, number>
+  property: Map<string, SkillPropertyValue>
 }
 
 /**
@@ -15,7 +15,29 @@ interface SkillProperty {
  * @param defaultValue 指定したkeyに対するvalueが無い場合のデフォルト値
  * @throws 指定したkeyに対するvalueが無く、デフォルト値も指定が無い場合
  */
-export type SkillPropertyReader = (key: string, defaultValue?: number) => number
+export type SkillPropertyReader<T> = (key: string, defaultValue?: T) => T
+
+type SkillPropertyType<T> = T extends number ? "number" : 
+  T extends string ? "string" :
+  T extends boolean ? "boolean" :
+  T extends number[] ? "numberArray" :
+  T extends string[] ? "stringArray" : "never"
+
+interface TypedValue<T> {
+  type: SkillPropertyType<T>
+  value: T
+}
+
+type SkillPropertyValue =
+  TypedValue<number> |
+  TypedValue<string> |
+  TypedValue<boolean> |
+  TypedValue<number[]> |
+  TypedValue<string[]>
+
+export type SkillProperty = {
+  readonly [Value in SkillPropertyValue as `read${Capitalize<Value["type"]>}`]: SkillPropertyReader<Value["value"]>
+}
 
 interface SkillDataset {
   numbering: string
@@ -23,8 +45,61 @@ interface SkillDataset {
   skill: SkillLogic
   transition: SkillStateTransition
   evaluateInPink: boolean
-  skillProperties: SkillProperty[]
-  skillDefaultProperties: Map<string, number>
+  skillProperties: SkillLevelProperty[]
+  skillDefaultProperties: Map<string, SkillPropertyValue>
+}
+
+function parseSkillPropertyType(value: any): SkillPropertyValue {
+  if (typeof value === "number") {
+    return {
+      type: "number",
+      value: value
+    }
+  } else if (typeof value === "string") {
+    return {
+      type: "string",
+      value: value
+    }
+  } else if (typeof value === "boolean") {
+    return {
+      type: "boolean",
+      value: value
+    }
+  } else if (Array.isArray(value)) {
+    if (value.every(e => typeof e === "number")) {
+      return {
+        type: "numberArray",
+        value: value as number[]
+      }
+    } else if (value.every(e => typeof e === "string")) {
+      return {
+        type: "stringArray",
+        value: value as string[]
+      }
+    }
+  }
+  throw Error(`fail to load skill property: ${value}`)
+}
+function getSkillPropertyReader<V extends SkillPropertyValue>(property: Map<string, SkillPropertyValue>, defaultProperty: Map<string, SkillPropertyValue>, type: V["type"]): SkillPropertyReader<V["value"]> {
+  return (key, defaultValue) => {
+    let typedValue = property.get(key)
+    if (typedValue === undefined) {
+      typedValue = defaultProperty.get(key)
+    }
+    if (typedValue && typedValue.type !== type) {
+      throw new Error(`skill property type mismatched. exptected:${type} actual:${typedValue.type}`)
+    }
+    let value = typedValue?.value
+    // if (!value) {
+    // Note typeKey === "number"　の場合だと0でうまく機能しない
+    if (value === undefined) {
+      value = defaultValue
+    }
+    if (value === undefined) {
+      throw new Error(`skill property not found. key:${key}`)
+    }
+    return value
+  }
 }
 
 export class SkillManager {
@@ -49,11 +124,11 @@ export class SkillManager {
         delete values.skill_level
         delete values.denco_level
         delete values.name
-        let map = new Map<string, number>()
+        let map = new Map<string, SkillPropertyValue>()
         for (let [key, value] of Object.entries(values)) {
-          map.set(key, Number(value))
+          map.set(key, parseSkillPropertyType(value))
         }
-        let p: SkillProperty = {
+        let p: SkillLevelProperty = {
           name: name,
           skillLevel: skill,
           dencoLevel: denco,
@@ -75,9 +150,9 @@ export class SkillManager {
       delete defaultValue.type
       delete defaultValue.list
       delete defaultValue.step
-      let map = new Map<string, number>()
+      let map = new Map<string, SkillPropertyValue>()
       for (let [key, value] of Object.entries(defaultValue)) {
-        map.set(key, Number(value))
+        map.set(key, parseSkillPropertyType(value))
       }
       let dataset: SkillDataset = {
         numbering: numbering,
@@ -120,18 +195,12 @@ export class SkillManager {
             data: undefined,
           },
           evaluateInPink: data.evaluateInPink,
-          propertyReader: (key: string, defaultValue?: number) => {
-            let value = property.property.get(key)
-            if (!value && value !== 0) {
-              value = data.skillDefaultProperties.get(key)
-            }
-            if (!value && value !== 0) {
-              value = defaultValue
-            }
-            if (!value && value !== 0) {
-              throw new Error(`skill property not found. key:${key}`)
-            }
-            return value
+          property: {
+            readBoolean: getSkillPropertyReader<TypedValue<boolean>>(property.property, data.skillDefaultProperties, "boolean"),
+            readString: getSkillPropertyReader<TypedValue<string>>(property.property, data.skillDefaultProperties, "string"),
+            readNumber: getSkillPropertyReader<TypedValue<number>>(property.property, data.skillDefaultProperties, "number"),
+            readStringArray: getSkillPropertyReader<TypedValue<string[]>>(property.property, data.skillDefaultProperties, "stringArray"),
+            readNumberArray: getSkillPropertyReader<TypedValue<number[]>>(property.property, data.skillDefaultProperties, "numberArray")
           },
           ...data.skill,
         }
@@ -145,7 +214,7 @@ export class SkillManager {
     }
   }
 
-  readSkillProperty(numbering: string, level: number): SkillProperty | null {
+  readSkillProperty(numbering: string, level: number): SkillLevelProperty | null {
     const dataset = this.map.get(numbering)
     if (!dataset) throw new Error(`no skill property found: ${numbering}`)
     for (let property of dataset.skillProperties) {

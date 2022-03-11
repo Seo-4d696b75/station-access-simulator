@@ -3,7 +3,7 @@ import * as access from "./access"
 import { Context, fixClock, getCurrentTime } from "./context"
 import { copyDencoState, DencoState } from "./denco"
 import * as event from "./skillEvent"
-import { SkillPropertyReader } from "./skillManager"
+import { SkillProperty, SkillPropertyReader } from "./skillManager"
 import { copyUserState, copyUserStateTo, FormationPosition, ReadonlyState, UserState } from "./user"
 import moment from "moment-timezone"
 
@@ -207,7 +207,7 @@ export interface Skill extends SkillLogic {
   level: number
   name: string
   state: SkillState
-  propertyReader: SkillPropertyReader
+  property: SkillProperty
 }
 
 /**
@@ -290,7 +290,7 @@ export function copySkill(skill: SkillHolder): SkillHolder {
       ...skill,
       name: skill.name,
       level: skill.level,
-      propertyReader: skill.propertyReader,
+      property: skill.property,
       state: copySkillState(skill.state),
     }
   }
@@ -540,7 +540,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           ...denco,
           carIndex: idx,
           skill: skill,
-          skillPropertyReader: skill.propertyReader
         }
         const enable = predicate(context, state, self)
         if (enable && skill.state.type === "unable") {
@@ -593,7 +592,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         ...denco,
         carIndex: idx,
         skill: skill,
-        skillPropertyReader: skill.propertyReader,
       }
       const active = predicate(context, state, self)
       if (active && skill.state.type === "unable") {
@@ -610,7 +608,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
             ...copyDencoState(denco),
             carIndex: idx,
             skill: skill,
-            skillPropertyReader: skill.propertyReader,
           }
           const next = callback(context, copyUserState(state), self)
           copyUserStateTo(next, state)
