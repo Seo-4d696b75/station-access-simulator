@@ -529,7 +529,13 @@ const test2: DencoState = {
     type: "possess",
     level: 1,
     name: "test-skill2",
-    propertyReader: () => 0,
+    property: {
+      readBoolean: () => false,
+      readNumber: () => 0,
+      readString: () => "",
+      readNumberArray: () => [],
+      readStringArray: () => [],
+    },
     state: {
       type: "active",
       transition: "always",
