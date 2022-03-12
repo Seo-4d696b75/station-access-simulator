@@ -1,6 +1,7 @@
 import seedrandom from "seedrandom"
 import moment, { Moment } from "moment-timezone"
 import { ScorePredicate } from ".."
+import { random } from "./access"
 
 // タイムゾーン指定
 moment.tz.setDefault("Asia/Tokyo")
@@ -13,6 +14,8 @@ export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
  * - "normal": 疑似乱数を用いて指定された確率で計算
  * - "ignore": 必ずfalse
  * - "force": 必ずtrue
+ * 
+ * @see {@link random}
  */
 export type RandomMode =
   "normal" |
