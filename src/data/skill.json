@@ -187,14 +187,17 @@
     {"skill_level":6,"denco_level":70,"name":"ランブルアタック Lv.6","probability":80,"ATK_lower":-53,"ATK_upper":80},
     {"skill_level":7,"denco_level":80,"name":"フラストレーション","probability":80,"ATK_lower":-60,"ATK_upper":90}
   ]},
-  {"numbering":"24","class":"D24_Beatrice","type":"manual","list":[
-    {"skill_level":1,"denco_level":5,"name":"パワーレジスト Lv.1","DEF":75,"active":3600,"wait":3600},
-    {"skill_level":2,"denco_level":15,"name":"パワーレジスト Lv.2","DEF":75,"active":7200,"wait":3600},
-    {"skill_level":3,"denco_level":30,"name":"パワーレジスト Lv.3","DEF":75,"active":10800,"wait":3600},
-    {"skill_level":4,"denco_level":50,"name":"パワーレジスト Lv.4","DEF":75,"active":14400,"wait":3600},
-    {"skill_level":5,"denco_level":60,"name":"パワーレジスト Lv.5","DEF":75,"active":18000,"wait":3600},
-    {"skill_level":6,"denco_level":70,"name":"パワーレジスト Lv.6","DEF":75,"active":21600,"wait":3600},
-    {"skill_level":7,"denco_level":80,"name":"グランレジストサルーン","DEF":75,"active":25200,"wait":3600}
+  {"numbering":"24","class":"D24_Beatrice","type":"manual",
+    "DEF": 75,
+    "wait": 3600,
+    "list":[
+    {"skill_level":1,"denco_level":5,"name":"パワーレジスト Lv.1","active":3600},
+    {"skill_level":2,"denco_level":15,"name":"パワーレジスト Lv.2","active":7200},
+    {"skill_level":3,"denco_level":30,"name":"パワーレジスト Lv.3","active":10800},
+    {"skill_level":4,"denco_level":50,"name":"パワーレジスト Lv.4","active":14400},
+    {"skill_level":5,"denco_level":60,"name":"パワーレジスト Lv.5","active":18000},
+    {"skill_level":6,"denco_level":70,"name":"パワーレジスト Lv.6","active":21600},
+    {"skill_level":7,"denco_level":80,"name":"グランレジストサルーン","active":25200}
   ]},
   {"numbering":"25","class":"D25_Urara","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"じかんあっしゅく Lv.1","probability":25,"active":0,"wait":7200},
