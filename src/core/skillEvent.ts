@@ -209,7 +209,7 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
         data: {
           time: state.time.valueOf(),
           carIndex: state.carIndex,
-          denco: copyDencoState(state.formation[state.carIndex]),
+          denco: copyDencoState(state.formation[idx]),
           skillName: skill.name,
           step: "probability_check"
         },
