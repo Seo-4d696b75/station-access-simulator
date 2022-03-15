@@ -199,14 +199,17 @@
     {"skill_level":6,"denco_level":70,"name":"パワーレジスト Lv.6","active":21600},
     {"skill_level":7,"denco_level":80,"name":"グランレジストサルーン","active":25200}
   ]},
-  {"numbering":"25","class":"D25_Urara","type":"manual","list":[
-    {"skill_level":1,"denco_level":5,"name":"じかんあっしゅく Lv.1","probability":25,"active":0,"wait":7200},
-    {"skill_level":2,"denco_level":15,"name":"じかんあっしゅく Lv.2","probability":30,"active":0,"wait":7200},
-    {"skill_level":3,"denco_level":30,"name":"じかんあっしゅく Lv.3","probability":40,"active":0,"wait":7200},
-    {"skill_level":4,"denco_level":50,"name":"じかんあっしゅく Lv.4","probability":50,"active":0,"wait":7200},
-    {"skill_level":5,"denco_level":60,"name":"じかんあっしゅく Lv.5","probability":60,"active":0,"wait":7200},
-    {"skill_level":6,"denco_level":70,"name":"じかんあっしゅく Lv.6","probability":70,"active":0,"wait":7200},
-    {"skill_level":7,"denco_level":80,"name":"さよならタイソン","probability":80,"active":0,"wait":7200}
+  {"numbering":"25","class":"D25_Urara","type":"manual-condition",
+    "active": 0,
+    "wait": 7200,
+    "list":[
+    {"skill_level":1,"denco_level":5,"name":"じかんあっしゅく Lv.1","probability":25},
+    {"skill_level":2,"denco_level":15,"name":"じかんあっしゅく Lv.2","probability":30},
+    {"skill_level":3,"denco_level":30,"name":"じかんあっしゅく Lv.3","probability":40},
+    {"skill_level":4,"denco_level":50,"name":"じかんあっしゅく Lv.4","probability":50},
+    {"skill_level":5,"denco_level":60,"name":"じかんあっしゅく Lv.5","probability":60},
+    {"skill_level":6,"denco_level":70,"name":"じかんあっしゅく Lv.6","probability":70},
+    {"skill_level":7,"denco_level":80,"name":"さよならタイソン","probability":80}
   ]},
   {"numbering":"26","class":"D26_Hokone","type":"manual","list":[
     {"skill_level":1,"denco_level":5,"name":"妹愛バースト Lv.1","ATK":30,"active":1200,"wait":7200,"heal":40},
