@@ -228,7 +228,11 @@ function formatDamage(state?: ReadonlyState<AccessDencoState> | null): string {
   if (!state) return ""
   const d = state.damage
   if (!d) return "-"
-  return d.value.toString()
+  if (d.value >= 0) {
+    return d.value.toString()
+  } else {
+    return `\x1b[32m${-d.value}\x1b[00m`
+  }
 }
 
 function formatPt(pt: number | undefined): string {
