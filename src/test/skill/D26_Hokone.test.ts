@@ -5,6 +5,7 @@ import moment from "moment-timezone"
 import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 import { DencoState } from "../../core/denco"
+import { getFixedDamageDenco } from "../util"
 
 describe("ほこねのスキル", () => {
   beforeAll(init)
@@ -58,6 +59,7 @@ describe("ほこねのスキル", () => {
     let hokone = DencoManager.getDenco(context, "26", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [hokone])
+    offense = activateSkill(context, offense, 0)
     const config = {
       offense: {
         state: offense,
@@ -75,6 +77,7 @@ describe("ほこねのスキル", () => {
     let hokone = DencoManager.getDenco(context, "26", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [hokone])
+    offense = activateSkill(context, offense, 0)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -511,46 +514,3 @@ describe("ほこねのスキル", () => {
     expect(d.currentHp).toBe(d.maxHp)
   })
 })
-
-/**
- * 固定ダメージ追加スキルのでんこ（ダミー）
- */
-function getFixedDamageDenco(damage: number): DencoState {
-  const which = (damage > 0) ? "offense" : "defense"
-  return {
-    numbering: "test1",
-    name: "test1",
-    type: "supporter",
-    attr: "flat",
-    level: 50,
-    currentExp: 0,
-    nextExp: 100000,
-    currentHp: 100,
-    maxHp: 100,
-    film: {},
-    ap: 100,
-    link: [],
-    skill: {
-      type: "possess",
-      level: 1,
-      name: "test-skill1",
-      property: {
-        readBoolean: () => false,
-        readNumber: () => 0,
-        readString: () => "",
-        readNumberArray: () => [],
-        readStringArray: () => [],
-      },
-      state: {
-        type: "active",
-        transition: "always",
-        data: undefined
-      },
-      canEvaluate: (context, state, step, self) => step === "damage_fixed" && self.which === which,
-      evaluate: (context, state, step, self) => {
-        state.damageFixed += damage
-        return state
-      }
-    }
-  }
-}
