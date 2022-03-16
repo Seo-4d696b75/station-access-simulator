@@ -231,6 +231,7 @@ export interface ScorePredicate {
 
   /**
    * アクセス側が与えたダメージ量に応じたスコアを計算
+   * @param damage ダメージ量(>=0)
    */
   calcDamageScore: (context: Context, damage: number) => number
   /**
@@ -727,6 +728,11 @@ function calcLinksResult(context: Context, links: readonly StationLink[], d: Rea
   return result
 }
 
+/**
+ * スコア -> 経験値を計算
+ * @param score must be >= 0
+ * @returns must be >= 0
+ */
 function calcExp(score: number): number {
   // TODO 経験値増加の加味
   return score
@@ -966,8 +972,9 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     }
     // ダメージ量に応じたスコア＆経験値の追加
     const predicate = context.scorePredicate?.calcDamageScore ?? DEFAULT_SCORE_PREDICATE.calcDamageScore
-    const score = predicate(context, damage.value)
-    const exp = calcExp(score)
+    // ダメージ量が負数（回復）の場合は一律経験値1を与える
+    const score = damage.value >= 0 ? predicate(context, damage.value) : 0
+    const exp = damage.value >= 0 ? calcExp(score) : 1
     const accessDenco = getAccessDenco(state, "offense")
     accessDenco.exp.access += exp
     state.offense.score.access += score
