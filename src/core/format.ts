@@ -303,6 +303,7 @@ function charLen(code: number): number {
 }
 
 function len(value: string): number {
+  value = value.replace(/\x1b\[[0-9]+m/g, "")
   var sum = 0
   for (let i = 0; i < value.length; i++) {
     let code = value.charCodeAt(i)
@@ -316,6 +317,8 @@ function subString(value: string, width: number): string {
   if (width === 1) {
     return len(value) === 1 ? value : "…"
   }
+  const origin = value
+  value = origin.replace(/\x1b\[[0-9]+m/g, "")
   var str = ""
   var length = 0
   for (let i = 0; i < value.length; i++) {
@@ -333,7 +336,31 @@ function subString(value: string, width: number): string {
     str += value.charAt(i)
     length += v
   }
-  return str
+  const controls = origin.match(/\x1b\[[0-9]+m/g)
+  if (!controls) return str
+
+  var result = ""
+  for (let i = 0; i < origin.length && str.length > 0;) {
+    let char = str.charAt(0)
+    let originChar = origin.charAt(i)
+    if (char === originChar) {
+      result += char
+      str = str.substring(1)
+      i++
+    } else if (originChar === "\x1b") {
+      let control = controls[0]
+      controls.splice(0, 1)
+      result += control
+      i += control.length
+    } else if (char === "…") {
+      result += "…"
+      str = str.substring(1)
+    } else {
+      throw Error()
+    }
+  }
+  result = controls.reduce((a,b) => a+b, result)
+  return result
 }
 
 function formatPastTime(now: number, time: number): string {
