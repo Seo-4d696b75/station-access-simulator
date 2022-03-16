@@ -211,14 +211,18 @@
     {"skill_level":6,"denco_level":70,"name":"じかんあっしゅく Lv.6","probability":70},
     {"skill_level":7,"denco_level":80,"name":"さよならタイソン","probability":80}
   ]},
-  {"numbering":"26","class":"D26_Hokone","type":"manual","list":[
-    {"skill_level":1,"denco_level":5,"name":"妹愛バースト Lv.1","ATK":30,"active":1200,"wait":7200,"heal":40},
-    {"skill_level":2,"denco_level":15,"name":"妹愛バースト Lv.2","ATK":34,"active":1200,"wait":7200,"heal":40},
-    {"skill_level":3,"denco_level":30,"name":"妹愛バースト Lv.3","ATK":38,"active":1200,"wait":7200,"heal":40},
-    {"skill_level":4,"denco_level":50,"name":"妹愛バースト Lv.4","ATK":42,"active":1200,"wait":7200,"heal":40},
-    {"skill_level":5,"denco_level":60,"name":"妹愛バースト Lv.5","ATK":46,"active":1200,"wait":7200,"heal":40},
-    {"skill_level":6,"denco_level":70,"name":"妹愛バースト Lv.6","ATK":50,"active":1200,"wait":7200,"heal":40},
-    {"skill_level":7,"denco_level":80,"name":"妹愛インフェルノ","ATK":55,"active":1200,"wait":7200,"heal":40}
+  {"numbering":"26","class":"D26_Hokone","type":"manual",
+    "active": 1200,
+    "wait": 7200,
+    "heal": 40,
+    "list":[
+    {"skill_level":1,"denco_level":5,"name":"妹愛バースト Lv.1","ATK":30},
+    {"skill_level":2,"denco_level":15,"name":"妹愛バースト Lv.2","ATK":34},
+    {"skill_level":3,"denco_level":30,"name":"妹愛バースト Lv.3","ATK":38},
+    {"skill_level":4,"denco_level":50,"name":"妹愛バースト Lv.4","ATK":42},
+    {"skill_level":5,"denco_level":60,"name":"妹愛バースト Lv.5","ATK":46},
+    {"skill_level":6,"denco_level":70,"name":"妹愛バースト Lv.6","ATK":50},
+    {"skill_level":7,"denco_level":80,"name":"妹愛インフェルノ","ATK":55}
   ]},
   {"numbering":"27","class":"D27_Yachiyo","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ラブホームズ Lv.1","DEF":15},
