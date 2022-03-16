@@ -953,8 +953,11 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       context.log.error("基本ダメージの値が見つかりません")
       throw Error("base damage not set")
     }
-    if (damageBase.variable < 0 || damageBase.constant < 0) {
-      context.log.error(`基本ダメージの値は非負である必要があります ${JSON.stringify(damageBase)}`)
+    if (damageBase.variable < 0 ) {
+      context.log.error(`基本ダメージの値は非負である必要があります ${damageBase.variable}`)
+    }
+    if (damageBase.constant < 0) {
+      context.log.log(`基本ダメージ(const.)の値が負数です(回復) ${damageBase.constant}`)
     }
     const damage = {
       // 固定ダメージで負数にはせず0以上に固定 & 確保されたダメージ量を加算
@@ -1428,7 +1431,8 @@ function updateDencoHP(context: Context, d: AccessDencoState) {
       context.log.error(`現在のHPの値が不正です range[0,maxHP]`)
     }
   }
-  d.hpAfter = Math.max(d.currentHp - damage, 0)
+  // 回復も考慮して [0,maxHp]の範囲内を保証する
+  d.hpAfter = Math.min(Math.max(d.currentHp - damage, 0), d.maxHp)
   // Reboot有無の確定
   d.reboot = (d.hpAfter === 0)
 }
