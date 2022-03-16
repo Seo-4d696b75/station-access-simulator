@@ -420,6 +420,18 @@
     {"skill_level":6,"denco_level":70,"name":"きらきらリスペクト Lv.6","expMax":250,"expFixed":180},
     {"skill_level":7,"denco_level":80,"name":"はしれヒストリカル・ロード","expMax":300,"expFixed":200}
   ]},
+  {"numbering":"76","class":"D76_Yunoka","type":"manual",
+    "active": 900,
+    "wait": 5400,
+    "list":[
+    {"skill_level":1,"denco_level":5,"name":"ほっと・バスタイム Lv.1","ATK":18,"heal":6},
+    {"skill_level":2,"denco_level":15,"name":"ほっと・バスタイム Lv.2","ATK":25,"heal":10},
+    {"skill_level":3,"denco_level":30,"name":"ほっと・バスタイム Lv.3","ATK":32,"heal":14},
+    {"skill_level":4,"denco_level":50,"name":"ほっと・バスタイム Lv.4","ATK":39,"heal":18},
+    {"skill_level":5,"denco_level":60,"name":"ほっと・バスタイム Lv.5","ATK":46,"heal":22},
+    {"skill_level":6,"denco_level":70,"name":"ほっと・バスタイム Lv.6","ATK":53,"heal":26},
+    {"skill_level":7,"denco_level":80,"name":"リラクシングトラベル","ATK":60,"heal":30}
+  ]},
   {"numbering":"77","class":"D77_Reto","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ワンダーエスケープ Lv.1","active":0,"wait":0,"probability":8},
     {"skill_level":2,"denco_level":15,"name":"ワンダーエスケープ Lv.2","active":0,"wait":0,"probability":10},
