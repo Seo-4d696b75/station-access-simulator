@@ -229,9 +229,9 @@ function formatDamage(state?: ReadonlyState<AccessDencoState> | null): string {
   const d = state.damage
   if (!d) return "-"
   if (d.value >= 0) {
-    return d.value.toString()
+    return color(d.value.toString(), "red")
   } else {
-    return `\x1b[32m${-d.value}\x1b[00m`
+    return color((-d.value).toString(), "green")
   }
 }
 
@@ -281,10 +281,11 @@ function formatSkills(state?: ReadonlyState<AccessSideState> | null): string {
 function formatHP(state?: ReadonlyState<AccessSideState> | null) {
   if (!state) return ""
   const d = state.formation[state.carIndex]
-  if (d.hpAfter === d.hpBefore) {
+  if (d.damage === undefined) {
     return `${d.hpAfter}/${d.maxHp}`
   } else {
-    return `${d.hpBefore}>>${d.hpAfter}/${d.maxHp}`
+    let c = d.damage.value >= 0 ? "red" : "green" as ConsoleColor
+    return `${d.hpBefore}>>${color(d.hpAfter.toString(), c)}/${d.maxHp}`
   }
 }
 
