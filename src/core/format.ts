@@ -25,7 +25,7 @@ export function formatEvent(context: Context, event: Event, detail: boolean = fa
 
 export function formatReboot(result: LinksResult, time: number, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
-  str += formatLine("reboot", width)
+  str += formatLine(color("reboot", "red"), width)
   str += formatLine(result.denco.name, width)
   str += formatLine(`Lv.${result.denco.level}`, width)
   str += formatLine(`${result.denco.name}のバッテリーが切れました`, width)
@@ -42,33 +42,33 @@ export function formatReboot(result: LinksResult, time: number, width: number = 
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   }
   str += formatLine(`${result.denco.name}再起動します…`, width)
-  str += formatLine(formatPastTime(time, result.time), width)
+  str += formatLine(color(formatPastTime(time, result.time), "red"), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
 
-export function formatRebootDetail(result: LinksResult, time: number, width: number = 50): string {
+export function formatRebootDetail(result: LinksResult, time: number, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
-  str += formatLine("reboot", width)
+  str += formatLine(color("reboot", "red"), width)
   str += formatLine(`${result.denco.name}がリンクしていた駅のスコアが加算されました`, width)
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   result.link.forEach(link => {
-    str += "┃" + formatSpace(link.name, width - 10, "left")
+    str += "┃" + color(formatSpace(link.name, width - 10, "left"), "green")
     str += link.matchBonus ? formatAttr(result.denco.attr, 8) : " ".repeat(8)
     str += "┃\n"
     let duration = formatLinkTime(time, link)
     let pt = formatSpace(formatPt(link.totatlScore), width - 2 - len(duration), "right")
-    str += "┃" + duration + pt + "┃\n"
+    str += "┃" + color(duration + pt, "green") + "┃\n"
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   })
-  str += "┃" + "total score" + formatSpace(formatPt(result.totalScore), width - 13, "right") + "┃\n"
-  str += "┃" + "link score" + formatSpace(formatPt(result.linkScore), width - 12, "right") + "┃\n"
+  str += "┃" + color("total score" + formatSpace(formatPt(result.totalScore), width - 13, "right"), "green") + "┃\n"
+  str += "┃" + "link score" + formatSpace(`${result.link.length}駅 ` + formatPt(result.linkScore), width - 12, "right") + "┃\n"
   str += "┃" + "combo bonus" + formatSpace(formatPt(result.comboBonus), width - 13, "right") + "┃\n"
-  str += "┃" + "match bonus" + formatSpace(formatPt(result.matchBonus), width - 13, "right") + "┃\n"
-  str += "┃" + formatSpace(result.denco.name + "'s exp " + formatPt(result.totalScore), width - 2, "right") + "┃\n"
-  str += formatLine(formatPastTime(time, result.time), width)
+  str += "┃" + "match bonus" + formatSpace(`${result.matchCnt}駅 ` + formatPt(result.matchBonus), width - 13, "right") + "┃\n"
+  str += "┃" + color(formatSpace(result.denco.name + "'s exp " + formatPt(result.totalScore), width - 2, "right"), "green") + "┃\n"
+  str += formatLine(color(formatPastTime(time, result.time), "red"), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
