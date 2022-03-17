@@ -399,3 +399,20 @@ function formatLine(value: string, width: number, end: string = "┃"): string {
   const length = width - 2
   return end + formatSpace(value, length) + end + "\n"
 }
+
+const COLOR_CONTROLS = {
+  black: '\u001b[30m',
+  red: '\u001b[31m',
+  green: '\u001b[32m',
+  yellow: '\u001b[33m',
+  blue: '\u001b[34m',
+  magenta: '\u001b[35m',
+  cyan: '\u001b[36m',
+  white: '\u001b[37m'
+}
+
+type ConsoleColor = keyof (typeof COLOR_CONTROLS)
+
+function color(value: string, color: ConsoleColor): string {
+  return `${COLOR_CONTROLS[color]}${value}\u001b[00m`
+}
