@@ -84,7 +84,8 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   } else if (which === "defense" && result.linkDisconncted) {
     title += "/disconnect"
   }
-  str += formatLine(title, width)
+  var titleColor = which === "offense" ? "green" : "red" as ConsoleColor
+  str += formatLine(color(title, titleColor), width)
   str += formatLine(result.station.name, width)
   str += formatLine(result.station.nameKana, width)
 
@@ -101,18 +102,19 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   }
   const iconWidth = 14
   str += "┃" + formatSpace(left ? left.name : "不在", iconWidth)
+  const arrowColor = result.pinkMode ? "magenta" : "green"
   if (which === "offense") {
-    str += "╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐"
+    str += color("╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐", arrowColor)
   } else {
-    str += "┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲"
+    str += color("┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲", arrowColor)
   }
   str += formatSpace(right.name, iconWidth) + "┃\n"
 
   str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", iconWidth)
   if (which === "offense") {
-    str += "╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘"
+    str += color("╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘", arrowColor)
   } else {
-    str += "└" + "─".repeat(width - 4 - iconWidth * 2) + "╱"
+    str += color("└" + "─".repeat(width - 4 - iconWidth * 2) + "╱", arrowColor)
   }
   str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
 
@@ -148,23 +150,25 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   str += formatSpace(formatAccessLinkTime(result.station, time, rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatPt(leftSide?.displayedScore), tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.displayedScore, true), tableLeft, "left")
   str += " score"
-  str += formatSpace(formatPt(rightSide.displayedScore), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.displayedScore, true), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatPt(leftSide?.displayedExp), tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.displayedExp, true), tableLeft, "left")
   str += "  exp "
-  str += formatSpace(formatPt(rightSide.displayedExp), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.displayedExp, true), tableRight, "right") + "┃\n"
 
+  if (which === "offense" && result.linkSuccess) {
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  var mes = ""
-  if (which === "offense") {
-    mes = result.linkSuccess ? `${right.name}がリンクを開始` : `${right.name}がアクセス`
-  } else {
-    mes = result.linkDisconncted ? `${right.name}のリンクが解除` : "リンク継続中"
+    str += formatLine(color(`${right.name}がリンクを開始`, "green"), width)
+  } else if (which === "defense" && result.linkDisconncted) {
+    str += "┠" + "─".repeat(width - 2) + "┨\n"
+    str += formatLine(color(`${right.name}のリンクが解除`, "red"), width)
+  } else if (which === "defense" && !result.linkDisconncted) {
+    str += "┠" + "─".repeat(width - 2) + "┨\n"
+    str += formatLine(color("リンク継続中", "green"), width)
   }
-  str += formatLine(mes, width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
@@ -181,7 +185,8 @@ export function formatAccessEvent(result: ReadonlyState<AccessState>, which: Acc
   } else if (which === "defense" && result.linkDisconncted) {
     title += "/disconnect"
   }
-  str += formatLine(title, width)
+  var titleColor = which === "offense" ? "green" : "red" as ConsoleColor
+  str += formatLine(color(title, titleColor), width)
   str += formatLine(result.station.name, width)
   str += formatLine(result.station.nameKana, width)
 
@@ -194,31 +199,36 @@ export function formatAccessEvent(result: ReadonlyState<AccessState>, which: Acc
   }
   const iconWidth = 14
   str += "┃" + formatSpace(left ? left.name : "不在", iconWidth)
+  const arrowColor = result.pinkMode ? "magenta" : "green"
   if (which === "offense") {
-    str += "╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐"
+    str += color("╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐", arrowColor)
   } else {
-    str += "┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲"
-  } str += formatSpace(right.name, iconWidth) + "┃\n"
+    str += color("┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲", arrowColor)
+  }
+  str += formatSpace(right.name, iconWidth) + "┃\n"
 
   str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", iconWidth)
   if (which === "offense") {
-    str += "╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘"
+    str += color("╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘", arrowColor)
   } else {
-    str += "└" + "─".repeat(width - 4 - iconWidth * 2) + "╱"
-  } str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
+    str += color("└" + "─".repeat(width - 4 - iconWidth * 2) + "╱", arrowColor)
+  }
+  str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
 
   str += "┃" + formatSpace(left ? `${left.name}のマスター` : "", iconWidth)
   str += formatSpace(formatPastTime(time, result.time), width - iconWidth * 2 - 2)
   str += formatSpace(`${right.name}のマスター`, iconWidth) + "┃\n"
 
+  if (which === "offense" && result.linkSuccess) {
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  var mes = ""
-  if (which === "offense") {
-    mes = result.linkSuccess ? `${right.name}がリンクを開始` : `${right.name}がアクセス`
-  } else {
-    mes = result.linkDisconncted ? `${right.name}のリンクが解除` : "リンク継続中"
+    str += formatLine(color(`${right.name}がリンクを開始`, "green"), width)
+  } else if (which === "defense" && result.linkDisconncted) {
+    str += "┠" + "─".repeat(width - 2) + "┨\n"
+    str += formatLine(color(`${right.name}のリンクが解除`, "red"), width)
+  } else if (which === "defense" && !result.linkDisconncted) {
+    str += "┠" + "─".repeat(width - 2) + "┨\n"
+    str += formatLine(color("リンク継続中", "green"), width)
   }
-  str += formatLine(mes, width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
