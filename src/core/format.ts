@@ -1,7 +1,7 @@
 import { AccessSideState, AccessSide, AccessState, getAccessDenco, AccessDencoState } from "./access"
 import { Context, getCurrentTime } from "./context"
 import { DencoAttribute } from "./denco"
-import { Event } from "./event"
+import { Event, LevelupDenco } from "./event"
 import { EventTriggeredSkill } from "./skillEvent"
 import { LinksResult, Station, StationLink } from "./station"
 import { ReadonlyState, UserState } from "./user"
@@ -16,15 +16,57 @@ export function printEvents(context: Context, user: ReadonlyState<UserState> | u
 
 export function formatEvent(context: Context, event: Event, detail: boolean = false): string {
   const time = getCurrentTime(context).valueOf()
-  if (event.type === "access") {
-    return detail ? formatAccessDetail(event.data.access, event.data.which, time) : formatAccessEvent(event.data.access, event.data.which, time)
-  } else if (event.type === "reboot") {
-    return detail ? formatRebootDetail(event.data, time) : formatReboot(event.data, time)
-  } else if (event.type === "skill_trigger") {
-    return formatSkillTriggerEvent(event.data, time)
-  } else {
-    return event.type
+  switch (event.type) {
+    case "access":
+      return detail ? formatAccessDetail(event.data.access, event.data.which, time) : formatAccessEvent(event.data.access, event.data.which, time)
+    case "reboot":
+      return detail ? formatRebootDetail(event.data, time) : formatReboot(event.data, time)
+    case "skill_trigger":
+      return formatSkillTriggerEvent(event.data, time)
+    case "levelup":
+      return detail ? formatLevelupDetail(event.data, time) : formatLevelup(event.data, time)
   }
+}
+
+export function formatLevelupDetail(event: LevelupDenco, time: number, width: number = 60): string {
+  var str = "┏" + "━".repeat(width - 2) + "┓\n"
+  str += formatLine(color("level up!", "yellow"), width)
+  str += formatLine(`${event.after.name}がレベルアップ！`, width, "left")
+  str += formatLine(`Lv: ${event.before.level} >> ${event.after.level}`, width, "left")
+  str += formatLine(`HP: ${event.before.maxHp} >> ${event.after.maxHp}`, width, "left")
+  str += formatLine(`AP: ${event.before.ap} >> ${event.after.ap}`, width, "left")
+  if (event.before.skill.type !== "possess" && event.after.skill.type === "possess") {
+    str += formatLine("スキルを獲得！", width, "left")
+    str += formatLine(color(event.after.skill.name, "blue"), width, "left")
+  }
+  if (event.before.skill.type === "possess" && event.after.skill.type === "possess" && event.before.skill.level !== event.after.skill.level) {
+    str += formatLine("スキルがパワーアップ！", width, "left")
+    str += formatLine(color(event.before.skill.name, "white"), width, "left")
+    str += formatLine(color(`>> ${event.after.skill.name}`, "blue"), width, "left")
+  }
+  str += formatLine(color(formatPastTime(time, event.time), "yellow"), width)
+
+  str = str + "┗" + "━".repeat(width - 2) + "┛"
+  return str
+}
+
+export function formatLevelup(event: LevelupDenco, time: number, width: number = 40): string {
+  var str = "┏" + "━".repeat(width - 2) + "┓\n"
+  str += formatLine(color("level up!", "yellow"), width)
+  str += formatLine(event.after.name, width)
+  str += formatLine(`Lv.${event.after.level}`, width)
+  str += formatLine(`${event.after.name}がレベルアップ！`, width)
+  str += formatLine(`Lv: ${event.before.level} >> ${event.after.level}`, width)
+  if (event.before.skill.type !== "possess" && event.after.skill.type === "possess") {
+    str += formatLine(color("スキルを獲得した！", "blue"), width)
+  }
+  if (event.before.skill.type === "possess" && event.after.skill.type === "possess" && event.before.skill.level !== event.after.skill.level) {
+    str += formatLine(color("スキルがパワーアップした！", "blue"), width)
+  }
+  str += formatLine(color(formatPastTime(time, event.time), "yellow"), width)
+
+  str = str + "┗" + "━".repeat(width - 2) + "┛"
+  return str
 }
 
 export function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, width: number = 40): string {
@@ -403,7 +445,9 @@ function formatPastTime(now: number, time: number): string {
   return `${hour}時間${min % 60}分前`
 }
 
-function formatSpace(value: string, width: number, gravity: "left" | "center" | "right" = "center"): string {
+type TextGravity = "left" | "right" | "center"
+
+function formatSpace(value: string, width: number, gravity: TextGravity = "center"): string {
   value = subString(value, width)
   const space = width - len(value)
   var v = Math.floor(space / 2)
@@ -415,9 +459,9 @@ function formatSpace(value: string, width: number, gravity: "left" | "center" | 
   return " ".repeat(v) + value + " ".repeat(space - v)
 }
 
-function formatLine(value: string, width: number, end: string = "┃"): string {
+function formatLine(value: string, width: number, gravity: TextGravity = "center", end: string = "┃"): string {
   const length = width - 2
-  return end + formatSpace(value, length) + end + "\n"
+  return end + formatSpace(value, length, gravity) + end + "\n"
 }
 
 const COLOR_CONTROLS = {
