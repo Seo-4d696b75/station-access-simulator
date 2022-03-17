@@ -235,9 +235,12 @@ function formatDamage(state?: ReadonlyState<AccessDencoState> | null): string {
   }
 }
 
-function formatPt(pt: number | undefined): string {
+function formatPt(pt: number | undefined, colored: boolean = false): string {
   if (!pt && pt !== 0) return ""
-  return new Intl.NumberFormat().format(pt) + "pt"
+  if (pt === 0) return "0pt"
+  let str = `${pt}pt`
+  if (!colored) return str
+  return color(str, "green")
 }
 
 function formatLinkTime(time: number, link?: StationLink | null): string {
