@@ -2,6 +2,7 @@ import { AccessSideState, AccessSide, AccessState, getAccessDenco, AccessDencoSt
 import { Context, getCurrentTime } from "./context"
 import { DencoAttribute } from "./denco"
 import { Event } from "./event"
+import { EventTriggeredSkill } from "./skillEvent"
 import { LinksResult, Station, StationLink } from "./station"
 import { ReadonlyState, UserState } from "./user"
 
@@ -18,9 +19,24 @@ export function formatEvent(context: Context, event: Event, detail: boolean = fa
     return detail ? formatAccessDetail(event.data.access, event.data.which, time) : formatAccessEvent(event.data.access, event.data.which, time)
   } else if (event.type === "reboot") {
     return detail ? formatRebootDetail(event.data, time) : formatReboot(event.data, time)
+  } else if (event.type === "skill_trigger") {
+    return formatSkillTriggerEvent(event.data, time)
   } else {
     return event.type
   }
+}
+
+export function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, width: number = 40): string {
+  var str = "┏" + "━".repeat(width - 2) + "┓\n"
+  str += formatLine(color("skill", "blue"), width)
+  str += formatLine(event.denco.name, width)
+  str += formatLine(`Lv.${event.denco.level}`, width)
+  str += formatLine(`「${event.skillName}」`, width)
+  str += formatLine(`${event.denco.name}のスキルが発動！`, width)
+  str += formatLine(color(formatPastTime(time, event.time), "blue"), width)
+
+  str = str + "┗" + "━".repeat(width - 2) + "┛"
+  return str
 }
 
 export function formatReboot(result: LinksResult, time: number, width: number = 40): string {
