@@ -5,6 +5,7 @@ import { Event } from "./event"
 import { EventTriggeredSkill } from "./skillEvent"
 import { LinksResult, Station, StationLink } from "./station"
 import { ReadonlyState, UserState } from "./user"
+import { computeWidth } from "meaw"
 
 export function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
   if (!user) return
@@ -176,7 +177,7 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   str += formatSpace(formatPt(rightSide.displayedExp, true), tableRight, "right") + "┃\n"
 
   if (which === "offense" && result.linkSuccess) {
-  str += "┠" + "─".repeat(width - 2) + "┨\n"
+    str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine(color(`${right.name}がリンクを開始`, "green"), width)
   } else if (which === "defense" && result.linkDisconncted) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
@@ -236,7 +237,7 @@ export function formatAccessEvent(result: ReadonlyState<AccessState>, which: Acc
   str += formatSpace(`${right.name}のマスター`, iconWidth) + "┃\n"
 
   if (which === "offense" && result.linkSuccess) {
-  str += "┠" + "─".repeat(width - 2) + "┨\n"
+    str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine(color(`${right.name}がリンクを開始`, "green"), width)
   } else if (which === "defense" && result.linkDisconncted) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
@@ -317,55 +318,44 @@ function formatHP(state?: ReadonlyState<AccessSideState> | null) {
 
 function formatAttr(attr: DencoAttribute, width: number): string {
   if (attr === "eco") {
-    return " " + formatSpace("eco🌳", width) + " "
+    return formatSpace("eco🌳", width)
   } else if (attr === "heat") {
-    return " " + formatSpace("heat🔥", width) + " "
+    return formatSpace("heat🔥", width)
   } else if (attr === "cool") {
-    return " " + formatSpace("cool💧", width) + " "
+    return formatSpace("cool💧", width)
   } else {
-    return " " + formatSpace("flat💿", width) + " "
+    return formatSpace("flat💿", width)
   }
-}
-
-const charStart = " ".charCodeAt(0)
-const charEnd = "~".charCodeAt(0)
-const charList = ["…".charCodeAt(0)]
-function charLen(code: number): number {
-  if (charStart <= code && code <= charEnd) return 1
-  if (charList.includes(code)) return 1
-  return 2
 }
 
 function len(value: string): number {
   value = value.replace(/\x1b\[[0-9]+m/g, "")
-  var sum = 0
-  for (let i = 0; i < value.length; i++) {
-    let code = value.charCodeAt(i)
-    sum += charLen(code)
-  }
-  return sum
+  return computeWidth(value)
 }
 
+/**
+ * 文字列を指定した幅長以下にする
+ * @returns 指定した幅長を超える場合は末尾を省略する
+ */
 function subString(value: string, width: number): string {
   if (width < 0) return ""
-  if (width === 1) {
-    return len(value) === 1 ? value : "…"
-  }
+  const suffix = "…"
+  const suffixLen = len(suffix)
   const origin = value
   value = origin.replace(/\x1b\[[0-9]+m/g, "")
   var str = ""
   var length = 0
   for (let i = 0; i < value.length; i++) {
-    let code = value.charCodeAt(i)
-    var v = charLen(code)
+    let c = value.charAt(i)
+    let v = len(c)
     if (length + v > width) {
-      while (length + 1 > width) {
-        code = str.charCodeAt(str.length - 1)
-        v = charLen(code)
+      while (length + suffixLen > width) {
+        c = str.charAt(str.length - 1)
+        v = len(c)
         length -= v
         str = str.slice(0, -1)
       }
-      return str + "…"
+      return str + suffix
     }
     str += value.charAt(i)
     length += v
@@ -386,14 +376,14 @@ function subString(value: string, width: number): string {
       controls.splice(0, 1)
       result += control
       i += control.length
-    } else if (char === "…") {
+    } else if (char === suffix) {
       result += "…"
       str = str.substring(1)
     } else {
       throw Error()
     }
   }
-  result = controls.reduce((a,b) => a+b, result)
+  result = controls.reduce((a, b) => a + b, result)
   return result
 }
 
