@@ -344,7 +344,7 @@
     {"skill_level":6,"denco_level":70,"name":"るるだけのお時間♪ Lv.6","probability":27},
     {"skill_level":7,"denco_level":80,"name":"まいぺーすが一番♪","probability":30}
   ]},
-  {"numbering":"40","class":"D40_Haru","type":"","list":[
+  {"numbering":"40","class":"D40_Haru","type":"always","list":[
     {"skill_level":1,"denco_level":5,"name":"ウィルパワー Lv.1","probability":10},
     {"skill_level":2,"denco_level":15,"name":"ウィルパワー Lv.2","probability":15},
     {"skill_level":3,"denco_level":30,"name":"ウィルパワー Lv.3","probability":20},
