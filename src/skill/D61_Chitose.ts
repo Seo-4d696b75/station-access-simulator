@@ -3,11 +3,9 @@ import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   canEvaluate: (context, state, step, self) => {
-    if (step === "before_access") {
+    if (step === "before_access" && state.defense) {
       let all = Array.from(state.offense.formation)
-      if (state.defense) {
-        all.push(...state.defense.formation)
-      }
+      all.push(...state.defense.formation)
       let anySupporter = all.some(d => {
         return d.type === "supporter" && isSkillActive(d.skill) && !d.skillInvalidated
       })
