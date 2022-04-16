@@ -1,10 +1,14 @@
 import { AccessSide, AccessState } from "./access";
 import { Context } from "./context";
-import { Event } from "./event";
+import { Event, LevelupDenco } from "./event";
+import { EventTriggeredSkill } from "./skillEvent";
 import { LinksResult } from "./station";
 import { ReadonlyState, UserState } from "./user";
 export declare function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail?: boolean): void;
 export declare function formatEvent(context: Context, event: Event, detail?: boolean): string;
+export declare function formatLevelupDetail(event: LevelupDenco, time: number, width?: number): string;
+export declare function formatLevelup(event: LevelupDenco, time: number, width?: number): string;
+export declare function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, width?: number): string;
 export declare function formatReboot(result: LinksResult, time: number, width?: number): string;
 export declare function formatRebootDetail(result: LinksResult, time: number, width?: number): string;
 export declare function formatAccessDetail(result: ReadonlyState<AccessState>, which: AccessSide, time: number, width?: number): string;

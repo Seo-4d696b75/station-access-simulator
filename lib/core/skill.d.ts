@@ -3,7 +3,7 @@ import * as access from "./access";
 import { Context } from "./context";
 import { DencoState } from "./denco";
 import * as event from "./skillEvent";
-import { SkillPropertyReader } from "./skillManager";
+import { SkillProperty } from "./skillManager";
 import { FormationPosition, ReadonlyState, UserState } from "./user";
 /**
  * スキル状態の遷移の種類
@@ -75,6 +75,13 @@ export declare type SkillTriggerPredicate = (context: Context, state: ReadonlySt
  * アクセス時にスキルが発動した時の効果を反映する
  */
 export declare type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => access.AccessState;
+/**
+ * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
+ *
+ * スキルレベルに依存するデータは各コールバック関数の引数に渡される{@link Skill property}オブジェクトから参照できます
+ * （例）引数`self: ActiveSkill`に対して`self.skill.property`からアクセスできる
+ *
+ */
 export interface SkillLogic {
     /**
      * アクセス時の各段階でスキルが発動するか判定する
@@ -146,11 +153,30 @@ export interface SkillLogic {
     onLinkSuccess?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState;
     onDencoReboot?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState;
 }
+/**
+ * スキルレベルに依存するデータとスキル発動に関するロジックを保有する
+ */
 export interface Skill extends SkillLogic {
+    /**
+     * スキルレベル 1始まりの整数でカウントする
+     */
     level: number;
+    /**
+     * スキルの名称「*** Lv.1」など
+     */
     name: string;
+    /**
+     * スキルの状態
+     *
+     * **この状態を直接操作しないでください** {@link activateSkill} {@link disactivateSkill}などの関数を利用してください
+     * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
+     */
     state: SkillState;
-    propertyReader: SkillPropertyReader;
+    /**
+     * スキルレベルや各でんこに依存するデータへのアクセス方法を提供します
+     * @see {@link SkillProperty}
+     */
+    property: SkillProperty;
 }
 /**
  * スキルの発動を評価するときに必要なスキル情報へのアクセスを定義
@@ -220,9 +246,14 @@ export declare function disactivateSkill(context: Context, state: ReadonlyState<
  *
  * スキル状態の整合性も同時に確認する
  * @param state 現在の状態
- * @param time 現在時刻
- * @returns 新しい状態
  */
 export declare function refreshSkillState(context: Context, state: UserState): void;
-export declare function refreshSkillStateOne(context: Context, state: UserState, idx: number): void;
+/**
+ * 指定した編成位置のでんこスキル状態を更新する
+ * @param context
+ * @param state
+ * @param idx
+ * @returns true if any change, or false
+ */
+export declare function refreshSkillStateOne(context: Context, state: UserState, idx: number): boolean;
 export {};

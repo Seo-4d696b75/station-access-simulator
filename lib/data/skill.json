@@ -168,7 +168,7 @@
             { "skill_level": 7, "denco_level": 80, "name": "エメラルドシールド", "probability": 55, "DEF": 26 }
         ] },
     { "numbering": "22", "class": "D22_Ren", "type": "manual",
-        "invalidated": ["3", "7", "11", "13", "18", "24", "27", "31", "33", "35", "39", "41", "49", "50", "56", "58", "67", "70"],
+        "invalidated": ["3", "7", "11", "13", "15", "18", "24", "27", "30", "31", "33", "35", "39", "41", "49", "50", "56", "58", "67", "70", "74", "83", "89", "91", "93", "103", "105"],
         "list": [
             { "skill_level": 1, "denco_level": 5, "name": "こけおどし Lv.1", "active": 600, "wait": 5400 },
             { "skill_level": 2, "denco_level": 15, "name": "こけおどし Lv.2", "active": 900, "wait": 5400 },
@@ -187,32 +187,42 @@
             { "skill_level": 6, "denco_level": 70, "name": "ランブルアタック Lv.6", "probability": 80, "ATK_lower": -53, "ATK_upper": 80 },
             { "skill_level": 7, "denco_level": 80, "name": "フラストレーション", "probability": 80, "ATK_lower": -60, "ATK_upper": 90 }
         ] },
-    { "numbering": "24", "class": "D24_Beatrice", "type": "manual", "list": [
-            { "skill_level": 1, "denco_level": 5, "name": "パワーレジスト Lv.1", "DEF": 75, "active": 3600, "wait": 3600 },
-            { "skill_level": 2, "denco_level": 15, "name": "パワーレジスト Lv.2", "DEF": 75, "active": 7200, "wait": 3600 },
-            { "skill_level": 3, "denco_level": 30, "name": "パワーレジスト Lv.3", "DEF": 75, "active": 10800, "wait": 3600 },
-            { "skill_level": 4, "denco_level": 50, "name": "パワーレジスト Lv.4", "DEF": 75, "active": 14400, "wait": 3600 },
-            { "skill_level": 5, "denco_level": 60, "name": "パワーレジスト Lv.5", "DEF": 75, "active": 18000, "wait": 3600 },
-            { "skill_level": 6, "denco_level": 70, "name": "パワーレジスト Lv.6", "DEF": 75, "active": 21600, "wait": 3600 },
-            { "skill_level": 7, "denco_level": 80, "name": "グランレジストサルーン", "DEF": 75, "active": 25200, "wait": 3600 }
+    { "numbering": "24", "class": "D24_Beatrice", "type": "manual",
+        "DEF": 75,
+        "wait": 3600,
+        "list": [
+            { "skill_level": 1, "denco_level": 5, "name": "パワーレジスト Lv.1", "active": 3600 },
+            { "skill_level": 2, "denco_level": 15, "name": "パワーレジスト Lv.2", "active": 7200 },
+            { "skill_level": 3, "denco_level": 30, "name": "パワーレジスト Lv.3", "active": 10800 },
+            { "skill_level": 4, "denco_level": 50, "name": "パワーレジスト Lv.4", "active": 14400 },
+            { "skill_level": 5, "denco_level": 60, "name": "パワーレジスト Lv.5", "active": 18000 },
+            { "skill_level": 6, "denco_level": 70, "name": "パワーレジスト Lv.6", "active": 21600 },
+            { "skill_level": 7, "denco_level": 80, "name": "グランレジストサルーン", "active": 25200 }
         ] },
-    { "numbering": "25", "class": "D25_Urara", "type": "manual", "list": [
-            { "skill_level": 1, "denco_level": 5, "name": "じかんあっしゅく Lv.1", "probability": 25, "active": 0, "wait": 7200 },
-            { "skill_level": 2, "denco_level": 15, "name": "じかんあっしゅく Lv.2", "probability": 30, "active": 0, "wait": 7200 },
-            { "skill_level": 3, "denco_level": 30, "name": "じかんあっしゅく Lv.3", "probability": 40, "active": 0, "wait": 7200 },
-            { "skill_level": 4, "denco_level": 50, "name": "じかんあっしゅく Lv.4", "probability": 50, "active": 0, "wait": 7200 },
-            { "skill_level": 5, "denco_level": 60, "name": "じかんあっしゅく Lv.5", "probability": 60, "active": 0, "wait": 7200 },
-            { "skill_level": 6, "denco_level": 70, "name": "じかんあっしゅく Lv.6", "probability": 70, "active": 0, "wait": 7200 },
-            { "skill_level": 7, "denco_level": 80, "name": "さよならタイソン", "probability": 80, "active": 0, "wait": 7200 }
+    { "numbering": "25", "class": "D25_Urara", "type": "manual-condition",
+        "active": 0,
+        "wait": 7200,
+        "list": [
+            { "skill_level": 1, "denco_level": 5, "name": "じかんあっしゅく Lv.1", "probability": 25 },
+            { "skill_level": 2, "denco_level": 15, "name": "じかんあっしゅく Lv.2", "probability": 30 },
+            { "skill_level": 3, "denco_level": 30, "name": "じかんあっしゅく Lv.3", "probability": 40 },
+            { "skill_level": 4, "denco_level": 50, "name": "じかんあっしゅく Lv.4", "probability": 50 },
+            { "skill_level": 5, "denco_level": 60, "name": "じかんあっしゅく Lv.5", "probability": 60 },
+            { "skill_level": 6, "denco_level": 70, "name": "じかんあっしゅく Lv.6", "probability": 70 },
+            { "skill_level": 7, "denco_level": 80, "name": "さよならタイソン", "probability": 80 }
         ] },
-    { "numbering": "26", "class": "D26_Hokone", "type": "manual", "list": [
-            { "skill_level": 1, "denco_level": 5, "name": "妹愛バースト Lv.1", "ATK": 30, "active": 1200, "wait": 7200, "heal": 40 },
-            { "skill_level": 2, "denco_level": 15, "name": "妹愛バースト Lv.2", "ATK": 34, "active": 1200, "wait": 7200, "heal": 40 },
-            { "skill_level": 3, "denco_level": 30, "name": "妹愛バースト Lv.3", "ATK": 38, "active": 1200, "wait": 7200, "heal": 40 },
-            { "skill_level": 4, "denco_level": 50, "name": "妹愛バースト Lv.4", "ATK": 42, "active": 1200, "wait": 7200, "heal": 40 },
-            { "skill_level": 5, "denco_level": 60, "name": "妹愛バースト Lv.5", "ATK": 46, "active": 1200, "wait": 7200, "heal": 40 },
-            { "skill_level": 6, "denco_level": 70, "name": "妹愛バースト Lv.6", "ATK": 50, "active": 1200, "wait": 7200, "heal": 40 },
-            { "skill_level": 7, "denco_level": 80, "name": "妹愛インフェルノ", "ATK": 55, "active": 1200, "wait": 7200, "heal": 40 }
+    { "numbering": "26", "class": "D26_Hokone", "type": "manual",
+        "active": 1200,
+        "wait": 7200,
+        "heal": 40,
+        "list": [
+            { "skill_level": 1, "denco_level": 5, "name": "妹愛バースト Lv.1", "ATK": 30 },
+            { "skill_level": 2, "denco_level": 15, "name": "妹愛バースト Lv.2", "ATK": 34 },
+            { "skill_level": 3, "denco_level": 30, "name": "妹愛バースト Lv.3", "ATK": 38 },
+            { "skill_level": 4, "denco_level": 50, "name": "妹愛バースト Lv.4", "ATK": 42 },
+            { "skill_level": 5, "denco_level": 60, "name": "妹愛バースト Lv.5", "ATK": 46 },
+            { "skill_level": 6, "denco_level": 70, "name": "妹愛バースト Lv.6", "ATK": 50 },
+            { "skill_level": 7, "denco_level": 80, "name": "妹愛インフェルノ", "ATK": 55 }
         ] },
     { "numbering": "27", "class": "D27_Yachiyo", "type": "always", "list": [
             { "skill_level": 1, "denco_level": 5, "name": "ラブホームズ Lv.1", "DEF": 15 },
@@ -334,7 +344,7 @@
             { "skill_level": 6, "denco_level": 70, "name": "るるだけのお時間♪ Lv.6", "probability": 27 },
             { "skill_level": 7, "denco_level": 80, "name": "まいぺーすが一番♪", "probability": 30 }
         ] },
-    { "numbering": "40", "class": "D40_Haru", "type": "", "list": [
+    { "numbering": "40", "class": "D40_Haru", "type": "always", "list": [
             { "skill_level": 1, "denco_level": 5, "name": "ウィルパワー Lv.1", "probability": 10 },
             { "skill_level": 2, "denco_level": 15, "name": "ウィルパワー Lv.2", "probability": 15 },
             { "skill_level": 3, "denco_level": 30, "name": "ウィルパワー Lv.3", "probability": 20 },
@@ -409,6 +419,18 @@
             { "skill_level": 5, "denco_level": 60, "name": "きらきらリスペクト Lv.5", "expMax": 200, "expFixed": 160 },
             { "skill_level": 6, "denco_level": 70, "name": "きらきらリスペクト Lv.6", "expMax": 250, "expFixed": 180 },
             { "skill_level": 7, "denco_level": 80, "name": "はしれヒストリカル・ロード", "expMax": 300, "expFixed": 200 }
+        ] },
+    { "numbering": "76", "class": "D76_Yunoka", "type": "manual",
+        "active": 900,
+        "wait": 5400,
+        "list": [
+            { "skill_level": 1, "denco_level": 5, "name": "ほっと・バスタイム Lv.1", "ATK": 18, "heal": 6 },
+            { "skill_level": 2, "denco_level": 15, "name": "ほっと・バスタイム Lv.2", "ATK": 25, "heal": 10 },
+            { "skill_level": 3, "denco_level": 30, "name": "ほっと・バスタイム Lv.3", "ATK": 32, "heal": 14 },
+            { "skill_level": 4, "denco_level": 50, "name": "ほっと・バスタイム Lv.4", "ATK": 39, "heal": 18 },
+            { "skill_level": 5, "denco_level": 60, "name": "ほっと・バスタイム Lv.5", "ATK": 46, "heal": 22 },
+            { "skill_level": 6, "denco_level": 70, "name": "ほっと・バスタイム Lv.6", "ATK": 53, "heal": 26 },
+            { "skill_level": 7, "denco_level": 80, "name": "リラクシングトラベル", "ATK": 60, "heal": 30 }
         ] },
     { "numbering": "77", "class": "D77_Reto", "type": "always", "list": [
             { "skill_level": 1, "denco_level": 5, "name": "ワンダーエスケープ Lv.1", "active": 0, "wait": 0, "probability": 8 },
