@@ -231,6 +231,7 @@ export interface ScorePredicate {
 
   /**
    * アクセス側が与えたダメージ量に応じたスコアを計算
+   * @param damage ダメージ量(>=0)
    */
   calcDamageScore: (context: Context, damage: number) => number
   /**
@@ -288,12 +289,12 @@ export interface AccessSideState {
   formation: AccessDencoState[]
 
   /**
-   * 編成内における自身の位置
+   * 直接アクセス・被アクセスするでんこの編成内における位置
    */
   carIndex: number
 
   /**
-   * アクセス中に発動したスキル一覧
+   * アクセス中にスキルが発動した編成内でんこの一覧
    */
   triggeredSkills: AccessTriggeredSkill[]
 
@@ -727,6 +728,11 @@ function calcLinksResult(context: Context, links: readonly StationLink[], d: Rea
   return result
 }
 
+/**
+ * スコア -> 経験値を計算
+ * @param score must be >= 0
+ * @returns must be >= 0
+ */
 function calcExp(score: number): number {
   // TODO 経験値増加の加味
   return score
@@ -953,8 +959,11 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       context.log.error("基本ダメージの値が見つかりません")
       throw Error("base damage not set")
     }
-    if (damageBase.variable < 0 || damageBase.constant < 0) {
-      context.log.error(`基本ダメージの値は非負である必要があります ${JSON.stringify(damageBase)}`)
+    if (damageBase.variable < 0 ) {
+      context.log.error(`基本ダメージの値は非負である必要があります ${damageBase.variable}`)
+    }
+    if (damageBase.constant < 0) {
+      context.log.log(`基本ダメージ(const.)の値が負数です(回復) ${damageBase.constant}`)
     }
     const damage = {
       // 固定ダメージで負数にはせず0以上に固定 & 確保されたダメージ量を加算
@@ -963,8 +972,9 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     }
     // ダメージ量に応じたスコア＆経験値の追加
     const predicate = context.scorePredicate?.calcDamageScore ?? DEFAULT_SCORE_PREDICATE.calcDamageScore
-    const score = predicate(context, damage.value)
-    const exp = calcExp(score)
+    // ダメージ量が負数（回復）の場合は一律経験値1を与える
+    const score = damage.value >= 0 ? predicate(context, damage.value) : 0
+    const exp = damage.value >= 0 ? calcExp(score) : 1
     const accessDenco = getAccessDenco(state, "offense")
     accessDenco.exp.access += exp
     state.offense.score.access += score
@@ -1062,7 +1072,7 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
       const active = {
         ...d,
         skill: skill,
-        skillPropertyReader: skill.propertyReader,
+        skillPropertyReader: skill.property,
       }
       // 状態に依存するスキル発動有無の判定は毎度行う
       if (canSkillEvaluated(context, state, step, active)) {
@@ -1084,7 +1094,7 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
         const active = {
           ...d,
           skill: skill,
-          skillPropertyReader: skill.propertyReader,
+          skillPropertyReader: skill.property,
         }
         if (canSkillEvaluated(context, state, step, active)) {
           markTriggerSkill(defense, step, d)
@@ -1428,7 +1438,8 @@ function updateDencoHP(context: Context, d: AccessDencoState) {
       context.log.error(`現在のHPの値が不正です range[0,maxHP]`)
     }
   }
-  d.hpAfter = Math.max(d.currentHp - damage, 0)
+  // 回復も考慮して [0,maxHp]の範囲内を保証する
+  d.hpAfter = Math.min(Math.max(d.currentHp - damage, 0), d.maxHp)
   // Reboot有無の確定
   d.reboot = (d.hpAfter === 0)
 }

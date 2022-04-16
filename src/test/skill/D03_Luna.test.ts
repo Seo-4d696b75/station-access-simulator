@@ -1,23 +1,13 @@
 import moment from "moment-timezone"
 import { init } from "../.."
-import StationManager from "../..//core/stationManager"
 import { getAccessDenco, getDefense, startAccess } from "../../core/access"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
-import SkillManager from "../../core/skillManager"
 import { initUser, refreshState } from "../../core/user"
 
 describe("ルナのスキル", () => {
   beforeAll(init)
-  test("setup", async () => {
-    await StationManager.load()
-    await SkillManager.load()
-    await DencoManager.load()
-    expect(StationManager.data.length).toBeGreaterThan(0)
-    expect(SkillManager.map.size).toBeGreaterThan(0)
-    expect(DencoManager.data.size).toBeGreaterThan(0)
-  })
   test("スキル状態", () => {
     const context = initContext("test", "test", false)
     let luna = DencoManager.getDenco(context, "3", 50)

@@ -7,7 +7,7 @@ const skill: SkillLogic = {
       // 相手がまだリブートしていない & まだ発動していない
       const defense = getAccessDenco(state, "defense")
       if (!defense.reboot && !hasSkillTriggered(state.offense, self)) {
-        return self.skill.propertyReader("probability")
+        return self.skill.property.readNumber("probability")
       }
     }
     return false

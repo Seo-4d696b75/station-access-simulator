@@ -209,7 +209,7 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
         data: {
           time: state.time.valueOf(),
           carIndex: state.carIndex,
-          denco: copyDencoState(state.formation[state.carIndex]),
+          denco: copyDencoState(state.formation[idx]),
           skillName: skill.name,
           step: "probability_check"
         },
@@ -448,7 +448,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
             ...copyDencoState(d),
             carIndex: i,
             skill: skill,
-            skillPropertyReader: skill.propertyReader,
+            skillPropertyReader: skill.property,
           }
           const next = callback(context, state, self)
           copyUserStateTo(next, state)

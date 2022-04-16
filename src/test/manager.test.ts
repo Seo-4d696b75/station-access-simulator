@@ -46,11 +46,20 @@ const skills = [
     ]
   },
   {
-    numbering: "3", class: "D03_Luna", type: "always", list: [
+    numbering: "3", class: "D03_Luna", type: "always",
+    key: "value1",
+    list: [
       { skill_level: 1, denco_level: 5, name: "ナイトライダー Lv.1", DEF_night: 5, DEF_morning: -30 },
       { skill_level: 2, denco_level: 15, name: "ナイトライダー Lv.2", DEF_night: 10, DEF_morning: -30 },
       { skill_level: 3, denco_level: 30, name: "ナイトライダー Lv.3", DEF_night: 15, DEF_morning: -30 },
-      { skill_level: 4, denco_level: 50, name: "ナイトライダー Lv.4", DEF_night: 25, DEF_morning: -30 },
+      {
+        skill_level: 4, denco_level: 50, name: "ナイトライダー Lv.4", DEF_night: 25, DEF_morning: -30,
+        key: "value2",
+        key_boolean: false,
+        key_numbers: [10, 20],
+        key_array_invalid: [10, "hoge"],
+        key_strings: ["hoge", "piyo"],
+      },
       { skill_level: 5, denco_level: 60, name: "ナイトライダー Lv.5", DEF_night: 35, DEF_morning: -30 },
       { skill_level: 6, denco_level: 70, name: "ナイトライダー Lv.6", DEF_night: 40, DEF_morning: -30 },
       { skill_level: 7, denco_level: 80, name: "ナイトエクスプレス", DEF_night: 50, DEF_morning: -30 }
@@ -86,13 +95,43 @@ describe("manager", () => {
     // スキルあり
     let skill = SkillManager.getSkill("3", 50)
     expect(skill.type).toBe("possess")
-    const s = skill
-    if (s.type === "possess") {
-      expect(s?.level).toBe(4)
-      expect(s?.name).toBe("ナイトライダー Lv.4")
-      expect(s?.propertyReader("DEF_night")).toBe(25)
-      expect(s?.propertyReader("DEF_morning")).toBe(-30)
-      expect(() => s?.propertyReader("hoge")).toThrowError()
+    if (skill.type === "possess") {
+      const s = skill
+      expect(s.level).toBe(4)
+      expect(s.name).toBe("ナイトライダー Lv.4")
+      // number
+      expect(s.property.readNumber("DEF_night")).toBe(25)
+      expect(s.property.readNumber("DEF_morning")).toBe(-30)
+      // string
+      expect(s.property.readString("key")).toBe("value2")
+      expect(s.property.readString("key", "hoge")).toBe("value2")
+      expect(s.property.readString("hoge", "hoge")).toBe("hoge")
+      // boolean
+      expect(s.property.readBoolean("key_boolean")).toBe(false)
+      // number array
+      expect(s.property.readNumberArray("key_numbers")).toEqual([10, 20])
+      // string array
+      expect(s.property.readStringArray("key_strings")).toEqual(["hoge", "piyo"])
+      // 存在しないkey
+      expect(() => s.property.readNumber("hoge")).toThrowError()
+      // 型不一致
+      expect(() => s.property.readNumber("key")).toThrowError()
+      expect(() => s.property.readNumberArray("key_array_invalid")).toThrowError()
+    }
+    // 異なるスキルレベル
+    skill = SkillManager.getSkill("3", 30)
+    expect(skill.type).toBe("possess")
+    if (skill.type === "possess") {
+      const s = skill
+      expect(s.level).toBe(3)
+      expect(s.name).toBe("ナイトライダー Lv.3")
+      // number
+      expect(s.property.readNumber("DEF_night")).toBe(15)
+      expect(s.property.readNumber("DEF_morning")).toBe(-30)
+      // string
+      expect(s.property.readString("key")).toBe("value1")
+      expect(s.property.readString("key", "hoge")).toBe("value1")
+      expect(s.property.readString("hoge", "hoge")).toBe("hoge")
     }
     // スキルをまだ取得していない
     skill = SkillManager.getSkill("3", 1)

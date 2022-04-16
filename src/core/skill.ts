@@ -3,7 +3,7 @@ import * as access from "./access"
 import { Context, fixClock, getCurrentTime } from "./context"
 import { copyDencoState, DencoState } from "./denco"
 import * as event from "./skillEvent"
-import { SkillPropertyReader } from "./skillManager"
+import { SkillProperty, SkillPropertyReader } from "./skillManager"
 import { copyUserState, copyUserStateTo, FormationPosition, ReadonlyState, UserState } from "./user"
 import moment from "moment-timezone"
 
@@ -121,6 +121,13 @@ export type SkillTriggerPredicate = (context: Context, state: ReadonlyState<acce
  */
 export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => access.AccessState
 
+/**
+ * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
+ * 
+ * スキルレベルに依存するデータは各コールバック関数の引数に渡される{@link Skill property}オブジェクトから参照できます  
+ * （例）引数`self: ActiveSkill`に対して`self.skill.property`からアクセスできる
+ * 
+ */
 export interface SkillLogic {
   /**
    * アクセス時の各段階でスキルが発動するか判定する
@@ -203,11 +210,30 @@ export interface SkillLogic {
   onDencoReboot?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
 }
 
+/**
+ * スキルレベルに依存するデータとスキル発動に関するロジックを保有する
+ */
 export interface Skill extends SkillLogic {
+  /**
+   * スキルレベル 1始まりの整数でカウントする
+   */
   level: number
+  /**
+   * スキルの名称「*** Lv.1」など
+   */
   name: string
+  /**
+   * スキルの状態
+   * 
+   * **この状態を直接操作しないでください** {@link activateSkill} {@link disactivateSkill}などの関数を利用してください    
+   * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
+   */
   state: SkillState
-  propertyReader: SkillPropertyReader
+  /**
+   * スキルレベルや各でんこに依存するデータへのアクセス方法を提供します
+   * @see {@link SkillProperty}
+   */
+  property: SkillProperty
 }
 
 /**
@@ -290,7 +316,7 @@ export function copySkill(skill: SkillHolder): SkillHolder {
       ...skill,
       name: skill.name,
       level: skill.level,
-      propertyReader: skill.propertyReader,
+      property: skill.property,
       state: copySkillState(skill.state),
     }
   }
@@ -486,19 +512,33 @@ function disactivateSkillOne(context: Context, state: UserState, carIndex: numbe
  * 
  * スキル状態の整合性も同時に確認する
  * @param state 現在の状態
- * @param time 現在時刻
- * @returns 新しい状態
  */
 export function refreshSkillState(context: Context, state: UserState) {
   const indices = state.formation.map((_, idx) => idx)
-  indices.forEach(idx => refreshSkillStateOne(context, state, idx))
+  /* 
+  更新差分が無くなるまで繰り返す 
+  でんこによってはスキル状態の決定が他でんこのスキル状態に依存する場合がある
+  そのため編成順序（=処理の順序）次第では正しく更新できないおそれあり
+  */
+  let anyChange = true
+  while (anyChange) {
+    anyChange = indices.some(idx => refreshSkillStateOne(context, state, idx))
+  }
 }
 
-export function refreshSkillStateOne(context: Context, state: UserState, idx: number) {
+/**
+ * 指定した編成位置のでんこスキル状態を更新する
+ * @param context 
+ * @param state 
+ * @param idx 
+ * @returns true if any change, or false
+ */
+export function refreshSkillStateOne(context: Context, state: UserState, idx: number): boolean {
   const denco = state.formation[idx]
   if (denco.skill.type !== "possess") {
-    return
+    return false
   }
+  let result: boolean = false
   const skill = denco.skill
   switch (skill.state.transition) {
     case "always": {
@@ -508,8 +548,9 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           transition: "always",
           data: undefined,
         }
+        result = true
       }
-      return
+      break
     }
     case "manual": {
       if (skill.state.type === "not_init") {
@@ -518,9 +559,10 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           transition: "manual",
           data: undefined
         }
+        result = true
       }
-      refreshTimeout(context, state, idx)
-      return
+      result = refreshTimeout(context, state, idx) || result
+      break
     }
     case "manual-condition": {
       if (skill.state.type === "not_init") {
@@ -529,6 +571,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           transition: "manual-condition",
           data: undefined
         }
+        result = true
       }
       if (skill.state.type === "idle" || skill.state.type === "unable") {
         const predicate = skill.canEnabled
@@ -540,7 +583,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           ...denco,
           carIndex: idx,
           skill: skill,
-          skillPropertyReader: skill.propertyReader
         }
         const enable = predicate(context, state, self)
         if (enable && skill.state.type === "unable") {
@@ -550,6 +592,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
             transition: "manual-condition",
             data: undefined
           }
+          result = true
         } else if (!enable && skill.state.type === "idle") {
           context.log.log(`スキル状態の変更：${denco.name} idle -> unable`)
           skill.state = {
@@ -557,11 +600,12 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
             transition: "manual-condition",
             data: undefined
           }
+          result = true
         }
-        return
+        break
       } else {
-        refreshTimeout(context, state, idx)
-        return
+        result = refreshTimeout(context, state, idx) || result
+        break
       }
     }
     case "auto": {
@@ -571,9 +615,10 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           transition: "auto",
           data: undefined
         }
+        result = true
       }
-      refreshTimeout(context, state, idx)
-      return
+      result = refreshTimeout(context, state, idx) || result
+      break
     }
     case "auto-condition": {
       if (skill.state.type === "not_init") {
@@ -582,6 +627,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           transition: "auto-condition",
           data: undefined
         }
+        result = true
       }
       // スキル状態の確認・更新
       const predicate = skill.canActivated
@@ -593,7 +639,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         ...denco,
         carIndex: idx,
         skill: skill,
-        skillPropertyReader: skill.propertyReader,
       }
       const active = predicate(context, state, self)
       if (active && skill.state.type === "unable") {
@@ -603,6 +648,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           transition: "auto-condition",
           data: undefined
         }
+        result = true
         const callback = skill.onActivated
         if (callback) {
           // 更新したスキル状態をコピー
@@ -610,7 +656,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
             ...copyDencoState(denco),
             carIndex: idx,
             skill: skill,
-            skillPropertyReader: skill.propertyReader,
           }
           const next = callback(context, copyUserState(state), self)
           copyUserStateTo(next, state)
@@ -622,17 +667,27 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           transition: "auto-condition",
           data: undefined
         }
+        result = true
       }
-      return
+      break
     }
   }
+  return result
 }
 
-function refreshTimeout(context: Context, state: UserState, idx: number) {
-  const time = getCurrentTime(context).valueOf()
+/**
+ * 指定時間に応じたスキル状態の更新を行う
+ * @param context 
+ * @param state 
+ * @param idx 
+ * @returns true if any change
+ */
+function refreshTimeout(context: Context, state: UserState, idx: number): boolean {
+  const time = getCurrentTime(context)
   const denco = state.formation[idx]
   const skill = denco.skill
-  if (skill.type !== "possess") return
+  if (skill.type !== "possess") return false
+  let result = false
   if (skill.state.type === "active") {
     const data = skill.state.data
     if (data && data.activeTimeout <= time) {
@@ -644,6 +699,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number) {
           cooldownTimeout: data.cooldownTimeout
         }
       }
+      result = true
     }
   }
   if (skill.state.type === "cooldown") {
@@ -657,10 +713,10 @@ function refreshTimeout(context: Context, state: UserState, idx: number) {
             transition: "manual",
             data: undefined
           }
+          result = true
           break
         }
         case "manual-condition": {
-
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.state = {
             type: "unable",
@@ -668,8 +724,8 @@ function refreshTimeout(context: Context, state: UserState, idx: number) {
             data: undefined
           }
           // check unable <=> idle
-          refreshSkillStateOne(context, state, idx)
-          return
+          result = refreshSkillStateOne(context, state, idx) || result
+          break
         }
         case "auto": {
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
@@ -678,9 +734,11 @@ function refreshTimeout(context: Context, state: UserState, idx: number) {
             transition: "auto",
             data: undefined
           }
+          result = true
           break
         }
       }
     }
   }
+  return result
 }

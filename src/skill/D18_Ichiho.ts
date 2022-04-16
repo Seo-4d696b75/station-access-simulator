@@ -6,7 +6,7 @@ const skill: SkillLogic = {
       const base = getBaseDamage(context, state)
       const damage = base.variable + base.constant
       if (damage >= self.currentHp) {
-        return self.skill.propertyReader("probability")
+        return self.skill.property.readNumber("probability")
       }
     }
     return false

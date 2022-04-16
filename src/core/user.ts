@@ -192,7 +192,7 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
       }
     }
     state.event.push(event)
-    context.log.log(`レベルアップ：${levelup.name} Lv.${d.level}->Lv.${levelup.level}`)
+    context.log.log(`レベルアップ：${levelup.name} Lv.${before.level}->Lv.${levelup.level}`)
     context.log.log(`現在の経験値：${levelup.name} ${levelup.currentExp}/${levelup.nextExp}`)
   }
 }
