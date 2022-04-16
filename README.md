@@ -14,7 +14,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.4/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.5/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -29,13 +29,14 @@ $ > npm install ekimemo-access-simulator
 
 # Release Note
 [各バージョンの差分詳細はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
-**v0.1.4**  
+**v0.1.5**  
 - スキルの追加
-- 特殊なダメージ計算の実装追加
-- アクセス中のダメージ以外のHP変化を実装
-- ユーザ情報の追加
-- スコア・経験値の計算方法の変更・機能追加
-- アクセス結果の型変更
+- スキルプロパティが対応するデータ型を数値以外にも拡張
+- スキル状態の更新関数の不具合修正
+- アクセス以外のスキル発動時にひいるのスキル発動が正しく記録されない不具合を修正
+- アクセスにおける攻撃側農業による相手のHP回復に対応
+- コンソール出力のカラー出力など修正
+- スキル無効化型のスキルを追加・テスト実施
 
 # Basic Usage
 まずはライブラリを初期化してでんこ・スキルのデータをロードします
