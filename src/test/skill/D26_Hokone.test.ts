@@ -77,7 +77,6 @@ describe("ほこねのスキル", () => {
     let hokone = DencoManager.getDenco(context, "26", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [hokone])
-    offense = activateSkill(context, offense, 0)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
