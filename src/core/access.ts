@@ -4,7 +4,7 @@ import { Context, fixClock, getCurrentTime } from "./context"
 import { copyDencoState, Denco, DencoState } from "./denco"
 import { ActiveSkill, refreshSkillState, SkillHolder } from "./skill"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
-import { copyUserParam, copyUserState, FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
+import { copyUserParam, copyUserState, ReadonlyState, refreshEXPState, UserState } from "./user"
 
 
 /**
@@ -199,7 +199,7 @@ export interface AccessDencoResult extends AccessDencoState {
    * リブート（{@link AccessDencoState reboot} === true）した場合は解除したすべてのリンク結果、  
    * リブートを伴わないフットバースの場合は解除したひとつのリンク結果
    */
-  disconnetedLink?: LinksResult
+  disconnectedLink?: LinksResult
 
   /**
    * 現在のHP
@@ -409,7 +409,7 @@ export interface AccessState {
   damageRatio: number
 
   linkSuccess: boolean
-  linkDisconncted: boolean
+  linkDisconnected: boolean
 
   pinkMode: boolean
   pinkItemSet: boolean
@@ -458,7 +458,7 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
   })
   const d = formation[carIndex]
   if (!d) {
-    context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${carIndex}, formation.legth: ${formation.length}`)
+    context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${carIndex}, formation.length: ${formation.length}`)
   }
   return {
     user: copyUserParam(f.user),
@@ -492,7 +492,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
     defendPercent: 0,
     damageRatio: 1.0,
     linkSuccess: false,
-    linkDisconncted: false,
+    linkDisconnected: false,
     pinkMode: false,
     pinkItemSet: !!config.usePink,
     pinkItemUsed: false,
@@ -540,7 +540,7 @@ export function copyAccessState(state: ReadonlyState<AccessState>): AccessState 
     pinkItemUsed: state.pinkItemUsed,
     pinkMode: state.pinkMode,
     linkSuccess: state.linkSuccess,
-    linkDisconncted: state.linkDisconncted,
+    linkDisconnected: state.linkDisconnected,
     offense: copyAccessSideState(state.offense),
     defense: state.defense ? copyAccessSideState(state.defense) : undefined,
     depth: state.depth,
@@ -565,7 +565,7 @@ function copyAccessDencoState(state: ReadonlyState<AccessDencoState>): AccessDen
 function copyAccessDencoResult(state: ReadonlyState<AccessDencoResult>): AccessDencoResult {
   return {
     ...copyAccessDencoState(state),
-    disconnetedLink: state.disconnetedLink
+    disconnectedLink: state.disconnectedLink
   }
 }
 
@@ -682,7 +682,7 @@ function calcLinkResult(context: Context, link: StationLink, d: Denco, idx: numb
     matchAttr: attr,
     matchBonus: match,
     comboBonus: combo,
-    totatlScore: score + match + combo,
+    totalScore: score + match + combo,
   }
 }
 
@@ -990,15 +990,15 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     updateDencoHP(context, defense)
 
     // 被アクセス側がリブートしたらリンク解除（ピンク除く）
-    state.linkDisconncted = defense.reboot
+    state.linkDisconnected = defense.reboot
 
     // 被アクセス側がリンク解除、かつアクセス側がリブートしていない
-    state.linkSuccess = state.linkDisconncted
+    state.linkSuccess = state.linkDisconnected
 
     context.log.log(`守備の結果 HP: ${defense.hpBefore} > ${defense.hpAfter} reboot:${defense.reboot}`)
   } else if (state.pinkMode) {
     // ピンク
-    state.linkDisconncted = true
+    state.linkDisconnected = true
     state.linkSuccess = true
   } else {
     // 相手不在
@@ -1007,7 +1007,7 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
 
   context.log.log("アクセス結果を仮決定")
   context.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
-  context.log.log(`守備側のリンク解除：${state.linkDisconncted}`)
+  context.log.log(`守備側のリンク解除：${state.linkDisconnected}`)
 
   context.log.log("スキルを評価：ダメージ計算完了後")
   state = evaluateSkillAt(context, state, "after_damage")
@@ -1027,12 +1027,12 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
     // 最終的なアクセス結果を計算 カウンターで変化する場合あり
     if (hasDefense(state) && !state.pinkMode) {
       let defense = getAccessDenco(state, "defense")
-      state.linkDisconncted = defense.reboot
+      state.linkDisconnected = defense.reboot
       let offense = getAccessDenco(state, "offense")
-      state.linkSuccess = state.linkDisconncted && !offense.reboot
+      state.linkSuccess = state.linkDisconnected && !offense.reboot
     }
     context.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
-    context.log.log(`守備側のリンク解除：${state.linkDisconncted}`)
+    context.log.log(`守備側のリンク解除：${state.linkDisconnected}`)
 
     if (state.linkSuccess) {
       // リンク成功によるスコア＆経験値の付与
@@ -1312,7 +1312,7 @@ export function repeatAccess(context: Context, state: ReadonlyState<AccessState>
     defendPercent: 0,
     damageRatio: 1.0,
     linkSuccess: false,
-    linkDisconncted: false,
+    linkDisconnected: false,
     pinkMode: false,
     pinkItemSet: false,
     pinkItemUsed: false,
@@ -1358,7 +1358,7 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
       defendPercent: 0,
       damageRatio: 1.0,
       linkSuccess: false,
-      linkDisconncted: false,
+      linkDisconnected: false,
       pinkMode: false,
       pinkItemSet: false,
       pinkItemUsed: false,
@@ -1424,7 +1424,7 @@ function completeDencoHP(context: Context, state: AccessState, which: AccessSide
 }
 
 /**
- * hpAfter = max{0, hpCurrecnt(default:hpBefore) - damage(if any)}
+ * hpAfter = max{0, hpCurrent(default:hpBefore) - damage(if any)}
  * reboot = (hpAfter === 0)
  * @param context 
  * @param d 
@@ -1450,11 +1450,11 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
   side?.formation.map(d => {
     if (d.reboot) {
       // リブートにより全リンク解除
-      const disconnetedLink = d.link
+      const disconnectedLink = d.link
       d.link = []
-      const linkResult = calcLinksResult(context, disconnetedLink, d, which)
+      const linkResult = calcLinksResult(context, disconnectedLink, d, which)
       d.exp.link = linkResult.exp
-      d.disconnetedLink = linkResult
+      d.disconnectedLink = linkResult
       side.score.link = linkResult.totalScore
       side.event.push({
         type: "reboot",
@@ -1466,7 +1466,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
         ...state.station,
         start: getCurrentTime(context).valueOf(),
       })
-    } else if (d.who === "defense" && state.linkDisconncted) {
+    } else if (d.who === "defense" && state.linkDisconnected) {
       // 守備側のリンク解除 フットバースなどリブートを伴わない場合
       const idx = d.link.findIndex(link => link.name === state.station.name)
       if (idx < 0) {
@@ -1474,12 +1474,12 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
         throw Error()
       }
       // 対象リンクのみ解除
-      const disconnetedLink = d.link[idx]
+      const disconnectedLink = d.link[idx]
       d.link.splice(idx, 1)
-      const linkResult = calcLinksResult(context, [disconnetedLink], d, "defense")
+      const linkResult = calcLinksResult(context, [disconnectedLink], d, "defense")
       // 特にイベントは発生せず経験値だけ追加
       d.exp.link = linkResult.exp
-      d.disconnetedLink = linkResult
+      d.disconnectedLink = linkResult
       side.score.link = linkResult.totalScore
     }
   })
@@ -1508,15 +1508,15 @@ function completeDisplayScoreExp(context: Context, state: AccessState, which: Ac
     side.displayedScore = side.score.access + side.score.skill
     side.displayedExp = d.exp.access + d.exp.skill
     // 守備側がリンク解除（フットバースorリブート）した場合はその駅のリンクのスコア＆経験値を表示
-    if (state.linkDisconncted && d.who === "defense") {
+    if (state.linkDisconnected && d.who === "defense") {
       const idx = d.link.findIndex(l => l.name === state.station.name)
       if (idx < 0) {
         context.log.error(`リブートした守備側のリンクが見つかりません ${state.station.name}`)
         throw Error()
       }
       const result = calcLinkResult(context, d.link[idx], d, 0)
-      side.displayedScore += result.totatlScore
-      side.displayedExp += calcExp(result.totatlScore)
+      side.displayedScore += result.totalScore
+      side.displayedExp += calcExp(result.totalScore)
     }
   }
   return state

@@ -1,4 +1,4 @@
-import { activateSkill, disactivateSkill, getSkill, isSkillActive, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
+import { activateSkill, deactivateSkill, getSkill, isSkillActive, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
 import { initContext } from "../core/context"
 import { DencoState } from "../core/denco"
 import { initUser, refreshState } from "../core/user"
@@ -24,7 +24,7 @@ describe("スキル処理", () => {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
-    const disactivateAt = jest.fn((_, state, self) => timeout)
+    const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
     
     const skill: Skill = {
@@ -37,7 +37,7 @@ describe("スキル処理", () => {
       },
       property: new mockProperty(),
       onActivated: onActivated,
-      disactivateAt: disactivateAt,
+      deactivateAt: deactivateAt,
     }
     let denco: DencoState = {
       level: 5,
@@ -64,7 +64,7 @@ describe("スキル処理", () => {
     expect(s.state.type).toBe("idle")
     const next = activateSkill(context, state, 0)
     // state: active変更前
-    expect(disactivateAt.mock.calls.length).toBe(1)
+    expect(deactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
     expect(isSkillActive(denco.skill)).toBe(true)
@@ -83,7 +83,7 @@ describe("スキル処理", () => {
       cooldownTimeout: now + 2000,
     }
     const canEnabled = jest.fn((_, state, self) => true)
-    const disactivateAt = jest.fn((_, state, self) => timeout)
+    const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
     const skill: Skill = {
       level: 1,
@@ -95,7 +95,7 @@ describe("スキル処理", () => {
       },
       property: new mockProperty(),
       onActivated: onActivated,
-      disactivateAt: disactivateAt,
+      deactivateAt: deactivateAt,
     }
     let denco: DencoState = {
       level: 5,
@@ -127,7 +127,7 @@ describe("スキル処理", () => {
     expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
     let next = activateSkill(context, state, 0)
     // state: active変更前
-    expect(disactivateAt.mock.calls.length).toBe(1)
+    expect(deactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
     expect(isSkillActive(denco.skill)).toBe(true)
@@ -145,7 +145,7 @@ describe("スキル処理", () => {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
-    const disactivateAt = jest.fn((_, state, self) => timeout)
+    const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
     const skill: Skill = {
       level: 1,
@@ -157,7 +157,7 @@ describe("スキル処理", () => {
       },
       property: new mockProperty(),
       onActivated: onActivated,
-      disactivateAt: disactivateAt,
+      deactivateAt: deactivateAt,
     }
     let denco: DencoState = {
       level: 5,
@@ -182,7 +182,7 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("unable")
     const next = activateSkill(context, state, 0)
     // state: active変更前
-    expect(disactivateAt.mock.calls.length).toBe(1)
+    expect(deactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
     expect(isSkillActive(denco.skill)).toBe(true)
@@ -246,7 +246,7 @@ describe("スキル処理", () => {
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
   })
 
-  test("disactivateSkill-エラー", () => {
+  test("deactivateSkill-エラー", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -255,7 +255,7 @@ describe("スキル処理", () => {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
-    const disactivateAt = jest.fn((_, state, self) => timeout)
+    const deactivateAt = jest.fn((_, state, self) => timeout)
     const completeCooldownAt = jest.fn((_, state, self) => timeout)
     const skill: Skill = {
       level: 1,
@@ -266,7 +266,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new mockProperty(),
-      disactivateAt: disactivateAt,
+      deactivateAt: deactivateAt,
       completeCooldownAt: completeCooldownAt,
     }
     let denco: DencoState = {
@@ -294,7 +294,7 @@ describe("スキル処理", () => {
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("active")
     expect(getSkill(denco).state.data).toMatchObject(timeout)
-    expect(() => disactivateSkill(context, state, 0))
+    expect(() => deactivateSkill(context, state, 0))
     context.clock = now + 1000
     state = refreshState(context, state)
     denco = state.formation[0]
@@ -303,11 +303,11 @@ describe("スキル処理", () => {
     state = refreshState(context, state)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("idle")
-    expect(disactivateAt.mock.calls.length).toBe(1)
+    expect(deactivateAt.mock.calls.length).toBe(1)
     expect(completeCooldownAt.mock.calls.length).toBe(0)
   })
 
-  test("manual-disactivateSkill", () => {
+  test("manual-deactivateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -325,7 +325,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new mockProperty(),
-      disactivateAt: undefined,
+      deactivateAt: undefined,
     }
     let denco: DencoState = {
       level: 5,
@@ -353,9 +353,9 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("active")
     expect(getSkill(denco).state.data).toBeUndefined()
     context.clock = now + 1000
-    expect(() => disactivateSkill(context, state, 0))
+    expect(() => deactivateSkill(context, state, 0))
     getSkill(denco).completeCooldownAt = completeCooldownAt
-    state = disactivateSkill(context, state, 0)
+    state = deactivateSkill(context, state, 0)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("cooldown")
     expect(getSkill(denco).state.data).toMatchObject(timeout)
@@ -366,7 +366,7 @@ describe("スキル処理", () => {
     expect(completeCooldownAt.mock.calls.length).toBe(1)
   })
 
-  test("manual-condition-disactivateSkill", () => {
+  test("manual-condition-deactivateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -385,7 +385,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new mockProperty(),
-      disactivateAt: undefined,
+      deactivateAt: undefined,
       canEnabled: canEnabled,
     }
     let denco: DencoState = {
@@ -414,9 +414,9 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("active")
     expect(getSkill(denco).state.data).toBeUndefined()
     context.clock = now + 1000
-    expect(() => disactivateSkill(context, state, 0))
+    expect(() => deactivateSkill(context, state, 0))
     getSkill(denco).completeCooldownAt = completeCooldownAt
-    state = disactivateSkill(context, state, 0)
+    state = deactivateSkill(context, state, 0)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("cooldown")
     expect(getSkill(denco).state.data).toMatchObject(timeout)
@@ -426,7 +426,7 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("idle")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
   })
-  test("auto-disactivateSkill", () => {
+  test("auto-deactivateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -444,7 +444,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new mockProperty(),
-      disactivateAt: undefined,
+      deactivateAt: undefined,
     }
     let denco: DencoState = {
       level: 5,
@@ -472,9 +472,9 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("active")
     expect(getSkill(denco).state.data).toBeUndefined()
     context.clock = now + 1000
-    expect(() => disactivateSkill(context, state, 0))
+    expect(() => deactivateSkill(context, state, 0))
     getSkill(denco).completeCooldownAt = completeCooldownAt
-    state = disactivateSkill(context, state, 0)
+    state = deactivateSkill(context, state, 0)
     denco = state.formation[0]
     expect(getSkill(denco).state.type).toBe("cooldown")
     expect(getSkill(denco).state.data).toMatchObject(timeout)
@@ -484,7 +484,7 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("unable")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
   })
-  test("auto-condition-disactivateSkill", () => {
+  test("auto-condition-deactivateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -524,7 +524,7 @@ describe("スキル処理", () => {
     expect(getSkill(denco).state.type).toBe("active")
     expect(canActivated.mock.calls.length).toBeGreaterThan(0)
     expect(getSkill(denco).state.data).toBeUndefined()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
   })
   test("onHourCycle-コールバック", () => {
     const context = initContext("test", "test", false)

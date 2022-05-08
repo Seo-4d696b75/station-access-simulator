@@ -154,7 +154,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     // スキル発動による影響の反映
     next = {
       ...next,
-      formation: result.formation.map((d,idx) => {
+      formation: result.formation.map((d, idx) => {
         // 編成内位置は不変と仮定
         let access = state.formation[idx]
         return {
@@ -274,7 +274,7 @@ function canSkillEvaluated(context: Context, state: SkillEventState): boolean {
   return false
 }
 
-export function randomeAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
+export function randomAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
   context = fixClock(context)
   //TODO ランダム駅の選択
   const station: Station = {

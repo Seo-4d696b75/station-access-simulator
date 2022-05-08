@@ -11,7 +11,7 @@ const skill: SkillLogic = {
     context.log.log(`わたしのスキルは編成内のでんこ達の受けるダメージを減らすものだー DEF+${def}%`)
     return state
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")
     const now = getCurrentTime(context)

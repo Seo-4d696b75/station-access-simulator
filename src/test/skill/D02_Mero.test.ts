@@ -3,7 +3,7 @@ import { getSkill, init, refreshState } from "../.."
 import { getAccessDenco, startAccess } from "../../core/access"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill } from "../../core/skill"
+import { activateSkill, deactivateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
 
 describe("メロのスキル", () => {
@@ -22,7 +22,7 @@ describe("メロのスキル", () => {
     expect(skill.state.type).toBe("active")
 
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
     context.clock = now + 600 * 1000
     state = refreshState(context, state)
@@ -54,7 +54,7 @@ describe("メロのスキル", () => {
     expect(result.pinkItemUsed).toBe(true)
     expect(result.pinkMode).toBe(true)
     expect(result.offense.triggeredSkills.length).toBe(0)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     let accessReika = getAccessDenco(result, "defense")
     expect(accessReika.reboot).toBe(false)
@@ -112,7 +112,7 @@ describe("メロのスキル", () => {
     expect(result.pinkItemSet).toBe(false)
     expect(result.pinkItemUsed).toBe(false)
     expect(result.pinkMode).toBe(true)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.offense.triggeredSkills.length).toBe(1)
     let trigger = result.offense.triggeredSkills[0]
@@ -152,7 +152,7 @@ describe("メロのスキル", () => {
     expect(result.pinkItemSet).toBe(false)
     expect(result.pinkItemUsed).toBe(false)
     expect(result.pinkMode).toBe(true)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.offense.triggeredSkills.length).toBe(1)
     // メロ本人 ひいるの確率ブーストは乗らない

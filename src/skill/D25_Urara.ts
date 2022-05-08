@@ -15,7 +15,7 @@ const skill: SkillLogic = {
     const trigger = self.skill.property.readNumber("probability")
     return evaluateSkillAtEvent(context, state, self, trigger, evaluate)
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active") // 0ms
     const wait = self.skill.property.readNumber("wait")
     const now = getCurrentTime(context)

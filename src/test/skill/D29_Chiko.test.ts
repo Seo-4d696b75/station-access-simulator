@@ -73,7 +73,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -108,7 +108,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -144,7 +144,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -181,7 +181,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -218,7 +218,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)

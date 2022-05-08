@@ -55,7 +55,7 @@ const skill: SkillLogic = {
     context.log.log(`チコがいれば楽勝よ！チコは超天才でんこなんだから！！ BaseDamage:${hp}`)
     return state
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const now = getCurrentTime(context)
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")

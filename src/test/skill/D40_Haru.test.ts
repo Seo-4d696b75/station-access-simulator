@@ -2,7 +2,7 @@ import { DencoManager, init } from "../.."
 import { initContext } from "../../core/context"
 import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { getDefense, hasSkillTriggered, startAccess } from "../../core/access"
 
 describe("ハルのスキル", () => {
@@ -22,7 +22,7 @@ describe("ハルのスキル", () => {
     expect(skill.state.type).toBe("active")
 
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = now + 600 * 1000

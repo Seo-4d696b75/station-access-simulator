@@ -2,7 +2,7 @@ import { DencoManager, init } from "../.."
 import { initContext } from "../../core/context"
 import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 
 describe("レンのスキル", () => {
@@ -19,7 +19,7 @@ describe("レンのスキル", () => {
     let skill = getSkill(ren)
     expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
     state = activateSkill(context, state, 0)
     ren = state.formation[0]
     skill = getSkill(ren)
@@ -31,7 +31,7 @@ describe("レンのスキル", () => {
       expect(data.activeTimeout).toBe(now + 1500 * 1000)
       expect(data.cooldownTimeout).toBe(now + 1500 * 1000 + 5400 * 1000)
     }
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
     // 10分経過
     context.clock = now + 600 * 1000
