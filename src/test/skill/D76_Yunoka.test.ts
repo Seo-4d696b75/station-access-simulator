@@ -138,7 +138,7 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(hasSkillTriggered(result.offense, yunoka)).toBe(true)
     expect(result.attackPercent).toBe(39)
     expect(result.damageBase?.variable).toBe(346)

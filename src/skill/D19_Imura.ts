@@ -18,7 +18,7 @@ const skill: SkillLogic = {
     context.log.log(`イムラ推して参る ATK+${atk}% HP:${currentHP}->${nextHP}`)
     return state
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const now = getCurrentTime(context)
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")

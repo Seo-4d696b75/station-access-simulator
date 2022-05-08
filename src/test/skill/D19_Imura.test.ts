@@ -218,20 +218,20 @@ describe("イムラのスキル", () => {
       },
       station: sheena.link[0],
     }
-    const resut = startAccess(context, config)
-    expect(resut.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(resut.offense, imura)).toBe(true)
-    expect(hasSkillTriggered(resut.defense, sheena)).toBe(true)
-    expect(hasSkillTriggered(resut.defense, mio)).toBe(true)
-    expect(resut.attackPercent).toBe(50)
-    expect(resut.defendPercent).toBe(0)
-    let d = getAccessDenco(resut, "defense")
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result.offense, imura)).toBe(true)
+    expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
+    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(result.attackPercent).toBe(50)
+    expect(result.defendPercent).toBe(0)
+    let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(157) // ミオが軽減
     expect(d.damage?.attr).toBe(false)
     expect(d.hpBefore).toBe(420)
     expect(d.hpAfter).toBe(263) // no reboot
-    d = getAccessDenco(resut, "offense")
+    d = getAccessDenco(result, "offense")
     expect(d.damage).not.toBeUndefined() // カウンター攻撃
     expect(d.damage?.value).toBe(263) // ふぶが効いている
     expect(d.damage?.attr).toBe(true)

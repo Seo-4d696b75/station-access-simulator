@@ -1,5 +1,5 @@
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess } from "../.."
+import { activateSkill, deactivateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 
 describe("りんごのスキル", () => {
@@ -17,7 +17,7 @@ describe("りんごのスキル", () => {
     expect(skill.state.type).toBe("active")
 
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
@@ -50,7 +50,7 @@ describe("りんごのスキル", () => {
     expect(result.pinkItemUsed).toBe(true)
     expect(result.pinkMode).toBe(true)
     expect(hasSkillTriggered(result.offense, ringo)).toBe(false)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
   })
   test("発動なし-昼-守備側", () => {
@@ -73,7 +73,7 @@ describe("りんごのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -108,7 +108,7 @@ describe("りんごのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(-30)
     expect(result.attackPercent).toBe(0)
@@ -144,7 +144,7 @@ describe("りんごのスキル", () => {
     expect(result.pinkMode).toBe(false)
     expect(hasSkillTriggered(result.defense, ringo)).toBe(true)
     expect(hasSkillTriggered(result.offense, luna)).toBe(false)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(-30)
     expect(result.attackPercent).toBe(0)
@@ -177,7 +177,7 @@ describe("りんごのスキル", () => {
     expect(result.pinkMode).toBe(false)
     expect(hasSkillTriggered(result.offense, ringo)).toBe(true)
     expect(hasSkillTriggered(result.defense, luna)).toBe(true)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(-30)
     expect(result.attackPercent).toBe(23)
@@ -210,7 +210,7 @@ describe("りんごのスキル", () => {
     expect(result.pinkMode).toBe(false)
     expect(hasSkillTriggered(result.offense, ringo)).toBe(false)
     expect(hasSkillTriggered(result.defense, luna)).toBe(true)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(25)
     expect(result.attackPercent).toBe(0)

@@ -1,5 +1,5 @@
 import moment from "moment-timezone"
-import { AccessConfig, activateSkill, DencoManager, disactivateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess, StationManager } from "../.."
+import { AccessConfig, activateSkill, DencoManager, deactivateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess, StationManager } from "../.."
 
 
 // デフォルトの経験値計算式を使用する
@@ -22,7 +22,7 @@ describe("ミユのスキル", () => {
     expect(skill.state.type).toBe("active")
 
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = now + 600 * 1000

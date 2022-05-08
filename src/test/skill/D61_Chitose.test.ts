@@ -2,7 +2,7 @@ import { DencoManager, init } from "../.."
 import { initContext } from "../../core/context"
 import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { activateSkill, deactivateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { getDefense, hasSkillTriggered, startAccess } from "../../core/access"
 
 describe("ちとせのスキル", () => {

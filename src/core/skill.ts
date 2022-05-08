@@ -164,16 +164,16 @@ export interface SkillLogic {
    * - undefined: スキル側で適宜状態を変更する
    * - `SkillActiveTimeout`: 指定した時間経過したら状態を変更する
    * 
-   * `disactivateAt`を指定しない場合は返値`undefined`と同様に処理する
+   * `deactivateAt`を指定しない場合は返値`undefined`と同様に処理する
    * @returns 一定時間の経過で判定する場合はtimeoutを返す
    */
-  disactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => undefined | SkillActiveTimeout
+  deactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => undefined | SkillActiveTimeout
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`において`cooldown`が終了して`idle/unable`へ移行する判定の方法を指定する
    * 
-   * `disactivateSkill`で`active > cooldown`に状態変化したタイミングで呼ばれる  
-   * ただし、`disactivateAt`で`SkillActiveTimeout`を返した場合はその設定に従うので`completeCooldownAt`は呼ばれない
+   * `deactivateSkill`で`active > cooldown`に状態変化したタイミングで呼ばれる  
+   * ただし、`deactivateAt`で`SkillActiveTimeout`を返した場合はその設定に従うので`completeCooldownAt`は呼ばれない
    * 
    * @returns 返値で指定した時刻以降に`cooldown > unable/idle`へ移行する
    */
@@ -225,7 +225,7 @@ export interface Skill extends SkillLogic {
   /**
    * スキルの状態
    * 
-   * **この状態を直接操作しないでください** {@link activateSkill} {@link disactivateSkill}などの関数を利用してください    
+   * **この状態を直接操作しないでください** {@link activateSkill} {@link deactivateSkill}などの関数を利用してください    
    * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
    */
   state: SkillState
@@ -358,7 +358,7 @@ export function activateSkill(context: Context, state: ReadonlyState<UserState>,
 function activateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
   const d = state.formation[carIndex]
   if (!d) {
-    context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.legth: ${state.formation.length}`)
+    context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.length: ${state.formation.length}`)
     throw Error()
   }
   if (d.skill.type !== "possess") {
@@ -417,7 +417,7 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
   skill.state = {
     type: "active",
     transition: transition,
-    data: skill.disactivateAt?.(context, state, self)
+    data: skill.deactivateAt?.(context, state, self)
   }
   // callback #onActivated
   const callback = skill.onActivated
@@ -442,20 +442,20 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
  * - タイプ`manual-condition`のスキル状態を`active > cooldown`へ遷移させる
  * - タイプ`auto`のスキル状態を`active > cooldown`へ遷移させる
  * 
- * ただし、`Skill#disactivateAt`で`active, cooldown`の終了時刻を指定している場合はその指定に従うので
+ * ただし、`Skill#deactivateAt`で`active, cooldown`の終了時刻を指定している場合はその指定に従うので
  * この呼び出しはエラーとなる
  * 
  * @returns `cooldown`へ遷移した新しい状態
  */
-export function disactivateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
+export function deactivateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
   context = fixClock(context)
-  return carIndex.reduce((next, idx) => disactivateSkillOne(context, next, idx), copyUserState(state))
+  return carIndex.reduce((next, idx) => deactivateSkillOne(context, next, idx), copyUserState(state))
 }
 
-function disactivateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
+function deactivateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
   const d = state.formation[carIndex]
   if (!d) {
-    context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.legth: ${state.formation.length}`)
+    context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.length: ${state.formation.length}`)
     throw Error()
   }
   if (d.skill.type !== "possess") {

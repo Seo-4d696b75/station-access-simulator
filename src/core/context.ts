@@ -1,7 +1,6 @@
-import seedrandom from "seedrandom"
 import moment, { Moment } from "moment-timezone"
+import seedrandom from "seedrandom"
 import { ScorePredicate } from ".."
-import { random } from "./access"
 
 // タイムゾーン指定
 moment.tz.setDefault("Asia/Tokyo")

@@ -1,7 +1,7 @@
 import { init } from "../.."
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill } from "../../core/skill"
+import { activateSkill, deactivateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
 
 describe("さやのスキル", () => {
@@ -16,6 +16,6 @@ describe("さやのスキル", () => {
     saya = state.formation[0]
     expect(saya.skill.type).toBe("none")
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
   })
 })

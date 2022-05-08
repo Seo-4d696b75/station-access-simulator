@@ -52,7 +52,7 @@ export interface LinkResult extends StationLink {
    * - {@link comboBonus}
    * - {@link matchBonus}
    */
-  readonly totatlScore: number
+  readonly totalScore: number
 }
 
 /**

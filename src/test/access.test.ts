@@ -38,7 +38,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense).toBeUndefined()
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(true)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     // アクセス処理の確認
     expect(result.pinkMode).toBe(false)
     expect(result.pinkItemSet).toBe(false)
@@ -88,7 +88,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense).toBeUndefined()
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(true)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.pinkItemSet).toBe(true)
     expect(result.pinkItemUsed).toBe(false)
     expect(result.pinkMode).toBe(false)
@@ -134,7 +134,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense?.event.length).toBe(1)
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(false)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     // アクセス処理の確認
     expect(result.pinkMode).toBe(false)
     expect(result.pinkItemSet).toBe(false)
@@ -234,7 +234,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense?.event.length).toBe(1)
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(true)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     // アクセス処理の確認
     expect(result.pinkMode).toBe(true)
     expect(result.pinkItemSet).toBe(true)
@@ -266,15 +266,15 @@ describe("基本的なアクセス処理", () => {
     expect(d.exp.skill).toBe(0)
     expect(d.exp.link).toBe(linkScore)
     expect(d.reboot).toBe(false)
-    expect(d.disconnetedLink).not.toBeUndefined()
-    if (d.disconnetedLink) {
-      expect(d.disconnetedLink.totalScore).toBe(linkScore) // フットバされたリンク
-      expect(d.disconnetedLink.exp).toBe(linkScore)
-      expect(d.disconnetedLink.link.length).toBe(1)
-      expect(d.disconnetedLink.link[0]).toMatchObject(link)
-      expect(d.disconnetedLink.which).toBe("defense")
-      expect(d.disconnetedLink.time).toBe(result.time)
-      expect(d.disconnetedLink.denco).toMatchObject({
+    expect(d.disconnectedLink).not.toBeUndefined()
+    if (d.disconnectedLink) {
+      expect(d.disconnectedLink.totalScore).toBe(linkScore) // フットバされたリンク
+      expect(d.disconnectedLink.exp).toBe(linkScore)
+      expect(d.disconnectedLink.link.length).toBe(1)
+      expect(d.disconnectedLink.link[0]).toMatchObject(link)
+      expect(d.disconnectedLink.which).toBe("defense")
+      expect(d.disconnectedLink.time).toBe(result.time)
+      expect(d.disconnectedLink.denco).toMatchObject({
         ...copyDencoState(d),
         currentExp: 0 //リンク解除済み＆経験値加算前
       })
@@ -329,7 +329,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense?.event.length).toBe(2)
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(true)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     // アクセス処理の確認
     expect(result.pinkMode).toBe(false)
     expect(result.pinkItemSet).toBe(false)
@@ -375,8 +375,8 @@ describe("基本的なアクセス処理", () => {
     expect(d.exp.access).toBe(0)
     expect(d.exp.skill).toBe(0)
     expect(d.reboot).toBe(true)
-    expect(d.disconnetedLink).not.toBeUndefined()
-    let reboot = d.disconnetedLink as LinksResult
+    expect(d.disconnectedLink).not.toBeUndefined()
+    let reboot = d.disconnectedLink as LinksResult
     expect(reboot?.link?.length).toBe(3)
     expect(result.defense?.score.link).toBe(reboot.totalScore)
     expect(d.exp.link).toBe(reboot.exp)
@@ -450,7 +450,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense?.event.length).toBe(1)
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(false)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     // リンク
     reika = result.offense.formation[0]
     expect(reika.link.length).toBe(0)
@@ -529,7 +529,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense?.event.length).toBe(1)
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(false)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     // アクセス処理の確認
     expect(result.pinkMode).toBe(false)
     expect(result.pinkItemSet).toBe(false)
@@ -592,7 +592,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense?.event.length).toBe(1)
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(false)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     // アクセス処理の確認
     expect(result.pinkMode).toBe(false)
     expect(result.pinkItemSet).toBe(false)
@@ -671,7 +671,7 @@ describe("基本的なアクセス処理", () => {
     expect(result.defense?.event.length).toBe(1)
     // アクセス結果の確認
     expect(result.linkSuccess).toBe(false)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     // アクセス処理の確認
     expect(result.pinkMode).toBe(false)
     expect(result.pinkItemSet).toBe(false)
@@ -713,10 +713,10 @@ describe("基本的なアクセス処理", () => {
     expect(d.exp.access).toBe(accessScore + 200)
     expect(d.exp.skill).toBe(0)
     expect(d.reboot).toBe(true)
-    expect(d.disconnetedLink?.link.length).toBe(1)
-    expect(d.disconnetedLink?.link[0]).toMatchObject(reika.link[0])
-    expect(d.disconnetedLink?.totalScore).toBe(result.offense?.score?.link)
-    expect(d.disconnetedLink?.exp).toBe(d.exp.link)
+    expect(d.disconnectedLink?.link.length).toBe(1)
+    expect(d.disconnectedLink?.link[0]).toMatchObject(reika.link[0])
+    expect(d.disconnectedLink?.totalScore).toBe(result.offense?.score?.link)
+    expect(d.disconnectedLink?.exp).toBe(d.exp.link)
     let e = result.offense.event[1]
     expect(e.type).toBe("reboot")
     let reboot = e.data as LinksResult
@@ -724,7 +724,7 @@ describe("基本的なアクセス処理", () => {
     expect(reboot.denco.link.length).toBe(0)
     expect(reboot.link.length).toBe(1)
     expect(reboot.link[0]).toMatchObject(reika.link[0])
-    expect(reboot).toMatchObject(d.disconnetedLink as any)
+    expect(reboot).toMatchObject(d.disconnectedLink as any)
     // リンク解除確認
     let reikaResult = result.offense.formation[0]
     expect(reikaResult.link.length).toBe(0)
