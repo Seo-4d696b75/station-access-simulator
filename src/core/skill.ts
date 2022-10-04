@@ -100,26 +100,52 @@ export type SkillState =
 
 /**
  * スキルの発動確率を百分率で表現
+ * 
+ * 乱数計算の詳細はRandomを参照
+ * 
+ * - 0以下の場合は必ず発動しません
+ * - 100以上はの場合は必ず発動します
  */
 export type ProbabilityPercent = number
 
 /**
- * スキル発動の有無を表す  
- * 発動の有無が確定できる場合はboolean, 確率に依存する場合は発動する確率を指定する
- */
-export type SkillTrigger = boolean | ProbabilityPercent
-
-/**
- * 指定された状態でスキルが発動できるか判定する
+ * アクセス時のスキル発動の判定とスキル発動処理を定義します
  * 
- * 確率に依存する部分以外の判定をここで行うこと
+ * @param context 同一のアクセス処理中は同一のオブジェクトが使用されます
+ * @param state アクセス全般の状態  
+ * **Readonly** この関数呼び出しの段階ではスキル発動が確定していないため状態は更新できません. スキルを発動の判定・状態の更新方法は関数の返り値で指定できます.
+ * @param step アクセス中の段階 １回のアクセス処理で各段階は決められた順序で最大１回のみ呼び出されます（場合によっては呼び出されない段階もあります）
+ * @param self このスキルを保持するでんこ自身 HPやATKなどのでんこの基本状態に加え、スキルのレベルや効果量などスキルの状態も参照できます.  
+ * **Readonly** このスキルが発動する直前の状態をキャプチャしています
  */
-export type SkillTriggerPredicate = (context: Context, state: ReadonlyState<access.AccessState>, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => SkillTrigger
+export type AccessSkillEvaluate = (context: Context, state: ReadonlyState<access.AccessState>, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => AccessSkillEvaluateResult
 
 /**
- * アクセス時にスキルが発動した時の効果を反映する
+ * スキルが発動するかどうか、発動した場合はどのように状態を更新するか指定します.
+ * 
+ * - void: スキルは発動しません. 確率計算に依存せず発動しないことが明白な場合に適切です.
+ * - AccessSkillRecipe: この関数で状態を更新するような効果をもつスキルが発動します. 確率計算に依らず発動することが確実な場合に適切です.
+ * - AccessSkillTrigger: 指定した確率でスキルが発動します. 現在の状態に加え確率計算を踏まえないとスキル発動の有無を決定できない場合に適切です. この確率計算にはアクセス中に発動した他の確率補正スキルの影響を受けます.
  */
-export type AccessSkillEvaluate = (context: Context, state: access.AccessState, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => access.AccessState
+export type AccessSkillEvaluateResult = 
+  void |
+  AccessSkillRecipe |
+  AccessSkillTrigger
+
+/**
+ * 確率条件で発動するスキル発動を表します
+ */
+export interface AccessSkillTrigger {
+  probability: ProbabilityPercent
+  recipe: AccessSkillRecipe
+}
+
+/**
+ * アクセス時に発動したスキル効果の処理
+ * 
+ * 引数stateは可変(mutable)です. スキル効果による状態変化を直接書き込みます.
+ */
+export type AccessSkillRecipe = (state: access.AccessState) => void
 
 /**
  * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
@@ -130,11 +156,9 @@ export type AccessSkillEvaluate = (context: Context, state: access.AccessState, 
  */
 export interface SkillLogic {
   /**
-   * アクセス時の各段階でスキルが発動するか判定する
-   */
-  canEvaluate?: SkillTriggerPredicate
-  /**
-   * アクセス時のスキル発動処理
+   * アクセス時の各段階においてスキル発動の判定とスキル発動処理を定義します
+   * 
+   * アクセスに関わらないスキルの場合は未定義となります
    */
   evaluate?: AccessSkillEvaluate
 

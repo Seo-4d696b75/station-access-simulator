@@ -2,7 +2,7 @@ import moment from "moment-timezone"
 import { UserParam } from ".."
 import { Context, fixClock, getCurrentTime } from "./context"
 import { copyDencoState, Denco, DencoState } from "./denco"
-import { ActiveSkill, refreshSkillState, SkillHolder } from "./skill"
+import { AccessSkillEvaluateResult, AccessSkillRecipe, ActiveSkill, ProbabilityPercent, refreshSkillState, SkillHolder } from "./skill"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
 import { copyUserParam, copyUserState, FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
 
@@ -959,7 +959,7 @@ function execute(context: Context, state: AccessState, top: boolean = true): Acc
       context.log.error("基本ダメージの値が見つかりません")
       throw Error("base damage not set")
     }
-    if (damageBase.variable < 0 ) {
+    if (damageBase.variable < 0) {
       context.log.error(`基本ダメージの値は非負である必要があります ${damageBase.variable}`)
     }
     if (damageBase.constant < 0) {
@@ -1068,17 +1068,19 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       throw Error()
     }
-    if (skill && (!state.pinkMode || skill.evaluateInPink)) {
+    if (skill.evaluate && (!state.pinkMode || skill.evaluateInPink)) {
       const active = {
         ...d,
         skill: skill,
         skillPropertyReader: skill.property,
       }
       // 状態に依存するスキル発動有無の判定は毎度行う
-      if (canSkillEvaluated(context, state, step, active)) {
+      const result = skill.evaluate(context, state, step, active)
+      const recipe = canSkillEvaluated(context, state, step, active, result)
+      if (recipe) {
         markTriggerSkill(state.offense, step, d)
         context.log.log(`スキルが発動(攻撃側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
-        state = skill.evaluate ? skill.evaluate(context, state, step, active) : state
+        recipe(state)
       }
     }
   })
@@ -1090,16 +1092,18 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
         throw Error()
       }
-      if (skill && (!state.pinkMode || skill.evaluateInPink)) {
+      if (skill.evaluate && (!state.pinkMode || skill.evaluateInPink)) {
         const active = {
-          ...d,
+          ...copyAccessDencoState(d),
           skill: skill,
           skillPropertyReader: skill.property,
         }
-        if (canSkillEvaluated(context, state, step, active)) {
+        const result = skill.evaluate(context, state, step, active)
+        const recipe = canSkillEvaluated(context, state, step, active, result)
+        if (recipe) {
           markTriggerSkill(defense, step, d)
           context.log.log(`スキルが発動(守備側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
-          state = skill.evaluate ? skill.evaluate(context, state, step, active) : state
+          recipe(state)
         }
       }
     })
@@ -1173,15 +1177,14 @@ function isSkillActive(skill: SkillHolder): boolean {
  * @param d 発動する可能性があるアクティブなスキル
  * @returns 
  */
-function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>): boolean {
-  const trigger = d.skill.canEvaluate ? d.skill.canEvaluate(context, state, step, d) : false
-  if (typeof trigger === 'boolean') {
-    return trigger
-  }
+function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: AccessSkillEvaluateResult): AccessSkillRecipe | undefined {
+  if (typeof result === "undefined") return
+  if (typeof result === "function") return result
+  const trigger = result.probability
   let percent = Math.min(trigger, 100)
   percent = Math.max(percent, 0)
-  if (percent >= 100) return true
-  if (percent <= 0) return false
+  if (percent >= 100) return result.recipe
+  if (percent <= 0) return
   // 上記までは確率に依存せず決定可能
 
   const boost = d.which === "offense" ? state.offense.probabilityBoostPercent : state.defense?.probabilityBoostPercent
@@ -1203,10 +1206,10 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
   }
   if (random(context, percent)) {
     context.log.log(`スキルが発動できます ${d.name} 確率:${percent}%`)
-    return true
+    return result.recipe
   } else {
     context.log.log(`スキルが発動しませんでした ${d.name} 確率:${percent}%`)
-    return false
+    return
   }
 }
 
