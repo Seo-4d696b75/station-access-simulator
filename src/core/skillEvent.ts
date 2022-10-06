@@ -4,7 +4,7 @@ import * as Access from "./access";
 import { Context, fixClock, getCurrentTime } from "./context";
 import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
-import { ActiveSkill, isSkillActive, SkillTrigger } from "./skill";
+import { ActiveSkill, isSkillActive, ProbabilityPercent } from "./skill";
 import { Station } from "./station";
 import { copyUserParam, copyUserState, copyUserStateTo, ReadonlyState, UserParam, UserState, _refreshState } from "./user";
 
@@ -30,7 +30,6 @@ function copySkillEventState(state: ReadonlyState<SkillEventState>): SkillEventS
     formation: state.formation.map(d => copySKillEventDencoState(d)),
     carIndex: state.carIndex,
     event: Array.from(state.event),
-    probability: state.probability,
     probabilityBoostPercent: state.probabilityBoostPercent,
   }
 }
@@ -68,10 +67,6 @@ export interface SkillEventState {
   event: Event[]
 
   /**
-   * このスキルが発動する確率
-   */
-  probability: SkillTrigger
-  /**
    * 確率補正%
    */
   probabilityBoostPercent: number
@@ -97,20 +92,32 @@ export type SkillEventEvaluateStep =
   "self"
 
 /**
- * スキル発動側イベントにおいてスキル発動時の状態変更を定義
+ * スキル発動型イベントにおいてスキル発動時の状態変更を定義します
  * 
+ * 引数stateは可変(mutable)です. スキル効果による状態変化を直接書き込みます.
  * @param state 現在の状態
- * @param self スキルが発動するでんこ本人
- * @returns スキルが発動して効果が反映された新しい状態
  */
-export type SkillEventEvaluate = (context: Context, state: SkillEventState, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => SkillEventState
+export type EventSkillRecipe = (state: SkillEventState) => void
+
+/**
+ * スキル発動型イベントにおいてスキル発動の確率計算の方法・発動時の処理を定義します
+ */
+export interface EventSkillTrigger {
+  /**
+   * 発動が確率計算に依存する場合に指定してください
+   * 
+   * `undefened`の場合は確率計算に依存せず必ず発動します
+   */
+  probability?: ProbabilityPercent
+  recipe: EventSkillRecipe
+}
 
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
  * 
  * {@link Skill onAccessComplete}からの呼び出しを想定
  * 
- * `probability`に{@link ProbabilityPercent}を指定した場合は確率補正も考慮して確率計算を行い  
+ * `trigger.probability`に{@link ProbabilityPercent}を指定した場合は確率補正も考慮して確率計算を行い  
  * 発動が可能な場合のみ`evaluate`で指定されたスキル発動時の状態変更を適用します
  * 
  * 発動確率以外にも直前のアクセスで該当スキルが無効化されている場合は状態変更は行いません
@@ -118,11 +125,10 @@ export type SkillEventEvaluate = (context: Context, state: SkillEventState, self
  * @param context ログ・乱数等の共通状態
  * @param state 現在の状態
  * @param self スキル発動の主体
- * @param probability スキル発動が確率依存かどうか
- * @param evaluate スキル発動時の処理
+ * @param trigger スキル発動の確率計算の方法・発動時の処理方法
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<Access.AccessDencoResult & ActiveSkill>, probability: SkillTrigger, evaluate: SkillEventEvaluate): AccessUserResult {
+export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<Access.AccessDencoResult & ActiveSkill>, trigger: EventSkillTrigger): AccessUserResult {
   context = fixClock(context)
   let next = copyAccessUserResult(state)
   if (!isSkillActive(self.skill)) {
@@ -146,15 +152,14 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     }),
     carIndex: self.carIndex,
     event: [],
-    probability: probability,
     probabilityBoostPercent: 0,
   }
-  const result = execute(context, eventState, evaluate)
+  const result = execute(context, eventState, trigger)
   if (result) {
     // スキル発動による影響の反映
     next = {
       ...next,
-      formation: result.formation.map((d,idx) => {
+      formation: result.formation.map((d, idx) => {
         // 編成内位置は不変と仮定
         let access = state.formation[idx]
         return {
@@ -172,7 +177,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
   return next
 }
 
-function execute(context: Context, state: SkillEventState, evaluate: SkillEventEvaluate): SkillEventState | undefined {
+function execute(context: Context, state: SkillEventState, trigger: EventSkillTrigger): SkillEventState | undefined {
   context.log.log(`スキル評価イベントの開始`)
   let self = state.formation[state.carIndex]
   if (self.skill.type !== "possess") {
@@ -201,9 +206,10 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
       ...s,
       skill: skill,
     }
-    const next = skill.evaluateOnEvent ? skill.evaluateOnEvent(context, state, active) : undefined
-    if (next) {
-      state = next
+    const trigger = skill.evaluateOnEvent?.(context, state, active)
+    const recipe = canSkillEvaluated(context, state, trigger)
+    if (recipe) {
+      recipe(state)
       let e: SkillTriggerEvent = {
         type: "skill_trigger",
         data: {
@@ -219,7 +225,8 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
   })
 
   // 発動確率の確認
-  if (!canSkillEvaluated(context, state)) {
+  const recipe = canSkillEvaluated(context, state, trigger)
+  if (!recipe) {
     context.log.log("スキル評価イベントの終了（発動なし）")
     // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
     return
@@ -227,14 +234,8 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
 
   // 最新の状態を参照
   self = copySKillEventDencoState(state.formation[state.carIndex])
-  // 主体となるスキルの発動
-  const d: SkillEventDencoState & ActiveSkill = {
-    ...self,
-    skill: skill,
-  }
-  const result = evaluate(context, state, d)
-  state = result
-  let trigger: SkillTriggerEvent = {
+  recipe(state)
+  let triggerEvent: SkillTriggerEvent = {
     type: "skill_trigger",
     data: {
       time: state.time.valueOf(),
@@ -244,22 +245,24 @@ function execute(context: Context, state: SkillEventState, evaluate: SkillEventE
       step: "self"
     },
   }
-  state.event.push(trigger)
+  state.event.push(triggerEvent)
   context.log.log("スキル評価イベントの終了")
   return state
 }
 
-function canSkillEvaluated(context: Context, state: SkillEventState): boolean {
-  let percent = state.probability
+function canSkillEvaluated(context: Context, state: ReadonlyState<SkillEventState>, trigger: EventSkillTrigger | void): EventSkillRecipe | undefined {
+  if (typeof trigger === "undefined") return
+  let percent = trigger.probability
   const boost = state.probabilityBoostPercent
-  if (typeof percent === "boolean") {
-    return percent
+  if (typeof percent === "undefined") {
+    // 確定発動
+    return trigger.recipe
   }
   if (percent >= 100) {
-    return true
+    return trigger.recipe
   }
   if (percent <= 0) {
-    return false
+    return
   }
   if (boost !== 0) {
     const v = percent * (1 + boost / 100.0)
@@ -268,10 +271,10 @@ function canSkillEvaluated(context: Context, state: SkillEventState): boolean {
   }
   if (Access.random(context, percent)) {
     context.log.log(`スキルが発動できます 確率:${percent}%`)
-    return true
+    return trigger.recipe
   }
   context.log.log(`スキルが発動しませんでした 確率:${percent}%`)
-  return false
+  return
 }
 
 export function randomeAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
@@ -315,7 +318,6 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
       ...state.event,
       result.offense.event[0],
     ],
-    probability: state.probability,
     probabilityBoostPercent: state.probabilityBoostPercent,
   }
 }
@@ -325,29 +327,33 @@ export function randomeAccess(context: Context, state: ReadonlyState<SkillEventS
  */
 export interface SkillEventReservation {
   readonly denco: Denco
-  readonly probability: SkillTrigger
-  readonly evaluate: SkillEventEvaluate
+  readonly trigger: EventSkillTrigger
 }
 
 /**
  * スキル発動型イベントを指定時刻に評価するよう待機列に追加する
  * 
  * @param context 
- * @param state 
- * @param entry 
+ * @param state 現在の状態
+ * @param time スキルが発動する時刻 
+ * @param denco だれのスキルが発動するか
+ * @param trigger スキル発動の確率計算の方法・発動時の処理
  * @returns 待機列に追加した新しい状態
  */
-export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserState>, time: number, event: SkillEventReservation): UserState {
+export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserState>, time: number, denco: Denco, trigger: EventSkillTrigger): UserState {
   const now = getCurrentTime(context).valueOf()
   if (now > time) {
-    context.log.error(`現在時刻より前の時刻は指定できません time: ${time}, event: ${JSON.stringify(event)}`)
+    context.log.error(`現在時刻より前の時刻は指定できません time: ${time}, denco: ${JSON.stringify(denco)}`)
     throw Error()
   }
   const next = copyUserState(state)
   next.queue.push({
     type: "skill",
     time: time,
-    data: event
+    data: {
+      denco: denco,
+      trigger: trigger
+    }
   })
   next.queue.sort((a, b) => a.time - b.time)
   refreshEventQueue(context, next)
@@ -359,19 +365,18 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
  * 
  * アクセス中のスキル発動とは別に単独で発動する場合に使用します  
  * - アクセス直後のタイミングで評価する場合は {@link evaluateSkillAfterAccess}を使用してください
- * - アクセス処理中のスキル評価は{@link Skill}のコールバック関数`canEvaluate, evaluate`で行ってください
+ * - アクセス処理中のスキル評価は{@link Skill}のコールバック関数`evaluate`で行ってください
  * 
  * `probability`に`number`を指定した場合は確率補正も考慮して確率計算を行い  
  * 発動が可能な場合のみ`evaluate`で指定されたスキル発動時の状態変更を適用します
  * 
  * @param context 
  * @param state 現在の状態
- * @param self 発動するスキル本人
- * @param probability スキル発動確率
- * @param evaluate 評価するスキルの効果内容
+ * @param self だれのスキルが発動するか
+ * @param trigger スキル発動の確率計算の方法・発動時の処理
  * @returns スキルを評価して更新した新しい状態
  */
-export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, probability: SkillTrigger, evaluate: SkillEventEvaluate): UserState {
+export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, trigger: EventSkillTrigger): UserState {
   let next = copyUserState(state)
   const idx = state.formation.findIndex(d => d.numbering === self.numbering)
   if (idx < 0) {
@@ -395,10 +400,9 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
     }),
     carIndex: idx,
     event: [],
-    probability: probability,
     probabilityBoostPercent: 0,
   }
-  const result = execute(context, eventState, evaluate)
+  const result = execute(context, eventState, trigger)
   if (result) {
     // スキル発動による影響の反映
     next = {
@@ -418,12 +422,13 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
 /**
  * 待機列中のイベントの指定時刻を現在時刻に参照して必要なら評価を実行する(破壊的)
  * @param context 現在時刻は`context#clock`を参照する {@see getCurrentTime}
- * @param state 
+ * @param current 現在の状態 
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
-export function refreshEventQueue(context: Context, state: UserState) {
+export function refreshEventQueue(context: Context, current: ReadonlyState<UserState>) {
   context = fixClock(context)
   const time = getCurrentTime(context).valueOf()
+  let state = copyUserState(current)
   while (state.queue.length > 0) {
     const entry = state.queue[0]
     if (time < entry.time) break
@@ -432,7 +437,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${moment(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
-        const next = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.probability, entry.data.evaluate)
+        const next = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
         copyUserStateTo(next, state)
         break
       }
@@ -451,7 +456,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
             skillPropertyReader: skill.property,
           }
           const next = callback(context, state, self)
-          copyUserStateTo(next, state)
+          if (next) copyUserStateTo(next, state)
         }
         // 次のイベント追加
         const date = moment(entry.time).add(1, "h")

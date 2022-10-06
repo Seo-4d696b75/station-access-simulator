@@ -109,34 +109,18 @@ export type SkillState =
 export type ProbabilityPercent = number
 
 /**
- * アクセス時のスキル発動の判定とスキル発動処理を定義します
+ * スキル発動の確率計算の方法・発動時の処理を定義します
  * 
- * @param context 同一のアクセス処理中は同一のオブジェクトが使用されます
- * @param state アクセス全般の状態  
- * **Readonly** この関数呼び出しの段階ではスキル発動が確定していないため状態は更新できません. スキルを発動の判定・状態の更新方法は関数の返り値で指定できます.
- * @param step アクセス中の段階 １回のアクセス処理で各段階は決められた順序で最大１回のみ呼び出されます（場合によっては呼び出されない段階もあります）
- * @param self このスキルを保持するでんこ自身 HPやATKなどのでんこの基本状態に加え、スキルのレベルや効果量などスキルの状態も参照できます.  
- * **Readonly** このスキルが発動する直前の状態をキャプチャしています
- */
-export type AccessSkillEvaluate = (context: Context, state: ReadonlyState<access.AccessState>, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => AccessSkillEvaluateResult
-
-/**
- * スキルが発動するかどうか、発動した場合はどのように状態を更新するか指定します.
- * 
- * - void: スキルは発動しません. 確率計算に依存せず発動しないことが明白な場合に適切です.
- * - AccessSkillRecipe: この関数で状態を更新するような効果をもつスキルが発動します. 確率計算に依らず発動することが確実な場合に適切です.
- * - AccessSkillTrigger: 指定した確率でスキルが発動します. 現在の状態に加え確率計算を踏まえないとスキル発動の有無を決定できない場合に適切です. この確率計算にはアクセス中に発動した他の確率補正スキルの影響を受けます.
- */
-export type AccessSkillEvaluateResult = 
-  void |
-  AccessSkillRecipe |
-  AccessSkillTrigger
-
-/**
- * 確率条件で発動するスキル発動を表します
+ * **注意** `probability`に100%未満の数値を設定した場合は、まだスキル発動の有無は決定されていません  
+ * 実際に発動した場合の状態更新の方法は関数`recipe`で指定してください
  */
 export interface AccessSkillTrigger {
-  probability: ProbabilityPercent
+/**
+   * 発動が確率計算に依存する場合に指定してください
+ * 
+   * `undefened`の場合は確率計算に依存せず必ず発動します
+ */
+  probability?: ProbabilityPercent
   recipe: AccessSkillRecipe
 }
 
@@ -158,15 +142,38 @@ export interface SkillLogic {
   /**
    * アクセス時の各段階においてスキル発動の判定とスキル発動処理を定義します
    * 
-   * アクセスに関わらないスキルの場合は未定義となります
+   * @param context 同一のアクセス処理中は同一のオブジェクトが使用されます
+   * @param state アクセス全般の状態  
+   * **Readonly** この関数呼び出しの段階ではスキル発動が確定していないため状態は更新できません. スキルを発動の判定・状態の更新方法は関数の返り値で指定できます.
+   * @param step アクセス中の段階 １回のアクセス処理で各段階は決められた順序で最大１回のみ呼び出されます（場合によっては呼び出されない段階もあります）
+   * @param self このスキルを保持するでんこ自身 HPやATKなどのでんこの基本状態に加え、スキルのレベルや効果量などスキルの状態も参照できます.  
+   * **Readonly** このスキルが発動する直前の状態をキャプチャしています
+   * 
+   * @return スキル発動の判定方法・発動時の処理を返り値で指定できます  
+   * - void: スキルは発動しません. 確率計算に依存せず発動しないことが明白な場合に適切です.
+   * - AccessSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
+   * 
    */
-  evaluate?: AccessSkillEvaluate
+  evaluate?: (context: Context, state: ReadonlyState<access.AccessState>, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => void | AccessSkillTrigger
+
 
   /**
-   * アクセス時以外のスキル評価において付随的に評価される処理
-   * 現状ではひいるの確率補正のみ
+   * アクセス時以外のスキル評価において付随的に発動するスキルの発動判定と処理を定義します
+   * 
+   * **注意** 現状ではひいるの確率補正のみ
+   * 
+   * @param context 同一のイベント処理中は同一のオブジェクトが使用されます
+   * @param state スキル発動型のイベント全般の状態  
+   * **Readonly** この関数呼び出しの段階ではスキル発動が確定していないため状態は更新できません. スキルを発動の判定・状態の更新方法は関数の返り値で指定できます.
+   * @param self このスキルを保持するでんこ自身 HPやATKなどのでんこの基本状態に加え、スキルのレベルや効果量などスキルの状態も参照できます.  
+   * **Readonly** このスキルが発動する直前の状態をキャプチャしています
+   * 
+   * @return スキル発動の判定方法・発動時の処理を返り値で指定できます  
+   * - void: スキルは発動しません. 確率計算に依存せず発動しないことが明白な場合に適切です.
+   * - EventSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
+   * 
    */
-  evaluateOnEvent?: (context: Context, state: event.SkillEventState, self: ReadonlyState<event.SkillEventDencoState & ActiveSkill>) => event.SkillEventState | undefined
+  evaluateOnEvent?: (context: Context, state: ReadonlyState<event.SkillEventState>, self: ReadonlyState<event.SkillEventDencoState & ActiveSkill>) => void | event.EventSkillTrigger
 
   /**
    * アクセス処理が完了した直後の処理をここで行う

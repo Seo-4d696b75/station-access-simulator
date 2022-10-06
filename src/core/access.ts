@@ -2,9 +2,9 @@ import moment from "moment-timezone"
 import { UserParam } from ".."
 import { Context, fixClock, getCurrentTime } from "./context"
 import { copyDencoState, Denco, DencoState } from "./denco"
-import { AccessSkillEvaluateResult, AccessSkillRecipe, ActiveSkill, ProbabilityPercent, refreshSkillState, SkillHolder } from "./skill"
+import { AccessSkillRecipe, AccessSkillTrigger, ActiveSkill, refreshSkillState, SkillHolder } from "./skill"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
-import { copyUserParam, copyUserState, FormationPosition, ReadonlyState, refreshEXPState, UserState } from "./user"
+import { copyUserParam, copyUserState, ReadonlyState, refreshEXPState, UserState } from "./user"
 
 
 /**
@@ -1177,10 +1177,13 @@ function isSkillActive(skill: SkillHolder): boolean {
  * @param d 発動する可能性があるアクティブなスキル
  * @returns 
  */
-function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: AccessSkillEvaluateResult): AccessSkillRecipe | undefined {
+function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: void | AccessSkillTrigger): AccessSkillRecipe | undefined {
   if (typeof result === "undefined") return
-  if (typeof result === "function") return result
   const trigger = result.probability
+  if (typeof trigger === "undefined") {
+    // 確定発動
+    return result.recipe
+  }
   let percent = Math.min(trigger, 100)
   percent = Math.max(percent, 0)
   if (percent >= 100) return result.recipe
