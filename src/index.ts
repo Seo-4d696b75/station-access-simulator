@@ -56,12 +56,12 @@ export {
   EventSkillTrigger, EventTriggeredSkill, randomAccess, SkillEventDencoState, SkillEventEvaluateStep, SkillEventReservation, SkillEventState
 } from "./core/skillEvent"
 export { default as SkillManager } from "./core/skillManager"
+export * from "./core/state"
 export * from "./core/station"
 export { default as StationManager } from "./core/stationManager"
 export {
   changeFormation, copyUserState, EventQueueEntry, FormationPosition,
   getTargetDenco,
-  initUser, ReadonlyState, refreshState, UserParam, UserState
+  initUser, refreshState, UserParam, UserState
 } from "./core/user"
-
 

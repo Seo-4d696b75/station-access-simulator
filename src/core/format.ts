@@ -4,8 +4,9 @@ import { Context } from "./context"
 import { DencoAttribute } from "./denco"
 import { Event, LevelupDenco } from "./event"
 import { EventTriggeredSkill } from "./skillEvent"
+import { ReadonlyState } from "./state"
 import { LinksResult, Station, StationLink } from "./station"
-import { ReadonlyState, UserState } from "./user"
+import { UserState } from "./user"
 
 export function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
   if (!user) return

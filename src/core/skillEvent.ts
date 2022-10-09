@@ -1,12 +1,13 @@
 import moment from "moment-timezone";
-import { AccessUserResult, copyAccessUserResult, TIME_FORMAT } from "..";
-import * as Access from "./access/access";
+import { AccessUserResult, TIME_FORMAT } from "..";
+import { AccessConfig, AccessDencoResult, random, startAccess } from "./access/index";
 import { Context } from "./context";
 import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, ProbabilityPercent } from "./skill";
+import { copyState, ReadonlyState } from "./state";
 import { Station } from "./station";
-import { copyUserParam, copyUserState, copyUserStateTo, ReadonlyState, refreshUserState, UserParam, UserState } from "./user";
+import { copyUserParam, copyUserState, copyUserStateTo, refreshUserState, UserParam, UserState } from "./user";
 
 export interface SkillEventDencoState extends DencoState {
   who: "self" | "other"
@@ -127,9 +128,9 @@ export type EventSkillTrigger = {
  * @param trigger スキル発動の確率計算の方法・発動時の処理方法
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<Access.AccessDencoResult & ActiveSkill>, trigger: EventSkillTrigger): AccessUserResult {
+export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, trigger: EventSkillTrigger): AccessUserResult {
   context = context.fixClock()
-  let next = copyAccessUserResult(state)
+  let next = copyState<AccessUserResult>(state)
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
     throw Error()
@@ -265,7 +266,7 @@ function canSkillEvaluated(context: Context, state: ReadonlyState<SkillEventStat
     context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
     percent = Math.min(v, 100)
   }
-  if (Access.random(context, percent)) {
+  if (random(context, percent)) {
     context.log.log(`スキルが発動できます 確率:${percent}%`)
     return trigger.recipe
   }
@@ -281,7 +282,7 @@ export function randomAccess(context: Context, state: ReadonlyState<SkillEventSt
     nameKana: "らんだむなえき",
     attr: "unknown",
   }
-  const config: Access.AccessConfig = {
+  const config: AccessConfig = {
     offense: {
       state: {
         user: state.user,
@@ -293,7 +294,7 @@ export function randomAccess(context: Context, state: ReadonlyState<SkillEventSt
     },
     station: station
   }
-  const result = Access.startAccess(context, config)
+  const result = startAccess(context, config)
   if (result.offense.event.length !== 1) {
     context.log.error(`イベント数が想定外 event:${JSON.stringify(result.offense.event)}`)
   }

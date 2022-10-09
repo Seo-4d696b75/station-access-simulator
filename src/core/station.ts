@@ -1,6 +1,6 @@
 import { AccessSide } from "./access/access";
 import { DencoState } from "./denco";
-import { ReadonlyState } from "./user";
+import { ReadonlyState } from "./state";
 
 export type StationAttribute =
   "eco" |

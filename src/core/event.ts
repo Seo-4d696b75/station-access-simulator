@@ -1,8 +1,8 @@
 import { AccessSide, AccessState } from "./access/access"
 import { DencoState } from "./denco"
 import { EventTriggeredSkill } from "./skillEvent"
+import { ReadonlyState } from "./state"
 import { LinksResult } from "./station"
-import { ReadonlyState } from "./user"
 
 export type EventType =
   "access" |

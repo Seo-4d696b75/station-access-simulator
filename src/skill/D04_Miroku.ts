@@ -1,10 +1,10 @@
-import { getAccessDenco, hasSkillTriggered, repeatAccess } from "../core/access/access";
+import { getAccessDenco, hasSkillTriggered, repeatAccess } from "../core/access/index";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
     if (step === "after_damage" && self.who === "offense" && state.defense) {
-      // 相手がまだリブートしていない & まだ発動していない
+      // 相手がまだリブートしていない & 自身のスキルがまだ発動していない
       const defense = getAccessDenco(state, "defense")
       if (!defense.reboot && !hasSkillTriggered(state.offense, self)) {
         return {

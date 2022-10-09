@@ -1,4 +1,3 @@
-import { Immutable } from "immer";
 import moment from "moment-timezone";
 import { copyDencoStateTo, SkillManager } from "..";
 import { Context } from "./context";
@@ -7,11 +6,7 @@ import DencoManager from "./dencoManager";
 import { Event, LevelupEvent } from "./event";
 import { refreshSkillState, refreshSkillStateOne } from "./skill";
 import { refreshEventQueue, SkillEventReservation } from "./skillEvent";
-
-/**
- * 変更不可な状態を表す型
- */
-export type ReadonlyState<T> = Immutable<T>
+import { ReadonlyState } from "./state";
 
 interface EventQueueEntryBase<T, E = undefined> {
   readonly type: T

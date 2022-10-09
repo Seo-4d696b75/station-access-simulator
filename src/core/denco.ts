@@ -1,7 +1,7 @@
 import { Film } from "./film"
 import { copySkill, SkillHolder } from "./skill"
+import { ReadonlyState } from "./state"
 import { StationLink } from "./station"
-import { ReadonlyState } from "./user"
 
 export type DencoType =
   "attacker" |
@@ -66,7 +66,7 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
 }
 
 export function copyDencoStateTo(src: ReadonlyState<DencoState>, dst: DencoState) {
-  if ( src.numbering !== dst.numbering){
+  if (src.numbering !== dst.numbering) {
     console.warn(`異なるでんこ間でコピーしています ${src.name} > ${dst.name}`)
   }
   dst.level = src.level

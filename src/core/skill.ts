@@ -1,12 +1,14 @@
 import moment from "moment-timezone"
-import { AccessUserResult, TIME_FORMAT } from ".."
-import { AccessDencoResult, AccessDencoState, AccessEvaluateStep, AccessState } from "./access/access"
-import { AccessSkillTrigger } from "./access/type"
+import { TIME_FORMAT } from ".."
+import { AccessDencoState, AccessEvaluateStep, AccessState } from "./access/access"
+import { AccessDencoResult, AccessUserResult } from "./access/result"
+import { AccessSkillTrigger } from "./access/skill"
 import { Context } from "./context"
 import { copyDencoState, DencoState } from "./denco"
 import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "./skillEvent"
 import { SkillProperty } from "./skillManager"
-import { copyUserState, copyUserStateTo, FormationPosition, ReadonlyState, UserState } from "./user"
+import { ReadonlyState } from "./state"
+import { copyUserState, copyUserStateTo, FormationPosition, UserState } from "./user"
 
 /**
  * スキル状態の遷移の種類
