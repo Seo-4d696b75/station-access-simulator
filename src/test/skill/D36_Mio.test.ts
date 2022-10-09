@@ -76,7 +76,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -106,7 +106,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -136,7 +136,7 @@ describe("ミオのスキル", () => {
       station: mio.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -166,7 +166,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -209,7 +209,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -253,7 +253,7 @@ describe("ミオのスキル", () => {
       station: miroku.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(25)
@@ -293,7 +293,7 @@ describe("ミオのスキル", () => {
       station: miroku.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(19)
     expect(result.attackPercent).toBe(0)
@@ -334,7 +334,7 @@ describe("ミオのスキル", () => {
       station: miroku.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(19)
     expect(result.attackPercent).toBe(45)
@@ -374,7 +374,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -413,7 +413,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -449,7 +449,7 @@ describe("ミオのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -487,7 +487,7 @@ describe("ミオのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(45)

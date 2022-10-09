@@ -1,4 +1,4 @@
-import { activateSkill, disactivateSkill, getSkill, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, deactivateSkill, getSkill, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 
 describe("しいらのスキル", () => {
@@ -14,7 +14,7 @@ describe("しいらのスキル", () => {
     expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
   })
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
@@ -97,7 +97,7 @@ describe("しいらのスキル", () => {
       expect(accessSiira.reboot).toBe(true)
       expect(accessSiira.exp).toMatchObject({ access: 0, skill: 0 })
     }
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     if (result.defense) {
       // リブート確認
@@ -142,11 +142,11 @@ describe("しいらのスキル", () => {
     if (result.defense) {
       // 確率補正の確認
       expect(result.defense.triggeredSkills.length).toBe(1)
-      let tirgger = result.defense.triggeredSkills[0]
-      expect(tirgger.name).toBe(hiiru.name)
-      expect(tirgger.step).toBe("probability_check")
+      let trigger = result.defense.triggeredSkills[0]
+      expect(trigger.name).toBe(hiiru.name)
+      expect(trigger.step).toBe("probability_check")
     }
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
   })
   test("発動あり", () => {
@@ -177,9 +177,9 @@ describe("しいらのスキル", () => {
     if (result.defense) {
       // アクセス中の状態の確認
       expect(result.defense.triggeredSkills.length).toBe(1)
-      let tirgger = result.defense.triggeredSkills[0]
-      expect(tirgger.name).toBe(siira.name)
-      expect(tirgger.step).toBe("damage_common")
+      let trigger = result.defense.triggeredSkills[0]
+      expect(trigger.name).toBe(siira.name)
+      expect(trigger.step).toBe("damage_common")
       let accessSiira = result.defense.formation[1]
       expect(accessSiira.damage).not.toBeUndefined()
       expect(accessSiira.damage?.value).toBe(195)
@@ -190,7 +190,7 @@ describe("しいらのスキル", () => {
       expect(accessSiira.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-確率補正あり", () => {
@@ -222,14 +222,14 @@ describe("しいらのスキル", () => {
     if (result.defense) {
       // アクセス中の状態の確認
       expect(result.defense.triggeredSkills.length).toBe(2)
-      let tirgger = result.defense.triggeredSkills[0]
-      expect(tirgger.name).toBe(hiiru.name)
-      expect(tirgger.step).toBe("probability_check")
-      tirgger = result.defense.triggeredSkills[1]
-      expect(tirgger.name).toBe(siira.name)
-      expect(tirgger.step).toBe("damage_common")
+      let trigger = result.defense.triggeredSkills[0]
+      expect(trigger.name).toBe(hiiru.name)
+      expect(trigger.step).toBe("probability_check")
+      trigger = result.defense.triggeredSkills[1]
+      expect(trigger.name).toBe(siira.name)
+      expect(trigger.step).toBe("damage_common")
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
 })

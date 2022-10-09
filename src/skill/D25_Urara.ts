@@ -40,7 +40,7 @@ const skill: SkillLogic = {
     }
     return evaluateSkillAtEvent(context, state, self, trigger)
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active") // 0ms
     const wait = self.skill.property.readNumber("wait")
     const now = getCurrentTime(context)

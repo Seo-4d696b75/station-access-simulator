@@ -18,7 +18,7 @@ const skill: SkillLogic = {
       }
     }
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const now = getCurrentTime(context)
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")

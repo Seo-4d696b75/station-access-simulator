@@ -73,7 +73,7 @@
 * 下記工程を終了したら、`event`かつ「アクセス終了直後に発動する」タイプの評価へそのままGO
 * フットバ装着でピンクモード時はスキル評価をスキップする
 
-`evalueate_step` : Enum
+`evaluate_step` : Enum
 
 ### *.film_check
 ラッピングによるスキル効果量・発動確率の加減算
@@ -223,7 +223,7 @@ ATK,DEFのパーセント値を加減算する
 |14|美深ふぶ|根性入れてやるかー|access|manual|damage_common||  
 |15|鹿沼りんご|夜更かしはお肌の敵|access|condition|damage_common||  
 |16|ニャッシュ|友だち一杯つくるのニャ|event|always|denco_levelup|スキルレベル上昇時に効果発動して枠数を増やす|  
-|17|ダッチュー|どいてもらうでチュー|event|foreced|user_login|ログイン時に確率で発動、ひいるが効く|  
+|17|ダッチュー|どいてもらうでチュー|event|forced|user_login|ログイン時に確率で発動、ひいるが効く|  
 |18|汀良いちほ|根性だけが取り柄ですぅ|access|always|damage_special|チコ、パトリシア、ヤコより優先されるがバーゼラルドには負ける、固定値軽減スキルを併用した場合でも耐えた残るHPが1より多くなることはない|  
 |19|美唄イムラ|紫電一閃|access|manual|damage_common|スキル発動と同時にHP半減（小数点以下切り上げ、HP1の時は発動しない）|  
 |20|丸地にころ|デリバリーカーゴ|access|always|after_access|経験値を与える対象のでんこがレベル上限に達している場合スキルは発動しない|  

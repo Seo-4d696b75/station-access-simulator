@@ -1,4 +1,4 @@
-import { activateSkill, disactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, deactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 
 
@@ -15,7 +15,7 @@ describe("いずなのスキル", () => {
     expect(skill.state.transition).toBe("always")
     expect(skill.state.type).toBe("active")
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
   })
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
@@ -97,7 +97,7 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     if (result.defense) {
       // リブート確認
@@ -144,7 +144,7 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-ディフェンダー3", () => {
@@ -185,7 +185,7 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-ディフェンダー4", () => {
@@ -227,7 +227,7 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
 })

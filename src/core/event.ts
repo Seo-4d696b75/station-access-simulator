@@ -1,5 +1,5 @@
 import { AccessSide, AccessState } from "./access"
-import { Denco, DencoState } from "./denco"
+import { DencoState } from "./denco"
 import { EventTriggeredSkill } from "./skillEvent"
 import { LinksResult } from "./station"
 import { ReadonlyState } from "./user"

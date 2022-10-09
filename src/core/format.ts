@@ -1,11 +1,11 @@
-import { AccessSideState, AccessSide, AccessState, getAccessDenco, AccessDencoState } from "./access"
+import { computeWidth } from "meaw"
+import { AccessDencoState, AccessSide, AccessSideState, AccessState, getAccessDenco } from "./access"
 import { Context, getCurrentTime } from "./context"
 import { DencoAttribute } from "./denco"
 import { Event, LevelupDenco } from "./event"
 import { EventTriggeredSkill } from "./skillEvent"
 import { LinksResult, Station, StationLink } from "./station"
 import { ReadonlyState, UserState } from "./user"
-import { computeWidth } from "meaw"
 
 export function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
   if (!user) return
@@ -118,7 +118,7 @@ export function formatRebootDetail(result: LinksResult, time: number, width: num
     str += link.matchBonus ? formatAttr(result.denco.attr, 8) : " ".repeat(8)
     str += "┃\n"
     let duration = formatLinkTime(time, link)
-    let pt = formatSpace(formatPt(link.totatlScore), width - 2 - len(duration), "right")
+    let pt = formatSpace(formatPt(link.totalScore), width - 2 - len(duration), "right")
     str += "┃" + color(duration + pt, "green") + "┃\n"
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   })
@@ -140,7 +140,7 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   var title = "access"
   if (which === "offense" && result.linkSuccess) {
     title += "/connect"
-  } else if (which === "defense" && result.linkDisconncted) {
+  } else if (which === "defense" && result.linkDisconnected) {
     title += "/disconnect"
   }
   var titleColor = which === "offense" ? "green" : "red" as ConsoleColor
@@ -221,10 +221,10 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
   if (which === "offense" && result.linkSuccess) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine(color(`${right.name}がリンクを開始`, "green"), width)
-  } else if (which === "defense" && result.linkDisconncted) {
+  } else if (which === "defense" && result.linkDisconnected) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine(color(`${right.name}のリンクが解除`, "red"), width)
-  } else if (which === "defense" && !result.linkDisconncted) {
+  } else if (which === "defense" && !result.linkDisconnected) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine(color("リンク継続中", "green"), width)
   }
@@ -241,7 +241,7 @@ export function formatAccessEvent(result: ReadonlyState<AccessState>, which: Acc
   var title = "access"
   if (which === "offense" && result.linkSuccess) {
     title += "/connect"
-  } else if (which === "defense" && result.linkDisconncted) {
+  } else if (which === "defense" && result.linkDisconnected) {
     title += "/disconnect"
   }
   var titleColor = which === "offense" ? "green" : "red" as ConsoleColor
@@ -281,10 +281,10 @@ export function formatAccessEvent(result: ReadonlyState<AccessState>, which: Acc
   if (which === "offense" && result.linkSuccess) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine(color(`${right.name}がリンクを開始`, "green"), width)
-  } else if (which === "defense" && result.linkDisconncted) {
+  } else if (which === "defense" && result.linkDisconnected) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine(color(`${right.name}のリンクが解除`, "red"), width)
-  } else if (which === "defense" && !result.linkDisconncted) {
+  } else if (which === "defense" && !result.linkDisconnected) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
     str += formatLine(color("リンク継続中", "green"), width)
   }

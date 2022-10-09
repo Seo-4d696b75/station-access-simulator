@@ -10,10 +10,10 @@ import StationManager from "./core/stationManager"
  * 最初の呼び出し時のみロード処理を実行して２回目以降の呼び出しは無視します
  */
 export async function init() {
-  if (initLib){
-    console.log("skil init")
+  if (initLib) {
+    console.log("already init")
     return initLib
-  } 
+  }
   const job = Promise.all([
     SkillManager.load(),
     DencoManager.load(),
@@ -68,7 +68,7 @@ export {
   getSkill,
   isSkillActive,
   activateSkill,
-  disactivateSkill
+  deactivateSkill
 } from "./core/skill"
 export * from "./core/access"
 export {
@@ -80,7 +80,7 @@ export {
   EventSkillTrigger,
   evaluateSkillAfterAccess,
   evaluateSkillAtEvent,
-  randomeAccess,
+  randomAccess,
   SkillEventReservation,
   enqueueSkillEvent
 } from "./core/skillEvent"

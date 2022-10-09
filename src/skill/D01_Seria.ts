@@ -29,7 +29,7 @@ const skill: SkillLogic = {
       return evaluateSkillAfterAccess(context, state, self, trigger)
     }
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")
     const time = getCurrentTime(context)

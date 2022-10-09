@@ -3,3 +3,6 @@
 /coverage
 .DS_Store
 /src/main.ts
+
+/umd
+/lib

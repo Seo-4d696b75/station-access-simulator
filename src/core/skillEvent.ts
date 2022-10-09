@@ -273,7 +273,7 @@ function canSkillEvaluated(context: Context, state: ReadonlyState<SkillEventStat
   return
 }
 
-export function randomeAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
+export function randomAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
   context = fixClock(context)
   //TODO ランダム駅の選択
   const station: Station = {

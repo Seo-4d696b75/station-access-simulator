@@ -7,7 +7,7 @@ const skill: SkillLogic = {
     if (step === "after_damage" &&
       self.who === "defense" &&
       !self.reboot &&
-      !state.linkDisconncted) {
+      !state.linkDisconnected) {
       return {
         probability: self.skill.property.readNumber("probability"),
         recipe: (state) => {

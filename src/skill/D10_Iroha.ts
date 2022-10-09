@@ -1,5 +1,4 @@
 import { evaluateSkillAtEvent, getCurrentTime, SkillLogic } from "..";
-import { EventSkillTrigger } from "../core/skillEvent";
 
 const skill: SkillLogic = {
   canEnabled: (context, state, self) => {
@@ -7,7 +6,7 @@ const skill: SkillLogic = {
     const cnt = self.skill.property.readNumber("links")
     return self.link.length >= cnt && state.formation.length > 1
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")
     const now = getCurrentTime(context)
@@ -20,7 +19,7 @@ const skill: SkillLogic = {
     // スキルが有効化した瞬間にスキル発動
     return evaluateSkillAtEvent(context, state, self, (state) => {
       const links = self.link
-      const stataions = links.map(link => link.name).join(",")
+      const stations = links.map(link => link.name).join(",")
       if (links.length <= 1) context.log.error("リンク数>1が必要です")
       let idx = Math.floor(links.length * context.random())
       const link = links[idx]
@@ -35,7 +34,7 @@ const skill: SkillLogic = {
       }
       // リンクの移譲
       state.formation[idx].link.push(link)
-      context.log.log(`渡したい駅を渡せなくてど～しよ～！！ リンク:${stataions} 移譲するリンク:${JSON.stringify(link)} 移譲相手:${state.formation[idx].name}`)
+      context.log.log(`渡したい駅を渡せなくてど～しよ～！！ リンク:${stations} 移譲するリンク:${JSON.stringify(link)} 移譲相手:${state.formation[idx].name}`)
     })
   }
 }

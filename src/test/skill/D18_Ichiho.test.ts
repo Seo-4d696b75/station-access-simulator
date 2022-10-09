@@ -3,7 +3,7 @@ import { copyDencoState, DencoState, init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
 import { getFixedDamageDenco } from "../util"
 
@@ -23,7 +23,7 @@ describe("いちほのスキル", () => {
     expect(skill.state.type).toBe("active")
 
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
 
     context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
@@ -52,7 +52,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -94,7 +94,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -131,7 +131,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -159,7 +159,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -237,7 +237,7 @@ describe("いちほのスキル", () => {
       station: sheena.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     // いちほ -> シーナへのダメージ計算詳細
     expect(result.defendPercent).toBe(0)
@@ -283,7 +283,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -323,7 +323,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(25)
@@ -362,7 +362,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -400,7 +400,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -438,7 +438,7 @@ describe("いちほのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)

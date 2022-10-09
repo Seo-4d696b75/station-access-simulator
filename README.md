@@ -14,7 +14,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.5/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.6/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -29,6 +29,9 @@ $ > npm install ekimemo-access-simulator
 
 # Release Note
 [各バージョンの差分詳細はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
+**v0.1.6**
+- タイポの修正
+
 **v0.1.5**  
 - スキルの追加
 - スキルプロパティが対応するデータ型を数値以外にも拡張

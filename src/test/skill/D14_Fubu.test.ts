@@ -1,5 +1,5 @@
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess } from "../.."
+import { activateSkill, deactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 
 describe("ふぶのスキル", () => {
@@ -17,7 +17,7 @@ describe("ふぶのスキル", () => {
     let skill = getSkill(fubu)
     expect(skill.state.transition).toBe("manual")
     expect(skill.state.type).toBe("idle")
-    expect(() => disactivateSkill(context, defense, 0)).toThrowError()
+    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
     defense = activateSkill(context, defense, 0)
     fubu = defense.formation[0]
     skill = getSkill(fubu)
@@ -29,7 +29,7 @@ describe("ふぶのスキル", () => {
       expect(data.activeTimeout).toBe(now + 1800 * 1000)
       expect(data.cooldownTimeout).toBe(now + 1800 * 1000 + 7200 * 1000)
     }
-    expect(() => disactivateSkill(context, defense, 0)).toThrowError()
+    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
 
     // 10分経過
     context.clock = now + 600 * 1000
@@ -145,7 +145,7 @@ describe("ふぶのスキル", () => {
       expect(accessFubu.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-守備側編成内", () => {
@@ -188,7 +188,7 @@ describe("ふぶのスキル", () => {
       expect(accessCharlotte.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-確率ブースト", () => {

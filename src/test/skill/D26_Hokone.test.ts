@@ -215,7 +215,7 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
     expect(result.attackPercent).toBe(0)
