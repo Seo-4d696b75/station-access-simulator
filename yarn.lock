@@ -620,6 +620,11 @@
   "resolved" "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.9.tgz"
   "version" "7.0.9"
 
+"@types/lodash@^4.14.186":
+  "integrity" "sha512-eHcVlLXP0c2FlMPm56ITode2AgLMSa6aJ05JTTbYbI+7EMkCEE5qk2E41d5g2lCVTqRe0GnnRFurmlCsDODrPw=="
+  "resolved" "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.186.tgz"
+  "version" "4.14.186"
+
 "@types/node@*", "@types/node@^16.7.10":
   "integrity" "sha512-S63Dlv4zIPb8x6MMTgDq5WWRJQe56iBEY0O3SOFA9JrRienkOVDXSXBjjJw6HTNQYSE2JI6GMCR6LVbIMHJVvA=="
   "resolved" "https://registry.npmjs.org/@types/node/-/node-16.7.10.tgz"
@@ -1577,11 +1582,6 @@
   dependencies:
     "safer-buffer" ">= 2.1.2 < 3"
 
-"immer@^9.0.15":
-  "integrity" "sha512-2eB/sswms9AEUSkOm4SbV5Y7Vmt/bKRwByd52jfLkW4OLYeaTP3EEiJ9agqU0O/tq6Dk62Zfj+TJSqfm1rLVGQ=="
-  "resolved" "https://registry.npmjs.org/immer/-/immer-9.0.15.tgz"
-  "version" "9.0.15"
-
 "import-local@^3.0.2":
   "integrity" "sha512-vjL3+w0oulAVZ0hBHnxa/Nm5TAurf9YLQJDhqRZyqb+VKGOB6LU8t9H1Nr5CIo16vh9XfJTOoHwU0B71S557gA=="
   "resolved" "https://registry.npmjs.org/import-local/-/import-local-3.0.2.tgz"
@@ -2221,7 +2221,7 @@
   "resolved" "https://registry.npmjs.org/lodash.memoize/-/lodash.memoize-4.1.2.tgz"
   "version" "4.1.2"
 
-"lodash@^4.7.0":
+"lodash@^4.17.21", "lodash@^4.7.0":
   "integrity" "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="
   "resolved" "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
   "version" "4.17.21"
