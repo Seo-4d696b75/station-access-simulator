@@ -1,6 +1,6 @@
 import { getCurrentTime } from "../core/context"
 import { SkillLogic } from "../core/skill"
-import { enqueueSkillEvent, SkillEventEvaluate, randomeAccess } from "../core/skillEvent"
+import { enqueueSkillEvent, EventSkillRecipe, EventSkillTrigger, randomeAccess } from "../core/skillEvent"
 
 const skill: SkillLogic = {
   disactivateAt: (context, state, self) => {
@@ -14,12 +14,9 @@ const skill: SkillLogic = {
   },
   onActivated: (context, state, self) => {
     const timer = self.skill.property.readNumber("timer")
-    const evaluate: SkillEventEvaluate = (context, state, self) => randomeAccess(context, state)
     const time = getCurrentTime(context) + timer * 1000
-    return enqueueSkillEvent(context, state, time, {
-      denco: self,
-      probability: true,
-      evaluate: evaluate
+    return enqueueSkillEvent(context, state, time, self, (state) => {
+      return randomeAccess(context, state)
     })
   }
 }

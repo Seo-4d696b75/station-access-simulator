@@ -33,10 +33,12 @@ export function getDefPercentDenco(def: number): DencoState {
         transition: "always",
         data: undefined
       },
-      canEvaluate: (context, state, step, self) => step === "damage_common" && self.which === "defense",
       evaluate: (context, state, step, self) => {
-        state.defendPercent += def
-        return state
+        if (step === "damage_common" && self.which === "defense") {
+          return (state) => {
+            state.defendPercent += def
+          }
+        }
       }
     }
   }
@@ -77,10 +79,12 @@ export function getFixedDamageDenco(damage: number): DencoState {
         transition: "always",
         data: undefined
       },
-      canEvaluate: (context, state, step, self) => step === "damage_fixed" && self.which === which,
       evaluate: (context, state, step, self) => {
-        state.damageFixed += damage
-        return state
+        if (step === "damage_fixed" && self.which === which) {
+          return (state) => {
+            state.damageFixed += damage
+          }
+        }
       }
     }
   }

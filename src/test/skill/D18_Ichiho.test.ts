@@ -5,6 +5,7 @@ import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
+import { getFixedDamageDenco } from "../util"
 
 describe("いちほのスキル", () => {
   beforeAll(init)
@@ -306,7 +307,7 @@ describe("いちほのスキル", () => {
     context.random.mode = "force"
     let ichiho = DencoManager.getDenco(context, "18", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50)
-    let test = copyDencoState(test1)
+    let test = getFixedDamageDenco(10)
     let offense = initUser(context, "とあるマスター", [reika, test])
     offense = activateSkill(context, offense, 0)
     let defense = initUser(context, "とあるマスター２", [ichiho])
@@ -345,7 +346,7 @@ describe("いちほのスキル", () => {
     context.random.mode = "force"
     let ichiho = DencoManager.getDenco(context, "18", 50, 1)
     let chiko = DencoManager.getDenco(context, "29", 50)
-    let test = copyDencoState(test1)
+    let test = getFixedDamageDenco(10)
     let offense = initUser(context, "とあるマスター", [chiko, test])
     offense = activateSkill(context, offense, 0)
     let defense = initUser(context, "とあるマスター２", [ichiho])
@@ -383,7 +384,7 @@ describe("いちほのスキル", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let ichiho = DencoManager.getDenco(context, "18", 50, 1)
-    let test = copyDencoState(test2)
+    let test = getFixedDamageDenco(-20)
     let reika = DencoManager.getDenco(context, "5", 50)
     let offense = initUser(context, "とあるマスター", [reika])
     let defense = initUser(context, "とあるマスター２", [ichiho, test])
@@ -420,9 +421,9 @@ describe("いちほのスキル", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let ichiho = DencoManager.getDenco(context, "18", 50, 1)
-    let cut = copyDencoState(test2)
+    let cut = getFixedDamageDenco(-20)
     let reika = DencoManager.getDenco(context, "5", 50)
-    let add = copyDencoState(test1)
+    let add = getFixedDamageDenco(10)
     let offense = initUser(context, "とあるマスター", [reika, add])
     let defense = initUser(context, "とあるマスター２", [ichiho, cut])
     const config = {
@@ -456,83 +457,3 @@ describe("いちほのスキル", () => {
     expect(d.damage?.attr).toBe(true)
   })
 })
-
-/**
- * 固定ダメージ追加スキルのでんこ（ダミー）
- */
-const test1: DencoState = {
-  numbering: "test1",
-  name: "test1",
-  type: "supporter",
-  attr: "flat",
-  level: 50,
-  currentExp: 0,
-  nextExp: 100000,
-  currentHp: 100,
-  maxHp: 100,
-  film: {},
-  ap: 100,
-  link: [],
-  skill: {
-    type: "possess",
-    level: 1,
-    name: "test-skill1",
-    property: {
-      readBoolean: () => false,
-      readNumber: () => 0,
-      readString: () => "",
-      readNumberArray: () => [],
-      readStringArray: () => [],
-    },
-    state: {
-      type: "active",
-      transition: "always",
-      data: undefined
-    },
-    canEvaluate: (context, state, step, self) => step === "damage_fixed" && self.which === "offense",
-    evaluate: (context, state, step, self) => {
-      state.damageFixed += 10
-      return state
-    }
-  }
-}
-
-/**
- * 固定ダメージ軽減スキルのでんこ（ダミー）
- */
-const test2: DencoState = {
-  numbering: "test2",
-  name: "test2",
-  type: "supporter",
-  attr: "flat",
-  level: 50,
-  currentExp: 0,
-  nextExp: 100000,
-  currentHp: 100,
-  maxHp: 100,
-  film: {},
-  ap: 100,
-  link: [],
-  skill: {
-    type: "possess",
-    level: 1,
-    name: "test-skill2",
-    property: {
-      readBoolean: () => false,
-      readNumber: () => 0,
-      readString: () => "",
-      readNumberArray: () => [],
-      readStringArray: () => [],
-    },
-    state: {
-      type: "active",
-      transition: "always",
-      data: undefined
-    },
-    canEvaluate: (context, state, step, self) => step === "damage_fixed" && self.which === "defense",
-    evaluate: (context, state, step, self) => {
-      state.damageFixed -= 20
-      return state
-    }
-  }
-}

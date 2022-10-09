@@ -31,8 +31,6 @@ describe("シャルのスキル", () => {
     entry = state.queue[1]
     expect(entry.type).toBe("skill")
     if (entry.type === "skill") {
-      // 確定発動
-      expect(entry.data.probability).toBe(true)
       // 90分後に発動
       expect(entry.time).toBe(now + 5400 * 1000)
       expect(entry.data.denco.name).toBe("charlotte")
@@ -57,7 +55,7 @@ describe("シャルのスキル", () => {
     let event = state.event[0]
     expect(event.type).toBe("access")
     if (event.type === "access") {
-      expect(event.data.access.time).toBe(context.clock)
+      expect(event.data.access.time).toBe(now)
       charlotte = copyDencoState(getAccessDenco(event.data.access, "offense"))
       expect(charlotte.name).toBe("charlotte")
     }

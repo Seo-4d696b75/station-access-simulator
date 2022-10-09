@@ -1,4 +1,5 @@
-import { evaluateSkillAfterAccess, SkillEventEvaluate, SkillLogic } from "..";
+import { evaluateSkillAfterAccess, SkillLogic } from "..";
+import { EventSkillTrigger } from "../core/skillEvent";
 
 
 const skill: SkillLogic = {
@@ -12,21 +13,17 @@ const skill: SkillLogic = {
       let target = state.formation[idx]
       // 再配布できる場合
       if (target.currentExp < target.nextExp) {
-        const evaluate: SkillEventEvaluate = (context, state, self) => {
+        return evaluateSkillAfterAccess(context, state, self, (state) => {
           const percent = self.skill.property.readNumber("EXP")
           let dst = state.formation[idx] // 編成位置は変わらない前提
           const value = Math.floor(exp * percent / 100)
           context.log.log(`経験値の再配布 ${exp} * ${percent}% = ${value}`)
           dst.currentExp += value // アクセス中と異なる直接加算する
-          return state // レベルアップの確認等の更新は呼び出し元で行う（はず）
-        }
-        return evaluateSkillAfterAccess(context, state, self, true, evaluate)
+          // レベルアップの確認等の更新は呼び出し元で行う（はず）
+        })
       }
     }
-    return state
   }
 }
-
-
 
 export default skill

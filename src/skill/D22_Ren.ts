@@ -4,19 +4,18 @@ import { SkillLogic } from "../core/skill";
 
 
 const skill: SkillLogic = {
-  canEvaluate: (context, state, step, self) => {
+  evaluate: (context, state, step, self) => {
     if (step === "before_access" && self.who === "offense" && state.defense) {
       const defense = getAccessDenco(state, "defense")
       const target = self.skill.property.readStringArray("invalidated")
-      return target.includes(defense.numbering)
+      if (target.includes(defense.numbering)) {
+        return (state) => {
+          const defense = getAccessDenco(state, "defense")
+          defense.skillInvalidated = true
+          context.log.log(`ウチのスキルは相手のスキルを無効化するでぇー target:${defense.name}`)
+        }
+      }
     }
-    return false
-  },
-  evaluate: (context, state, step, self) => {
-    const defense = getAccessDenco(state, "defense")
-    defense.skillInvalidated = true
-    context.log.log(`ウチのスキルは相手のスキルを無効化するでぇー target:${defense.name}`)
-    return state
   },
   disactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")
