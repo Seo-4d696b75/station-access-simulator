@@ -1,6 +1,6 @@
 import moment from "moment-timezone"
 import { init } from ".."
-import { AccessConfig, getDefense, startAccess } from "../core/access"
+import { AccessConfig, getDefense, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
 import { AccessEventData, LevelupDenco } from "../core/event"

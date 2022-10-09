@@ -3,7 +3,7 @@ import { initContext } from "../../core/context"
 import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
 import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
-import { hasSkillTriggered, startAccess } from "../../core/access"
+import { hasSkillTriggered, startAccess } from "../../core/access/index"
 
 describe("ベアトリスのスキル", () => {
   beforeAll(init)

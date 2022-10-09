@@ -1,6 +1,6 @@
 // 外部公開用のエントリーポイント
-import SkillManager from "./core/skillManager"
 import DencoManager from "./core/dencoManager"
+import SkillManager from "./core/skillManager"
 import StationManager from "./core/stationManager"
 
 /**
@@ -37,56 +37,31 @@ export function clear() {
   initLib = undefined
 }
 
-export { default as SkillManager } from "./core/skillManager"
-export { default as DencoManager } from "./core/dencoManager"
-export { default as StationManager } from "./core/stationManager"
-export {
-  ReadonlyState,
-  UserParam,
-  EventQueueEntry,
-  UserState,
-  FormationPosition,
-  getTargetDenco,
-  initUser,
-  changeFormation,
-  refreshState,
-  copyUserState
-} from "./core/user"
-export {
-  SkillStateTransition,
-  SkillStateType,
-  SkillCooldownTimeout,
-  SkillActiveTimeout,
-  SkillState,
-  ProbabilityPercent,
-  AccessSkillTrigger,
-  AccessSkillRecipe,
-  SkillLogic,
-  Skill,
-  ActiveSkill,
-  SkillHolder,
-  getSkill,
-  isSkillActive,
-  activateSkill,
-  deactivateSkill
-} from "./core/skill"
-export * from "./core/access"
-export {
-  SkillEventDencoState,
-  EventTriggeredSkill,
-  SkillEventState,
-  SkillEventEvaluateStep,
-  EventSkillRecipe,
-  EventSkillTrigger,
-  evaluateSkillAfterAccess,
-  evaluateSkillAtEvent,
-  randomAccess,
-  SkillEventReservation,
-  enqueueSkillEvent
-} from "./core/skillEvent"
-export * from "./core/format"
+// src/core/access/*
+export * from "./core/access/index"
 export * from "./core/context"
 export * from "./core/denco"
-export * from "./core/station"
+export { default as DencoManager } from "./core/dencoManager"
 export * from "./core/event"
 export * from "./core/film"
+export * from "./core/format"
+export {
+  activateSkill, ActiveSkill, deactivateSkill, getSkill,
+  isSkillActive, ProbabilityPercent, Skill, SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillLogic, SkillState, SkillStateTransition,
+  SkillStateType
+} from "./core/skill"
+export {
+  enqueueSkillEvent, evaluateSkillAfterAccess,
+  evaluateSkillAtEvent, EventSkillRecipe,
+  EventSkillTrigger, EventTriggeredSkill, randomAccess, SkillEventDencoState, SkillEventEvaluateStep, SkillEventReservation, SkillEventState
+} from "./core/skillEvent"
+export { default as SkillManager } from "./core/skillManager"
+export * from "./core/station"
+export { default as StationManager } from "./core/stationManager"
+export {
+  changeFormation, copyUserState, EventQueueEntry, FormationPosition,
+  getTargetDenco,
+  initUser, ReadonlyState, refreshState, UserParam, UserState
+} from "./core/user"
+
+

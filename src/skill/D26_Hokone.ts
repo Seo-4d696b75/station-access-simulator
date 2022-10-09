@@ -1,4 +1,4 @@
-import { calcBaseDamage, getAccessDenco } from "../core/access";
+import { calcBaseDamage, getAccessDenco } from "../core/access/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {

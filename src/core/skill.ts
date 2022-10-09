@@ -1,9 +1,10 @@
 import moment from "moment-timezone"
 import { AccessUserResult, TIME_FORMAT } from ".."
-import * as access from "./access"
+import { AccessDencoResult, AccessDencoState, AccessEvaluateStep, AccessState } from "./access/access"
+import { AccessSkillTrigger } from "./access/type"
 import { Context } from "./context"
 import { copyDencoState, DencoState } from "./denco"
-import * as event from "./skillEvent"
+import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "./skillEvent"
 import { SkillProperty } from "./skillManager"
 import { copyUserState, copyUserStateTo, FormationPosition, ReadonlyState, UserState } from "./user"
 
@@ -109,29 +110,6 @@ export type SkillState =
 export type ProbabilityPercent = number
 
 /**
- * スキル発動の確率計算の方法・発動時の処理を定義します
- * 
- * - 確率計算に依存せず発動することが確定している場合は`EventSkillRecipe`を直接返します
- * - 確率計算に依存して発動する場合は, `probability`:発動の確率, `recipe`:発動した場合の状態の更新方法をそれぞれ指定します
- *
- * **注意** `probability`に100%未満の数値を設定した場合は、まだスキル発動の有無は決定されていません  
- * 実際に発動した場合の状態更新の方法は関数`recipe`で指定してください
- */
-export type AccessSkillTrigger = {
-  probability: ProbabilityPercent
-  recipe: AccessSkillRecipe
-} | AccessSkillRecipe
-
-/**
- * アクセス時に発動したスキル効果の処理
- * 
- * @param state 可変(mutable)です. スキル効果による状態変化を直接書き込めます.
- * @return `AccessState`を返す場合は返り値で状態を更新します.  
- *   `undefined`を返す場合は引数`state`を次の状態として扱います.
- */
-export type AccessSkillRecipe = (state: access.AccessState) => void | access.AccessState
-
-/**
  * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
  * 
  * スキルレベルに依存するデータは各コールバック関数の引数に渡される{@link Skill property}オブジェクトから参照できます  
@@ -154,7 +132,7 @@ export interface SkillLogic {
    * - AccessSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  evaluate?: (context: Context, state: ReadonlyState<access.AccessState>, step: access.AccessEvaluateStep, self: ReadonlyState<access.AccessDencoState & ActiveSkill>) => void | AccessSkillTrigger
+  evaluate?: (context: Context, state: ReadonlyState<AccessState>, step: AccessEvaluateStep, self: ReadonlyState<AccessDencoState & ActiveSkill>) => void | AccessSkillTrigger
 
 
   /**
@@ -173,14 +151,14 @@ export interface SkillLogic {
    * - EventSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  evaluateOnEvent?: (context: Context, state: ReadonlyState<event.SkillEventState>, self: ReadonlyState<event.SkillEventDencoState & ActiveSkill>) => void | event.EventSkillTrigger
+  evaluateOnEvent?: (context: Context, state: ReadonlyState<SkillEventState>, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => void | EventSkillTrigger
 
   /**
    * アクセス処理が完了した直後の処理をここで行う
    * 
    * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
    */
-  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<access.AccessDencoResult & ActiveSkill>, access: ReadonlyState<access.AccessState>) => undefined | AccessUserResult
+  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, access: ReadonlyState<AccessState>) => undefined | AccessUserResult
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  

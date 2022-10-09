@@ -1,4 +1,4 @@
-import { getDefense } from "../core/access";
+import { getDefense } from "../core/access/access";
 import { SkillLogic } from "../core/skill";
 
 

@@ -1,4 +1,4 @@
-import { getAccessDenco, hasSkillTriggered, repeatAccess } from "../core/access";
+import { getAccessDenco, hasSkillTriggered, repeatAccess } from "../core/access/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {

@@ -1,5 +1,5 @@
 import { init } from "../.."
-import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access"
+import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"

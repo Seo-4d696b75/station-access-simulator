@@ -1,4 +1,4 @@
-import { getFormation } from "../core/access"
+import { getFormation } from "../core/access/access"
 import { SkillLogic } from "../core/skill"
 import { evaluateSkillAfterAccess, EventSkillTrigger } from "../core/skillEvent"
 

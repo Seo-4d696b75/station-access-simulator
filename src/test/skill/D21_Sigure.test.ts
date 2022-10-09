@@ -1,5 +1,5 @@
 import { DencoManager, init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { initUser } from "../../core/user"

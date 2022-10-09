@@ -1,6 +1,6 @@
 import moment from "moment-timezone"
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"

@@ -1,4 +1,4 @@
-import { AccessDencoState, getDefense } from "../core/access";
+import { AccessDencoState, getDefense } from "../core/access/access";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {

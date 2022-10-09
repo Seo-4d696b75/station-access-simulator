@@ -1,6 +1,6 @@
 import moment from "moment-timezone";
 import { AccessUserResult, copyAccessUserResult, TIME_FORMAT } from "..";
-import * as Access from "./access";
+import * as Access from "./access/access";
 import { Context } from "./context";
 import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";

@@ -1,6 +1,6 @@
 import moment from "moment-timezone"
 import { init, refreshState } from "../.."
-import { getAccessDenco, startAccess } from "../../core/access"
+import { getAccessDenco, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"

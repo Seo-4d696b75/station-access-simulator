@@ -1,4 +1,4 @@
-import { AccessSide, AccessState } from "./access"
+import { AccessSide, AccessState } from "./access/access"
 import { DencoState } from "./denco"
 import { EventTriggeredSkill } from "./skillEvent"
 import { LinksResult } from "./station"

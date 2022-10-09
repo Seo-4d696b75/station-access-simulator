@@ -1,4 +1,4 @@
-import { counterAttack } from "../core/access"
+import { counterAttack } from "../core/access/access"
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
