@@ -1,6 +1,6 @@
 import moment from "moment-timezone"
 import { UserParam } from ".."
-import { Context, fixClock, getCurrentTime } from "./context"
+import { Context } from "./context"
 import { copyDencoState, Denco, DencoState } from "./denco"
 import { AccessSkillRecipe, AccessSkillTrigger, ActiveSkill, refreshSkillState, SkillHolder } from "./skill"
 import { LinkResult, LinksResult, Station, StationLink } from "./station"
@@ -246,7 +246,7 @@ const DEFAULT_SCORE_PREDICATE: ScorePredicate = {
   calcAccessScore: (context, state, station) => 100,
   calcLinkSuccessScore: (context, state, access) => 100,
   calcDamageScore: (context, damage) => Math.floor(damage),
-  calcLinkScore: (context, link) => Math.floor((getCurrentTime(context) - link.start) / 100)
+  calcLinkScore: (context, link) => Math.floor((context.currentTime - link.start) / 100)
 }
 
 export interface AccessTriggeredSkill extends Denco {
@@ -478,8 +478,8 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
 }
 
 export function startAccess(context: Context, config: AccessConfig): AccessResult {
-  context = fixClock(context)
-  const time = getCurrentTime(context)
+  context = context.fixClock()
+  const time = context.currentTime
   context.log.log(`アクセス処理の開始 ${moment(time).format("YYYY-MM-DD HH:mm:ss.SSS")}`)
 
   var state: AccessState = {
@@ -514,7 +514,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
       context.log.warn(`守備側(${d.name})のリンクに対象駅(${config.station.name})が含まれていません,追加します`)
       link = {
         ...config.station,
-        start: getCurrentTime(context).valueOf() - 100
+        start: context.currentTime.valueOf() - 100
       }
       d.link.push(link)
     }
@@ -662,7 +662,7 @@ function checkSkillAfterAccess(context: Context, state: AccessResult, which: Acc
 }
 
 function calcLinkResult(context: Context, link: StationLink, d: Denco, idx: number): LinkResult {
-  const time = getCurrentTime(context)
+  const time = context.currentTime
   const duration = time - link.start
   if (duration < 0) {
     context.log.error(`リンク時間が負数です ${duration}[ms] ${JSON.stringify(link)}`)
@@ -705,7 +705,7 @@ const LINK_COMBO_RATIO: readonly number[] = [
  * @returns 
  */
 function calcLinksResult(context: Context, links: readonly StationLink[], d: ReadonlyState<DencoState>, which: AccessSide): LinksResult {
-  const time = getCurrentTime(context).valueOf()
+  const time = context.currentTime
   const linkResult = links.map((link, idx) => calcLinkResult(context, link, d, idx))
   const linkScore = linkResult.map(link => link.linkScore).reduce((a, b) => a + b, 0)
   const match = linkResult.filter(link => link.matchAttr)
@@ -1466,7 +1466,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
       // 攻撃側のリンク成功
       d.link.push({
         ...state.station,
-        start: getCurrentTime(context).valueOf(),
+        start: context.currentTime,
       })
     } else if (d.who === "defense" && state.linkDisconnected) {
       // 守備側のリンク解除 フットバースなどリブートを伴わない場合

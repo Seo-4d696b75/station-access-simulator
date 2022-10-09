@@ -1,11 +1,11 @@
+import moment from "moment-timezone"
 import { AccessUserResult, TIME_FORMAT } from ".."
 import * as access from "./access"
-import { Context, fixClock, getCurrentTime } from "./context"
+import { Context } from "./context"
 import { copyDencoState, DencoState } from "./denco"
 import * as event from "./skillEvent"
-import { SkillProperty, SkillPropertyReader } from "./skillManager"
+import { SkillProperty } from "./skillManager"
 import { copyUserState, copyUserStateTo, FormationPosition, ReadonlyState, UserState } from "./user"
-import moment from "moment-timezone"
 
 /**
  * スキル状態の遷移の種類
@@ -382,7 +382,7 @@ export function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"pos
  * @returns `active`へ遷移した新しい状態
  */
 export function activateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
-  context = fixClock(context)
+  context = context.fixClock()
   return carIndex.reduce((next, idx) => activateSkillOne(context, next, idx), copyUserState(state))
 }
 
@@ -479,7 +479,7 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
  * @returns `cooldown`へ遷移した新しい状態
  */
 export function deactivateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
-  context = fixClock(context)
+  context = context.fixClock()
   return carIndex.reduce((next, idx) => deactivateSkillOne(context, next, idx), copyUserState(state))
 }
 
@@ -494,7 +494,6 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
     throw Error()
   }
   const skill = d.skill
-  context = fixClock(context)
   switch (skill.state.transition) {
     case "manual":
     case "manual-condition":
@@ -714,7 +713,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
  * @returns true if any change
  */
 function refreshTimeout(context: Context, state: UserState, idx: number): boolean {
-  const time = getCurrentTime(context)
+  const time = context.currentTime
   const denco = state.formation[idx]
   const skill = denco.skill
   if (skill.type !== "possess") return false

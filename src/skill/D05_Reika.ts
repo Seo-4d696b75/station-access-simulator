@@ -1,4 +1,3 @@
-import { getCurrentTime } from "../core/context"
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
@@ -14,7 +13,7 @@ const skill: SkillLogic = {
   deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")
-    const now = getCurrentTime(context)
+    const now = context.currentTime
     return {
       activeTimeout: now + active * 1000,
       cooldownTimeout: now + (active + wait) * 1000

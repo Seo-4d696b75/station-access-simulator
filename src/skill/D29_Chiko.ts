@@ -1,4 +1,4 @@
-import { getAccessDenco, getCurrentTime, SkillLogic } from "..";
+import { getAccessDenco, SkillLogic } from "..";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
@@ -56,7 +56,7 @@ const skill: SkillLogic = {
     }
   },
   deactivateAt: (context, state, self) => {
-    const now = getCurrentTime(context)
+    const now = context.currentTime
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")
     return {

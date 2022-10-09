@@ -1,13 +1,12 @@
-import { getCurrentTime } from "../core/context"
-import { SkillLogic } from "../core/skill"
 import moment from "moment-timezone"
+import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
     if (step === "damage_common" &&
       self.who === "defense") {
       return (state) => {
-        const hour = moment(getCurrentTime(context)).hour()
+        const hour = moment(context.currentTime).hour()
         if (hour < 6 || hour >= 18) {
           const def = self.skill.property.readNumber("DEF_night")
           state.defendPercent += def

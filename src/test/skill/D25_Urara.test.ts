@@ -1,8 +1,8 @@
-import { DencoManager, init } from "../.."
-import { getCurrentTime, initContext } from "../../core/context"
-import { changeFormation, initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
+import { DencoManager, init } from "../.."
+import { initContext } from "../../core/context"
 import { activateSkill, getSkill } from "../../core/skill"
+import { changeFormation, initUser, refreshState } from "../../core/user"
 
 describe("うららのスキル", () => {
   beforeAll(init)
@@ -66,7 +66,7 @@ describe("うららのスキル", () => {
     if (event.type === "skill_trigger") {
       expect(event.data.denco.name).toBe("urara")
       expect(event.data.step).toBe("self")
-      expect(event.data.time).toBe(getCurrentTime(context))
+      expect(event.data.time).toBe(context.currentTime)
     }
     // レイカのスキル cooldown -> idle
     reika = state.formation[1]

@@ -1,12 +1,12 @@
 import moment from "moment-timezone";
 import { AccessUserResult, copyAccessUserResult, TIME_FORMAT } from "..";
 import * as Access from "./access";
-import { Context, fixClock, getCurrentTime } from "./context";
+import { Context } from "./context";
 import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, ProbabilityPercent } from "./skill";
 import { Station } from "./station";
-import { copyUserParam, copyUserState, copyUserStateTo, ReadonlyState, refreshState, refreshUserState, UserParam, UserState } from "./user";
+import { copyUserParam, copyUserState, copyUserStateTo, ReadonlyState, refreshUserState, UserParam, UserState } from "./user";
 
 export interface SkillEventDencoState extends DencoState {
   who: "self" | "other"
@@ -128,7 +128,7 @@ export type EventSkillTrigger = {
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
 export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<Access.AccessDencoResult & ActiveSkill>, trigger: EventSkillTrigger): AccessUserResult {
-  context = fixClock(context)
+  context = context.fixClock()
   let next = copyAccessUserResult(state)
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
@@ -140,7 +140,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
   }
   const eventState: SkillEventState = {
     user: copyUserParam(state.user),
-    time: getCurrentTime(context),
+    time: context.currentTime,
     formation: state.formation.map((d, idx) => {
       return {
         ...copyDencoState(d),
@@ -274,7 +274,7 @@ function canSkillEvaluated(context: Context, state: ReadonlyState<SkillEventStat
 }
 
 export function randomAccess(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
-  context = fixClock(context)
+  context = context.fixClock()
   //TODO ランダム駅の選択
   const station: Station = {
     name: "ランダムな駅",
@@ -337,7 +337,7 @@ export interface SkillEventReservation {
  * @returns 待機列に追加した新しい状態
  */
 export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserState>, time: number, denco: Denco, trigger: EventSkillTrigger): UserState {
-  const now = getCurrentTime(context).valueOf()
+  const now = context.currentTime.valueOf()
   if (now > time) {
     context.log.error(`現在時刻より前の時刻は指定できません time: ${time}, denco: ${JSON.stringify(denco)}`)
     throw Error()
@@ -384,7 +384,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
     return next
   }
   const eventState: SkillEventState = {
-    time: getCurrentTime(context).valueOf(),
+    time: context.currentTime.valueOf(),
     user: state.user,
     formation: next.formation.map((d, i) => {
       return {
@@ -422,8 +422,7 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
 export function refreshEventQueue(context: Context, state: UserState) {
-  context = fixClock(context)
-  const time = getCurrentTime(context).valueOf()
+  const time = context.currentTime
   while (state.queue.length > 0) {
     const entry = state.queue[0]
     if (time < entry.time) break

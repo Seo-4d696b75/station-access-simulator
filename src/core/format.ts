@@ -1,6 +1,6 @@
 import { computeWidth } from "meaw"
 import { AccessDencoState, AccessSide, AccessSideState, AccessState, getAccessDenco } from "./access"
-import { Context, getCurrentTime } from "./context"
+import { Context } from "./context"
 import { DencoAttribute } from "./denco"
 import { Event, LevelupDenco } from "./event"
 import { EventTriggeredSkill } from "./skillEvent"
@@ -15,7 +15,7 @@ export function printEvents(context: Context, user: ReadonlyState<UserState> | u
 }
 
 export function formatEvent(context: Context, event: Event, detail: boolean = false): string {
-  const time = getCurrentTime(context).valueOf()
+  const time = context.currentTime.valueOf()
   switch (event.type) {
     case "access":
       return detail ? formatAccessDetail(event.data.access, event.data.which, time) : formatAccessEvent(event.data.access, event.data.which, time)

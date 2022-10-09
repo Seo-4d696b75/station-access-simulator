@@ -1,6 +1,5 @@
-import { getCurrentTime } from "../core/context";
 import { SkillLogic } from "../core/skill";
-import { evaluateSkillAtEvent, EventSkillRecipe, EventSkillTrigger } from "../core/skillEvent";
+import { evaluateSkillAtEvent, EventSkillTrigger } from "../core/skillEvent";
 
 const skill: SkillLogic = {
   canEnabled: (context, state, self) => {
@@ -43,7 +42,7 @@ const skill: SkillLogic = {
   deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active") // 0ms
     const wait = self.skill.property.readNumber("wait")
-    const now = getCurrentTime(context)
+    const now = context.currentTime
     return {
       activeTimeout: now + active * 1000,
       cooldownTimeout: now + (active + wait) * 1000,

@@ -1,6 +1,6 @@
 import moment from "moment-timezone";
-import { copyDencoStateTo, fixClock, SkillManager } from "..";
-import { Context, getCurrentTime } from "./context";
+import { copyDencoStateTo, SkillManager } from "..";
+import { Context } from "./context";
 import { copyDencoState, DencoState } from "./denco";
 import DencoManager from "./dencoManager";
 import { Event, LevelupEvent } from "./event";
@@ -80,7 +80,7 @@ export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: nu
 
 export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, param?: Partial<UserParam>): UserState {
   if (!formation) formation = []
-  const date = moment(getCurrentTime(context))
+  const date = moment(context.currentTime)
     .millisecond(0)
     .second(0)
     .minute(0)
@@ -157,7 +157,7 @@ export function refreshState(context: Context, state: ReadonlyState<UserState>):
  * @param state 
  */
 export function refreshUserState(context: Context, state: UserState) {
-  context = fixClock(context)
+  context = context.fixClock()
   refreshSkillState(context, state)
   refreshEventQueue(context, state)
   refreshEXPState(context, state)
@@ -191,7 +191,7 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
     let event: LevelupEvent = {
       type: "levelup",
       data: {
-        time: getCurrentTime(context),
+        time: context.currentTime,
         after: copyDencoState(d),
         before: before,
       }

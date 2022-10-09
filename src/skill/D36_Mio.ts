@@ -1,4 +1,4 @@
-import { calcBaseDamage, getBaseDamage, getCurrentTime, getDefense, SkillLogic } from "..";
+import { calcBaseDamage, getBaseDamage, getDefense, SkillLogic } from "..";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
@@ -48,7 +48,7 @@ const skill: SkillLogic = {
   deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")
-    const now = getCurrentTime(context)
+    const now = context.currentTime
     return {
       activeTimeout: now + active * 1000,
       cooldownTimeout: now + (active + wait) * 1000,
