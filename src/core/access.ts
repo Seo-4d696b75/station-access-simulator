@@ -1080,7 +1080,7 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
       if (recipe) {
         markTriggerSkill(state.offense, step, d)
         context.log.log(`スキルが発動(攻撃側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
-        recipe(state)
+        state = recipe(state) ?? state
       }
     }
   })
@@ -1103,7 +1103,7 @@ function evaluateSkillAt(context: Context, state: AccessState, step: AccessEvalu
         if (recipe) {
           markTriggerSkill(defense, step, d)
           context.log.log(`スキルが発動(守備側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
-          recipe(state)
+          state = recipe(state) ?? state
         }
       }
     })
@@ -1179,12 +1179,8 @@ function isSkillActive(skill: SkillHolder): boolean {
  */
 function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: void | AccessSkillTrigger): AccessSkillRecipe | undefined {
   if (typeof result === "undefined") return
-  const trigger = result.probability
-  if (typeof trigger === "undefined") {
-    // 確定発動
-    return result.recipe
-  }
-  let percent = Math.min(trigger, 100)
+  if (typeof result === "function") return result
+  let percent = Math.min(result.probability, 100)
   percent = Math.max(percent, 0)
   if (percent >= 100) return result.recipe
   if (percent <= 0) return

@@ -109,7 +109,7 @@ export function changeFormation(context: Context, current: ReadonlyState<UserSta
   let before = current.formation.map(d => d.name).join(",")
   let after = formation.map(d => d.name).join(",")
   context.log.log(`編成を変更します [${before}] -> [${after}]`)
-  _refreshState(context, state)
+  refreshUserState(context, state)
   return state
 }
 
@@ -146,18 +146,17 @@ export function copyUserParam(param: ReadonlyState<UserParam>): UserParam {
  * @returns 新しい状態 現在の状態をコピーしてから更新します
  */
 export function refreshState(context: Context, state: ReadonlyState<UserState>): UserState {
-  context = fixClock(context)
-  let next = copyUserState(state)
-  refreshSkillState(context, next)
-  refreshEventQueue(context, next)
-  refreshEXPState(context, next)
+  const next = copyUserState(state)
+  refreshUserState(context, next)
   return next
 }
 
 /**
- * {@link refreshState} の破壊的バージョン
+ * 現在の編成状態を更新する（破壊的）
+ * @param context 
+ * @param state 
  */
-export function _refreshState(context: Context, state: UserState) {
+export function refreshUserState(context: Context, state: UserState) {
   context = fixClock(context)
   refreshSkillState(context, state)
   refreshEventQueue(context, state)
@@ -174,6 +173,12 @@ export function refreshEXPState(context: Context, state: UserState) {
   indices.forEach(idx => refreshEXPStateOne(context, state, idx))
 }
 
+/**
+ * 指定した編成位置のでんこの経験値・レベルの状態を更新する（破壊的）
+ * @param context 
+ * @param state 
+ * @param idx 
+ */
 function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
   const d = state.formation[idx]
   const levelup = checkLevelup(context, d)

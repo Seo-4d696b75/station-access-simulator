@@ -111,25 +111,25 @@ export type ProbabilityPercent = number
 /**
  * スキル発動の確率計算の方法・発動時の処理を定義します
  * 
+ * - 確率計算に依存せず発動することが確定している場合は`EventSkillRecipe`を直接返します
+ * - 確率計算に依存して発動する場合は, `probability`:発動の確率, `recipe`:発動した場合の状態の更新方法をそれぞれ指定します
+ *
  * **注意** `probability`に100%未満の数値を設定した場合は、まだスキル発動の有無は決定されていません  
  * 実際に発動した場合の状態更新の方法は関数`recipe`で指定してください
  */
-export interface AccessSkillTrigger {
-/**
-   * 発動が確率計算に依存する場合に指定してください
- * 
-   * `undefened`の場合は確率計算に依存せず必ず発動します
- */
-  probability?: ProbabilityPercent
+export type AccessSkillTrigger = {
+  probability: ProbabilityPercent
   recipe: AccessSkillRecipe
-}
+} | AccessSkillRecipe
 
 /**
  * アクセス時に発動したスキル効果の処理
  * 
- * 引数stateは可変(mutable)です. スキル効果による状態変化を直接書き込みます.
+ * @param state 可変(mutable)です. スキル効果による状態変化を直接書き込めます.
+ * @return `AccessState`を返す場合は返り値で状態を更新します.  
+ *   `undefined`を返す場合は引数`state`を次の状態として扱います.
  */
-export type AccessSkillRecipe = (state: access.AccessState) => void
+export type AccessSkillRecipe = (state: access.AccessState) => void | access.AccessState
 
 /**
  * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
@@ -180,7 +180,7 @@ export interface SkillLogic {
    * 
    * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
    */
-  onAccessComplete?: (context: Context, state: AccessUserResult, self: ReadonlyState<access.AccessDencoResult & ActiveSkill>, access: ReadonlyState<access.AccessState>) => undefined | AccessUserResult
+  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<access.AccessDencoResult & ActiveSkill>, access: ReadonlyState<access.AccessState>) => undefined | AccessUserResult
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
@@ -231,14 +231,14 @@ export interface SkillLogic {
    * 
    * スキル状態遷移のタイプ`manual,manual-condition,auto,auto-condition`限定
    */
-  onActivated?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
+  onActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
 
-  onHourCycle?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
+  onHourCycle?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
 
-  onFormationChanged?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
-  onDencoHPChanged?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
-  onLinkSuccess?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
-  onDencoReboot?: (context: Context, state: UserState, self: ReadonlyState<DencoState & ActiveSkill>) => UserState
+  onFormationChanged?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  onDencoHPChanged?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  onLinkSuccess?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  onDencoReboot?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
 }
 
 /**
@@ -459,7 +459,7 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
       carIndex: carIndex,
       skill: skill,
     }
-    state = callback(context, state, self)
+    state = callback(context, state, self) ?? state
   }
   refreshSkillState(context, state)
   return state
@@ -558,7 +558,7 @@ export function refreshSkillState(context: Context, state: UserState) {
 }
 
 /**
- * 指定した編成位置のでんこスキル状態を更新する
+ * 指定した編成位置のでんこスキル状態を更新する（破壊的）
  * @param context 
  * @param state 
  * @param idx 
@@ -688,8 +688,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
             carIndex: idx,
             skill: skill,
           }
-          const next = callback(context, copyUserState(state), self)
-          copyUserStateTo(next, state)
+          const next = callback(context, state, self)
+          if (next) copyUserStateTo(next, state) // TODO copyUserStateTo必要？
         }
       } else if (!active && skill.state.type === "active") {
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)

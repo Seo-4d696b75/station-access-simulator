@@ -6,7 +6,7 @@ import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
 import { ActiveSkill, isSkillActive, ProbabilityPercent } from "./skill";
 import { Station } from "./station";
-import { copyUserParam, copyUserState, copyUserStateTo, ReadonlyState, UserParam, UserState, _refreshState } from "./user";
+import { copyUserParam, copyUserState, copyUserStateTo, ReadonlyState, refreshState, refreshUserState, UserParam, UserState } from "./user";
 
 export interface SkillEventDencoState extends DencoState {
   who: "self" | "other"
@@ -94,23 +94,22 @@ export type SkillEventEvaluateStep =
 /**
  * スキル発動型イベントにおいてスキル発動時の状態変更を定義します
  * 
- * 引数stateは可変(mutable)です. スキル効果による状態変化を直接書き込みます.
- * @param state 現在の状態
+ * @param state 現在の状態 可変(mutable)です. スキル効果による状態変化を直接書き込めます.
+ * @return `SkillEventState`を返す場合は返り値で状態を更新します.  
+ *   `undefined`を返す場合は引数`state`を次の状態として扱います.
  */
-export type EventSkillRecipe = (state: SkillEventState) => void
+export type EventSkillRecipe = (state: SkillEventState) => void | SkillEventState
 
 /**
  * スキル発動型イベントにおいてスキル発動の確率計算の方法・発動時の処理を定義します
+ * 
+ * - 確率計算に依存せず発動することが確定している場合は`EventSkillRecipe`を直接返します
+ * - 確率計算に依存して発動する場合は, `probability`:発動の確率, `recipe`:発動した場合の状態の更新方法をそれぞれ指定します
  */
-export interface EventSkillTrigger {
-  /**
-   * 発動が確率計算に依存する場合に指定してください
-   * 
-   * `undefened`の場合は確率計算に依存せず必ず発動します
-   */
-  probability?: ProbabilityPercent
+export type EventSkillTrigger = {
+  probability: ProbabilityPercent
   recipe: EventSkillRecipe
-}
+} | EventSkillRecipe
 
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
@@ -173,7 +172,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
       ],
     }
   }
-  _refreshState(context, next)
+  refreshUserState(context, next)
   return next
 }
 
@@ -209,7 +208,7 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
     const trigger = skill.evaluateOnEvent?.(context, state, active)
     const recipe = canSkillEvaluated(context, state, trigger)
     if (recipe) {
-      recipe(state)
+      state = recipe(state) ?? state
       let e: SkillTriggerEvent = {
         type: "skill_trigger",
         data: {
@@ -234,7 +233,7 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
 
   // 最新の状態を参照
   self = copySKillEventDencoState(state.formation[state.carIndex])
-  recipe(state)
+  state = recipe(state) ?? state
   let triggerEvent: SkillTriggerEvent = {
     type: "skill_trigger",
     data: {
@@ -252,12 +251,9 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
 
 function canSkillEvaluated(context: Context, state: ReadonlyState<SkillEventState>, trigger: EventSkillTrigger | void): EventSkillRecipe | undefined {
   if (typeof trigger === "undefined") return
+  if (typeof trigger === "function") return trigger
   let percent = trigger.probability
   const boost = state.probabilityBoostPercent
-  if (typeof percent === "undefined") {
-    // 確定発動
-    return trigger.recipe
-  }
   if (percent >= 100) {
     return trigger.recipe
   }
@@ -415,20 +411,19 @@ export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<User
       queue: next.queue,
     }
   }
-  _refreshState(context, next)
+  refreshUserState(context, next)
   return next
 }
 
 /**
  * 待機列中のイベントの指定時刻を現在時刻に参照して必要なら評価を実行する(破壊的)
  * @param context 現在時刻は`context#clock`を参照する {@see getCurrentTime}
- * @param current 現在の状態 
+ * @param state 現在の状態 
  * @returns 発動できるイベントが待機列中に存在する場合は評価を実行した新しい状態
  */
-export function refreshEventQueue(context: Context, current: ReadonlyState<UserState>) {
+export function refreshEventQueue(context: Context, state: UserState) {
   context = fixClock(context)
   const time = getCurrentTime(context).valueOf()
-  let state = copyUserState(current)
   while (state.queue.length > 0) {
     const entry = state.queue[0]
     if (time < entry.time) break
