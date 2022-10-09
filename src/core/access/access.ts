@@ -2,12 +2,13 @@ import moment from "moment-timezone"
 import { UserParam } from "../.."
 import { Context } from "../context"
 import { copyDencoState, Denco, DencoState } from "../denco"
-import { ActiveSkill, refreshSkillState, SkillHolder } from "../skill"
-import { LinksResult, Station } from "../station"
-import { copyUserParam, copyUserState, ReadonlyState, refreshEXPState, UserState } from "../user"
-import { calcAccessScoreExp, calcDamageScoreExp, calcLinkResult, calcLinkScoreExp, calcLinksResult, calcScoreToExp, ScoreExpState } from "./score"
-import { AccessSkillRecipe, AccessSkillTrigger } from "./type"
-
+import { ActiveSkill, refreshSkillState } from "../skill"
+import { ReadonlyState } from "../state"
+import { Station } from "../station"
+import { copyUserParam, copyUserState, UserState } from "../user"
+import { AccessResult, completeAccess } from "./result"
+import { calcAccessScoreExp, calcDamageScoreExp, calcLinkResult, calcLinkScoreExp, calcScoreToExp, ScoreExpState } from "./score"
+import { AccessSkillRecipe, AccessSkillTrigger, filterActiveSkill, hasActiveSkill } from "./skill"
 
 /**
  * アクセスにおけるスキルの評価ステップ
@@ -163,30 +164,6 @@ export interface AccessDencoState extends DencoState {
 }
 
 
-/**
- * アクセス終了後の状態
- * 
- * アクセス直後に発生した他のイベント  
- * - リブートによるリンクの解除・リンクスコア＆経験値の追加
- * - 経験値の追加によるレベルアップ
- * - アクセス直後に発動したスキル
- * による状態の変化も含まれる
- */
-export interface AccessDencoResult extends AccessDencoState {
-  /**
-   * アクセスによってリブートしたリンク
-   * 
-   * リブート（{@link AccessDencoState reboot} === true）した場合は解除したすべてのリンク結果、  
-   * リブートを伴わないフットバースの場合は解除したひとつのリンク結果
-   */
-  disconnectedLink?: LinksResult
-
-  /**
-   * 現在のHP
-   */
-  currentHp: number
-}
-
 export interface AccessTriggeredSkill extends Denco {
   readonly step: AccessEvaluateStep
 }
@@ -259,13 +236,6 @@ export interface AccessSideState {
     * アクセス・被アクセスするでんこがアクセス中に得た経験値（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
    */
   displayedExp: number
-}
-
-/**
- * アクセス時の攻守各側の詳細と結果
- */
-export interface AccessUserResult extends AccessSideState, UserState {
-  formation: AccessDencoResult[]
 }
 
 /**
@@ -354,15 +324,6 @@ export interface AccessState {
   pinkItemUsed: boolean
 }
 
-/**
- * アクセスの結果
- * 
- * アクセスによって更新された攻守両側の状態は`offense, defense`を参照すること
- */
-export interface AccessResult extends AccessState {
-  offense: AccessUserResult
-  defense?: AccessUserResult
-}
 
 function hasDefense(state: AccessState): state is AccessStateWithDefense {
   return !!state.defense
@@ -500,13 +461,6 @@ function copyAccessDencoState(state: ReadonlyState<AccessDencoState>): AccessDen
   }
 }
 
-function copyAccessDencoResult(state: ReadonlyState<AccessDencoResult>): AccessDencoResult {
-  return {
-    ...copyAccessDencoState(state),
-    disconnectedLink: state.disconnectedLink
-  }
-}
-
 export function copyAccessSideState(state: ReadonlyState<AccessSideState>): AccessSideState {
   return {
     user: copyUserParam(state.user),
@@ -519,135 +473,6 @@ export function copyAccessSideState(state: ReadonlyState<AccessSideState>): Acce
     displayedScore: state.displayedScore,
     displayedExp: state.displayedExp,
   }
-}
-
-export function copyAccessUserResult(state: ReadonlyState<AccessUserResult>): AccessUserResult {
-  return {
-    ...copyUserState(state),
-    carIndex: state.carIndex,
-    score: state.score,
-    probabilityBoostPercent: state.probabilityBoostPercent,
-    probabilityBoosted: state.probabilityBoosted,
-    formation: state.formation.map(d => copyAccessDencoResult(d)),
-    triggeredSkills: Array.from(state.triggeredSkills),
-    displayedScore: state.displayedScore,
-    displayedExp: state.displayedExp,
-  }
-}
-
-function completeAccess(context: Context, config: AccessConfig, access: ReadonlyState<AccessState>): AccessResult {
-  let result: AccessResult = {
-    ...copyAccessState(access),
-    offense: initUserResult(context, config.offense.state, access, "offense"),
-    defense: config.defense ? initUserResult(context, config.defense.state, access, "defense") : undefined,
-  }
-
-  // 各でんこのリンク状態を計算
-  result = completeDencoLink(context, result, "offense")
-  result = completeDencoLink(context, result, "defense")
-
-  // 経験値の反映
-  result = completeDencoEXP(context, result, "offense")
-  result = completeDencoEXP(context, result, "defense")
-
-  // アクセスイベントを追加
-  result = addAccessEvent(context, config.offense.state, result, "offense")
-  result = addAccessEvent(context, config.defense?.state, result, "defense")
-
-  // レベルアップ処理
-  result = checkLevelup(context, result)
-
-  // アクセス直後のスキル発動イベント
-  result = checkSKillState(context, result)
-  result = checkSkillAfterAccess(context, result, "offense")
-  result = checkSkillAfterAccess(context, result, "defense")
-  result = checkSKillState(context, result)
-
-
-  return result
-}
-
-function checkSkillAfterAccess(context: Context, state: AccessResult, which: AccessSide): AccessResult {
-  const side = (which === "offense") ? state.offense : state.defense
-  if (!side) return state
-  let formation = side
-  filterActiveSkill(side.formation).forEach(idx => {
-    // スキル発動による状態変更を考慮して評価直前にコピー
-    const d = copyAccessDencoResult(formation.formation[idx])
-    const skill = d.skill
-    if (skill.type !== "possess") {
-      context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
-      throw Error()
-    }
-    const predicate = skill?.onAccessComplete
-    if (skill && predicate) {
-      const self = {
-        ...d,
-        skill: skill,
-      }
-      const next = predicate(context, formation, self, state)
-      if (next) {
-        formation = next
-      }
-    }
-  })
-  if (which === "offense") {
-    state.offense = formation
-  } else {
-    state.defense = formation
-  }
-  return state
-}
-
-function initUserResult(context: Context, state: ReadonlyState<UserState>, access: ReadonlyState<AccessState>, which: AccessSide): AccessUserResult {
-  const side = (which === "offense") ? access.offense : access.defense
-  if (!side) {
-    context.log.error(`アクセス結果の初期化に失敗`)
-    throw Error()
-  }
-
-  return {
-    // UserState
-    ...copyUserState(state),
-    event: [],
-    // AccessSideState
-    ...copyAccessSideState(side),
-  }
-}
-
-function addAccessEvent(context: Context, origin: ReadonlyState<UserState> | undefined, result: AccessResult, which: AccessSide): AccessResult {
-  const side = (which === "offense") ? result.offense : result.defense
-  if (!side || !origin) return result
-  const copy = copyAccessState(result)
-  side.event = [
-    ...origin.event,
-    {
-      // このアクセスイベントを追加
-      type: "access",
-      data: {
-        access: copy,
-        which: which
-      }
-    },
-    ...side.event
-  ]
-  return result
-}
-
-function checkSKillState(context: Context, result: AccessResult): AccessResult {
-  refreshSkillState(context, result.offense)
-  if (result.defense) {
-    refreshSkillState(context, result.defense)
-  }
-  return result
-}
-
-function checkLevelup(context: Context, result: AccessResult): AccessResult {
-  refreshEXPState(context, result.offense)
-  if (result.defense) {
-    refreshEXPState(context, result.defense)
-  }
-  return result
 }
 
 function getDenco(state: AccessState, which: AccessSide): AccessDencoState {
@@ -977,55 +802,6 @@ function markTriggerSkill(state: AccessSideState, step: AccessEvaluateStep, denc
 }
 
 /**
- * 指定したでんこのスキルが発動済みか確認する
- * 
- * １度目のスキル発動における各コールバック呼び出しのタイミングでの返値の変化は次のとおり
- * - `Skill#canEvaluate` : `false`
- * - `Skill#evaluate` : `true`
- * @param state 
- * @param denco 
- * @param step `undefined`の場合は`denco`の一致でのみ検索する
- * @returns true if has been triggered
- */
-export function hasSkillTriggered(state: ReadonlyState<AccessSideState> | undefined, denco: Denco, step?: AccessEvaluateStep): boolean {
-  if (!state) return false
-  return state.triggeredSkills.findIndex(t => {
-    return t.numbering === denco.numbering && (!step || step === t.step)
-  }) >= 0
-}
-
-/**
- * 編成からアクティブなスキル（スキルの保有・スキル状態・スキル無効化の影響を考慮）を抽出する
- * @param list 
- * @param step 
- * @param which 
- * @returns 
- */
-function filterActiveSkill(list: readonly ReadonlyState<AccessDencoState>[]): number[] {
-  return list.filter(d => {
-    return hasActiveSkill(d)
-  }).map(d => d.carIndex)
-}
-
-/**
- * アクセス中のスキル無効化の影響も考慮してアクティブなスキルか判定
- * @param d 
- * @returns 
- */
-function hasActiveSkill(d: ReadonlyState<AccessDencoState>): boolean {
-  return isSkillActive(d.skill) && !d.skillInvalidated
-}
-
-/**
- * スキル保有の有無とスキル状態を考慮してアクティブなスキルか判定
- * @param skill 
- * @returns 
- */
-function isSkillActive(skill: SkillHolder): boolean {
-  return skill.type === "possess" && skill.state.type === "active"
-}
-
-/**
  * スキルのロジックと発動確率まで総合して発動有無を判定する
  * @param state 
  * @param d 発動する可能性があるアクティブなスキル
@@ -1298,62 +1074,6 @@ function updateDencoHP(context: Context, d: AccessDencoState) {
   d.hpAfter = Math.min(Math.max(d.currentHp - damage, 0), d.maxHp)
   // Reboot有無の確定
   d.reboot = (d.hpAfter === 0)
-}
-
-function completeDencoLink(context: Context, state: AccessResult, which: AccessSide): AccessResult {
-  const side = which === "offense" ? state.offense : state.defense
-  // 編成全員のリンク解除を確認する
-  side?.formation.map(d => {
-    if (d.reboot) {
-      // リブートにより全リンク解除
-      const disconnectedLink = d.link
-      d.link = []
-      const linkResult = calcLinksResult(context, disconnectedLink, d, which)
-      d.exp.link = linkResult.exp
-      d.disconnectedLink = linkResult
-      side.score.link = linkResult.totalScore
-      side.event.push({
-        type: "reboot",
-        data: linkResult,
-      })
-    } else if (d.who === "offense" && state.linkSuccess) {
-      // 攻撃側のリンク成功
-      d.link.push({
-        ...state.station,
-        start: context.currentTime,
-      })
-    } else if (d.who === "defense" && state.linkDisconnected) {
-      // 守備側のリンク解除 フットバースなどリブートを伴わない場合
-      const idx = d.link.findIndex(link => link.name === state.station.name)
-      if (idx < 0) {
-        context.log.error(`リンク解除した守備側のリンクが見つかりません ${state.station.name}`)
-        throw Error()
-      }
-      // 対象リンクのみ解除
-      const disconnectedLink = d.link[idx]
-      d.link.splice(idx, 1)
-      const linkResult = calcLinksResult(context, [disconnectedLink], d, "defense")
-      // 特にイベントは発生せず経験値だけ追加
-      d.exp.link = linkResult.exp
-      d.disconnectedLink = linkResult
-      side.score.link = linkResult.totalScore
-    }
-  })
-  return state
-}
-
-function completeDencoEXP(context: Context, state: AccessResult, which: AccessSide): AccessResult {
-  const side = which === "offense" ? state.offense : state.defense
-  side?.formation?.forEach(d => {
-    // アクセスによる経験値付与
-    const exp = d.exp.access + d.exp.skill + d.exp.link
-    if (d.who !== "other" || exp !== 0) {
-      context.log.log(`経験値追加 ${d.name} ${d.currentExp}(current) + ${exp} -> ${d.currentExp + exp}`)
-      context.log.log(`経験値詳細 access:${d.exp.access} skill:${d.exp.skill} link:${d.exp.link}`)
-    }
-    d.currentExp += exp
-  })
-  return state
 }
 
 function completeDisplayScoreExp(context: Context, state: AccessState, which: AccessSide): AccessState {
