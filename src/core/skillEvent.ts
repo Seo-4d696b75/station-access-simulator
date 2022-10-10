@@ -1,9 +1,10 @@
 import moment from "moment-timezone";
 import { AccessUserResult, TIME_FORMAT } from "..";
-import { AccessConfig, AccessDencoResult, random, startAccess } from "./access/index";
+import { AccessConfig, AccessDencoResult, startAccess } from "./access/index";
 import { Context } from "./context";
 import { copyDencoState, Denco, DencoState } from "./denco";
 import { Event, SkillTriggerEvent } from "./event";
+import { random } from "./random";
 import { ActiveSkill, isSkillActive, ProbabilityPercent } from "./skill";
 import { copyState, ReadonlyState } from "./state";
 import { Station } from "./station";

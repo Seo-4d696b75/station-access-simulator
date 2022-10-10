@@ -1,6 +1,7 @@
 import { DencoManager, init } from "../.."
 import { hasSkillTriggered, startAccess } from "../../core/access/index"
-import { initContext, Random, RandomMode } from "../../core/context"
+import { initContext } from "../../core/context"
+import { Random, RandomMode } from "../../core/random"
 import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
 

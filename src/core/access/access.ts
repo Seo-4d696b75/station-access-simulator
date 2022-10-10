@@ -10,7 +10,7 @@ import { copyUserParam, copyUserState, UserState } from "../user"
 import { AccessResult, completeAccess } from "./result"
 import { calcAccessScoreExp, calcDamageScoreExp, calcLinkResult, calcLinkScoreExp, calcScoreToExp, ScoreExpState } from "./score"
 import { AccessSkillRecipe, AccessSkillTrigger, filterActiveSkill, hasActiveSkill } from "./skill"
-import { hasDefense } from "./utils"
+import { getAccessDenco, getDefense, hasDefense } from "./utils"
 
 /**
  * アクセスにおけるスキルの評価ステップ
@@ -468,67 +468,6 @@ export function copyAccessSideState(state: ReadonlyState<AccessSideState>): Acce
   }
 }
 
-function getDenco(state: AccessState, which: AccessSide): AccessDencoState {
-  var s = which === "offense" ? state.offense : getDefense(state)
-  return s.formation[s.carIndex]
-}
-
-/**
- * アクセスにおける編成（攻撃・守備側）を取得する
- * @param state アクセス状態 {@link AccessState}
- * @param which 攻撃側・守備側のどちらか指定する
- * @throws 存在しない守備側を指定した場合はErrorを投げる
- * @returns `AccessDencoState[]`
- */
-export function getFormation<T>(state: { offense: { formation: T }, defense?: { formation: T } }, which: AccessSide): T {
-  if (which === "offense") {
-    return state.offense.formation
-  } else {
-    return getDefense(state).formation
-  }
-}
-
-type AccessStateArg<T> = {
-  offense: {
-    carIndex: number
-    formation: readonly T[]
-  }
-  defense?: {
-    carIndex: number
-    formation: readonly T[]
-  }
-}
-
-/**
- * アクセスにおいて直接アクセスする・アクセスを受けるでんこを取得する
- * @param state アクセス状態 {@link AccessState}
- * @param which 攻撃側・守備側のどちらか指定
- * @throws 存在しない守備側を指定した場合Error
- * @returns {@link AccessDencoState}
- */
-export function getAccessDenco<T>(state: AccessStateArg<T>, which: AccessSide): T {
-  if (which === "offense") {
-    return state.offense.formation[state.offense.carIndex]
-  } else {
-    const f = getDefense(state)
-    return f.formation[f.carIndex]
-  }
-}
-
-/**
- * アクセスの守備側の状態を取得する
- * @param state 
- * @returns {@link AccessSideState}
- * @throws 守備側が存在しない場合はError
- */
-export function getDefense<T>(state: { defense?: T }): T {
-  const s = state.defense
-  if (!s) {
-    throw Error("守備側が見つかりません")
-  }
-  return s
-}
-
 export function execute(context: Context, state: AccessState, top: boolean = true): AccessState {
   if (top) {
     // log active skill
@@ -536,7 +475,7 @@ export function execute(context: Context, state: AccessState, top: boolean = tru
       .filter(d => hasActiveSkill(d))
       .map(d => d.name)
       .join(",")
-    context.log.log(`攻撃：${getDenco(state, "offense").name}`)
+    context.log.log(`攻撃：${getAccessDenco(state, "offense").name}`)
     context.log.log(`アクティブなスキル(攻撃側): ${names}`)
 
     if (hasDefense(state)) {
@@ -545,7 +484,7 @@ export function execute(context: Context, state: AccessState, top: boolean = tru
         .filter(d => hasActiveSkill(d))
         .map(d => d.name)
         .join(",")
-      context.log.log(`守備：${getDenco(state, "defense").name}`)
+      context.log.log(`守備：${getAccessDenco(state, "defense").name}`)
       context.log.log(`アクティブなスキル(守備側): ${names}`)
 
     } else {
@@ -593,8 +532,8 @@ export function execute(context: Context, state: AccessState, top: boolean = tru
     context.log.log("攻守のダメージ計算を開始")
 
     // 属性ダメージの補正値
-    const attrOffense = getDenco(state, "offense").attr
-    const attrDefense = getDenco(state, "defense").attr
+    const attrOffense = getAccessDenco(state, "offense").attr
+    const attrDefense = getAccessDenco(state, "defense").attr
     const attr = (attrOffense === "cool" && attrDefense === "heat") ||
       (attrOffense === "heat" && attrDefense === "eco") ||
       (attrOffense === "eco" && attrDefense === "cool")

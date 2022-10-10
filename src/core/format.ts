@@ -1,5 +1,5 @@
 import { computeWidth } from "meaw"
-import { AccessDencoState, AccessSide, AccessSideState, AccessState, getAccessDenco } from "./access/access"
+import { AccessDencoState, AccessSide, AccessSideState, AccessState, getAccessDenco } from "./access/index"
 import { Context } from "./context"
 import { DencoAttribute } from "./denco"
 import { Event, LevelupDenco } from "./event"

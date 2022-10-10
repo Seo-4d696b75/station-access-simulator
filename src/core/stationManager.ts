@@ -1,4 +1,5 @@
-import { Context, Random } from "./context";
+import { Context } from "./context";
+import { Random } from "./random";
 import { Station, StationAttribute, StationLink } from "./station";
 
 class StationManager {

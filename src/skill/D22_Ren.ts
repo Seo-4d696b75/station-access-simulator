@@ -1,4 +1,4 @@
-import { getAccessDenco } from "../core/access/access";
+import { getAccessDenco } from "../core/access/index";
 import { SkillLogic } from "../core/skill";
 
 

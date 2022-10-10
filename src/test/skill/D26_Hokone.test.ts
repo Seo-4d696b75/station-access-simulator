@@ -1,10 +1,9 @@
-import { DencoManager, init } from "../.."
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { DencoManager, init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
-import { DencoState } from "../../core/denco"
+import { initContext } from "../../core/context"
+import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
 import { getFixedDamageDenco } from "../util"
 
 describe("ほこねのスキル", () => {
