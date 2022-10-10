@@ -1,7 +1,7 @@
 import { Denco } from "../denco";
 import { ProbabilityPercent, SkillHolder } from "../skill";
 import { ReadonlyState } from "../state";
-import { AccessDencoState, AccessEvaluateStep, AccessSideState, AccessState } from "./access";
+import { AccessDencoState, AccessEvaluateStep, AccessSideState, AccessState } from "./state";
 
 /**
  * アクセス時に発動したスキル効果の処理

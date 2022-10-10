@@ -5,7 +5,7 @@ import { Context } from "../context"
 import { copyDencoState, Denco, DencoState } from "../denco"
 import { ReadonlyState } from "../state"
 import { LinkResult, LinksResult, Station, StationLink } from "../station"
-import { AccessSide, AccessSideState, AccessState } from "./access"
+import { AccessSide, AccessSideState, AccessState } from "./state"
 
 
 /**

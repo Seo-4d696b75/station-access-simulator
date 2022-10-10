@@ -1,8 +1,7 @@
+import { DamageCalcState, DamageState, ScoreExpState } from "."
 import { UserParam } from "../.."
 import { Denco, DencoState } from "../denco"
 import { Station } from "../station"
-import { DamageCalcState, DamageState } from "./damage"
-import { ScoreExpState } from "./score"
 
 /**
  * アクセスにおけるスキルの評価ステップ

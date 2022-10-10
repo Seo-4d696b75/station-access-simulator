@@ -1,4 +1,4 @@
-import { AccessSide } from "./access/access";
+import { AccessSide } from "./access";
 import { DencoState } from "./denco";
 import { ReadonlyState } from "./state";
 

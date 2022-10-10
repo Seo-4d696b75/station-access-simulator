@@ -4,8 +4,8 @@ import { refreshSkillState } from "../skill"
 import { copyState, ReadonlyState } from "../state"
 import { LinksResult } from "../station"
 import { refreshEXPState, UserState } from "../user"
-import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "./access"
 import { calcLinksResult } from "./score"
+import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "./state"
 /**
  * アクセスの結果
  * 
