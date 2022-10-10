@@ -1,4 +1,4 @@
-import { calcBaseDamage, getBaseDamage, getDefense, SkillLogic } from "..";
+import { calcAccessDamage, getBaseDamage, getDefense, SkillLogic } from "..";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
@@ -6,7 +6,6 @@ const skill: SkillLogic = {
       self.which === "defense" &&
       self.who !== "defense" &&
       self.currentHp > 1) {
-      // TODO getBasaDamage
       const base = getBaseDamage(context, state)
       // 肩代わりできるダメージの有無を確認
       if (base.variable > 0) {
@@ -14,8 +13,11 @@ const skill: SkillLogic = {
           probability: self.skill.property.readNumber("probability"),
           recipe: (state) => {
             // ATKのみ考慮して基本ダメージを計算
-            // TODO calcBaseDamage
-            const base = calcBaseDamage(context, state, true, false, false)
+            const base = calcAccessDamage(context, state, {
+              useATK: true,
+              useDEF: false,
+              useAttr: false,
+            })
             const cut = Math.min(self.currentHp - 1, base)
             if (cut <= 0) {
               context.log.error(`肩代わりするダメージ量が0以下です`)
@@ -35,7 +37,6 @@ const skill: SkillLogic = {
               constant: 0
             }
             // ミオにダメージ記録
-            // TODO getDefense
             getDefense(state).formation[self.carIndex].damage = {
               value: cut,
               attr: false

@@ -1,7 +1,8 @@
-import { AccessDencoState, AccessSide, AccessSideState, AccessState, execute } from "."
+import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "."
 import { Context } from "../context"
 import { Denco } from "../denco"
 import { copyState, ReadonlyState } from "../state"
+import { execute } from "./main/execute"
 import { hasDefense } from "./utils"
 
 /**

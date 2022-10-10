@@ -16,7 +16,6 @@ const skill: SkillLogic = {
         const d = getAccessDenco(state, "defense")
         if (d.hpAfter > 0) {
           return (state) => {
-            // TODO
             const defense = getAccessDenco(state, "defense")
             // 相手のHPを0にできなかった場合
             const percent = self.skill.property.readNumber("heal")

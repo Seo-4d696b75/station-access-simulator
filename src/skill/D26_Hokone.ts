@@ -1,4 +1,4 @@
-import { calcBaseDamage, getAccessDenco } from "../core/access/index";
+import { calcAccessDamage, getAccessDenco } from "../core/access/index";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
@@ -8,7 +8,7 @@ const skill: SkillLogic = {
       if (step === "damage_special" && defense.numbering === "25") {
         return (state) => {
           const heal = self.skill.property.readNumber("heal")
-          const base = calcBaseDamage(context, state)
+          const base = calcAccessDamage(context, state)
           // 通常のATK&DEF増減による計算を考慮する
           const value = Math.floor(base * heal / 100)
           // 回復量は負数のダメージ量として処理
