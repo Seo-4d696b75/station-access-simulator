@@ -1,7 +1,7 @@
 import moment from "moment-timezone"
 import { UserParam } from "../.."
 import { Context } from "../context"
-import { copyDencoState, Denco, DencoState } from "../denco"
+import { Denco, DencoState } from "../denco"
 import { refreshSkillState } from "../skill"
 import { ReadonlyState } from "../state"
 import { Station } from "../station"
@@ -371,86 +371,5 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
   state = execute(context, state)
   context.log.log("アクセス処理の終了")
 
-  return completeAccess(context, config, copyAccessState(state))
-}
-
-export function copyAccessState(state: ReadonlyState<AccessState>): AccessState {
-  return {
-    time: state.time,
-    station: state.station,
-    attackPercent: state.attackPercent,
-    defendPercent: state.defendPercent,
-    damageFixed: state.damageFixed,
-    damageRatio: state.damageRatio,
-    damageBase: state.damageBase,
-    pinkItemSet: state.pinkItemSet,
-    pinkItemUsed: state.pinkItemUsed,
-    pinkMode: state.pinkMode,
-    linkSuccess: state.linkSuccess,
-    linkDisconnected: state.linkDisconnected,
-    offense: copyAccessSideState(state.offense),
-    defense: state.defense ? copyAccessSideState(state.defense) : undefined,
-    depth: state.depth,
-  }
-}
-
-function copyAccessDencoState(state: ReadonlyState<AccessDencoState>): AccessDencoState {
-  return {
-    ...copyDencoState(state),
-    which: state.which,
-    who: state.who,
-    carIndex: state.carIndex,
-    hpBefore: state.hpBefore,
-    hpAfter: state.hpAfter,
-    reboot: state.reboot,
-    skillInvalidated: state.skillInvalidated,
-    damage: state.damage ? { ...state.damage } : undefined,
-    exp: { ...state.exp },
-  }
-}
-
-export function copyAccessSideState(state: ReadonlyState<AccessSideState>): AccessSideState {
-  return {
-    user: copyUserParam(state.user),
-    carIndex: state.carIndex,
-    score: { ...state.score },
-    probabilityBoostPercent: state.probabilityBoostPercent,
-    probabilityBoosted: state.probabilityBoosted,
-    formation: Array.from(state.formation).map(d => copyAccessDencoState(d)),
-    triggeredSkills: Array.from(state.triggeredSkills),
-    displayedScore: state.displayedScore,
-    displayedExp: state.displayedExp,
-  }
-}
-
-
-
-
-/**
- * 攻守はそのままでアクセス処理を再度実行する
- * 
- * @param state 現在のアクセス状態
- * @returns ダメージ計算・スコアと経験値の加算など各処理を再度実行して合計値を反映した新たな状態を返す
- */
-export function repeatAccess(context: Context, state: ReadonlyState<AccessState>): AccessState {
-  context.log.log(`アクセス処理を再度実行 #${state.depth + 1}`)
-  const next: AccessState = {
-    time: state.time,
-    station: state.station,
-    offense: copyAccessSideState(state.offense),
-    defense: state.defense ? copyAccessSideState(state.defense) : undefined,
-    damageFixed: 0,
-    attackPercent: 0,
-    defendPercent: 0,
-    damageRatio: 1.0,
-    linkSuccess: false,
-    linkDisconnected: false,
-    pinkMode: false,
-    pinkItemSet: false,
-    pinkItemUsed: false,
-    depth: state.depth + 1,
-  }
-  const result = execute(context, next, false)
-  context.log.log(`アクセス処理を終了 #${state.depth + 1}`)
-  return result
+  return completeAccess(context, config, state)
 }
