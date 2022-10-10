@@ -45,6 +45,7 @@ export { default as DencoManager } from "./core/dencoManager"
 export * from "./core/event"
 export * from "./core/film"
 export * from "./core/format"
+export * from "./core/random"
 export {
   activateSkill, ActiveSkill, deactivateSkill, getSkill,
   isSkillActive, ProbabilityPercent, Skill, SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillLogic, SkillState, SkillStateTransition,
@@ -64,4 +65,3 @@ export {
   getTargetDenco,
   initUser, refreshState, UserParam, UserState
 } from "./core/user"
-
