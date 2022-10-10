@@ -1,11 +1,11 @@
+import { AccessConfig, filterActiveSkill } from "."
 import { Context } from "../context"
 import { refreshSkillState } from "../skill"
 import { copyState, ReadonlyState } from "../state"
 import { LinksResult } from "../station"
 import { refreshEXPState, UserState } from "../user"
-import { AccessConfig, AccessDencoState, AccessSide, AccessSideState, AccessState } from "./access"
+import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "./access"
 import { calcLinksResult } from "./score"
-import { filterActiveSkill } from "./skill"
 /**
  * アクセスの結果
  * 
