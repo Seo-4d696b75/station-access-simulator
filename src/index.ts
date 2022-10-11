@@ -56,7 +56,7 @@ export * from "./core/state"
 export * from "./core/station"
 export { default as StationManager } from "./core/stationManager"
 export {
-  changeFormation, copyUserState, EventQueueEntry, FormationPosition,
+  changeFormation, EventQueueEntry, FormationPosition,
   getTargetDenco,
   initUser, refreshState, UserParam, UserState
 } from "./core/user"

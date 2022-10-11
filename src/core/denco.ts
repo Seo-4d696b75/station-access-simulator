@@ -1,6 +1,5 @@
 import { Film } from "./film"
-import { copySkill, SkillHolder } from "./skill"
-import { ReadonlyState } from "./state"
+import { SkillHolder } from "./skill"
 import { StationLink } from "./station"
 
 export type DencoType =
@@ -43,41 +42,4 @@ export interface DencoState extends Denco {
   film: Film
 
   link: StationLink[]
-}
-
-export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
-  return {
-    numbering: state.numbering,
-    name: state.name,
-    attr: state.attr,
-    type: state.type,
-    level: state.level,
-    currentHp: state.currentHp,
-    maxHp: state.maxHp,
-    currentExp: state.currentExp,
-    nextExp: state.nextExp,
-    ap: state.ap,
-    link: Array.from(state.link),
-    skill: copySkill(state.skill),
-    film: {
-      ...state.film
-    },
-  }
-}
-
-export function copyDencoStateTo(src: ReadonlyState<DencoState>, dst: DencoState) {
-  if (src.numbering !== dst.numbering) {
-    console.warn(`異なるでんこ間でコピーしています ${src.name} > ${dst.name}`)
-  }
-  dst.level = src.level
-  dst.currentHp = src.currentHp
-  dst.maxHp = src.maxHp
-  dst.currentExp = src.currentExp
-  dst.nextExp = src.nextExp
-  dst.ap = src.ap
-  dst.link = Array.from(src.link)
-  dst.skill = copySkill(src.skill)
-  dst.film = {
-    ...src.film
-  }
 }

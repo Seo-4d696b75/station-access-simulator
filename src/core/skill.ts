@@ -2,11 +2,11 @@ import moment from "moment-timezone"
 import { TIME_FORMAT } from ".."
 import { AccessDencoResult, AccessDencoState, AccessEvaluateStep, AccessSkillTrigger, AccessState, AccessUserResult } from "./access"
 import { Context } from "./context"
-import { copyDencoState, DencoState } from "./denco"
+import { DencoState } from "./denco"
 import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "./event"
 import { SkillProperty } from "./skillManager"
-import { ReadonlyState } from "./state"
-import { copyUserState, copyUserStateTo, FormationPosition, UserState } from "./user"
+import { copyState, copyStateTo, ReadonlyState } from "./state"
+import { FormationPosition, UserState } from "./user"
 
 /**
  * スキル状態の遷移の種類
@@ -361,7 +361,7 @@ export function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"pos
  */
 export function activateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
   context = context.fixClock()
-  return carIndex.reduce((next, idx) => activateSkillOne(context, next, idx), copyUserState(state))
+  return carIndex.reduce((next, idx) => activateSkillOne(context, next, idx), copyState<UserState>(state))
 }
 
 function activateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
@@ -433,7 +433,7 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
   if (callback) {
     // 更新したスキル状態をコピー
     self = {
-      ...copyDencoState(d),
+      ...copyState<DencoState>(d),
       carIndex: carIndex,
       skill: skill,
     }
@@ -458,7 +458,7 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
  */
 export function deactivateSkill(context: Context, state: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
   context = context.fixClock()
-  return carIndex.reduce((next, idx) => deactivateSkillOne(context, next, idx), copyUserState(state))
+  return carIndex.reduce((next, idx) => deactivateSkillOne(context, next, idx), copyState<UserState>(state))
 }
 
 function deactivateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
@@ -661,12 +661,12 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         if (callback) {
           // 更新したスキル状態をコピー
           self = {
-            ...copyDencoState(denco),
+            ...copyState<DencoState>(denco),
             carIndex: idx,
             skill: skill,
           }
           const next = callback(context, state, self)
-          if (next) copyUserStateTo(next, state) // TODO copyUserStateTo必要？
+          if (next) copyStateTo(next, state)
         }
       } else if (!active && skill.state.type === "active") {
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)

@@ -2,8 +2,8 @@ import moment from "moment-timezone"
 import { evaluateSkillAtEvent, EventSkillTrigger } from "."
 import { Context, TIME_FORMAT } from "../context"
 import { Denco, DencoState } from "../denco"
-import { copyState, ReadonlyState } from "../state"
-import { copyUserStateTo, UserState } from "../user"
+import { copyState, copyStateTo, ReadonlyState } from "../state"
+import { UserState } from "../user"
 
 /**
  * 指定した時刻にトリガーされるスキル発動型イベント
@@ -61,7 +61,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     switch (entry.type) {
       case "skill": {
         const next = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
-        copyUserStateTo(next, state)
+        copyStateTo<UserState>(next, state)
         break
       }
       case "hour_cycle": {
@@ -79,7 +79,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
             skillPropertyReader: skill.property,
           }
           const next = callback(context, state, self)
-          if (next) copyUserStateTo(next, state)
+          if (next) copyStateTo<UserState>(next, state)
         }
         // 次のイベント追加
         const date = moment(entry.time).add(1, "h")

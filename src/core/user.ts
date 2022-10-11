@@ -1,12 +1,12 @@
 import moment from "moment-timezone";
-import { copyDencoStateTo, SkillManager } from "..";
+import { SkillManager } from "..";
 import { Context } from "./context";
-import { copyDencoState, DencoState } from "./denco";
+import { DencoState } from "./denco";
 import DencoManager from "./dencoManager";
 import { refreshEventQueue, SkillEventReservation } from "./event";
 import { Event, LevelupEvent } from "./event/type";
 import { refreshSkillState, refreshSkillStateOne } from "./skill";
-import { ReadonlyState } from "./state";
+import { copyState, copyStateTo, ReadonlyState } from "./state";
 
 interface EventQueueEntryBase<T, E = undefined> {
   readonly type: T
@@ -94,9 +94,9 @@ export function initUser(context: Context, userName: string, formation?: Readonl
 
 export function changeFormation(context: Context, current: ReadonlyState<UserState>, formation: ReadonlyState<DencoState[]>): UserState {
   const state: UserState = {
-    ...copyUserState(current),
+    ...copyState<UserState>(current),
     event: Array.from(current.event),
-    formation: formation.map(d => copyDencoState(d)),
+    formation: formation.map(d => copyState<DencoState>(d)),
   }
   let before = current.formation.map(d => d.name).join(",")
   let after = formation.map(d => d.name).join(",")
@@ -105,28 +105,6 @@ export function changeFormation(context: Context, current: ReadonlyState<UserSta
   return state
 }
 
-export function copyUserStateTo(src: ReadonlyState<UserState>, dst: UserState) {
-  dst.user = copyUserParam(src.user)
-  dst.formation.forEach((d, idx) => copyDencoStateTo(src.formation[idx], d))
-  dst.event = Array.from(src.event)
-  dst.queue = Array.from(src.queue)
-}
-
-export function copyUserState(state: ReadonlyState<UserState>): UserState {
-  return {
-    user: copyUserParam(state.user),
-    formation: state.formation.map(d => copyDencoState(d)),
-    event: Array.from(state.event),
-    queue: Array.from(state.queue),
-  }
-}
-
-export function copyUserParam(param: ReadonlyState<UserParam>): UserParam {
-  return {
-    name: param.name,
-    dailyDistance: param.dailyDistance
-  }
-}
 /**
  * 現在の編成状態を更新する
  * 
@@ -138,7 +116,7 @@ export function copyUserParam(param: ReadonlyState<UserParam>): UserParam {
  * @returns 新しい状態 現在の状態をコピーしてから更新します
  */
 export function refreshState(context: Context, state: ReadonlyState<UserState>): UserState {
-  const next = copyUserState(state)
+  const next = copyState<UserState>(state)
   refreshUserState(context, next)
   return next
 }
@@ -175,16 +153,16 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
   const d = state.formation[idx]
   const levelup = checkLevelup(context, d)
   if (levelup) {
-    const before = copyDencoState(d)
+    const before = copyState(d)
     // copy
-    copyDencoStateTo(levelup, d)
+    copyStateTo(levelup, d)
     // 新規にスキル獲得した場合はスキル状態を初期化
     refreshSkillStateOne(context, state, idx)
     let event: LevelupEvent = {
       type: "levelup",
       data: {
         time: context.currentTime,
-        after: copyDencoState(d),
+        after: copyState(d),
         before: before,
       }
     }
@@ -196,7 +174,7 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
 
 function checkLevelup(context: Context, denco: ReadonlyState<DencoState>): DencoState | undefined {
   if (denco.currentExp < denco.nextExp) return undefined
-  let d = copyDencoState(denco)
+  let d = copyState<DencoState>(denco)
   let level = d.level
   while (d.currentExp >= d.nextExp) {
     let status = DencoManager.getDencoStatus(d.numbering, level + 1)
