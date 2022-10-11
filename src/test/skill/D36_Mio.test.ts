@@ -1,11 +1,11 @@
 import moment from "moment-timezone"
-import { copyDencoState, DencoState, getDefense, init } from "../.."
+import { getDefense, init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
-import { getFixedDamageDenco } from "../util"
+import { getFixedDamageDenco } from "../fake"
 
 describe("ミオのスキル", () => {
   beforeAll(init)

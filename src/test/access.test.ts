@@ -1,5 +1,5 @@
 import moment from "moment-timezone"
-import { copyDencoState, init } from ".."
+import { init } from ".."
 import { AccessConfig, getAccessDenco, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
@@ -7,6 +7,7 @@ import { activateSkill } from "../core/skill"
 import { LinksResult } from "../core/station"
 import StationManager from "../core/stationManager"
 import { getTargetDenco, initUser } from "../core/user"
+import "./matcher"
 
 // デフォルトの計算式を使用する
 const accessScore = 100
@@ -274,10 +275,8 @@ describe("基本的なアクセス処理", () => {
       expect(d.disconnectedLink.link[0]).toMatchObject(link)
       expect(d.disconnectedLink.which).toBe("defense")
       expect(d.disconnectedLink.time).toBe(result.time)
-      expect(d.disconnectedLink.denco).toMatchObject({
-        ...copyDencoState(d),
-        currentExp: 0 //リンク解除済み＆経験値加算前
-      })
+      //リンク解除済み＆経験値加算前の状態
+      expect(d.disconnectedLink.denco).toMatchDencoState({ ...d, currentExp: 0 })
     }
     // リンク
     reika = result.offense.formation[0]
@@ -388,10 +387,8 @@ describe("基本的なアクセス処理", () => {
     expect(e?.type === "reboot")
     let data = e?.data as LinksResult
     expect(data.denco.name).toBe(charlotte.name)
-    expect(data.denco).toMatchObject({
-      ...copyDencoState(d),
-      currentExp: 0      // リンク解除済み＆経験値加算前
-    })
+    // リンク解除済み＆経験値加算前
+    expect(data.denco).toMatchDencoState({ ...d, currentExp: 0 })
     expect(data.link.length).toBe(3)
     expect(data.link[0]).toMatchObject(link)
     expect(data).toMatchObject(reboot)

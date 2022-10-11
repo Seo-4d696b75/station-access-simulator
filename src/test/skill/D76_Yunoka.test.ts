@@ -1,11 +1,10 @@
-import { DencoManager, init } from "../.."
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { DencoManager, init } from "../.."
 import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
-import { DencoState } from "../../core/denco"
-import { getDefPercentDenco, getFixedDamageDenco } from "../util"
+import { initContext } from "../../core/context"
+import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
+import { getDefPercentDenco, getFixedDamageDenco } from "../fake"
 
 describe("ゆのかのスキル", () => {
   beforeAll(init)

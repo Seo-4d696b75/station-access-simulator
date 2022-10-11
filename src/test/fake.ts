@@ -1,4 +1,4 @@
-import { DencoState } from "../core/denco"
+import { DencoState } from "../core/denco";
 
 /**
  * 任意のDEF増加スキルのでんこ

@@ -4,7 +4,7 @@ import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/acces
 import { initContext } from "../../core/context"
 import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
-import { getFixedDamageDenco } from "../util"
+import { getFixedDamageDenco } from "../fake"
 
 describe("ほこねのスキル", () => {
   beforeAll(init)

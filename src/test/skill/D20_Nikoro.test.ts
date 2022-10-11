@@ -1,6 +1,6 @@
 import moment from "moment-timezone"
 import { AccessConfig, activateSkill, deactivateSkill, DencoManager, EventTriggeredSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, LevelupDenco, LinksResult, refreshState, startAccess } from "../.."
-
+import "../matcher"
 
 // デフォルトの経験値計算式を使用する
 const accessScore = 100
@@ -336,11 +336,11 @@ describe("にころのスキル", () => {
       event = result.defense.event[2]
       let levelup = event.data as LevelupDenco
       expect(levelup.before.name).toBe("nikoro")
-      expect(d).toMatchObject(levelup.after)
+      expect(d).toMatchDencoState(levelup.after)
       expect(levelup.after.level).toBe(60)
       event = result.defense.event[3]
       let trigger = event.data as EventTriggeredSkill
-      expect(d).toMatchObject(trigger.denco)
+      expect(d).toMatchDencoState(trigger.denco)
       expect(trigger.carIndex).toBe(0)
       expect(trigger.step).toBe("self")
       expect(trigger.time).toBe(result.time)
