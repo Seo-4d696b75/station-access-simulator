@@ -1,109 +1,11 @@
-import moment from "moment-timezone";
-import { SkillManager } from "..";
-import { Context } from "./context";
-import { DencoState } from "./denco";
-import DencoManager from "./dencoManager";
-import { refreshEventQueue, SkillEventReservation } from "./event";
-import { Event, LevelupEvent } from "./event/type";
-import { refreshSkillState, refreshSkillStateOne } from "./skill";
-import { copyState, copyStateTo, ReadonlyState } from "./state";
-
-interface EventQueueEntryBase<T, E = undefined> {
-  readonly type: T
-  readonly time: number
-  readonly data: E
-}
-
-export type EventQueueEntry =
-  EventQueueEntryBase<"skill", SkillEventReservation> |
-  EventQueueEntryBase<"hour_cycle">
-
-/**
- * ユーザの状態のうちライブラリ側で操作しない情報
- * 
- * このオブジェクトのプロパティはライブラリ側からは参照のみ
- */
-export interface UserParam {
-  name: string
-  /**
-   * アクセス時の移動距離 単位：km
-   */
-  dailyDistance: number
-}
-
-/**
- * ユーザの状態を表現する
- * 
- * 原則としてこの状態変数が操作の起点になる
- */
-export interface UserState {
-  /**
-   * ユーザの詳細情報
-   */
-  user: UserParam
-  /**
-   * 現在の編成状態
-   */
-  formation: DencoState[]
-
-  /**
-   * タイムライン上に表示されるイベント一覧
-   */
-  event: Event[]
-
-  /**
-   * 指定時刻に処理するイベントの待機列 FIFO
-   */
-  queue: EventQueueEntry[]
-}
-
-export interface FormationPosition {
-
-  /**
-   * 主体となるでんこの編成内のindex  
-   * 0 <= carIndex < formation.length
-   */
-  carIndex: number
-}
-
-export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: number }): T {
-  return state.formation[state.carIndex]
-}
-
-export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, param?: Partial<UserParam>): UserState {
-  if (!formation) formation = []
-  const date = moment(context.currentTime)
-    .millisecond(0)
-    .second(0)
-    .minute(0)
-    .add(1, "h")
-  return changeFormation(context, {
-    user: {
-      name: param?.name ?? userName,
-      dailyDistance: param?.dailyDistance ?? 0,
-    },
-    formation: [],
-    event: [],
-    queue: [{
-      type: "hour_cycle",
-      time: date.valueOf(),
-      data: undefined,
-    }],
-  }, formation)
-}
-
-export function changeFormation(context: Context, current: ReadonlyState<UserState>, formation: ReadonlyState<DencoState[]>): UserState {
-  const state: UserState = {
-    ...copyState<UserState>(current),
-    event: Array.from(current.event),
-    formation: formation.map(d => copyState<DencoState>(d)),
-  }
-  let before = current.formation.map(d => d.name).join(",")
-  let after = formation.map(d => d.name).join(",")
-  context.log.log(`編成を変更します [${before}] -> [${after}]`)
-  refreshUserState(context, state)
-  return state
-}
+import { Context } from "../context";
+import { DencoState } from "../denco";
+import DencoManager from "../dencoManager";
+import { LevelupEvent, refreshEventQueue } from "../event";
+import { refreshSkillState, refreshSkillStateOne } from "../skill";
+import SkillManager from "../skillManager";
+import { copyState, copyStateTo, ReadonlyState } from "../state";
+import { UserState } from "./type";
 
 /**
  * 現在の編成状態を更新する

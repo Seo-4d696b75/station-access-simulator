@@ -5,7 +5,8 @@ import { Denco, DencoState } from "../denco"
 import { random } from "../random"
 import { ActiveSkill, isSkillActive, ProbabilityPercent } from "../skill"
 import { copyState, ReadonlyState } from "../state"
-import { refreshUserState, UserParam, UserState } from "../user"
+import { UserParam, UserState } from "../user"
+import { refreshUserState } from "../user/refresh"
 import { Event } from "./"
 
 /**

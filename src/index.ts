@@ -55,9 +55,5 @@ export { default as SkillManager } from "./core/skillManager"
 export * from "./core/state"
 export * from "./core/station"
 export { default as StationManager } from "./core/stationManager"
-export {
-  changeFormation, EventQueueEntry, FormationPosition,
-  getTargetDenco,
-  initUser, refreshState, UserParam, UserState
-} from "./core/user"
+export * from "./core/user"
 
