@@ -1,5 +1,5 @@
+import { accessRandomStation, enqueueSkillEvent } from "../core/event"
 import { SkillLogic } from "../core/skill"
-import { enqueueSkillEvent, randomAccess } from "../core/skillEvent"
 
 const skill: SkillLogic = {
   deactivateAt: (context, state, self) => {
@@ -15,7 +15,7 @@ const skill: SkillLogic = {
     const timer = self.skill.property.readNumber("timer")
     const time = context.currentTime + timer * 1000
     return enqueueSkillEvent(context, state, time, self, (state) => {
-      return randomAccess(context, state)
+      return accessRandomStation(context, state)
     })
   }
 }

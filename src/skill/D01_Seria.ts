@@ -1,6 +1,6 @@
-import { getFormation } from "../core/access/index"
+import { getFormation } from "../core/access"
+import { evaluateSkillAfterAccess, EventSkillTrigger } from "../core/event"
 import { SkillLogic } from "../core/skill"
-import { evaluateSkillAfterAccess, EventSkillTrigger } from "../core/skillEvent"
 
 const skill: SkillLogic = {
   onAccessComplete: (context, state, self, access) => {

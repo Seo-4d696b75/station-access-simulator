@@ -3,9 +3,9 @@ import { copyDencoStateTo, SkillManager } from "..";
 import { Context } from "./context";
 import { copyDencoState, DencoState } from "./denco";
 import DencoManager from "./dencoManager";
-import { Event, LevelupEvent } from "./event";
+import { refreshEventQueue, SkillEventReservation } from "./event";
+import { Event, LevelupEvent } from "./event/type";
 import { refreshSkillState, refreshSkillStateOne } from "./skill";
-import { refreshEventQueue, SkillEventReservation } from "./skillEvent";
 import { ReadonlyState } from "./state";
 
 interface EventQueueEntryBase<T, E = undefined> {

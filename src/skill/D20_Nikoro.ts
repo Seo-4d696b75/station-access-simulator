@@ -1,6 +1,4 @@
 import { evaluateSkillAfterAccess, SkillLogic } from "..";
-import { EventSkillTrigger } from "../core/skillEvent";
-
 
 const skill: SkillLogic = {
   onAccessComplete: (context, state, self, access) => {

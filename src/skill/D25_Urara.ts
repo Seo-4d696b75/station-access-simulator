@@ -1,5 +1,5 @@
+import { evaluateSkillAtEvent, EventSkillTrigger } from "../core/event";
 import { SkillLogic } from "../core/skill";
-import { evaluateSkillAtEvent, EventSkillTrigger } from "../core/skillEvent";
 
 const skill: SkillLogic = {
   canEnabled: (context, state, self) => {
