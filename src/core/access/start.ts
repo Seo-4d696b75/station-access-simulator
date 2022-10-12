@@ -1,7 +1,7 @@
 import moment from "moment-timezone"
 import { AccessDencoState, AccessResult, AccessSide, AccessSideState, AccessState, getAccessDenco } from "."
 import { Context } from "../context"
-import { refreshSkillState } from "../skill"
+import { refreshSkillState } from "../skill/refresh"
 import { copyState, ReadonlyState } from "../state"
 import { Station } from "../station"
 import { UserParam, UserState } from "../user"

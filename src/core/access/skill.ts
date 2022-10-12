@@ -1,5 +1,5 @@
 import { Denco } from "../denco";
-import { ProbabilityPercent, SkillHolder } from "../skill";
+import { isSkillActive, ProbabilityPercent } from "../skill";
 import { ReadonlyState } from "../state";
 import { AccessDencoState, AccessEvaluateStep, AccessSideState, AccessState } from "./state";
 
@@ -63,13 +63,4 @@ export function filterActiveSkill(list: readonly ReadonlyState<AccessDencoState>
  */
 export function hasActiveSkill(d: ReadonlyState<AccessDencoState>): boolean {
   return isSkillActive(d.skill) && !d.skillInvalidated
-}
-
-/**
- * スキル保有の有無とスキル状態を考慮してアクティブなスキルか判定
- * @param skill 
- * @returns 
- */
-export function isSkillActive(skill: SkillHolder): boolean {
-  return skill.type === "possess" && skill.state.type === "active"
 }

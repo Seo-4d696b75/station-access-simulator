@@ -1,6 +1,6 @@
 import { AccessConfig, filterActiveSkill } from "."
 import { Context } from "../context"
-import { refreshSkillState } from "../skill"
+import { refreshSkillState } from "../skill/refresh"
 import { copyState, ReadonlyState } from "../state"
 import { LinksResult } from "../station"
 import { UserState } from "../user"
