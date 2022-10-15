@@ -25,12 +25,39 @@ export interface UserParam {
   dailyDistance: number
 
   /**
+   * ユーザがアクセスした駅の情報
+   * 
+   * 各プロパティはPartialです.
+   * `undefined`の場合の挙動は各プロパティの説明を参照してください
+   */
+  statistics?: Partial<StationStatistics>
+}
+
+/**
+ * アクセスした駅の情報
+ */
+export interface StationStatistics {
+  /**
    * やちよ(D27 Yachiyo)のスキル対象の駅か判定する述語を指定できます
    * 
    * スキルの本来の定義では「直近3ヶ月でアクセスが一番多い駅と、その周辺駅の合計5駅」
    * となっていますが、ここでは自由に判定方法を指定できます
+   * 
+   * **未定義の挙動** この関数が`undefined`の場合はすべての駅を「地元駅」として扱います
+   * 
+   * @param station
+   * @return 地元駅の場合は`true`
    */
-  isHomeStation?: (station: Station) => boolean
+  isHomeStation: (station: Station) => boolean
+
+  /**
+   * 指定した駅へのアクセス回数（累積）を取得する関数
+   * 
+   * **未定義の挙動** この関数が`undefined`の場合はアクセス回数を0として扱います
+   * @param station
+   * @return これまでに駅にアクセスした回数（０以上の整数）
+   */
+  getStationAccessTimes: (station: Station) => number
 }
 
 /**

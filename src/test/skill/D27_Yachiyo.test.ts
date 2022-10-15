@@ -30,7 +30,9 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [yachiyo, seria])
     // ぜんぶ地元駅
-    offense.user.isHomeStation = (s) => true
+    offense.user.statistics = {
+      isHomeStation: (s) => true
+    }
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -55,7 +57,9 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [yachiyo, seria])
     // 地元駅など無い
-    defense.user.isHomeStation = (s) => false
+    defense.user.statistics = {
+      isHomeStation: (s) => false
+    }
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -80,7 +84,9 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [seria, yachiyo])
     // ぜんぶ地元駅
-    defense.user.isHomeStation = (s) => true
+    defense.user.statistics = {
+      isHomeStation: (s) => true
+    }
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -105,7 +111,9 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [yachiyo, seria])
     // ぜんぶ地元駅
-    defense.user.isHomeStation = (s) => true
+    defense.user.statistics = {
+      isHomeStation: (s) => true
+    }
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -130,7 +138,9 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [yachiyo, hiiru])
     // ぜんぶ地元駅
-    defense.user.isHomeStation = (s) => true
+    defense.user.statistics = {
+      isHomeStation: (s) => true
+    }
     defense = activateSkill(context, defense, 1)
     hiiru = defense.formation[1]
     expect(isSkillActive(hiiru.skill)).toBe(true)

@@ -4,7 +4,7 @@ import { SkillLogic } from "../core/skill";
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "defense") {
-      const predicate = getDefense(state).user.isHomeStation
+      const predicate = getDefense(state).user.statistics?.isHomeStation
       if (!predicate || predicate(state.station)) {
         return (state) => {
           if (!predicate) context.log.log("「地元」駅の判定が未定義のためデフォルトで発動します")
