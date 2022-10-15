@@ -269,14 +269,14 @@
     {"skill_level":6,"denco_level":70,"name":"ハッピーホリデイ Lv.6","DEF":35,"probability":85},
     {"skill_level":7,"denco_level":80,"name":"休日にお休みするのは仕事です","DEF":40,"probability":85}
   ]},
-  {"numbering":"32","class":"D32_Kotan","type":"","list":[
-    {"skill_level":1,"denco_level":5,"name":"ボイラー出力上昇 Lv.1","ATK":20,"sations":50},
-    {"skill_level":2,"denco_level":15,"name":"ボイラー出力上昇 Lv.2","ATK":30,"sations":50},
-    {"skill_level":3,"denco_level":30,"name":"ボイラー出力上昇 Lv.3","ATK":40,"sations":50},
-    {"skill_level":4,"denco_level":50,"name":"ボイラー出力上昇 Lv.4","ATK":50,"sations":50},
-    {"skill_level":5,"denco_level":60,"name":"ボイラー出力上昇 Lv.5","ATK":60,"sations":50},
-    {"skill_level":6,"denco_level":70,"name":"ボイラー出力上昇 Lv.6","ATK":70,"sations":50},
-    {"skill_level":7,"denco_level":80,"name":"エンジンブラストオフ","ATK":80,"sations":50}
+  {"numbering":"32","class":"D32_Kotan","type":"always","max_station": 50, "list":[
+    {"skill_level":1,"denco_level":5,"name":"ボイラー出力上昇 Lv.1","ATK":20},
+    {"skill_level":2,"denco_level":15,"name":"ボイラー出力上昇 Lv.2","ATK":30},
+    {"skill_level":3,"denco_level":30,"name":"ボイラー出力上昇 Lv.3","ATK":40},
+    {"skill_level":4,"denco_level":50,"name":"ボイラー出力上昇 Lv.4","ATK":50},
+    {"skill_level":5,"denco_level":60,"name":"ボイラー出力上昇 Lv.5","ATK":60},
+    {"skill_level":6,"denco_level":70,"name":"ボイラー出力上昇 Lv.6","ATK":70},
+    {"skill_level":7,"denco_level":80,"name":"エンジンブラストオフ","ATK":80}
   ]},
   {"numbering":"33","class":"D33_Eria","type":"",
     "invalidated":["15","19","26","28","30","32","42","44","46","53","59","64","66","68","72","75","76","78","80"],

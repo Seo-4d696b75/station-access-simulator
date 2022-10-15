@@ -157,7 +157,7 @@ export class Logger {
     this.appendMessage(LogTag.WARN, message)
   }
 
-  error(message: string) {
+  error(message: string): never {
     this.appendMessage(LogTag.ERR, message)
     throw Error(message)
   }
