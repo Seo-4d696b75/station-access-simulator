@@ -29,7 +29,7 @@ test("発動なし-攻撃側(アクセス)", () => {
   expect(result.attackPercent).toBe(0)
 })
 
-test("発動なし-守備側(編成内)", () => {
+test("発動なし-守備側(被アクセス)", () => {
   const context = initContext("test", "test", false)
   let seria = DencoManager.getDenco(context, "1", 50)
   let denco_name = DencoManager.getDenco(context, "DENCO_NUMBER", 50, 1)
@@ -50,6 +50,35 @@ test("発動なし-守備側(編成内)", () => {
       carIndex: 0
     },
     station: denco_name.link[0],
+  }
+  const result = startAccess(context, config)
+  expect(result.defense).not.toBeUndefined()
+  expect(hasSkillTriggered(result.defense, denco_name)).toBe(false)
+  // TODO ATK%
+  expect(result.attackPercent).toBe(0)
+})
+
+test("発動なし-守備側(編成内)", () => {
+  const context = initContext("test", "test", false)
+  let seria = DencoManager.getDenco(context, "1", 50, 1)
+  let denco_name = DencoManager.getDenco(context, "DENCO_NUMBER", 50)
+  let charlotte = DencoManager.getDenco(context, "6", 50)
+  let defense = initUser(context, "とあるマスター", [seria, denco_name])
+  /*   スキルの有効化
+    defense = activateSkill(context, defense, 1)
+    denco_name = defense.formation[1]
+    expect(isSkillActive(denco_name.skill)).toBe(true) */
+  let offense = initUser(context, "とあるマスター２", [charlotte])
+  const config = {
+    offense: {
+      state: offense,
+      carIndex: 0
+    },
+    defense: {
+      state: defense,
+      carIndex: 0
+    },
+    station: seria.link[0],
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
