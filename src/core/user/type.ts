@@ -1,5 +1,6 @@
 import { DencoState } from "../denco";
 import { Event, SkillEventReservation } from "../event";
+import { Station } from "../station";
 
 interface EventQueueEntryBase<T, E = undefined> {
   readonly type: T
@@ -22,6 +23,14 @@ export interface UserParam {
    * アクセス時の移動距離 単位：km
    */
   dailyDistance: number
+
+  /**
+   * やちよ(D27 Yachiyo)のスキル対象の駅か判定する述語を指定できます
+   * 
+   * スキルの本来の定義では「直近3ヶ月でアクセスが一番多い駅と、その周辺駅の合計5駅」
+   * となっていますが、ここでは自由に判定方法を指定できます
+   */
+  isHomeStation?: (station: Station) => boolean
 }
 
 /**
