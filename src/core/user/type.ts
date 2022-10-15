@@ -20,21 +20,45 @@ export type EventQueueEntry =
 export interface UserParam {
   name: string
   /**
-   * アクセス時の移動距離 単位：km
-   */
-  dailyDistance: number
-
-  /**
-   * ユーザがアクセスした駅の情報
+   * ユーザがその日にアクセスした駅の情報
    * 
    * 各プロパティはPartialです.
    * `undefined`の場合の挙動は各プロパティの説明を参照してください
    */
-  statistics?: Partial<StationStatistics>
+  daily?: Partial<DailyStatistics>
+
+  /**
+   * ユーザがこれまでアクセスした駅の情報
+   * 
+   * 各プロパティはPartialです.
+   * `undefined`の場合の挙動は各プロパティの説明を参照してください
+   */
+  history?: Partial<StationStatistics>
+}
+
+export interface DailyStatistics {
+  /**
+   * その日に移動した距離（単位：km） 
+   * 
+   * アクセス時に発動するスキルに影響する場合、この値は
+   * アクセス時点での移動距離として扱うためアクセスによる移動距離の増加は予め反映させておく必要があります
+   * 
+   * **未定義の挙動** このプロパティが`undefined`の場合は0kmとして扱います
+   */
+  distance: number
+  /**
+   * その日にアクセスした駅数  
+   * 
+   * アクセス時に発動するスキルに影響する場合、この値は
+   * アクセス時点での駅数として扱うためアクセスによる駅数の増加は予め反映させておく必要があります
+   * 
+   * **未定義の挙動** このプロパティが`undefined`の場合は0として扱います
+   */
+  accessStationCount: number
 }
 
 /**
- * アクセスした駅の情報
+ * ユーザがこれまでアクセスした駅の情報
  */
 export interface StationStatistics {
   /**
@@ -57,7 +81,7 @@ export interface StationStatistics {
    * @param station
    * @return これまでに駅にアクセスした回数（０以上の整数）
    */
-  getStationAccessTimes: (station: Station) => number
+  getStationAccessCount: (station: Station) => number
 }
 
 /**

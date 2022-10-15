@@ -28,7 +28,6 @@ export function initUser(context: Context, userName: string, formation?: Readonl
   return changeFormation(context, {
     user: {
       name: param?.name ?? userName,
-      dailyDistance: param?.dailyDistance ?? 0,
     },
     formation: [],
     event: [],

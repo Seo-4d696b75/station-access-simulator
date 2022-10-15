@@ -30,7 +30,7 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [yachiyo, seria])
     // ぜんぶ地元駅
-    offense.user.statistics = {
+    offense.user.history = {
       isHomeStation: (s) => true
     }
     let defense = initUser(context, "とあるマスター２", [charlotte])
@@ -57,7 +57,7 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [yachiyo, seria])
     // 地元駅など無い
-    defense.user.statistics = {
+    defense.user.history = {
       isHomeStation: (s) => false
     }
     let offense = initUser(context, "とあるマスター２", [charlotte])
@@ -84,7 +84,7 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [seria, yachiyo])
     // ぜんぶ地元駅
-    defense.user.statistics = {
+    defense.user.history = {
       isHomeStation: (s) => true
     }
     let offense = initUser(context, "とあるマスター２", [charlotte])
@@ -111,7 +111,7 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [yachiyo, seria])
     // ぜんぶ地元駅
-    defense.user.statistics = {
+    defense.user.history = {
       isHomeStation: (s) => true
     }
     let offense = initUser(context, "とあるマスター２", [charlotte])
@@ -138,7 +138,7 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [yachiyo, hiiru])
     // ぜんぶ地元駅
-    defense.user.statistics = {
+    defense.user.history = {
       isHomeStation: (s) => true
     }
     defense = activateSkill(context, defense, 1)

@@ -5,8 +5,8 @@ const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense") {
       // アクセス数の差
-      const diff = (getDefense(state).user.statistics?.getStationAccessTimes?.(state.station) ?? 0)
-        - (state.offense.user.statistics?.getStationAccessTimes?.(state.station) ?? 0)
+      const diff = (getDefense(state).user.history?.getStationAccessCount?.(state.station) ?? 0)
+        - (state.offense.user.history?.getStationAccessCount?.(state.station) ?? 0)
       if (diff > 0) {
         return (state) => {
           // 最大ATK上昇量

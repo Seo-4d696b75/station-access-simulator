@@ -3,12 +3,12 @@ import { getAccessDenco, SkillLogic } from "..";
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
     // 移動距離1km未満は発動しない?
+    const dist = state.offense.user.daily?.distance ?? 0
     if (step === "start_access" &&
       self.which === "offense" &&
       state.defense !== undefined &&
-      state.offense.user.dailyDistance >= 1.0) {
+      dist >= 1.0) {
       return (state) => {
-        const dist = state.offense.user.dailyDistance
         const distMax = self.skill.property.readNumber("distMax")
         const expMax = self.skill.property.readNumber("expMax")
         const expDist = Math.floor(expMax * Math.min(1.0, dist / distMax))

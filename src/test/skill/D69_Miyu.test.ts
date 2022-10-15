@@ -1,5 +1,5 @@
 import moment from "moment-timezone"
-import { AccessConfig, activateSkill, DencoManager, deactivateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess, StationManager } from "../.."
+import { AccessConfig, activateSkill, deactivateSkill, DencoManager, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess, StationManager } from "../.."
 
 
 // デフォルトの経験値計算式を使用する
@@ -37,7 +37,7 @@ describe("ミユのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let miyu = DencoManager.getDenco(context, "69", 50)
     const offense = initUser(context, "とあるマスター１", [reika, miyu])
-    offense.user.dailyDistance = 100
+    offense.user.daily = { distance: 100 }
     const station = StationManager.getRandomStation(context, 1)[0]
     const config: AccessConfig = {
       offense: {
@@ -68,7 +68,7 @@ describe("ミユのスキル", () => {
     const defense = initUser(context, "とあるマスター２", [
       charlotte, miyu
     ])
-    defense.user.dailyDistance = 100
+    defense.user.daily = { distance: 100 }
     const config: AccessConfig = {
       offense: {
         state: offense,
@@ -102,7 +102,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.dailyDistance = 100
+    offense.user.daily = { distance: 100 }
     const defense = initUser(context, "とあるマスター２", [
       charlotte, miyu
     ])
@@ -136,7 +136,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.dailyDistance = 0.9
+    offense.user.daily = { distance: 0.9 }
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -174,7 +174,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.dailyDistance = 50
+    offense.user.daily = { distance: 50 }
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -213,7 +213,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, seria, miyu
     ])
-    offense.user.dailyDistance = 120
+    offense.user.daily = { distance: 120 }
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])

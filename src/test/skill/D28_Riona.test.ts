@@ -77,11 +77,11 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.statistics = {
-      getStationAccessTimes: (s) => 10
+    offense.user.history = {
+      getStationAccessCount: (s) => 10
     }
-    defense.user.statistics = {
-      getStationAccessTimes: (s) => 20
+    defense.user.history = {
+      getStationAccessCount: (s) => 20
     }
     const config = {
       offense: {
@@ -115,11 +115,11 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(hiiru.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.statistics = {
-      getStationAccessTimes: (s) => 10
+    offense.user.history = {
+      getStationAccessCount: (s) => 10
     }
-    defense.user.statistics = {
-      getStationAccessTimes: (s) => 20
+    defense.user.history = {
+      getStationAccessCount: (s) => 20
     }
     const config = {
       offense: {
@@ -147,11 +147,11 @@ describe("リオナのスキル", () => {
     let offense = initUser(context, "とあるマスター", [riona, seria])
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.statistics = {
-      getStationAccessTimes: (s) => 10
+    offense.user.history = {
+      getStationAccessCount: (s) => 10
     }
-    defense.user.statistics = {
-      getStationAccessTimes: (s) => 20
+    defense.user.history = {
+      getStationAccessCount: (s) => 20
     }
     const config = {
       offense: {
@@ -180,11 +180,11 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 0駅差
-    offense.user.statistics = {
-      getStationAccessTimes: (s) => 20
+    offense.user.history = {
+      getStationAccessCount: (s) => 20
     }
-    defense.user.statistics = {
-      getStationAccessTimes: (s) => 20
+    defense.user.history = {
+      getStationAccessCount: (s) => 20
     }
     const config = {
       offense: {
@@ -214,11 +214,11 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.statistics = {
-      getStationAccessTimes: (s) => 10
+    offense.user.history = {
+      getStationAccessCount: (s) => 10
     }
-    defense.user.statistics = {
-      getStationAccessTimes: (s) => 20
+    defense.user.history = {
+      getStationAccessCount: (s) => 20
     }
     const config = {
       offense: {
@@ -248,11 +248,11 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.statistics = {
-      getStationAccessTimes: (s) => 20
+    offense.user.history = {
+      getStationAccessCount: (s) => 20
     }
-    defense.user.statistics = {
-      getStationAccessTimes: (s) => 10
+    defense.user.history = {
+      getStationAccessCount: (s) => 10
     }
     const config = {
       offense: {
