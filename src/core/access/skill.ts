@@ -1,7 +1,7 @@
 import { Denco } from "../denco";
 import { isSkillActive, ProbabilityPercent } from "../skill";
 import { ReadonlyState } from "../state";
-import { AccessDencoState, AccessEvaluateStep, AccessSideState, AccessState } from "./state";
+import { AccessDencoState, AccessEvaluateStep, AccessState, AccessTriggeredSkill } from "./state";
 
 /**
  * アクセス時に発動したスキル効果の処理
@@ -38,7 +38,7 @@ export type AccessSkillTrigger = {
  * @param step `undefined`の場合は`denco`の一致でのみ検索する
  * @returns true if has been triggered
  */
-export function hasSkillTriggered(state: ReadonlyState<AccessSideState> | undefined, denco: Denco, step?: AccessEvaluateStep): boolean {
+export function hasSkillTriggered(state: { readonly triggeredSkills: readonly AccessTriggeredSkill[] } | undefined, denco: Denco, step?: AccessEvaluateStep): boolean {
   if (!state) return false
   return state.triggeredSkills.findIndex(t => {
     return t.numbering === denco.numbering && (!step || step === t.step)

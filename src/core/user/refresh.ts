@@ -5,7 +5,7 @@ import { LevelupEvent, refreshEventQueue } from "../event";
 import { refreshSkillState, refreshSkillStateOne } from "../skill/refresh";
 import SkillManager from "../skillManager";
 import { copyState, copyStateTo, ReadonlyState } from "../state";
-import { UserState } from "./type";
+import { UserState } from "./state";
 
 /**
  * 現在の編成状態を更新する

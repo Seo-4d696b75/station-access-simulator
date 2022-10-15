@@ -1,5 +1,4 @@
 import { SkillProperty } from "../skillManager"
-import { FormationPosition } from "../user"
 import { SkillLogic } from "./logic"
 import { SkillState } from "./state"
 
@@ -27,14 +26,6 @@ export interface Skill extends SkillLogic {
    * @see {@link SkillProperty}
    */
   property: SkillProperty
-}
-
-/**
- * スキルの発動を評価するときに必要なスキル情報へのアクセスを定義
- */
-export interface ActiveSkill extends FormationPosition {
-  // skill: SkillHolder だと skill.type === "possess" のチェックが必要で煩雑なのを省略する
-  skill: Skill
 }
 
 interface SkillHolderBase<T> {

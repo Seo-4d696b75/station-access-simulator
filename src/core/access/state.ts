@@ -1,7 +1,7 @@
 import { DamageCalcState, DamageState, ScoreExpState } from "."
-import { UserParam } from "../.."
 import { Denco, DencoState } from "../denco"
 import { Station } from "../station"
+import { UserPropertyReader } from "../user"
 
 /**
  * アクセスにおけるスキルの評価ステップ
@@ -137,7 +137,9 @@ export interface AccessTriggeredSkill extends Denco {
  * アクセスの攻守ふたりの状態
  */
 export interface AccessSideState {
-  user: UserParam
+  
+  user: UserPropertyReader
+
   /**
    * 自身側の編成一覧
    */

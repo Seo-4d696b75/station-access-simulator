@@ -1,5 +1,5 @@
 import { computeWidth } from "meaw"
-import { AccessDencoState, AccessSide, AccessSideState, AccessState, getAccessDenco } from "./access/index"
+import { AccessDencoState, AccessResult, AccessSide, AccessUserResult, getAccessDenco } from "./access/index"
 import { Context } from "./context"
 import { DencoAttribute } from "./denco"
 import { EventTriggeredSkill } from "./event"
@@ -134,7 +134,7 @@ export function formatRebootDetail(result: LinksResult, time: number, width: num
   return str
 }
 
-export function formatAccessDetail(result: ReadonlyState<AccessState>, which: AccessSide, time: number, width: number = 60): string {
+export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -235,7 +235,7 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
 
 }
 
-export function formatAccessEvent(result: ReadonlyState<AccessState>, which: AccessSide, time: number, width: number = 50): string {
+export function formatAccessEvent(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -331,7 +331,7 @@ function formatLinkTime(time: number, link?: StationLink | null): string {
   return str
 }
 
-function formatAccessLinkTime(station: Station, time: number, state?: ReadonlyState<AccessSideState> | null): string {
+function formatAccessLinkTime(station: Station, time: number, state?: ReadonlyState<AccessUserResult> | null): string {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.who === "defense") {
@@ -341,14 +341,14 @@ function formatAccessLinkTime(station: Station, time: number, state?: ReadonlySt
   return "-"
 }
 
-function formatSkills(state?: ReadonlyState<AccessSideState> | null): string {
+function formatSkills(state?: ReadonlyState<AccessUserResult> | null): string {
   if (!state) return ""
   const skills = state.triggeredSkills
   if (skills.length === 0) return "-"
   return skills.map(s => s.name).join(",")
 }
 
-function formatHP(state?: ReadonlyState<AccessSideState> | null) {
+function formatHP(state?: ReadonlyState<AccessUserResult> | null) {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.damage === undefined) {

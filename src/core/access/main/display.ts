@@ -21,7 +21,6 @@ export function completeDisplayScoreExp(context: Context, state: AccessState, wh
       const idx = d.link.findIndex(l => l.name === state.station.name)
       if (idx < 0) {
         context.log.error(`リブートした守備側のリンクが見つかりません ${state.station.name}`)
-        throw Error()
       }
       const result = calcLinkResult(context, d.link[idx], d, 0)
       side.displayedScore += result.totalScore

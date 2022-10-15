@@ -3,13 +3,7 @@ import { SkillLogic } from "../core/skill";
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense") {
-      const count = state.offense.user.daily?.accessStationCount ?? 0
-      if (count < 0) {
-        context.log.error("攻撃側ユーザの当日アクセス駅数が負数です！コタンのスキル評価に必要です！")
-      }
-      if (count === 0) {
-        context.log.warn("攻撃側ユーザの当日アクセス駅数が0です！コタンのスキル評価に必要です！")
-      }
+      const count = state.offense.user.daily.readAccessStationCount(context)
       return (state) => {
         const maxATK = self.skill.property.readNumber("ATK")
         const maxStation = self.skill.property.readNumber("max_station")
