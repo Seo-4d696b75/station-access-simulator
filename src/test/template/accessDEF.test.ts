@@ -45,7 +45,7 @@ test("発動なし-守備側(編成内)", () => {
       state: defense,
       carIndex: 0
     },
-    station: denco_name.link[0],
+    station: seria.link[0],
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
@@ -78,7 +78,7 @@ test("発動あり-守備側(被アクセス)", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.offense, denco_name)).toBe(true)
+  expect(hasSkillTriggered(result.defense, denco_name)).toBe(true)
   // TODO DEF%
   expect(result.defendPercent).toBe(0)
 })
