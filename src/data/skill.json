@@ -278,8 +278,8 @@
     {"skill_level":6,"denco_level":70,"name":"ボイラー出力上昇 Lv.6","ATK":70},
     {"skill_level":7,"denco_level":80,"name":"エンジンブラストオフ","ATK":80}
   ]},
-  {"numbering":"33","class":"D33_Eria","type":"",
-    "invalidated":["15","19","26","28","30","32","42","44","46","53","59","64","66","68","72","75","76","78","80"],
+  {"numbering":"33","class":"D33_Eria","type":"manual",
+    "target":["15","19","26","28","30","32","42","44","46","53","59","64","66","68","72","75","76","78","80"],
     "list":[
     {"skill_level":1,"denco_level":5,"name":"天真爛漫 Lv.1","active":3600,"wait":3600},
     {"skill_level":2,"denco_level":15,"name":"天真爛漫 Lv.2","active":7200,"wait":3600},
