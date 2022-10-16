@@ -299,7 +299,7 @@
     {"skill_level":7,"denco_level":80,"name":"イケイケDONDONフィーバー","boost":32,"active":3600,"wait":5400}
   ]},
   {"numbering":"35","class":"D35_Iori","type":"always",
-    "station_max":5,"name_key":"本","list":[
+    "station_max":5,"keyword":"本","list":[
     {"skill_level":1,"denco_level":5,"name":"ビブリオフィル Lv.1","DEF":5},
     {"skill_level":2,"denco_level":15,"name":"ビブリオフィル Lv.2","DEF":6},
     {"skill_level":3,"denco_level":30,"name":"ビブリオフィル Lv.3","DEF":7},
