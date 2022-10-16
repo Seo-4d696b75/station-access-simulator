@@ -9,47 +9,47 @@ export type StationAttribute =
   "unknown"
 
 export interface Station {
-  readonly name: string
-  readonly nameKana: string
-  readonly attr: StationAttribute
-  readonly lines: readonly Line[]
+  name: string
+  nameKana: string
+  attr: StationAttribute
+  lines: Line[]
 }
 
 export interface Line {
-  readonly name: string
+  name: string
 }
 
 export interface StationLink extends Station {
-  readonly start: number
+  start: number
 }
 
 export interface LinkResult extends StationLink {
   /**
    * 該当リンクが解除されてこのリンクスコアが計算された時刻（unix time [ms]）
    */
-  readonly end: number
+  end: number
   /**
    * 当該リンクの長さ [ms]
    */
-  readonly duration: number
+  duration: number
   /**
    * リンクの基本スコア
    * 
    * リンクの時間にのみ依存して計算される {@link ScorePredicate calcLinkScore}
    */
-  readonly linkScore: number
+  linkScore: number
   /**
    * 複数リンクによるボーナススコア
    * 
    * リブート以外によるリンク解除時の場合は0
    */
-  readonly comboBonus: number
+  comboBonus: number
 
-  readonly matchAttr: boolean
+  matchAttr: boolean
   /**
    * 駅とリンク保持するでんこ属性の一致によるボーナススコア
    */
-  readonly matchBonus: number
+  matchBonus: number
   /**
    * スコア合計
    * 
@@ -57,7 +57,7 @@ export interface LinkResult extends StationLink {
    * - {@link comboBonus}
    * - {@link matchBonus}
    */
-  readonly totalScore: number
+  totalScore: number
 }
 
 /**
@@ -74,7 +74,7 @@ export interface LinksResult {
    */
   readonly denco: ReadonlyState<DencoState>
   readonly which: AccessSide
-  readonly link: readonly LinkResult[]
+  readonly link: readonly ReadonlyState<LinkResult>[]
   /**
    * スコア合計値
    * 

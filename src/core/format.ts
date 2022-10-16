@@ -313,7 +313,7 @@ function formatPt(pt: number | undefined, colored: boolean = false): string {
   return color(str, "green")
 }
 
-function formatLinkTime(time: number, link?: StationLink | null): string {
+function formatLinkTime(time: number, link?: ReadonlyState<StationLink> | null): string {
   if (!link) return ""
   let duration = time - link.start
   if (duration < 0) return ""
@@ -331,7 +331,7 @@ function formatLinkTime(time: number, link?: StationLink | null): string {
   return str
 }
 
-function formatAccessLinkTime(station: Station, time: number, state?: ReadonlyState<AccessUserResult> | null): string {
+function formatAccessLinkTime(station: ReadonlyState<Station>, time: number, state?: ReadonlyState<AccessUserResult> | null): string {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.who === "defense") {

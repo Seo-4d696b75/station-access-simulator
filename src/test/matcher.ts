@@ -1,6 +1,7 @@
 import { isEqual } from "lodash";
 import { DencoState } from "../core/denco";
 import { copyState, ReadonlyState } from "../core/state";
+import { StationLink } from "../core/station";
 
 // DencoStateにはサブクラスが多くあるため、DencoStateに定義されたプロパティだけコピーする関数
 export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
@@ -15,7 +16,7 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
     currentExp: state.currentExp,
     nextExp: state.nextExp,
     ap: state.ap,
-    link: Array.from(state.link),
+    link: state.link.map(e => copyState<StationLink>(e)),
     skill: copyState(state.skill),
     film: {
       ...state.film

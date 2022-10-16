@@ -44,7 +44,7 @@ export interface ScorePredicate {
    * @param state アクセスする本人を含む編成の現在の状態
    * @param station アクセスする駅
    */
-  calcAccessScore: (context: Context, state: ReadonlyState<AccessSideState>, station: Station) => number
+  calcAccessScore: (context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>) => number
 
   /**
    * アクセス側がリンク成功時に取得するスコアを計算  
@@ -76,7 +76,7 @@ const DEFAULT_SCORE_PREDICATE: ScorePredicate = {
   calcLinkScore: (context, link) => Math.floor((context.currentTime - link.start) / 100)
 }
 
-export function calcAccessScoreExp(context: Context, state: ReadonlyState<AccessSideState>, station: Station): [number, number] {
+export function calcAccessScoreExp(context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>): [number, number] {
   const predicate = context.scorePredicate?.calcAccessScore ?? DEFAULT_SCORE_PREDICATE.calcAccessScore
   const score = predicate(context, state, station)
   return [score, calcScoreToExp(score)]

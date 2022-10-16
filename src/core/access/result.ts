@@ -2,7 +2,7 @@ import { AccessConfig, filterActiveSkill } from "."
 import { Context } from "../context"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, ReadonlyState } from "../state"
-import { LinksResult } from "../station"
+import { LinksResult, Station } from "../station"
 import { UserState } from "../user"
 import { refreshEXPState } from "../user/refresh"
 import { calcLinksResult } from "./score"
@@ -60,7 +60,7 @@ export interface AccessDencoResult extends AccessDencoState {
  */
 export function completeAccess(context: Context, config: AccessConfig, access: ReadonlyState<AccessState>): AccessResult {
   let result: AccessResult = {
-    ...copyState(access),
+    ...copyState<AccessState>(access),
     offense: initUserResult(context, config.offense.state, access, "offense"),
     defense: config.defense ? initUserResult(context, config.defense.state, access, "defense") : undefined,
   }
@@ -128,7 +128,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
     } else if (d.who === "offense" && state.linkSuccess) {
       // 攻撃側のリンク成功
       d.link.push({
-        ...state.station,
+        ...copyState<Station>(state.station),
         start: context.currentTime,
       })
     } else if (d.who === "defense" && state.linkDisconnected) {

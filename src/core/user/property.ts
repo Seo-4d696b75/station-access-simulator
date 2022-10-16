@@ -64,7 +64,7 @@ export interface StationStatistics {
    * @param station
    * @return 地元駅の場合は`true`
    */
-  isHomeStation: (station: Station) => boolean
+  isHomeStation: (station: ReadonlyState<Station>) => boolean
 
   /**
    * 指定した駅へのアクセス回数（累積）を取得する関数
@@ -73,7 +73,7 @@ export interface StationStatistics {
    * @param station
    * @return これまでに駅にアクセスした回数（０以上の整数）
    */
-  getStationAccessCount: (station: Station) => number
+  getStationAccessCount: (station: ReadonlyState<Station>) => number
 }
 
 /**
@@ -138,7 +138,7 @@ export function getUserPropertyReader(property: ReadonlyState<UserProperty>): Us
       ),
     },
     history: {
-      isHomeStation: initFuncProxy<boolean, (s: Station) => boolean>(
+      isHomeStation: initFuncProxy<boolean, (s: ReadonlyState<Station>) => boolean>(
         "history.isHomeStation",
         property.history?.isHomeStation,
         true,

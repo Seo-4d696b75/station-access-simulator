@@ -1,5 +1,6 @@
 import { DamageCalcState, DamageState, ScoreExpState } from "."
 import { Denco, DencoState } from "../denco"
+import { ReadonlyState } from "../state"
 import { Station } from "../station"
 import { UserPropertyReader } from "../user"
 
@@ -190,7 +191,7 @@ export type AccessSide =
 
 export interface AccessState {
   time: number
-  station: Station
+  station: ReadonlyState<Station>
   offense: AccessSideState
   defense?: AccessSideState
 
