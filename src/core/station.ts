@@ -12,6 +12,11 @@ export interface Station {
   readonly name: string
   readonly nameKana: string
   readonly attr: StationAttribute
+  readonly lines: readonly Line[]
+}
+
+export interface Line {
+  readonly name: string
 }
 
 export interface StationLink extends Station {
