@@ -190,44 +190,106 @@ export type AccessSide =
 
 
 export interface AccessState {
+  /**
+   * アクセス開始時の時刻
+   * 
+   * ## 重要
+   * アクセス処理中の実際の時間経過によらず、処理中有はすべてこの時刻の値を利用します  
+   * 処理中に現れる{@link Context}の`clock`はすべてこの時刻で固定されているので, 
+   * {@link Context currentTime}で参照した値と一致します
+   */
   time: number
-  station: ReadonlyState<Station>
-  offense: AccessSideState
-  defense?: AccessSideState
-
-  depth: number
 
   /**
-   * `damage_common`の段階までにおける被アクセス側のダメージ計算量
+   * このアクセスが発生したリンクの駅
    * 
-   * `variable + constant`の合計値が計算されたダメージ量
+   * **参照限定** 編集できません
+   */
+  readonly station: ReadonlyState<Station>
+
+  /**
+   * アクセスする側の編成状態
+   */
+  offense: AccessSideState
+
+  /**
+   * アクセスされる側の編成状態
    * 
-   * `damage_common, damage_special`のスキル評価後のタイミングで原則次のように計算され値がセットされる  
+   * リンクしたでんこの居ない対象にアクセスした場合は`undefined`
+   */
+  defense?: AccessSideState
+
+  /**
+   * アクセス処理の呼び出しの深さ
+   * 
+   * カウンター攻撃などを処理する場合は呼び出しが`depth=2`になります  
+   * 現行では`depth>2`の処理は実行せずスキップします
+   */
+  readonly depth: number
+
+  /**
+   * `damage_common, damage_special`の段階までにおける被アクセス側の通常ダメージの計算量
+   * 
+   * `variable + constant`の合計値が計算されたダメージ量として扱われます
+   * 
+   * ## 通常ダメージの計算
+   * `damage_common, damage_special`のスキル評価後のタイミングでこのプロパティが
+   * `undefined`の場合（まだ計算されていない場合）、次のように計算され値がセットされます  
    * - AP: 攻撃側のAP
    * - ATK,DEF: ダメージ計算時の増減値% {@link attackPercent} {@link defendPercent}  
    * `variable = AP * (100 + ATK - DEF)/100.0 * damageRation, constant = 0`
    * 
-   * `damage_fixed`で計算する固定ダメージ値はここには含まれない
-   * 個体ダメージもスキップする場合は {@link skipDamageFixed}
+   * ## スキルによる通常ダメージの指定
+   * `damage_special`の段階において、スキルがこのダメージ計算を代行することができます.  
+   * （例）ミオ：ダメージの肩代わり  
+   * （例）チコ：相手HPと同量のダメージ量に上書き  
    * 
-   * ただし`damage_special`のスキル発動による特殊な計算など、
-   * `damage_special`の段階までにこの`damageBase`の値が`undefined`以外にセットされた場合は
-   * 上記の計算はスキップされる
+   * `damage_special`の段階までにこのプロパティが`undefined`以外にセットされた場合は
+   * 上記の計算をスキップし、指定されたダメージ量をそのまま利用します
+   * 
+   * 
+   * ## 注意
+   * - `damage_fixed`で計算する固定ダメージ値はここには含まれません  
+   * 固定ダメージはプロパティ{@link damageFixed}に加算してください
+   * - `damage_special`の段階までは`undefined`で未計算の場合があります. {@link getAccessDenco}を利用して参照してください
    */
   damageBase?: DamageCalcState
 
   /**
    * 固定値で加減算されるダメージ値
+   * 
+   * ## 利用方法
+   * `damage_fixed`の段階においてスキル効果内容に応じてプロパティに加算してください
+   * - 固定のダメージを与える場合：正数
+   * - 固定のダメージを軽減する場合：負数
+   * 
+   * ## 固定ダメージの計算
+   * `damage_fixed`の段階が終了したら`damage_common, damage_special`の段階までに
+   * 計算された通常ダメージ量に加算され最終的なダメージを算出します. 
+   * ただし、固定ダメージ量の軽減によりダメージ計算が負数になることはありません
+   * 
+   * `damage = max(baseDamage + fixedDamage, 0)`
+   * 
+   * ## ダメージ計算の詳細
+   * より詳細には、通常ダメージ{@link damageBase}には変更不可なダメージ量が指定される場合があります。  
+   * （例）チコのスキルによるダメージはるるのスキルでは軽減不可  
+   * `damage = max(baseDamage.variable + fixedDamage, 0) + baseDamage.constant`
    */
   damageFixed: number
 
   /**
-   * `damage_common`の段階までに評価された`ATK`累積値 単位：%
+   * `damage_common`の段階までに評価されたATK累積値 単位：%
+   * 
+   * ## 利用方法
+   * ATKを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください
    */
   attackPercent: number
 
   /**
-   * `damage_common`の段階までに評価された`DEF`累積値 単位：%
+   * `damage_common`の段階までに評価されたDEF累積値 単位：%
+   * 
+   * ## 利用方法
+   * DEFを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください
    */
   defendPercent: number
 
@@ -238,10 +300,59 @@ export interface AccessState {
    */
   damageRatio: number
 
+  /**
+   * アクセスする側のリンクが成功したか
+   * 
+   * 以下すべての条件を満たす場合で`true`です
+   * - リンク保持するでんこがリブートorフットバースで相手のリンクが解除される
+   * - アクセスしたでんこがリブートしていない
+   * 
+   * ## 値の有効性
+   * - `after_damage`より前：未定義
+   * - `after_damage`：`fixed_damage`までの段階で計算されたダメージ（通常＋固定）によって仮決定された結果
+   * - アクセス処理終了後：最終的なリンク成否
+   * 
+   * ## 注意
+   * 一旦はリンクを保持する相手をリブートさせリンク成功したがカウンター攻撃の発生で攻撃側がリブートする、
+   * など`after_damage`の段階の仮決定から最終結果が変化する場合もあります  
+   * （例）まりかのスキル
+   */
   linkSuccess: boolean
+
+  /**
+   * 被アクセスでんこのリンクが解除されたか
+   * 
+   * 以下のいずれかの条件を満たす場合で`true`です  
+   * - フットバースでリンク解除
+   * - ダメージ計算orスキル効果でリンクを保持していたでんこがリブート
+   * 
+   * ## 値の有効性
+   * - `after_damage`より前：未定義
+   * - `after_damage`：`fixed_damage`までの段階で計算されたダメージ（通常＋固定）によって仮決定された結果
+   * - アクセス処理終了後：最終的な解除結果
+   * 
+   * 
+   * ## 注意
+   * {@link linkSuccess}と関係はしますが、完全には対応しません  
+   * `linkDisconnected === !linkSuccess`は常には成り立ちません  
+   * （例）まりかのスキルでアクセス・被アクセス双方がリブート
+   */
   linkDisconnected: boolean
 
+  /**
+   * フットバース状態の有無
+   * 
+   * スキル効果orアイテムの使用
+   */
   pinkMode: boolean
+
+  /**
+   * フットバース状態にするアイテムのセット有無
+   */
   pinkItemSet: boolean
+
+  /**
+   * セットされたフットバース状態にするアイテムの消費有無
+   */
   pinkItemUsed: boolean
 }
