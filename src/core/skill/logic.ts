@@ -1,4 +1,4 @@
-import { AccessDencoResult, AccessDencoState, AccessEvaluateStep, AccessResult, AccessSkillTrigger, AccessState, AccessUserResult } from "../access"
+import { AccessDencoResult, AccessDencoState, AccessEvaluateStep, AccessResult, AccessSkillTriggers, AccessState, AccessUserResult } from "../access"
 import { Context } from "../context"
 import { DencoState } from "../denco"
 import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "../event"
@@ -54,7 +54,7 @@ export interface SkillLogic {
    * - AccessSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  evaluate?: (context: Context, state: ReadonlyState<AccessState>, step: AccessEvaluateStep, self: ReadonlyState<AccessDencoState & ActiveSkill>) => void | AccessSkillTrigger
+  evaluate?: (context: Context, state: ReadonlyState<AccessState>, step: AccessEvaluateStep, self: ReadonlyState<AccessDencoState & ActiveSkill>) => void | AccessSkillTriggers
 
 
   /**

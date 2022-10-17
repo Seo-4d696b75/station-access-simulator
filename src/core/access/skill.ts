@@ -16,6 +16,13 @@ export type AccessSkillRecipe = (state: AccessState) => void | AccessState;
 /**
  * スキル発動の確率計算の方法・発動時の処理を定義します
  * 
+ * スキル発動の確率計算・発動効果が複数ある場合は配列でも指定できます  
+ */
+export type AccessSkillTriggers = AccessSkillTrigger | AccessSkillTrigger[]
+
+/**
+ * スキル発動の確率計算の方法・発動時の処理を定義します
+ * 
  * - 確率計算に依存せず発動することが確定している場合は`EventSkillRecipe`を直接返します
  * - 確率計算に依存して発動する場合は, `probability`:発動の確率, `recipe`:発動した場合の状態の更新方法をそれぞれ指定します
  *
