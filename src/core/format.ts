@@ -313,7 +313,13 @@ function formatPt(pt: number | undefined, colored: boolean = false): string {
   return color(str, "green")
 }
 
-function formatLinkTime(time: number, link?: ReadonlyState<StationLink> | null): string {
+/**
+ * リンク時間を文字列にフォーマットする
+ * @param time 現在時刻 [ms]
+ * @param link 対象のリンク
+ * @returns リンクが`null`の場合は空文字
+ */
+export function formatLinkTime(time: number, link?: ReadonlyState<StationLink> | null): string {
   if (!link) return ""
   let duration = time - link.start
   if (duration < 0) return ""
