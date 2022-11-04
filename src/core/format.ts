@@ -1,6 +1,7 @@
 import { computeWidth } from "meaw"
 import { AccessDencoState, AccessResult, AccessSide, AccessUserResult, getAccessDenco } from "./access/index"
 import { Context } from "./context"
+import { formatDuration } from "./date"
 import { DencoAttribute } from "./denco"
 import { EventTriggeredSkill } from "./event"
 import { Event, LevelupDenco } from "./event/type"
@@ -321,20 +322,8 @@ function formatPt(pt: number | undefined, colored: boolean = false): string {
  */
 export function formatLinkTime(time: number, link?: ReadonlyState<StationLink> | null): string {
   if (!link) return ""
-  let duration = time - link.start
-  if (duration < 0) return ""
-  duration = Math.floor(duration / 1000)
-  let str = `${duration % 60}秒`
-  duration = Math.floor(duration / 60)
-  if (duration === 0) return str
-  str = `${duration % 60}分` + str
-  duration = Math.floor(duration / 60)
-  if (duration === 0) return str
-  str = `${duration % 24}時間` + str
-  duration = Math.floor(duration / 24)
-  if (duration === 0) return str
-  str = `${duration}日` + str
-  return str
+  const duration = time - link.start
+  return formatDuration(duration)
 }
 
 function formatAccessLinkTime(station: ReadonlyState<Station>, time: number, state?: ReadonlyState<AccessUserResult> | null): string {
