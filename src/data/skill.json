@@ -2441,6 +2441,62 @@
     ]
   },
   {
+    "numbering": "48",
+    "class": "D48_Spica",
+    "type": "always",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ウィッシュ☆スター Lv.1",
+        "DEF": 14,
+        "probability": 13
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ウィッシュ☆スター Lv.2",
+        "DEF": 15,
+        "probability": 15
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ウィッシュ☆スター Lv.3",
+        "DEF": 16,
+        "probability": 17
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ウィッシュ☆スター Lv.4",
+        "DEF": 17,
+        "probability": 19
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ウィッシュ☆スター Lv.5",
+        "DEF": 18,
+        "probability": 21
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ウィッシュ☆スター Lv.6",
+        "DEF": 19,
+        "probability": 23
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "願いが叶う瞬間",
+        "DEF": 20,
+        "probability": 25
+      }
+    ]
+  },
+  {
     "numbering": "61",
     "class": "D61_Chitose",
     "type": "manual",
