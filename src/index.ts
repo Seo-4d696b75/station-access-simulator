@@ -40,6 +40,7 @@ export function clear() {
 // src/core/access/*
 export * from "./core/access/index"
 export * from "./core/context"
+export * from "./core/date"
 export * from "./core/denco"
 export { default as DencoManager } from "./core/dencoManager"
 export * from "./core/event/index"

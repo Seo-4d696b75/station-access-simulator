@@ -1,5 +1,4 @@
-import { isHoliday } from '@holiday-jp/holiday_jp';
-import moment from 'moment-timezone';
+import { isWeekendOrHoliday } from '../core/date';
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
@@ -17,9 +16,7 @@ const skill: SkillLogic = {
   },
   canActivated: (context, state, self) => {
     // 土日または日本の祝日
-    const weekday = moment(context.currentTime).day()
-    if (weekday === 0 || weekday === 6) return true
-    return isHoliday(new Date(context.currentTime))
+    return isWeekendOrHoliday(context.currentTime)
   }
 }
 
