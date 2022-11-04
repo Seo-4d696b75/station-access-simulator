@@ -372,7 +372,7 @@
     {"skill_level":6,"denco_level":70,"name":"タイムフォーワーク Lv.6","ATK":50,"probability":70},
     {"skill_level":7,"denco_level":80,"name":"ワークライフバランス！","ATK":60,"probability":70}
   ]},
-  {"numbering":"43","class":"D43_Asa","type":"manual","list":[
+  {"numbering":"43","class":"D43_Asa","type":"manual-condition","list":[
     {"skill_level":1,"denco_level":5,"name":"一心精進 Lv.1","active":0,"wait":9000,"extend":5},
     {"skill_level":2,"denco_level":15,"name":"一心精進 Lv.2","active":0,"wait":9000,"extend":10},
     {"skill_level":3,"denco_level":30,"name":"一心精進 Lv.3","active":0,"wait":9000,"extend":15},
