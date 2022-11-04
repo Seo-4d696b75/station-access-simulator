@@ -53,6 +53,12 @@ export interface SkillCooldownTimeout {
 * スキル状態`active`の終了時刻を指定する
 */
 export interface SkillActiveTimeout extends SkillCooldownTimeout {
+
+  /**
+   * スキルが発動した時刻 [ms]
+   */
+  activatedAt: number
+
   /**
    * スキル状態が`active > cooldown`へ遷移する時刻 [ms]
    * activated <= activeTimeout

@@ -1,12 +1,12 @@
-import { activateSkill, deactivateSkill, getSkill, isSkillActive, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
+import moment from "moment-timezone"
 import { initContext } from "../core/context"
 import { DencoState } from "../core/denco"
-import { initUser, refreshState } from "../core/user"
-import moment from "moment-timezone"
+import { activateSkill, deactivateSkill, getSkill, isSkillActive, Skill, SkillCooldownTimeout } from "../core/skill"
 import { SkillProperty } from "../core/skillManager"
+import { initUser, refreshState } from "../core/user"
 
 // SkillPropertyのモック
-const mockProperty = jest.fn<SkillProperty, []>().mockImplementation( () => ({
+const mockProperty = jest.fn<SkillProperty, []>().mockImplementation(() => ({
   readBoolean: jest.fn(),
   readString: jest.fn(),
   readNumber: jest.fn(),
@@ -20,13 +20,13 @@ describe("スキル処理", () => {
     const now = moment().valueOf()
     context.clock = now
     // mock callback
-    const timeout: SkillActiveTimeout = {
+    const timeout = {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
     const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
-    
+
     const skill: Skill = {
       level: 1,
       name: "test-skill",
@@ -78,7 +78,7 @@ describe("スキル処理", () => {
     const now = moment().valueOf()
     context.clock = now
     // mock callback
-    const timeout: SkillActiveTimeout = {
+    const timeout = {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
@@ -141,7 +141,7 @@ describe("スキル処理", () => {
     const now = moment().valueOf()
     context.clock = now
     // mock callback
-    const timeout: SkillActiveTimeout = {
+    const timeout = {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
@@ -251,7 +251,7 @@ describe("スキル処理", () => {
     const now = moment().valueOf()
     context.clock = now
     // mock callback
-    const timeout: SkillActiveTimeout = {
+    const timeout = {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }

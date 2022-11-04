@@ -79,10 +79,14 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
     carIndex: carIndex,
     skill: skill,
   }
+  const timeout = skill.deactivateAt?.(context, state, self)
   skill.state = {
     type: "active",
     transition: transition,
-    data: skill.deactivateAt?.(context, state, self)
+    data: timeout ? {
+      ...timeout,
+      activatedAt: context.currentTime
+    } : undefined,
   }
   // callback #onActivated
   const callback = skill.onActivated
