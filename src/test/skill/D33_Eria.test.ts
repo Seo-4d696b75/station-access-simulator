@@ -69,10 +69,14 @@ describe("エリアのスキル", () => {
   test.each(targetList)("発動あり-守備側(被アクセス)-相手:%s", (number) => {
     const context = initContext("test", "test", false)
     // 一部対象は特定時間帯のみ
+    // TODO 時間帯に依存するスキルの場合はここで処理を追加
+    // TODO 保守面倒！どうする？
     if (number === "15") {
       context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
     } else if (number === "30") {
       context.clock = moment('2022-01-01T20:00:00+0900').valueOf()
+    } else if (number === "42") {
+      context.clock = moment('2022-11-02T12:00:00+0900').valueOf()
     }
     let seria = DencoManager.getDenco(context, "1", 50)
     let eria = DencoManager.getDenco(context, "33", 50, 1)
