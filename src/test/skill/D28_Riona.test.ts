@@ -202,6 +202,30 @@ describe("リオナのスキル", () => {
     expect(hasSkillTriggered(result.offense, riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
+  test("発動なし-攻撃側(アクセス)-相手なし", () => {
+    const context = initContext("test", "test", false)
+    let seria = DencoManager.getDenco(context, "1", 50)
+    let riona = DencoManager.getDenco(context, "28", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
+    let offense = initUser(context, "とあるマスター", [riona, seria])
+    offense = activateSkill(context, offense, 0)
+    riona = offense.formation[0]
+    expect(isSkillActive(riona.skill)).toBe(true)
+    offense.user.history = {
+      getStationAccessCount: (s) => 20
+    }
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).toBeUndefined()
+    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(result.attackPercent).toBe(0)
+  })
 
   test("発動なし-攻撃側(編成内)", () => {
     const context = initContext("test", "test", false)

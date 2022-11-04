@@ -1,6 +1,7 @@
 import moment from "moment-timezone"
 import { activateSkill, deactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import StationManager from "../../core/stationManager"
 
 describe("コタンのスキル", () => {
   beforeAll(init)
@@ -76,6 +77,26 @@ describe("コタンのスキル", () => {
     expect(result.attackPercent).toBe(0)
   })
 
+  test("発動あり-攻撃側(アクセス)-相手なし", () => {
+    const context = initContext("test", "test", false)
+    let seria = DencoManager.getDenco(context, "1", 50)
+    let kotan = DencoManager.getDenco(context, "32", 50)
+    let offense = initUser(context, "とあるマスター", [kotan, seria])
+    offense.user.daily = {
+      accessStationCount: 20
+    }
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      station: StationManager.getRandomStation(context, 1)[0]
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).toBeUndefined()
+    expect(hasSkillTriggered(result.offense, kotan)).toBe(false)
+    expect(result.attackPercent).toBe(0)
+  })
   test("発動あり-攻撃側(アクセス)-20駅", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)

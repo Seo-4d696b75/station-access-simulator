@@ -2,7 +2,7 @@ import { getAccessDenco, SkillLogic } from "..";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
-    if (step === "damage_special" && self.who === "offense") {
+    if (step === "damage_special" && self.who === "offense" && state.defense) {
       return {
         probability: self.skill.property.readNumber("probability"),
         recipe: (state) => {

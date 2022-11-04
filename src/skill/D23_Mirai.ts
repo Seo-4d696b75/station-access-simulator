@@ -2,7 +2,7 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense") {
+    if (step === "damage_common" && self.who === "offense" && state.offense) {
       return {
         probability: self.skill.property.readNumber("probability"),
         recipe: (state) => {

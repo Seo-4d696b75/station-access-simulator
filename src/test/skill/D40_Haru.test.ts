@@ -1,9 +1,9 @@
-import { DencoManager, init } from "../.."
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
+import { DencoManager, init } from "../.."
 import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { initContext } from "../../core/context"
+import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
+import { initUser, refreshState } from "../../core/user"
 
 describe("ハルのスキル", () => {
   beforeAll(init)

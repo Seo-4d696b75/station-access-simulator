@@ -1,6 +1,7 @@
 import moment from "moment-timezone"
 import { activateSkill, deactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, isSkillActive, refreshState, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import StationManager from "../../core/stationManager"
 
 describe("そらのスキル", () => {
   beforeAll(init)
@@ -235,6 +236,25 @@ describe("そらのスキル", () => {
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
     expect(hasSkillTriggered(result.defense, sora)).toBe(false)
+    expect(result.attackPercent).toBe(0)
+  })
+  test("発動なし-攻撃側(アクセス)-相手無し", () => {
+    const context = initContext("test", "test", false)
+    context.clock = moment('2022-11-02T10:00:00+0900').valueOf()
+    context.random.mode = "force"
+    let seria = DencoManager.getDenco(context, "1", 50)
+    let sora = DencoManager.getDenco(context, "42", 50)
+    let offense = initUser(context, "とあるマスター", [sora, seria])
+    expect(isSkillActive(offense.formation[0].skill)).toBe(true)
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      station: StationManager.getRandomStation(context, 1)[0],
+    }
+    const result = startAccess(context, config)
+    expect(hasSkillTriggered(result.offense, sora)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 })

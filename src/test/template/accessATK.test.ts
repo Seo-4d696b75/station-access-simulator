@@ -2,6 +2,7 @@ import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, isSkillActive } from "../../core/skill"
+import StationManager from "../../core/stationManager"
 import { initUser } from "../../core/user"
 
 test("発動なし-攻撃側(アクセス)", () => {
@@ -21,6 +22,28 @@ test("発動なし-攻撃側(アクセス)", () => {
       carIndex: 0
     },
     station: charlotte.link[0],
+  }
+  const result = startAccess(context, config)
+  expect(result.defense).not.toBeUndefined()
+  expect(hasSkillTriggered(result.offense, denco_name)).toBe(false)
+  // TODO ATK%
+  expect(result.attackPercent).toBe(0)
+})
+
+
+test("発動なし-攻撃側(アクセス)-相手無し", () => {
+  const context = initContext("test", "test", false)
+  let seria = DencoManager.getDenco(context, "1", 50)
+  let denco_name = DencoManager.getDenco(context, "DENCO_NUMBER", 50)
+  let charlotte = DencoManager.getDenco(context, "6", 50, 1)
+  let offense = initUser(context, "とあるマスター", [denco_name, seria])
+  let defense = initUser(context, "とあるマスター２", [charlotte])
+  const config = {
+    offense: {
+      state: offense,
+      carIndex: 0
+    },
+    station: StationManager.getRandomStation(context, 1)[0],
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()

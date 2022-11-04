@@ -43,6 +43,23 @@ describe("みらいのスキル", () => {
     expect(hasSkillTriggered(result.offense, mirai)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
+  test("発動なし-確率", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let mirai = DencoManager.getDenco(context, "23", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
+    const offense = initUser(context, "とあるマスター１", [mirai])
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(hasSkillTriggered(result.offense, mirai)).toBe(false)
+    expect(result.attackPercent).toBe(0)
+  })
   test("発動なし-確率補正あり", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"

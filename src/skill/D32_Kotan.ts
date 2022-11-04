@@ -2,7 +2,7 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense") {
+    if (step === "damage_common" && self.who === "offense" && state.defense) {
       const count = state.offense.user.daily.readAccessStationCount(context)
       return (state) => {
         const maxATK = self.skill.property.readNumber("ATK")

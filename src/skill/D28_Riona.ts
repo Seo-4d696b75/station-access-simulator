@@ -3,7 +3,7 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense") {
+    if (step === "damage_common" && self.who === "offense" && state.defense) {
       // アクセス数の差
       const diff = (getDefense(state).user.history.getStationAccessCount(context, state.station))
         - (state.offense.user.history.getStationAccessCount(context, state.station))
