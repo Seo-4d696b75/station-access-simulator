@@ -2390,6 +2390,57 @@
     ]
   },
   {
+    "numbering": "45",
+    "class": "D45_Kanon",
+    "type": "manual",
+    "ATK": 15,
+    "wait": 7200,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "歌声に秘めたパワー Lv.1",
+        "active": 1800
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "歌声に秘めたパワー Lv.2",
+        "active": 2400
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "歌声に秘めたパワー Lv.3",
+        "active": 3000
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "歌声に秘めたパワー Lv.4",
+        "active": 3600
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "歌声に秘めたパワー Lv.5",
+        "active": 4200
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "歌声に秘めたパワー Lv.6",
+        "active": 4800
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "カノンのミュージックアワー♪",
+        "active": 5400
+      }
+    ]
+  },
+  {
     "numbering": "61",
     "class": "D61_Chitose",
     "type": "manual",
