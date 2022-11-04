@@ -1,26 +1,14 @@
-import moment from "moment-timezone"
-import { activateSkill, deactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
+import { activateSkill, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import StationManager from "../../core/stationManager"
+import { testAlwaysSkill } from "../skillState"
 
 describe("コタンのスキル", () => {
   beforeAll(init)
 
-
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let kotan = DencoManager.getDenco(context, "32", 50)
-    expect(kotan.skill.type).toBe("possess")
-    let defense = initUser(context, "とあるマスター", [kotan])
-    const now = moment().valueOf()
-    context.clock = now
-    kotan = defense.formation[0]
-    expect(kotan.name).toBe("kotan")
-    let skill = getSkill(kotan)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
-    expect(() => activateSkill(context, defense, 0)).toThrowError()
-    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
+  testAlwaysSkill({
+    number: "32",
+    name: "kotan",
   })
 
   test("発動なし-守備側(被アクセス)", () => {

@@ -1,5 +1,5 @@
-import moment from "moment-timezone"
-import { AccessConfig, activateSkill, deactivateSkill, DencoManager, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess, StationManager } from "../.."
+import { AccessConfig, DencoManager, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess, StationManager } from "../.."
+import { testAlwaysSkill } from "../skillState"
 
 
 // デフォルトの経験値計算式を使用する
@@ -8,30 +8,12 @@ const linkSuccessScore = 100
 
 describe("ミユのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let miyu = DencoManager.getDenco(context, "69", 50)
-    expect(miyu.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [miyu])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    miyu = state.formation[0]
-    let skill = getSkill(miyu)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    miyu = state.formation[0]
-    skill = getSkill(miyu)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "69",
+    name: "miyu",
   })
+
   test("発動なし-守備側なし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)

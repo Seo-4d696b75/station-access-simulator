@@ -2,25 +2,18 @@ import { init } from "../.."
 import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
+import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("シーナのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let sheena = DencoManager.getDenco(context, "7", 1)
-    expect(sheena.skill.type).toBe("not_acquired")
-    sheena = DencoManager.getDenco(context, "7", 50)
-    expect(sheena.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [sheena])
-    sheena = state.formation[0]
-    let skill = getSkill(sheena)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("always")
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
+
+  testAlwaysSkill({
+    number: "7",
+    name: "sheena"
   })
+
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"

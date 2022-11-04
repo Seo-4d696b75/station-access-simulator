@@ -1,67 +1,15 @@
-import moment from "moment-timezone"
-import { activateSkill, deactivateSkill, getDefense, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess } from "../.."
+import { activateSkill, getDefense, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
-
-// $SKILL_ACTIVE_TIME 有効な時間(sec)
-const SKILL_ACTIVE_TIME = 3600
-// $SKILL_COOLDOWN_TIME CoolDownの時間(sec)
-const SKILL_COOLDOWN_TIME = 5400
+import { testManualSkill } from "../skillState"
 
 describe("ひいるのスキル", () => {
   beforeAll(init)
 
-
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let hiiru = DencoManager.getDenco(context, "34", 50)
-    expect(hiiru.skill.type).toBe("possess")
-    let defense = initUser(context, "とあるマスター", [hiiru])
-    const now = moment().valueOf()
-    context.clock = now
-    hiiru = defense.formation[0]
-    expect(hiiru.name).toBe("hiiru")
-    let skill = getSkill(hiiru)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
-    defense = activateSkill(context, defense, 0)
-    hiiru = defense.formation[0]
-    skill = getSkill(hiiru)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.data).not.toBeUndefined()
-    if (skill.state.type === "active" && skill.state.transition === "manual" && skill.state.data) {
-      let data = skill.state.data
-      expect(data.activeTimeout).toBe(now + SKILL_ACTIVE_TIME * 1000)
-      expect(data.cooldownTimeout).toBe(now + SKILL_ACTIVE_TIME * 1000 + SKILL_COOLDOWN_TIME * 1000)
-    }
-    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
-
-    // まだアクティブ
-    context.clock = now + SKILL_ACTIVE_TIME / 2 * 1000
-    defense = refreshState(context, defense)
-    hiiru = defense.formation[0]
-    skill = getSkill(hiiru)
-    expect(skill.state.type).toBe("active")
-
-    // ちょうどCoolDown
-    context.clock = now + SKILL_ACTIVE_TIME * 1000
-    defense = refreshState(context, defense)
-    hiiru = defense.formation[0]
-    skill = getSkill(hiiru)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.transition).toBe("manual")
-    if (skill.state.type === "cooldown" && skill.state.transition === "manual") {
-      let timeout = skill.state.data
-      expect(timeout.cooldownTimeout).toBe(now + (SKILL_ACTIVE_TIME + SKILL_COOLDOWN_TIME) * 1000)
-    }
-
-    // CoolDown終わり
-    context.clock = now + (SKILL_ACTIVE_TIME + SKILL_COOLDOWN_TIME) * 1000
-    defense = refreshState(context, defense)
-    hiiru = defense.formation[0]
-    skill = getSkill(hiiru)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "34",
+    name: "hiiru",
+    active: 3600,
+    cooldown: 5400,
   })
 
   test("確率補正あり", () => {

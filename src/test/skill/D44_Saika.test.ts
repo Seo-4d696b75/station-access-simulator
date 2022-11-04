@@ -1,25 +1,13 @@
-import moment from "moment-timezone"
-import { deactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import { testAlwaysSkill } from "../skillState"
 
 describe("さいかのスキル", () => {
   beforeAll(init)
 
-
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let saika = DencoManager.getDenco(context, "44", 50)
-    expect(saika.skill.type).toBe("possess")
-    let defense = initUser(context, "とあるマスター", [saika])
-    const now = moment().valueOf()
-    context.clock = now
-    saika = defense.formation[0]
-    expect(saika.name).toBe("saika")
-    let skill = getSkill(saika)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
-    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
-    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
+  testAlwaysSkill({
+    number: "44",
+    name: "saika"
   })
 
   test("発動なし-攻撃側(アクセス)-3km未満", () => {

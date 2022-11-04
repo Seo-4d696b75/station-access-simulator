@@ -1,38 +1,20 @@
-import moment from "moment-timezone"
 import { init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
-import { initUser, refreshState } from "../../core/user"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
 import { getFixedDamageDenco } from "../fake"
+import { testAlwaysSkill } from "../skillState"
 
 describe("いちほのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let ichiho = DencoManager.getDenco(context, "18", 50)
-    expect(ichiho.skill.type).toBe("possess")
-    expect(ichiho.name).toBe("ichiho")
-    let state = initUser(context, "とあるマスター", [ichiho])
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
-    state = refreshState(context, state)
-    ichiho = state.formation[0]
-    let skill = getSkill(ichiho)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
-    state = refreshState(context, state)
-    ichiho = state.formation[0]
-    skill = getSkill(ichiho)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "18",
+    name: "ichiho"
   })
+
   test("発動あり-基本形", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"

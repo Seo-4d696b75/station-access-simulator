@@ -1,24 +1,17 @@
 import moment from "moment-timezone"
-import { activateSkill, deactivateSkill, getSkill, init, initContext, initUser } from "../.."
+import { init, initContext, initUser } from "../.."
 import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
+import { testAlwaysSkill } from "../skillState"
 
 describe("レーノのスキル", () => {
   beforeAll(init)
 
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let reno = DencoManager.getDenco(context, "30", 50)
-    expect(reno.skill.type).toBe("possess")
-    let defense = initUser(context, "とあるマスター", [reno])
-    reno = defense.formation[0]
-    expect(reno.name).toBe("reno")
-    let skill = getSkill(reno)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
-    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
-    expect(() => activateSkill(context, defense, 0)).toThrowError()
+  testAlwaysSkill({
+    number: "30",
+    name: "reno"
   })
+
   test("発動なし-攻撃側(アクセス)-昼", () => {
     const context = initContext("test", "test", false)
     context.clock = moment('2022-01-01T12:00:00+0900').valueOf()

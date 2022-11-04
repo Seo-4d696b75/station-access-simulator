@@ -1,36 +1,19 @@
-import moment from "moment-timezone"
-import { getSkill, init, refreshState } from "../.."
+import { getSkill, init } from "../.."
 import { getAccessDenco, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, deactivateSkill } from "../../core/skill"
+import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("メロのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let mero = DencoManager.getDenco(context, "2", 50)
-    expect(mero.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [mero])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    mero = state.formation[0]
-    let skill = getSkill(mero)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    mero = state.formation[0]
-    skill = getSkill(mero)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "2",
+    name: "mero"
   })
+
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
     let mero = DencoManager.getDenco(context, "2", 50)

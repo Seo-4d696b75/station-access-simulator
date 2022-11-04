@@ -1,69 +1,19 @@
 import { minBy } from "lodash"
-import moment from "moment-timezone"
-import { activateSkill, deactivateSkill, getSkill, init, initContext, initUser, refreshState } from "../.."
+import { activateSkill, init, initContext, initUser } from "../.."
 import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
-
-// $SKILL_ACTIVE_TIME 有効な時間(sec)
-const SKILL_ACTIVE_TIME = 7200
-// $SKILL_COOLDOWN_TIME CoolDownの時間(sec)
-const SKILL_COOLDOWN_TIME = 5400
+import { testManualSkill } from "../skillState"
 
 describe("にちなスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let nichina = DencoManager.getDenco(context, "41", 50)
-    expect(nichina.skill.type).toBe("possess")
-    let defense = initUser(context, "とあるマスター", [nichina])
-    const now = moment().valueOf()
-    context.clock = now
-    nichina = defense.formation[0]
-    expect(nichina.name).toBe("nichina")
-    let skill = getSkill(nichina)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
-    defense = activateSkill(context, defense, 0)
-    nichina = defense.formation[0]
-    skill = getSkill(nichina)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.data).not.toBeUndefined()
-    if (skill.state.type === "active" && skill.state.transition === "manual" && skill.state.data) {
-      let data = skill.state.data
-      expect(data.activeTimeout).toBe(now + SKILL_ACTIVE_TIME * 1000)
-      expect(data.cooldownTimeout).toBe(now + SKILL_ACTIVE_TIME * 1000 + SKILL_COOLDOWN_TIME * 1000)
-    }
-    expect(() => deactivateSkill(context, defense, 0)).toThrowError()
 
-    // まだアクティブ
-    context.clock = now + SKILL_ACTIVE_TIME / 2 * 1000
-    defense = refreshState(context, defense)
-    nichina = defense.formation[0]
-    skill = getSkill(nichina)
-    expect(skill.state.type).toBe("active")
-
-    // ちょうどCoolDown
-    context.clock = now + SKILL_ACTIVE_TIME * 1000
-    defense = refreshState(context, defense)
-    nichina = defense.formation[0]
-    skill = getSkill(nichina)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.transition).toBe("manual")
-    if (skill.state.type === "cooldown" && skill.state.transition === "manual") {
-      let timeout = skill.state.data
-      expect(timeout.cooldownTimeout).toBe(now + (SKILL_ACTIVE_TIME + SKILL_COOLDOWN_TIME) * 1000)
-    }
-
-    // CoolDown終わり
-    context.clock = now + (SKILL_ACTIVE_TIME + SKILL_COOLDOWN_TIME) * 1000
-    defense = refreshState(context, defense)
-    nichina = defense.formation[0]
-    skill = getSkill(nichina)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "41",
+    name: "nichina",
+    active: 7200,
+    cooldown: 5400,
   })
-
+  
   test("発動あり-守備側(被アクセス)-非先頭", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 10)

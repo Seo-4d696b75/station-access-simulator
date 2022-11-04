@@ -1,55 +1,19 @@
-import moment from "moment-timezone"
-import { activateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, SkillActiveTimeout, SkillCooldownTimeout, startAccess } from "../.."
+import { activateSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import StationManager from "../..//core/stationManager"
 import DencoManager from "../../core/dencoManager"
+import { testManualSkill } from "../skillState"
 
 
 describe("イムラのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    const now = moment().valueOf()
-    context.clock = now
-    let imura = DencoManager.getDenco(context, "19", 50)
-    expect(imura.name).toBe("imura")
-    expect(imura.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [imura])
-    imura = state.formation[0]
-    let skill = getSkill(imura)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    expect(skill.state.data).toBeUndefined()
-    state = activateSkill(context, state, 0)
-    imura = state.formation[0]
-    skill = getSkill(imura)
-    expect(skill.state.type).toBe("active")
-    let data = skill.state.data as SkillActiveTimeout
-    expect(data.activeTimeout).toBe(now + 900 * 1000)
-    expect(data.cooldownTimeout).toBe(now + 900 * 1000 + 3600 * 1000)
 
-    // 10分経過
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    imura = state.formation[0]
-    skill = getSkill(imura)
-    expect(skill.state.type).toBe("active")
-
-    // 15分経過
-    context.clock = now + 900 * 1000
-    state = refreshState(context, state)
-    imura = state.formation[0]
-    skill = getSkill(imura)
-    expect(skill.state.type).toBe("cooldown")
-    let timeout = skill.state.data as SkillCooldownTimeout
-    expect(timeout.cooldownTimeout).toBe(now + (900 + 3600) * 1000)
-
-    // 1時間15分経過
-    context.clock = now + (900 + 3600) * 1000
-    state = refreshState(context, state)
-    imura = state.formation[0]
-    skill = getSkill(imura)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "19",
+    name: "imura",
+    active: 900,
+    cooldown: 3600
   })
+
   test("発動なし-非アクティブ", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)
