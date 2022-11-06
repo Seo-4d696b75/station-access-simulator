@@ -1,17 +1,22 @@
-import { SkillHolder, SkillLogic, SkillStateTransition } from "./skill"
-
-interface SkillLevelProperty {
-  name: string
-  skillLevel: number
-  dencoLevel: number
-  property: Map<string, any>
-}
+import { initReadableProperty, ReadableProperty } from "../property"
+import { SkillHolder } from "./holder"
+import { SkillLogic } from "./logic"
+import { SkillTransitionType } from "./state"
 
 /**
- * スキルのレベルに応じたデータを参照する
+ * スキルに関する各種データへアクセスするインターフェース  
  * 
- * `src/data/skill.json`に定義された各でんこのスキルデータから読み出します  
- * 参照されるデータの決定方法  
+ * `src/data/skill.json`で定義したデータを読み取る方法を定義します  
+ * 読み取る値はスキルレベルに依存して変化する場合があります
+ * 
+ * ## サポートするデータ型  
+ * - number
+ * - string
+ * - boolean
+ * - number[]
+ * - string[]
+ * 
+ * ## 利用例
  * (例)スキルデータ  
  * ```json
  * [
@@ -32,6 +37,9 @@ interface SkillLevelProperty {
  *   }
  * ]
  * ```
+ * 
+ * 各関数`read**`を呼び出すと、
+ * 
  * 1. 対応するスキルレベルのJSON Objectを調べて指定した`key`が存在すれば返す  
  *    （例）"skill_level": 1 の場合は "value1"
  * 2. スキルデータ直下のJSON Objectを調べて指定した`key`が存在すれば値を返す  
@@ -41,79 +49,24 @@ interface SkillLevelProperty {
  * **例外の発生**  
  * - 1.2. において指定した`key`で見つかった値が予期した型と異なる場合
  * - 指定した`key`に対する値が存在せず、かつデフォルト値も指定が無い場合
- * 
- * @see `src/data/skill.json`
- * @param key key値 jsonのkey-valueに対応
- * @param defaultValue 指定したkeyに対するvalueが無い場合のデフォルト値
- * @throws jsonファイルから読み出されたデータ型が一致しない場合・対応するデータが見つからない場合
  */
-export type SkillPropertyReader<T> = (key: string, defaultValue?: T) => T
+export type SkillProperty = ReadableProperty
 
-interface SkillPropertyValues {
-  number: number
-  string: string
-  boolean: boolean
-  numberArray: number[]
-  stringArray: string[]
-}
-
-/**
- * スキルに関する各種データへアクセスするインターフェース  
- * 
- * サポートするデータの型は次の通り  
- * - number
- * - string
- * - boolean
- * - number[]
- * - string[]
- */
-export type SkillProperty = {
-  readonly [key in keyof SkillPropertyValues as `read${Capitalize<key>}`]: SkillPropertyReader<SkillPropertyValues[key]>
+interface SkillLevelProperty {
+  name: string
+  skillLevel: number
+  dencoLevel: number
+  property: Map<string, any>
 }
 
 interface SkillDataset {
   numbering: string
   moduleName: string
   skill: SkillLogic
-  transition: SkillStateTransition
+  transition: SkillTransitionType
   evaluateInPink: boolean
   skillProperties: SkillLevelProperty[]
   skillDefaultProperties: Map<string, any>
-}
-
-function isPrimitive<T>(typeName: string): (value: any) => value is T {
-  let func = (value: any): value is T => {
-    return typeof value === typeName
-  }
-  return func
-}
-
-function isPrimitiveArray<T>(typeName: string): (array: any) => array is T[] {
-  let func = (array: any): array is T[] => {
-    return Array.isArray(array) && array.every(e => typeof e === typeName)
-  }
-  return func
-}
-
-function getSkillPropertyReader<V>(property: Map<string, any>, defaultProperty: Map<string, any>, typeGuard: (v: any) => v is V): SkillPropertyReader<V> {
-  return (key, defaultValue) => {
-    let value = property.get(key)
-    if (value === undefined) {
-      value = defaultProperty.get(key)
-    }
-    // if (!value) {
-    // Note typeKey === "number"　の場合だと0でうまく機能しない
-    if (value === undefined) {
-      value = defaultValue
-    }
-    if (value === undefined) {
-      throw new Error(`skill property not found. key:${key}`)
-    }
-    if (!typeGuard(value)) {
-      throw new Error(`skill property type mismatched. key:${key} actual:${value}`)
-    }
-    return value
-  }
 }
 
 export class SkillManager {
@@ -121,7 +74,7 @@ export class SkillManager {
   map: Map<string, SkillDataset> = new Map()
 
   async load(data?: string) {
-    const list = data ? JSON.parse(data) : await import("../data/skill.json").then(o => o.default).catch(e => [])
+    const list = data ? JSON.parse(data) : await import("../../data/skill.json").then(o => o.default).catch(e => [])
     if (!Array.isArray(list)) throw Error("fail to load skill property")
     for (let e of list) {
       if (!e.numbering || !e.class || !e.list) {
@@ -129,7 +82,7 @@ export class SkillManager {
       }
       const numbering = e.numbering as string
       const moduleName = e.class as string
-      const type = e.type as SkillStateTransition
+      const type = e.type as SkillTransitionType
       const properties = (e.list as any[]).map(d => {
         let skill = d.skill_level as number
         let denco = d.denco_level as number
@@ -151,7 +104,7 @@ export class SkillManager {
         return p
       })
       properties.sort((a, b) => a.skillLevel - b.skillLevel)
-      const logic = await import("../skill/" + moduleName)
+      const logic = await import("../../skill/" + moduleName)
         .then(o => o.default)
         .catch(() => {
           console.warn("fail to import skill logic", moduleName)
@@ -203,19 +156,13 @@ export class SkillManager {
           type: "possess",
           level: property.skillLevel,
           name: property.name,
-          state: {
-            type: "not_init",
-            transition: data.transition,
+          transition: {
+            state: "not_init",
+            type: data.transition,
             data: undefined,
           },
           evaluateInPink: data.evaluateInPink,
-          property: {
-            readBoolean: getSkillPropertyReader<boolean>(property.property, data.skillDefaultProperties, isPrimitive("boolean")),
-            readString: getSkillPropertyReader<string>(property.property, data.skillDefaultProperties, isPrimitive("string")),
-            readNumber: getSkillPropertyReader<number>(property.property, data.skillDefaultProperties, isPrimitive("number")),
-            readStringArray: getSkillPropertyReader<string[]>(property.property, data.skillDefaultProperties, isPrimitiveArray("string")),
-            readNumberArray: getSkillPropertyReader<number[]>(property.property, data.skillDefaultProperties, isPrimitiveArray("number"))
-          },
+          property: initReadableProperty(property.property, data.skillDefaultProperties),
           ...data.skill,
         }
       } else {
@@ -227,19 +174,4 @@ export class SkillManager {
       }
     }
   }
-
-  readSkillProperty(numbering: string, level: number): SkillLevelProperty | null {
-    const dataset = this.map.get(numbering)
-    if (!dataset) throw new Error(`no skill property found: ${numbering}`)
-    for (let property of dataset.skillProperties) {
-      if (level <= property.dencoLevel) {
-        return property
-      }
-    }
-    throw new Error(`no skill property found for level: ${level} ${numbering}`)
-  }
 }
-
-const manager = new SkillManager()
-
-export default manager
