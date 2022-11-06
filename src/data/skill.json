@@ -2497,6 +2497,69 @@
     ]
   },
   {
+    "numbering": "49",
+    "class": "D49_Mei",
+    "type": "manual",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "スモールレジスト Lv.1",
+        "active": 1800,
+        "wait": 10800,
+        "def_max": 57
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "スモールレジスト Lv.2",
+        "active": 2700,
+        "wait": 10200,
+        "def_max": 65
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "スモールレジスト Lv.3",
+        "active": 3600,
+        "wait": 9600,
+        "def_max": 68
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "スモールレジスト Lv.4",
+        "active": 4500,
+        "wait": 9000,
+        "def_max": 71
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "スモールレジスト Lv.5",
+        "active": 5400,
+        "wait": 8400,
+        "def_max": 73
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "スモールレジスト Lv.6",
+        "active": 6300,
+        "wait": 7800,
+        "def_max": 75
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "おおきな勇気",
+        "active": 7200,
+        "wait": 7200,
+        "def_max": 75
+      }
+    ]
+  },
+  {
     "numbering": "61",
     "class": "D61_Chitose",
     "type": "manual",
