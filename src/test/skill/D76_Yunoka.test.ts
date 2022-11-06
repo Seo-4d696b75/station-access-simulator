@@ -1,11 +1,10 @@
-import { DencoManager, init } from "../.."
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
+import { DencoManager, init } from "../.."
+import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { initContext } from "../../core/context"
 import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access"
-import { DencoState } from "../../core/denco"
-import { getDefPercentDenco, getFixedDamageDenco } from "../util"
+import { initUser, refreshState } from "../../core/user"
+import { getDefPercentDenco, getFixedDamageDenco } from "../fake"
 
 describe("ゆのかのスキル", () => {
   beforeAll(init)
@@ -138,7 +137,7 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(hasSkillTriggered(result.offense, yunoka)).toBe(true)
     expect(result.attackPercent).toBe(39)
     expect(result.damageBase?.variable).toBe(346)

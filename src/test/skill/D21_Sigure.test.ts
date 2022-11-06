@@ -1,7 +1,7 @@
 import { DencoManager, init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
 
 describe("しぐれのスキル", () => {
@@ -18,7 +18,7 @@ describe("しぐれのスキル", () => {
         expect(skill.state.type).toBe("active")
         expect(skill.state.transition).toBe("always")
         expect(() => activateSkill(context, state, 0)).toThrowError()
-        expect(() => disactivateSkill(context, state, 0)).toThrowError()
+        expect(() => deactivateSkill(context, state, 0)).toThrowError()
     })
     test("発動なし-攻撃側", () => {
       const context = initContext("test", "test", false)

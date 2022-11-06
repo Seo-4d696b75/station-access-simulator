@@ -1,6 +1,6 @@
 import { AccessSide } from "./access";
 import { DencoState } from "./denco";
-import { ReadonlyState } from "./user";
+import { ReadonlyState } from "./state";
 
 export type StationAttribute =
   "eco" |
@@ -52,7 +52,7 @@ export interface LinkResult extends StationLink {
    * - {@link comboBonus}
    * - {@link matchBonus}
    */
-  readonly totatlScore: number
+  readonly totalScore: number
 }
 
 /**

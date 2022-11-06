@@ -1,10 +1,11 @@
 import moment from "moment-timezone"
-import { copyDencoState, DencoState, init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { init } from "../.."
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
+import { getFixedDamageDenco } from "../fake"
 
 describe("チコのスキル", () => {
   beforeAll(init)
@@ -73,7 +74,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -108,7 +109,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -144,7 +145,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -181,7 +182,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -201,7 +202,7 @@ describe("チコのスキル", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let chiko = DencoManager.getDenco(context, "29", 50)
-    let test = copyDencoState(test1)
+    let test = getFixedDamageDenco(10)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let offense = initUser(context, "とあるマスター", [chiko, test])
     offense = activateSkill(context, offense, 0)
@@ -218,7 +219,7 @@ describe("チコのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -235,44 +236,3 @@ describe("チコのスキル", () => {
     expect(d.damage?.attr).toBe(true)
   })
 })
-
-
-/**
- * 固定ダメージ追加スキルのでんこ（ダミー）
- */
-const test1: DencoState = {
-  numbering: "test1",
-  name: "test1",
-  type: "supporter",
-  attr: "flat",
-  level: 50,
-  currentExp: 0,
-  nextExp: 100000,
-  currentHp: 100,
-  maxHp: 100,
-  film: {},
-  ap: 100,
-  link: [],
-  skill: {
-    type: "possess",
-    level: 1,
-    name: "test-skill1",
-    property: {
-      readBoolean: () => false,
-      readNumber: () => 0,
-      readString: () => "",
-      readNumberArray: () => [],
-      readStringArray: () => [],
-    },
-    state: {
-      type: "active",
-      transition: "always",
-      data: undefined
-    },
-    canEvaluate: (context, state, step, self) => step === "damage_fixed" && self.which === "offense",
-    evaluate: (context, state, step, self) => {
-      state.damageFixed += 10
-      return state
-    }
-  }
-}

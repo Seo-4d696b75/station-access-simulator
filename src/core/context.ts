@@ -1,7 +1,7 @@
-import seedrandom from "seedrandom"
 import moment, { Moment } from "moment-timezone"
+import seedrandom from "seedrandom"
 import { ScorePredicate } from ".."
-import { random } from "./access"
+import { Random, RandomMode } from "./random"
 
 // タイムゾーン指定
 moment.tz.setDefault("Asia/Tokyo")
@@ -10,36 +10,23 @@ export const TIME_FORMAT = "HH:mm:ss.SSS"
 export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
 
 /**
- * スキル発動などtrue/falseの条件が確率に依存する場合の挙動を指定できます
- * - "normal": 疑似乱数を用いて指定された確率で計算
- * - "ignore": 必ずfalse
- * - "force": 必ずtrue
- * 
- * @see {@link random}
- */
-export type RandomMode =
-  "normal" |
-  "ignore" |
-  "force"
-
-/**
- * スキル発動の有無など確率を計算する
- */
-export interface Random {
-  mode: RandomMode
-  (): number
-}
-
-/**
  * 実行される各種処理に紐づけられる
  * 
  * このオブジェクトは内部状態を保持します
  */
-export interface Context {
+export class Context {
+
+  constructor(log: Logger, random: Random, clock: "now" | number, score?: Partial<ScorePredicate>) {
+    this.log = log
+    this.random = random
+    this.clock = clock
+    this.scorePredicate = score
+  }
+
   /**
    * 処理中のログを記録する
    */
-  log: Logger
+  readonly log: Logger
   /**
    * 処理中の確率依存処理を計算する
    */
@@ -64,6 +51,41 @@ export interface Context {
    * スコア・経験値の計算方法を指定します
    */
   scorePredicate?: Partial<ScorePredicate>
+
+  /**
+   * 時刻を固定する
+   * 
+   * `clock`に直接値を代入する場合と同じ効果を持ちますが、様々な時間表現を受け取ることができます
+   * @param time momentで解釈できる時刻の表現
+   */
+  setClock(time: number | string | Date | Moment) {
+    this.clock = moment(time).valueOf()
+  }
+
+  /**
+   * 現在時刻を取得する
+   * 
+   * clockの値に従って`moment()`もしくは固定された時刻を参照する
+   * 
+   * @returns unix time [ms]
+   */
+  get currentTime(): number {
+    return this.clock === "now" ? moment().valueOf() : this.clock
+  }
+
+  /**
+   * `getCurrentTime`が返す現在時刻の値で固定する
+   * 
+   * @returns 現在時刻`clock`で固定した新しいcontext 他の状態は同じオブジェクトへの参照を維持する
+   */
+  fixClock(): Context {
+    return new Context(
+      this.log,
+      this.random,
+      this.currentTime,
+      this.scorePredicate,
+    )
+  }
 }
 
 /**
@@ -75,45 +97,11 @@ export interface Context {
  * @returns 
  */
 export function initContext(type: string = "test", seed: string = "test", console: boolean = true): Context {
-  return {
-    log: new Logger(type, console),
-    random: Object.assign(seedrandom(seed), { mode: "normal" as RandomMode }),
-    clock: "now"
-  }
-}
-
-/**
- * 指定した時刻に固定する
- * @param context 
- * @param time 指定時刻 Dateクラスのタイムゾーンは"+0900"に変更する
- * @returns タイムゾーンは Tokyo +0900 に固定される
- */
-export function setClock(context: Readonly<Context>, time?: number | string | Date | Moment): Context {
-  return {
-    ...context,
-    clock: time ? moment(time).valueOf() : "now",
-  }
-}
-
-/**
- * `getCurrentTime`が返す現在時刻の値で固定する
- * @param context clock
- * @returns 現在時刻`clock`で固定した新しいcontext 他の状態は同じオブジェクトへの参照を維持する
- */
-export function fixClock(context: Readonly<Context>): Context {
-  return {
-    ...context,
-    clock: getCurrentTime(context),
-  }
-}
-
-/**
- * 現在時刻を取得する
- * @param context clockの値に従って`moment()`もしくは固定された時刻を参照する
- * @returns unix time [ms]
- */
-export function getCurrentTime(context: Context): number {
-  return context.clock === "now" ? moment().valueOf() : context.clock
+  return new Context(
+    new Logger(type, console),
+    Object.assign(seedrandom(seed), { mode: "normal" as RandomMode }),
+    "now",
+  )
 }
 
 /**

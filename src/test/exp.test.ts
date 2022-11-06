@@ -1,6 +1,6 @@
 import moment from "moment-timezone"
 import { init } from ".."
-import { AccessConfig, getDefense, startAccess } from "../core/access"
+import { AccessConfig, getDefense, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
 import { AccessEventData, LevelupDenco } from "../core/event"
@@ -118,7 +118,7 @@ describe("経験値の処理", () => {
       expect(levelup.before).toMatchObject(reika)
       expect(afterAccess).toMatchObject(reika)
       // レベルアップ後の状態
-      let tmp = initUser(context, "hoge", [reika])
+      let tmp = initUser(context, "someone", [reika])
       tmp = refreshState(context, tmp)
       reika = tmp.formation[0]
       // 最終状態

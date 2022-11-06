@@ -1,8 +1,6 @@
-import { Context } from "vm"
 import { getFormation } from "../core/access"
-import { getCurrentTime } from "../core/context"
+import { evaluateSkillAfterAccess, EventSkillTrigger } from "../core/event"
 import { SkillLogic } from "../core/skill"
-import { evaluateSkillAfterAccess, SkillEventEvaluate } from "../core/skillEvent"
 
 const skill: SkillLogic = {
   onAccessComplete: (context, state, self, access) => {
@@ -14,31 +12,26 @@ const skill: SkillLogic = {
       const percent = self.skill.property.readNumber("probability")
       const heal = self.skill.property.readNumber("heal")
       // lambdaからAccessStateを参照
-      const evaluate: SkillEventEvaluate = (context, state, self) => {
-        context.log.log(`検測開始しま～す HP+${heal}`)
-        return {
-          ...state,
-          formation: state.formation.map(d => {
+      const trigger: EventSkillTrigger = {
+        probability: percent,
+        recipe: (state) => {
+          context.log.log(`検測開始しま～す HP+${heal}`)
+          state.formation.forEach(d => {
             // 編成は変わらない前提
             const before = formation[d.carIndex].hpBefore
             if (before !== d.currentHp && d.currentHp <= d.maxHp * 0.3) {
-              return {
-                ...d,
-                currentHp: Math.min(d.maxHp, d.currentHp + heal)
-              }
-            } else {
-              return d
+              d.currentHp = Math.min(d.maxHp, d.currentHp + heal)
             }
           })
-        }
+        },
       }
-      return evaluateSkillAfterAccess(context, state, self, percent, evaluate)
+      return evaluateSkillAfterAccess(context, state, self, trigger)
     }
   },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")
-    const time = getCurrentTime(context)
+    const time = context.currentTime
     return {
       activeTimeout: time + active * 1000,
       cooldownTimeout: time + (active + wait) * 1000,

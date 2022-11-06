@@ -1,6 +1,6 @@
 {
   "name": "ekimemo-access-simulator",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "スマートフォン向け位置ゲーム「駅メモ」におけるアクセスイベントをシミュレーションします.",
   "main": "lib/index.js",
   "type": "commonjs",
@@ -35,7 +35,9 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.186",
     "@types/seedrandom": "^3.0.1",
+    "lodash": "^4.17.21",
     "meaw": "^6.0.0",
     "moment-timezone": "^0.5.34",
     "seedrandom": "^3.0.5"

@@ -2,7 +2,7 @@ import moment from "moment-timezone"
 import { init } from "../.."
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
 
 describe("もえのスキル", () => {
@@ -19,7 +19,7 @@ describe("もえのスキル", () => {
     expect(skill.state.type).toBe("unable")
     expect(skill.state.transition).toBe("auto-condition")
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
   })
   test("スキル発動-1", () => {
     const context = initContext("test", "test", false)
@@ -82,7 +82,7 @@ describe("もえのスキル", () => {
     let skill = getSkill(moe)
     expect(skill.state.type).toBe("unable")
 
-    // chage HP
+    // change HP
     charlotte = state.formation[1]
     sheena = state.formation[2]
     moe.currentHp = Math.floor(moe.maxHp * 0.9)

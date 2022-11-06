@@ -1,33 +1,33 @@
-import { getCurrentTime } from "../core/context";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  canEvaluate: (context, state, step, self) => {
+  evaluate: (context, state, step, self) => {
     if (step === "before_access" && state.defense) {
-      let all = Array.from(state.offense.formation)
+      const all = Array.from(state.offense.formation)
       all.push(...state.defense.formation)
-      let anySupporter = all.some(d => {
+      const anySupporter = all.some(d => {
         return d.type === "supporter" && isSkillActive(d.skill) && !d.skillInvalidated
       })
-      return anySupporter && self.skill.property.readNumber("probability")
+      if (!anySupporter) return // 無効化の対象が存在しない
+      return {
+        probability: self.skill.property.readNumber("probability"),
+        recipe: (state) => {
+          const all = Array.from(state.offense.formation)
+          if (state.defense) {
+            all.push(...state.defense.formation)
+          }
+          const target = all.filter(d => d.type === "supporter" && isSkillActive(d.skill))
+          const names = target.map(d => d.name).join(",")
+          target.forEach(d => d.skillInvalidated = true)
+          context.log.log(`サポーターのスキルも何のその、ですよ♪ 無効化：${names}`)
+        },
+      }
     }
-    return false
   },
-  evaluate: (context, state, step, self) => {
-    let all = Array.from(state.offense.formation)
-    if (state.defense) {
-      all.push(...state.defense.formation)
-    }
-    let target = all.filter(d => d.type === "supporter" && isSkillActive(d.skill))
-    let names = target.map(d => d.name).join(",")
-    target.forEach(d => d.skillInvalidated = true)
-    context.log.log(`サポーターのスキルも何のその、ですよ♪ 無効化：${names}`)
-    return state
-  },
-  disactivateAt: (context, state, self) => {
+  deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")
     const wait = self.skill.property.readNumber("wait")
-    const now = getCurrentTime(context)
+    const now = context.currentTime
     return {
       activeTimeout: now + active * 1000,
       cooldownTimeout: now + (active + wait) * 1000

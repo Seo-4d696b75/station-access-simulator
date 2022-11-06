@@ -1,14 +1,18 @@
 import moment from "moment-timezone"
 import { init } from "../.."
-import { getAccessDenco } from "../../core/access"
+import { getAccessDenco } from "../../core/access/index"
 import { initContext } from "../../core/context"
-import { copyDencoState } from "../../core/denco"
+import { DencoState } from "../../core/denco"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill } from "../../core/skill"
+import { copyState } from "../../core/state"
 import { initUser, refreshState } from "../../core/user"
+import "../matcher"
 
 describe("シャルのスキル", () => {
-  beforeAll(init)
+  beforeAll(async () => {
+    await init()
+  })
   test("スキル発動", () => {
     const context = initContext("test", "test", false)
     const now = moment("2020-01-01T12:50:00.000").valueOf()
@@ -31,8 +35,6 @@ describe("シャルのスキル", () => {
     entry = state.queue[1]
     expect(entry.type).toBe("skill")
     if (entry.type === "skill") {
-      // 確定発動
-      expect(entry.data.probability).toBe(true)
       // 90分後に発動
       expect(entry.time).toBe(now + 5400 * 1000)
       expect(entry.data.denco.name).toBe("charlotte")
@@ -57,8 +59,8 @@ describe("シャルのスキル", () => {
     let event = state.event[0]
     expect(event.type).toBe("access")
     if (event.type === "access") {
-      expect(event.data.access.time).toBe(context.clock)
-      charlotte = copyDencoState(getAccessDenco(event.data.access, "offense"))
+      expect(event.data.access.time).toBe(now)
+      charlotte = copyState<DencoState>(getAccessDenco(event.data.access, "offense"))
       expect(charlotte.name).toBe("charlotte")
     }
     event = state.event[1]
@@ -68,9 +70,9 @@ describe("シャルのスキル", () => {
       expect(event.data.step).toBe("self")
       expect(event.data.skillName).toBe(getSkill(charlotte).name)
       expect(event.data.carIndex).toBe(0)
-      expect(event.data.denco).toMatchObject(charlotte)
+      expect(event.data.denco).toMatchDencoState(charlotte)
       charlotte = state.formation[0]
-      expect(event.data.denco).toMatchObject(charlotte)
+      expect(event.data.denco).toMatchDencoState(charlotte)
     }
   })
 })
