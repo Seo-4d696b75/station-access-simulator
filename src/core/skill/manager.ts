@@ -1,7 +1,7 @@
 import { initReadableProperty, ReadableProperty } from "../property"
 import { SkillHolder } from "./holder"
 import { SkillLogic } from "./logic"
-import { SkillTransitionType } from "./state"
+import { SkillTransitionType } from "./transition"
 
 /**
  * スキルに関する各種データへアクセスするインターフェース  

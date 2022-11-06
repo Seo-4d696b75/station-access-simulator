@@ -2,7 +2,7 @@ export * from "./activate";
 export * from "./holder";
 export * from "./logic";
 export * from "./manager";
-export * from "./state";
+export * from "./transition";
 import { SkillManager } from "./manager";
 
 const manager = new SkillManager()

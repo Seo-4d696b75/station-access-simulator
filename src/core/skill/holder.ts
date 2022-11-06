@@ -1,6 +1,6 @@
 import { SkillLogic } from "./logic"
 import { SkillProperty } from "./manager"
-import { SkillTransition } from "./state"
+import { SkillTransition } from "./transition"
 
 /**
  * スキルレベルに依存するデータとスキル発動に関するロジックを保有する

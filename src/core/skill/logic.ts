@@ -5,7 +5,7 @@ import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "../eve
 import { ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill } from "./holder"
-import { SkillActiveTimeout, SkillCooldownTimeout } from "./state"
+import { SkillActiveTimeout, SkillCooldownTimeout } from "./transition"
 
 /**
 * スキルの発動確率を百分率で表現
