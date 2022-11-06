@@ -1,60 +1,22 @@
-import moment from "moment-timezone"
 import { getDefense, init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { initUser, refreshState } from "../../core/user"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
 import { getFixedDamageDenco } from "../fake"
+import { testManualSkill } from "../skillState"
 
 describe("ミオのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let mio = DencoManager.getDenco(context, "36", 50)
-    expect(mio.skill.type).toBe("possess")
-    expect(mio.name).toBe("mio")
-    let state = initUser(context, "とあるマスター", [mio])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    mio = state.formation[0]
-    expect(mio.name).toBe("mio")
-    let skill = getSkill(mio)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, state, 0)
-    mio = state.formation[0]
-    skill = getSkill(mio)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.data).not.toBeUndefined()
-    let data = skill.state.data as SkillActiveTimeout
-    expect(data.activeTimeout).toBe(now + 1800 * 1000)
-    expect(data.cooldownTimeout).toBe(now + 1800 * 1000 + 10800 * 1000)
 
-    // 5分経過
-    context.clock = now + 300 * 1000
-    state = refreshState(context, state)
-    mio = state.formation[0]
-    skill = getSkill(mio)
-    expect(skill.state.type).toBe("active")
-
-    // 30分経過
-    context.clock = now + 1800 * 1000
-    state = refreshState(context, state)
-    mio = state.formation[0]
-    skill = getSkill(mio)
-    expect(skill.state.type).toBe("cooldown")
-    let timeout = skill.state.data as SkillCooldownTimeout
-    expect(timeout.cooldownTimeout).toBe(now + (1800 + 10800) * 1000)
-
-    // 3時間30分経過
-    context.clock = now + (1800 + 10800) * 1000
-    state = refreshState(context, state)
-    mio = state.formation[0]
-    skill = getSkill(mio)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "36",
+    name: "mio",
+    active: 1800,
+    cooldown: 10800,
   })
+  
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"

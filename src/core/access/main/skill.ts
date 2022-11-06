@@ -1,4 +1,4 @@
-import { AccessDencoState, AccessEvaluateStep, AccessSideState, AccessSkillRecipe, AccessSkillTrigger, AccessState, filterActiveSkill } from ".."
+import { AccessDencoState, AccessEvaluateStep, AccessSideState, AccessSkillRecipe, AccessSkillTrigger, AccessSkillTriggers, AccessState, filterActiveSkill } from ".."
 import { Context } from "../../context"
 import { Denco } from "../../denco"
 import { random } from "../../random"
@@ -35,12 +35,12 @@ export function evaluateSkillAt(context: Context, current: ReadonlyState<AccessS
       }
       // 状態に依存するスキル発動有無の判定は毎度行う
       const result = skill.evaluate(context, state, step, active)
-      const recipe = canSkillEvaluated(context, state, step, active, result)
-      if (recipe) {
+      const recipes = getTargetRecipes(context, state, step, active, result)
+      recipes.forEach(recipe => {
         markTriggerSkill(state.offense, step, d)
         context.log.log(`スキルが発動(攻撃側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
         state = recipe(state) ?? state
-      }
+      })
     }
   })
   if (defense && defenseActive) {
@@ -49,7 +49,6 @@ export function evaluateSkillAt(context: Context, current: ReadonlyState<AccessS
       const skill = d.skill
       if (skill.type !== "possess") {
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
-        throw Error()
       }
       if (skill.evaluate && (!state.pinkMode || skill.evaluateInPink)) {
         const active = {
@@ -58,16 +57,27 @@ export function evaluateSkillAt(context: Context, current: ReadonlyState<AccessS
           skillPropertyReader: skill.property,
         }
         const result = skill.evaluate(context, state, step, active)
-        const recipe = canSkillEvaluated(context, state, step, active, result)
-        if (recipe) {
+        const recipes = getTargetRecipes(context, state, step, active, result)
+        recipes.forEach(recipe => {
           markTriggerSkill(defense, step, d)
           context.log.log(`スキルが発動(守備側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
           state = recipe(state) ?? state
-        }
+        })
       }
     })
   }
   return state
+}
+
+function getTargetRecipes(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: void | AccessSkillTriggers): AccessSkillRecipe[] {
+  if (typeof result === "undefined") return []
+  const list = Array.isArray(result) ? result : [result]
+  const recipe: AccessSkillRecipe[] = []
+  list.forEach(trigger => {
+    const r = canSkillEvaluated(context, state, step, d, trigger)
+    if (r) recipe.push(r)
+  })
+  return recipe
 }
 
 /**
@@ -79,19 +89,17 @@ export function evaluateSkillAt(context: Context, current: ReadonlyState<AccessS
  * @param d 発動する可能性があるアクティブなスキル
  * @returns 
  */
-function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: void | AccessSkillTrigger): AccessSkillRecipe | undefined {
-  if (typeof result === "undefined") return
-  if (typeof result === "function") return result
-  let percent = Math.min(result.probability, 100)
+function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, trigger: AccessSkillTrigger): AccessSkillRecipe | null {
+  if (typeof trigger === "function") return trigger
+  let percent = Math.min(trigger.probability, 100)
   percent = Math.max(percent, 0)
-  if (percent >= 100) return result.recipe
-  if (percent <= 0) return
+  if (percent >= 100) return trigger.recipe
+  if (percent <= 0) return null
   // 上記までは確率に依存せず決定可能
 
   const boost = d.which === "offense" ? state.offense.probabilityBoostPercent : state.defense?.probabilityBoostPercent
   if (!boost && boost !== 0) {
     context.log.error("存在しない守備側の確率補正計算を実行しようとしました")
-    throw Error("defense not set, but try to read probability_boost_percent")
   }
   if (boost !== 0) {
     const v = percent * (1 + boost / 100.0)
@@ -107,10 +115,10 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
   }
   if (random(context, percent)) {
     context.log.log(`スキルが発動できます ${d.name} 確率:${percent}%`)
-    return result.recipe
+    return trigger.recipe
   } else {
     context.log.log(`スキルが発動しませんでした ${d.name} 確率:${percent}%`)
-    return
+    return null
   }
 }
 

@@ -8,12 +8,13 @@ import { hasDefense } from "./utils"
 /**
  * カウンター攻撃を処理する
  * 
- * 攻守を入れ替えて通常同様の処理を再度実行する
+ * 攻守を入れ替えて通常のアクセス同様の処理を再度実行する  
+ * ダメージ計算も通常通り行い元のアクセスの計算結果と合算する
  * 
  * @param context 
  * @param current 現在の状態
  * @param denco カウンター攻撃の主体 現在の守備側である必要あり
- * @returns カウンター攻撃終了後の状態
+ * @returns カウンター攻撃終了後の状態 元のアクセス結果とカウンター攻撃の結果を合算した新しい状態
  */
 export function counterAttack(context: Context, current: ReadonlyState<AccessState>, denco: Denco): AccessState {
   const state = copyState<AccessState>(current)
@@ -26,7 +27,6 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
     const idx = state.defense.formation.findIndex(d => d.numbering === denco.numbering)
     if (idx < 0) {
       context.log.error(`反撃するでんこが見つかりません ${denco.numbering} ${denco.name}`)
-      return state
     }
     const next: AccessState = {
       time: state.time,
@@ -53,7 +53,6 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
     context.log.log("カウンター攻撃を終了")
     if (!result.defense) {
       context.log.error(`カウンター攻撃の結果に守備側が見つかりません`)
-      throw Error()
     }
 
     // カウンター攻撃によるでんこ状態の反映 AccessDencoState[]

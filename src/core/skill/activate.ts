@@ -24,15 +24,12 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
   const d = state.formation[carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.length: ${state.formation.length}`)
-    throw Error()
   }
   if (d.skill.type !== "possess") {
     context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
-    throw Error()
   }
   if (d.skill.state.type === "not_init") {
     context.log.error(`スキル状態が初期化されていません ${d.name}`)
-    throw Error()
   }
   const skill = d.skill
   switch (skill.state.transition) {
@@ -47,7 +44,6 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},transition:${skill.state.transition})`)
-          throw Error()
         }
       }
     }
@@ -61,13 +57,11 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:auto)`)
-          throw Error()
         }
       }
     }
     default: {
       context.log.error(`スキル状態をactiveに変更できません type:${skill.state.transition}`)
-      throw Error()
     }
   }
 }
@@ -79,10 +73,14 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
     carIndex: carIndex,
     skill: skill,
   }
+  const timeout = skill.deactivateAt?.(context, state, self)
   skill.state = {
     type: "active",
     transition: transition,
-    data: skill.deactivateAt?.(context, state, self)
+    data: timeout ? {
+      ...timeout,
+      activatedAt: context.currentTime
+    } : undefined,
   }
   // callback #onActivated
   const callback = skill.onActivated
@@ -124,11 +122,9 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
   const d = state.formation[carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.length: ${state.formation.length}`)
-    throw Error()
   }
   if (d.skill.type !== "possess") {
     context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
-    throw Error()
   }
   const skill = d.skill
   switch (skill.state.transition) {
@@ -138,12 +134,10 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
       if (skill.state.type === "active") {
         if (skill.state.data) {
           context.log.error(`スキル状態をcooldownに変更できません, active終了時刻が設定済みです: ${JSON.stringify(skill.state.data)}`)
-          throw Error()
         }
         const callback = skill.completeCooldownAt
         if (!callback) {
           context.log.error(`スキル状態をcooldownに変更できません, cooldownの終了時刻を指定する関数 completeCooldownAt が未定義です`)
-          throw Error()
         }
         skill.state = {
           type: "cooldown",
@@ -160,11 +154,9 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
       } else {
         context.log.error(`スキル状態をcooldownに変更できません(state:${skill.state.type})`)
       }
-      break
     }
     default: {
       context.log.error(`スキル状態をcooldownに変更できません transition:${skill.state.transition}`)
     }
   }
-  throw Error()
 }

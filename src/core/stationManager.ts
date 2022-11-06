@@ -1,24 +1,43 @@
 import { Context } from "./context";
 import { Random } from "./random";
-import { Station, StationAttribute, StationLink } from "./station";
+import { Line, Station, StationAttribute, StationLink } from "./station";
 
 class StationManager {
   data: Station[] = []
 
-  async load(data?: string) {
-    const list = data ? JSON.parse(data) :
+  async load(stationData?: string, lineData?: string) {
+    const lines = lineData ? JSON.parse(lineData) :
+      await import("../data/line.json").then(r => r.default).catch(e => [])
+    if (!Array.isArray(lines)) {
+      throw Error("line data root not array")
+    }
+    const lineMap = new Map<number, Line>()
+    lines.forEach(e => {
+      let line: Line = {
+        name: e.name as string
+      }
+      let code = e.code as number
+      lineMap.set(code, line)
+    })
+    const stations = stationData ? JSON.parse(stationData) :
       await import("../data/station.json").then(r => r.default).catch(e => [])
-    if (!Array.isArray(list)) {
+    if (!Array.isArray(stations)) {
       throw Error("station data root not array")
     }
-    for (let e of list) {
+    stations.forEach(e => {
+      let lines = (e.lines as number[]).map(code => {
+        const line = lineMap.get(code)
+        if (!line) throw Error(`路線（code=${code}）が見つかりません`)
+        return line
+      })
       let s: Station = {
         name: e.name as string,
         nameKana: e.name_kana as string,
         attr: e.attr as StationAttribute,
+        lines: lines,
       }
       this.data.push(s)
-    }
+    })
   }
 
   clear() {
@@ -29,7 +48,6 @@ class StationManager {
     if (size === 0) return []
     if (size > this.data.length) {
       context.log.error("データサイズを越えています")
-      throw RangeError("random station size > data size")
     }
     const list = shuffle(this.data, context.random, size)
     context.log.log(`ランダムに駅を選出：${list.map(s => s.name).join(",")}`)

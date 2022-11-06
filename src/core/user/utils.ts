@@ -2,23 +2,15 @@ import moment from "moment-timezone";
 import { Context } from "../context";
 import { DencoState } from "../denco";
 import { copyState, ReadonlyState } from "../state";
+import { UserProperty } from "./property";
 import { refreshUserState } from "./refresh";
-import { UserParam, UserState } from "./type";
-
-
-export interface FormationPosition {
-  /**
-   * 主体となるでんこの編成内のindex  
-   * 0 <= carIndex < formation.length
-   */
-  carIndex: number
-}
+import { UserState } from "./state";
 
 export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: number }): T {
   return state.formation[state.carIndex]
 }
 
-export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, param?: Partial<UserParam>): UserState {
+export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, property?: Partial<UserProperty>): UserState {
   if (!formation) formation = []
   const date = moment(context.currentTime)
     .millisecond(0)
@@ -27,8 +19,8 @@ export function initUser(context: Context, userName: string, formation?: Readonl
     .add(1, "h")
   return changeFormation(context, {
     user: {
-      name: param?.name ?? userName,
-      dailyDistance: param?.dailyDistance ?? 0,
+      ...property,
+      name: userName,
     },
     formation: [],
     event: [],

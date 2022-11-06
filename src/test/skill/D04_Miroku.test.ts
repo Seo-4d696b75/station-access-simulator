@@ -3,35 +3,18 @@ import { init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
-import { initUser, refreshState } from "../../core/user"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("みろくのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let miroku = DencoManager.getDenco(context, "4", 50)
-    expect(miroku.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [miroku])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    miroku = state.formation[0]
-    let skill = getSkill(miroku)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = Date.now() + 600 * 1000
-    state = refreshState(context, state)
-    miroku = state.formation[0]
-    skill = getSkill(miroku)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "4",
+    name: "miroku"
   })
+
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)

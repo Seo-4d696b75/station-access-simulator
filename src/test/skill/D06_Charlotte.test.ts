@@ -10,9 +10,8 @@ import { initUser, refreshState } from "../../core/user"
 import "../matcher"
 
 describe("シャルのスキル", () => {
-  beforeAll(async () => {
-    await init()
-  })
+  beforeAll(init)
+
   test("スキル発動", () => {
     const context = initContext("test", "test", false)
     const now = moment("2020-01-01T12:50:00.000").valueOf()

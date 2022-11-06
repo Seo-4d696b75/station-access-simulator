@@ -1,21 +1,15 @@
-import { activateSkill, deactivateSkill, getSkill, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import { testAlwaysSkill } from "../skillState"
 
 describe("しいらのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let siira = DencoManager.getDenco(context, "11", 50)
-    let state = initUser(context, "master", [siira])
-    siira = state.formation[0]
-    expect(siira.name).toBe("siira")
-    expect(siira.skill.type).toBe("possess")
-    let skill = getSkill(siira)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
+
+  testAlwaysSkill({
+    number: "11",
+    name: "siira"
   })
+
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
     let siira = DencoManager.getDenco(context, "11", 50)

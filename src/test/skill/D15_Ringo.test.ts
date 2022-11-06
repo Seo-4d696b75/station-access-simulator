@@ -1,32 +1,20 @@
 import moment from "moment-timezone"
-import { activateSkill, deactivateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess } from "../.."
+import { getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import { testAlwaysSkill } from "../skillState"
 
 describe("りんごのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let ringo = DencoManager.getDenco(context, "15", 50)
-    expect(ringo.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [ringo])
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
-    state = refreshState(context, state)
-    ringo = state.formation[0]
-    let skill = getSkill(ringo)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
-    state = refreshState(context, state)
-    ringo = state.formation[0]
-    skill = getSkill(ringo)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "15",
+    name: "ringo",
+    time: [
+      moment('2022-01-01T12:00:00+0900').valueOf(),
+      moment('2022-01-01T23:00:00+0900').valueOf()
+    ]
   })
+
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
     let luna = DencoManager.getDenco(context, "3", 50, 1)
@@ -187,6 +175,25 @@ describe("りんごのスキル", () => {
     expect(accessLuna.hpAfter).toBe(0)
     expect(accessLuna.damage?.value).toBe(306)
     expect(accessLuna.damage?.attr).toBe(false)
+  })
+  test("発動なし-昼-相手不在", () => {
+    const context = initContext("test", "test", false)
+    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    let luna = DencoManager.getDenco(context, "3", 50, 1)
+    let ringo = DencoManager.getDenco(context, "15", 50, 1)
+    let offense = initUser(context, "とあるマスター２", [ringo])
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      station: luna.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.pinkMode).toBe(false)
+    expect(hasSkillTriggered(result.offense, ringo)).toBe(false)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
   })
   test("発動なし-夜-攻撃側", () => {
     const context = initContext("test", "test", false)

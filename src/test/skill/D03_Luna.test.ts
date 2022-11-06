@@ -3,34 +3,21 @@ import { init } from "../.."
 import { getAccessDenco, getDefense, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
-import { initUser, refreshState } from "../../core/user"
+import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("ルナのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let luna = DencoManager.getDenco(context, "3", 50)
-    expect(luna.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [luna])
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
-    state = refreshState(context, state)
-    luna = state.formation[0]
-    let skill = getSkill(luna)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
-    state = refreshState(context, state)
-    luna = state.formation[0]
-    skill = getSkill(luna)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "3",
+    name: "luna",
+    time: [
+      moment('2022-01-01T12:00:00+0900').valueOf(),
+      moment('2022-01-01T23:00:00+0900').valueOf()
+    ]
   })
+
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
     let luna = DencoManager.getDenco(context, "3", 50, 1)

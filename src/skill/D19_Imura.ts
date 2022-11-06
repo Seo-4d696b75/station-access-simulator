@@ -2,10 +2,10 @@ import { SkillLogic } from "..";
 
 const skill: SkillLogic = {
   evaluate: (context, state, step, self) => {
-    if (step === "damage_common" &&
-      self.who === "offense" &&
-      !!state.defense &&
-      self.currentHp > 1) {
+    if (step === "damage_common"
+      && self.who === "offense"
+      && state.defense
+      && self.currentHp > 1) {
       return (state) => {
         const atk = self.skill.property.readNumber("ATK")
         state.attackPercent += atk

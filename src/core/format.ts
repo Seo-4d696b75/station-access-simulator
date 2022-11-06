@@ -1,6 +1,7 @@
 import { computeWidth } from "meaw"
-import { AccessDencoState, AccessSide, AccessSideState, AccessState, getAccessDenco } from "./access/index"
+import { AccessDencoState, AccessResult, AccessSide, AccessUserResult, getAccessDenco } from "./access/index"
 import { Context } from "./context"
+import { formatDuration } from "./date"
 import { DencoAttribute } from "./denco"
 import { EventTriggeredSkill } from "./event"
 import { Event, LevelupDenco } from "./event/type"
@@ -134,7 +135,7 @@ export function formatRebootDetail(result: LinksResult, time: number, width: num
   return str
 }
 
-export function formatAccessDetail(result: ReadonlyState<AccessState>, which: AccessSide, time: number, width: number = 60): string {
+export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -235,7 +236,7 @@ export function formatAccessDetail(result: ReadonlyState<AccessState>, which: Ac
 
 }
 
-export function formatAccessEvent(result: ReadonlyState<AccessState>, which: AccessSide, time: number, width: number = 50): string {
+export function formatAccessEvent(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -313,25 +314,19 @@ function formatPt(pt: number | undefined, colored: boolean = false): string {
   return color(str, "green")
 }
 
-function formatLinkTime(time: number, link?: StationLink | null): string {
+/**
+ * リンク時間を文字列にフォーマットする
+ * @param time 現在時刻 [ms]
+ * @param link 対象のリンク
+ * @returns リンクが`null`の場合は空文字
+ */
+export function formatLinkTime(time: number, link?: ReadonlyState<StationLink> | null): string {
   if (!link) return ""
-  let duration = time - link.start
-  if (duration < 0) return ""
-  duration = Math.floor(duration / 1000)
-  let str = `${duration % 60}秒`
-  duration = Math.floor(duration / 60)
-  if (duration === 0) return str
-  str = `${duration % 60}分` + str
-  duration = Math.floor(duration / 60)
-  if (duration === 0) return str
-  str = `${duration % 24}時間` + str
-  duration = Math.floor(duration / 24)
-  if (duration === 0) return str
-  str = `${duration}日` + str
-  return str
+  const duration = time - link.start
+  return formatDuration(duration)
 }
 
-function formatAccessLinkTime(station: Station, time: number, state?: ReadonlyState<AccessSideState> | null): string {
+function formatAccessLinkTime(station: ReadonlyState<Station>, time: number, state?: ReadonlyState<AccessUserResult> | null): string {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.who === "defense") {
@@ -341,14 +336,14 @@ function formatAccessLinkTime(station: Station, time: number, state?: ReadonlySt
   return "-"
 }
 
-function formatSkills(state?: ReadonlyState<AccessSideState> | null): string {
+function formatSkills(state?: ReadonlyState<AccessUserResult> | null): string {
   if (!state) return ""
   const skills = state.triggeredSkills
   if (skills.length === 0) return "-"
   return skills.map(s => s.name).join(",")
 }
 
-function formatHP(state?: ReadonlyState<AccessSideState> | null) {
+function formatHP(state?: ReadonlyState<AccessUserResult> | null) {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.damage === undefined) {

@@ -4,7 +4,8 @@ import { Context } from "../context"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, ReadonlyState } from "../state"
 import { Station } from "../station"
-import { UserParam, UserState } from "../user"
+import { UserState } from "../user"
+import { getUserPropertyReader } from "../user/property"
 import { execute } from "./main/execute"
 import { completeAccess } from "./result"
 
@@ -113,7 +114,7 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
     context.log.error(`対象のでんこが見つかりません side: ${which} carIndex: ${carIndex}, formation.length: ${formation.length}`)
   }
   return {
-    user: copyState<UserParam>(f.user),
+    user: getUserPropertyReader(f.user),
     carIndex: carIndex,
     formation: formation,
     triggeredSkills: [],

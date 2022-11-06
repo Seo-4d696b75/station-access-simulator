@@ -5,6 +5,7 @@ const skill: SkillLogic = {
   canEnabled: (context, state, self) => {
     // 編成内（自身除く）にスキル状態が cooldownのでんこが１体以上いる
     return state.formation.some(d => {
+      if (d.name === self.name) return false
       const s = d.skill
       return s.type === "possess" && s.state.type === "cooldown"
     })

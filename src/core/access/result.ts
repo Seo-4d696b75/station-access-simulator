@@ -2,7 +2,7 @@ import { AccessConfig, filterActiveSkill } from "."
 import { Context } from "../context"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, ReadonlyState } from "../state"
-import { LinksResult } from "../station"
+import { LinksResult, Station } from "../station"
 import { UserState } from "../user"
 import { refreshEXPState } from "../user/refresh"
 import { calcLinksResult } from "./score"
@@ -19,7 +19,7 @@ import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "./st
  * 
  * アクセスによって更新された攻守両側の状態は`offense, defense`を参照すること
  */
-export interface AccessResult extends AccessState {
+export interface AccessResult extends Omit<AccessState, "offense" | "defense"> {
   offense: AccessUserResult
   defense?: AccessUserResult
 }
@@ -27,7 +27,7 @@ export interface AccessResult extends AccessState {
 /**
  * アクセス終了後の攻守各側の状態
  */
-export interface AccessUserResult extends AccessSideState, UserState {
+export interface AccessUserResult extends Omit<AccessSideState, "user">, UserState {
   formation: AccessDencoResult[]
 }
 
@@ -60,7 +60,7 @@ export interface AccessDencoResult extends AccessDencoState {
  */
 export function completeAccess(context: Context, config: AccessConfig, access: ReadonlyState<AccessState>): AccessResult {
   let result: AccessResult = {
-    ...copyState(access),
+    ...copyState<AccessState>(access),
     offense: initUserResult(context, config.offense.state, access, "offense"),
     defense: config.defense ? initUserResult(context, config.defense.state, access, "defense") : undefined,
   }
@@ -96,15 +96,16 @@ function initUserResult(context: Context, state: ReadonlyState<UserState>, acces
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) {
     context.log.error(`アクセス結果の初期化に失敗`)
-    throw Error()
   }
 
+  const after = copyState<AccessSideState>(side)
+  const before = copyState<UserState>(state)
+
   return {
-    // UserState
-    ...copyState<UserState>(state),
+    ...after,
     event: [],
-    // AccessSideState
-    ...copyState<AccessSideState>(side),
+    queue: before.queue,
+    user: before.user,
   }
 }
 
@@ -127,7 +128,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
     } else if (d.who === "offense" && state.linkSuccess) {
       // 攻撃側のリンク成功
       d.link.push({
-        ...state.station,
+        ...copyState<Station>(state.station),
         start: context.currentTime,
       })
     } else if (d.who === "defense" && state.linkDisconnected) {
@@ -135,7 +136,6 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
       const idx = d.link.findIndex(link => link.name === state.station.name)
       if (idx < 0) {
         context.log.error(`リンク解除した守備側のリンクが見つかりません ${state.station.name}`)
-        throw Error()
       }
       // 対象リンクのみ解除
       const disconnectedLink = d.link[idx]
@@ -203,7 +203,6 @@ function checkSkillAfterAccess(context: Context, state: AccessResult, which: Acc
     const skill = d.skill
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
-      throw Error()
     }
     const predicate = skill?.onAccessComplete
     if (skill && predicate) {

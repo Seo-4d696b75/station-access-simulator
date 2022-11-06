@@ -1,6 +1,6 @@
-import moment from "moment-timezone"
-import { AccessConfig, activateSkill, deactivateSkill, DencoManager, EventTriggeredSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, LevelupDenco, LinksResult, refreshState, startAccess } from "../.."
+import { AccessConfig, DencoManager, EventTriggeredSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, LevelupDenco, LinksResult, startAccess } from "../.."
 import "../matcher"
+import { testAlwaysSkill } from "../skillState"
 
 // デフォルトの経験値計算式を使用する
 const accessScore = 100
@@ -8,30 +8,12 @@ const linkSuccessScore = 100
 
 describe("にころのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let nikoro = DencoManager.getDenco(context, "20", 50)
-    expect(nikoro.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [nikoro])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    nikoro = state.formation[0]
-    let skill = getSkill(nikoro)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    nikoro = state.formation[0]
-    skill = getSkill(nikoro)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "20",
+    name: "nikoro"
   })
+
   test("発動なし-守備側編", () => {
     const context = initContext("test", "test", false)
     let nikoro = DencoManager.getDenco(context, "20", 50)

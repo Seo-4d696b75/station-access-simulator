@@ -1,5 +1,5 @@
 import { EventTriggeredSkill } from "."
-import { AccessSide, AccessState } from "../access"
+import { AccessResult, AccessSide } from "../access"
 import { DencoState } from "../denco"
 import { ReadonlyState } from "../state"
 import { LinksResult } from "../station"
@@ -36,7 +36,7 @@ export interface AccessEventData {
    * - 解除されたリンクスコア・経験値は追加済み
    * - 追加された経験値によるレベルアップ直前
    */
-  readonly access: ReadonlyState<AccessState>
+  readonly access: ReadonlyState<AccessResult>
   /**
    * アクセスの攻撃側・守備側のどちら側か
    */

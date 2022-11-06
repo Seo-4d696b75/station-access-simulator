@@ -123,7 +123,6 @@ export function execute(context: Context, initial: ReadonlyState<AccessState>, t
     const damageBase = state.damageBase
     if (!damageBase) {
       context.log.error("基本ダメージの値が見つかりません")
-      throw Error("base damage not set")
     }
     if (damageBase.variable < 0) {
       context.log.error(`基本ダメージの値は非負である必要があります ${damageBase.variable}`)

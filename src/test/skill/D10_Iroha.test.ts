@@ -39,11 +39,19 @@ describe("いろはスキル", () => {
 
     // リンク数2 && 編成ふたり以上
     iroha = DencoManager.getDenco(context, "10", 50, 2)
-    reika = DencoManager.getDenco(context, "5", 50)
+    reika = DencoManager.getDenco(context, "5", 10)
     state = initUser(context, "master", [iroha, reika])
     iroha = state.formation[0]
     skill = getSkill(iroha)
     expect(skill.state.type).toBe("idle")
+
+    // リンク数2 && 編成ふたり以上 && 移譲相手の方が高レベル
+    iroha = DencoManager.getDenco(context, "10", 50, 2)
+    reika = DencoManager.getDenco(context, "5", 80)
+    state = initUser(context, "master", [iroha, reika])
+    iroha = state.formation[0]
+    skill = getSkill(iroha)
+    expect(skill.state.type).toBe("unable")
   })
 
   test("スキル発動-先頭", () => {

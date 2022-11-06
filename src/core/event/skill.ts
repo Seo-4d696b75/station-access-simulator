@@ -3,9 +3,9 @@ import { AccessDencoResult, AccessUserResult } from "../access"
 import { Context } from "../context"
 import { Denco, DencoState } from "../denco"
 import { random } from "../random"
-import { ActiveSkill, isSkillActive, ProbabilityPercent } from "../skill"
+import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill } from "../skill"
 import { copyState, ReadonlyState } from "../state"
-import { UserParam, UserState } from "../user"
+import { UserProperty, UserState } from "../user"
 import { refreshUserState } from "../user/refresh"
 import { Event } from "./"
 
@@ -30,7 +30,7 @@ export interface EventTriggeredSkill {
  */
 export interface SkillEventState {
   time: number
-  user: UserParam
+  user: UserProperty
 
   formation: SkillEventDencoState[]
   carIndex: number
@@ -120,7 +120,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
     return next
   }
   const eventState: SkillEventState = {
-    user: copyState<UserParam>(state.user),
+    user: copyState<UserProperty>(state.user),
     time: context.currentTime,
     formation: state.formation.map((d, idx) => {
       return {

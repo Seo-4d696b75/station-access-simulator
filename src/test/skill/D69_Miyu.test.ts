@@ -1,5 +1,5 @@
-import moment from "moment-timezone"
-import { AccessConfig, activateSkill, DencoManager, deactivateSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess, StationManager } from "../.."
+import { AccessConfig, DencoManager, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess, StationManager } from "../.."
+import { testAlwaysSkill } from "../skillState"
 
 
 // デフォルトの経験値計算式を使用する
@@ -8,36 +8,18 @@ const linkSuccessScore = 100
 
 describe("ミユのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let miyu = DencoManager.getDenco(context, "69", 50)
-    expect(miyu.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [miyu])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    miyu = state.formation[0]
-    let skill = getSkill(miyu)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    miyu = state.formation[0]
-    skill = getSkill(miyu)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "69",
+    name: "miyu",
   })
+
   test("発動なし-守備側なし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
     let miyu = DencoManager.getDenco(context, "69", 50)
     const offense = initUser(context, "とあるマスター１", [reika, miyu])
-    offense.user.dailyDistance = 100
+    offense.user.daily = { distance: 100 }
     const station = StationManager.getRandomStation(context, 1)[0]
     const config: AccessConfig = {
       offense: {
@@ -68,7 +50,7 @@ describe("ミユのスキル", () => {
     const defense = initUser(context, "とあるマスター２", [
       charlotte, miyu
     ])
-    defense.user.dailyDistance = 100
+    defense.user.daily = { distance: 100 }
     const config: AccessConfig = {
       offense: {
         state: offense,
@@ -102,7 +84,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.dailyDistance = 100
+    offense.user.daily = { distance: 100 }
     const defense = initUser(context, "とあるマスター２", [
       charlotte, miyu
     ])
@@ -136,7 +118,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.dailyDistance = 0.9
+    offense.user.daily = { distance: 0.9 }
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -174,7 +156,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.dailyDistance = 50
+    offense.user.daily = { distance: 50 }
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -213,7 +195,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, seria, miyu
     ])
-    offense.user.dailyDistance = 120
+    offense.user.daily = { distance: 120 }
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])

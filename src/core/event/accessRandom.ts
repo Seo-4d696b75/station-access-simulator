@@ -18,6 +18,11 @@ export function accessRandomStation(context: Context, state: ReadonlyState<Skill
     name: "ランダムな駅",
     nameKana: "らんだむなえき",
     attr: "unknown",
+    lines: [
+      {
+        name: "ランダムな路線"
+      }
+    ]
   }
   const config: AccessConfig = {
     offense: {
