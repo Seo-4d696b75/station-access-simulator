@@ -1,4 +1,4 @@
-import { initReadableProperty, ReadableProperty } from "../property"
+import { initReadableProperty, initWritableProperty, ReadableProperty } from "../property"
 import { SkillHolder } from "./holder"
 import { SkillLogic } from "./logic"
 import { SkillTransitionType } from "./transition"
@@ -152,6 +152,7 @@ export class SkillManager {
         }
       } else if (idx < data.skillProperties.length) {
         const property = data.skillProperties[idx]
+        const customData = new Map<string, any>()
         return {
           type: "possess",
           level: property.skillLevel,
@@ -163,6 +164,11 @@ export class SkillManager {
           },
           evaluateInPink: data.evaluateInPink,
           property: initReadableProperty(property.property, data.skillDefaultProperties),
+          data: {
+            clear: () => customData.clear(),
+            ...initReadableProperty(customData, undefined),
+            ...initWritableProperty(customData),
+          },
           ...data.skill,
         }
       } else {

@@ -82,6 +82,8 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
       activatedAt: context.currentTime
     } : undefined,
   }
+  // カスタムデータの初期化
+  skill.data.clear()
   // callback #onActivated
   const callback = skill.onActivated
   if (callback) {

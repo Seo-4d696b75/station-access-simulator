@@ -80,7 +80,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         const predicate = skill.canEnabled
         if (!predicate) {
           context.log.error("関数#canEnabled が未定義です type:manual-condition")
-          throw Error()
         }
         let self = {
           ...denco,
@@ -136,7 +135,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
       const predicate = skill.canActivated
       if (!predicate) {
         context.log.error("関数#canActivated が未定義です type:auto-condition")
-        throw Error()
       }
       let self = {
         ...denco,
@@ -151,6 +149,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           type: "auto-condition",
           data: undefined
         }
+        // カスタムデータの初期化
+        skill.data.clear()
         result = true
         const callback = skill.onActivated
         if (callback) {
