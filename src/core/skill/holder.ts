@@ -1,6 +1,6 @@
-import { SkillProperty } from "../skillManager"
 import { SkillLogic } from "./logic"
-import { SkillState } from "./state"
+import { SkillProperty } from "./manager"
+import { SkillTransition } from "./state"
 
 /**
  * スキルレベルに依存するデータとスキル発動に関するロジックを保有する
@@ -15,12 +15,12 @@ export interface Skill extends SkillLogic {
    */
   name: string
   /**
-   * スキルの状態
+   * スキルの状態遷移
    * 
    * **この状態を直接操作しないでください** {@link activateSkill} {@link deactivateSkill}などの関数を利用してください    
    * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
    */
-  state: SkillState
+  transition: SkillTransition
   /**
    * スキルレベルや各でんこに依存するデータへのアクセス方法を提供します
    * @see {@link SkillProperty}
@@ -64,5 +64,5 @@ export function getSkill<S>(denco: { skill: S & SkillHolderBase<"possess"> | Ski
 * @returns 
 */
 export function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"possess"> & Skill {
-  return skill.type === "possess" && skill.state.type === "active"
+  return skill.type === "possess" && skill.transition.state === "active"
 }
