@@ -1,6 +1,6 @@
 // 外部公開用のエントリーポイント
 import DencoManager from "./core/dencoManager"
-import SkillManager from "./core/skillManager"
+import SkillManager from "./core/skill"
 import StationManager from "./core/stationManager"
 
 /**
@@ -48,7 +48,7 @@ export * from "./core/film"
 export * from "./core/format"
 export * from "./core/random"
 export * from "./core/skill"
-export { default as SkillManager } from "./core/skillManager"
+export { default as SkillManager } from "./core/skill"
 export * from "./core/state"
 export * from "./core/station"
 export { default as StationManager } from "./core/stationManager"

@@ -28,9 +28,9 @@ export function getDefPercentDenco(def: number): DencoState {
         readNumberArray: () => [],
         readStringArray: () => [],
       },
-      state: {
-        type: "active",
-        transition: "always",
+      transition: {
+        state: "active",
+        type: "always",
         data: undefined
       },
       evaluate: (context, state, step, self) => {
@@ -74,9 +74,9 @@ export function getFixedDamageDenco(damage: number): DencoState {
         readNumberArray: () => [],
         readStringArray: () => [],
       },
-      state: {
-        type: "active",
-        transition: "always",
+      transition: {
+        state: "active",
+        type: "always",
         data: undefined
       },
       evaluate: (context, state, step, self) => {

@@ -2,8 +2,8 @@ import { Context } from "../context";
 import { DencoState } from "../denco";
 import DencoManager from "../dencoManager";
 import { LevelupEvent, refreshEventQueue } from "../event";
+import SkillManager from "../skill";
 import { refreshSkillState, refreshSkillStateOne } from "../skill/refresh";
-import SkillManager from "../skillManager";
 import { copyState, copyStateTo, ReadonlyState } from "../state";
 import { UserState } from "./state";
 

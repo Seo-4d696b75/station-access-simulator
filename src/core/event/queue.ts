@@ -69,7 +69,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
         for (let i = 0; i < size; i++) {
           const d = state.formation[i]
           const skill = d.skill
-          if (skill.type !== "possess" || skill.state.type !== "active") continue
+          if (skill.type !== "possess" || skill.transition.state !== "active") continue
           const callback = skill.onHourCycle
           if (!callback) continue
           let self = {

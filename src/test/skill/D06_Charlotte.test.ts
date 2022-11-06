@@ -21,13 +21,13 @@ describe("シャルのスキル", () => {
     let state = initUser(context, "とあるマスター", [charlotte])
     charlotte = state.formation[0]
     let skill = getSkill(charlotte)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.type).toBe("manual")
+    expect(skill.transition.state).toBe("idle")
     state = activateSkill(context, state, 0)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
     // 即座に idle > active > cooldown
-    expect(skill.state.type).toBe("cooldown")
+    expect(skill.transition.state).toBe("cooldown")
     expect(state.queue.length).toBe(2)
     let entry = state.queue[0]
     expect(entry.type).toBe("hour_cycle")
@@ -45,7 +45,7 @@ describe("シャルのスキル", () => {
     state = refreshState(context, state)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
-    expect(skill.state.type).toBe("cooldown")
+    expect(skill.transition.state).toBe("cooldown")
     expect(state.event.length).toBe(0)
 
     // 90分経過
@@ -53,7 +53,7 @@ describe("シャルのスキル", () => {
     state = refreshState(context, state)
     charlotte = state.formation[0]
     skill = getSkill(charlotte)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
     expect(state.event.length).toBe(2)
     let event = state.event[0]
     expect(event.type).toBe("access")

@@ -119,7 +119,7 @@ describe("メロのスキル", () => {
     offense = activateSkill(context, offense, 1)
     hiiru = offense.formation[1]
     let skill = getSkill(hiiru)
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,

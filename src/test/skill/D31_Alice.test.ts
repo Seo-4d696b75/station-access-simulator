@@ -18,8 +18,8 @@ describe("ありすのスキル", () => {
     state = refreshState(context, state)
     alice = state.formation[0]
     let skill = getSkill(alice)
-    expect(skill.state.transition).toBe("auto-condition")
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transition.state).toBe("active")
 
     expect(() => activateSkill(context, state, 0)).toThrowError()
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
@@ -29,8 +29,8 @@ describe("ありすのスキル", () => {
     state = refreshState(context, state)
     alice = state.formation[0]
     skill = getSkill(alice)
-    expect(skill.state.transition).toBe("auto-condition")
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transition.state).toBe("unable")
   })
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)

@@ -19,8 +19,8 @@ describe("アサのスキル", () => {
     asa = state.formation[0]
     expect(asa.name).toBe("asa")
     let skill = getSkill(asa)
-    expect(skill.state.transition).toBe("manual-condition")
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.type).toBe("manual-condition")
+    expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
@@ -34,14 +34,14 @@ describe("アサのスキル", () => {
     state = changeFormation(context, state, [asa, reika, fubu])
     asa = state.formation[0]
     skill = getSkill(asa)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     // activeだけどスキル時間の設定なし
     state = changeFormation(context, state, [asa, sigure, reika, fubu])
     expect(isSkillActive(state.formation[1].skill))
     asa = state.formation[0]
     skill = getSkill(asa)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     // supporter以外は対象外
     state = changeFormation(context, state, [asa, hokone, eria])
@@ -50,7 +50,7 @@ describe("アサのスキル", () => {
     expect(isSkillActive(state.formation[2].skill))
     asa = state.formation[0]
     skill = getSkill(asa)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     // 対象あり
     state = changeFormation(context, state, [asa, reika, fubu])
@@ -59,18 +59,18 @@ describe("アサのスキル", () => {
     expect(isSkillActive(state.formation[2].skill))
     asa = state.formation[0]
     skill = getSkill(asa)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
 
     // 発動
     state = activateSkill(context, state, 0)
     asa = state.formation[0]
     skill = getSkill(asa)
     // 即座にcooldown
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.transition).toBe("manual-condition")
-    expect(skill.state.data).not.toBeUndefined()
-    if (skill.state.type === "cooldown" && skill.state.transition === "manual-condition" && skill.state.data) {
-      let data = skill.state.data
+    expect(skill.transition.state).toBe("cooldown")
+    expect(skill.transition.type).toBe("manual-condition")
+    expect(skill.transition.data).not.toBeUndefined()
+    if (skill.transition.state === "cooldown" && skill.transition.type === "manual-condition" && skill.transition.data) {
+      let data = skill.transition.data
       expect(data.cooldownTimeout).toBe(now + SKILL_COOLDOWN_TIME * 1000)
     }
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
@@ -80,7 +80,7 @@ describe("アサのスキル", () => {
     state = refreshState(context, state)
     asa = state.formation[0]
     skill = getSkill(asa)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
   })
 
   test("発動-active時間の延長", () => {
@@ -92,20 +92,20 @@ describe("アサのスキル", () => {
     const now = moment().valueOf()
     context.clock = now
     let skill = getSkill(state.formation[0])
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     state = activateSkill(context, state, 1, 2)
     skill = getSkill(state.formation[0])
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
 
     state = activateSkill(context, state, 0)
 
     // reika 900 + 5400 sec
     skill = getSkill(state.formation[1])
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.data).not.toBeUndefined()
-    expect(skill.state.data).toMatchObject({
+    expect(skill.transition.state).toBe("active")
+    expect(skill.transition.type).toBe("manual")
+    expect(skill.transition.data).not.toBeUndefined()
+    expect(skill.transition.data).toMatchObject({
       activatedAt: now,
       activeTimeout: now + 1080 * 1000, // 900 => 1080 (+20%)
       cooldownTimeout: now + (900 + 5400) * 1000, // 不変
@@ -113,10 +113,10 @@ describe("アサのスキル", () => {
 
     // fubu 1800 + 7200 sec
     skill = getSkill(state.formation[2])
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.data).not.toBeUndefined()
-    expect(skill.state.data).toMatchObject({
+    expect(skill.transition.state).toBe("active")
+    expect(skill.transition.type).toBe("manual")
+    expect(skill.transition.data).not.toBeUndefined()
+    expect(skill.transition.data).toMatchObject({
       activatedAt: now,
       activeTimeout: now + 2160 * 1000, // 1800 => 2160 (+20%)
       cooldownTimeout: now + (1800 + 7200) * 1000, // 不変
@@ -134,11 +134,11 @@ describe("アサのスキル", () => {
     const now = moment().valueOf()
     context.clock = now
     let skill = getSkill(state.formation[0])
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     state = activateSkill(context, state, 1)
     skill = getSkill(state.formation[0])
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
 
     // 適当にpercentをモック
     const spy = jest.spyOn(skill.property, "readNumber").mockImplementation((key, _) => {
@@ -153,10 +153,10 @@ describe("アサのスキル", () => {
 
     // reika 900 + 5400 sec
     skill = getSkill(state.formation[1])
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.data).not.toBeUndefined()
-    expect(skill.state.data).toMatchObject({
+    expect(skill.transition.state).toBe("active")
+    expect(skill.transition.type).toBe("manual")
+    expect(skill.transition.data).not.toBeUndefined()
+    expect(skill.transition.data).toMatchObject({
       activatedAt: now,
       activeTimeout: now + 6480 * 1000, // 900 => 6480 (+620%)
       cooldownTimeout: now + (900 + 5400) * 1000, // 不変
@@ -167,18 +167,18 @@ describe("アサのスキル", () => {
     context.clock = now + 900 * 1000
     state = refreshState(context, state)
     skill = getSkill(state.formation[1])
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.state).toBe("active")
 
     // まだアクティブ（本来ならcooldown終了)
     context.clock = now + 6300 * 1000
     state = refreshState(context, state)
     skill = getSkill(state.formation[1])
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.state).toBe("active")
 
     // active終了　同時にcooldownも終了
     context.clock = now + 6480 * 1000
     state = refreshState(context, state)
     skill = getSkill(state.formation[1])
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
   })
 })

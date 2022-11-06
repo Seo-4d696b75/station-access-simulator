@@ -7,7 +7,7 @@ const skill: SkillLogic = {
     return state.formation.some(d => {
       if (d.name === self.name) return false
       const s = d.skill
-      return s.type === "possess" && s.state.type === "cooldown"
+      return s.type === "possess" && s.transition.state === "cooldown"
     })
   },
   onActivated: (context, state, self) => {
@@ -17,7 +17,7 @@ const skill: SkillLogic = {
       recipe: (state) => {
         const target = state.formation.filter(d => {
           const s = d.skill
-          return s.type === "possess" && s.state.type === "cooldown"
+          return s.type === "possess" && s.transition.state === "cooldown"
         })
         if (target.length === 0) {
           context.log.error(`cooldownスキル状態が見つかりません`)
@@ -25,12 +25,12 @@ const skill: SkillLogic = {
         const names = target.map(d => d.name).join(",")
         state.formation.forEach(d => {
           const s = d.skill
-          if (s.type === "possess" && s.state.type === "cooldown") {
-            s.state = {
+          if (s.type === "possess" && s.transition.state === "cooldown") {
+            s.transition = {
               // transitionタイプによってスキル状態の処理は異なる
               // 未初期化に戻してrefreshStateで初期化することでcooldown状態を強制終了する
-              type: "not_init",
-              transition: s.state.transition,
+              state: "not_init",
+              type: s.transition.type,
               data: undefined
             }
           }

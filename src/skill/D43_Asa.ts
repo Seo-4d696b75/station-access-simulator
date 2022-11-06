@@ -10,14 +10,14 @@ const skill: SkillLogic = {
       if (d.type !== "supporter") return false
       const s = d.skill
       if (s.type !== "possess") return false
-      if (s.state.type !== "active") return false
+      if (s.transition.state !== "active") return false
       /*
        active, cooldownの時間があるスキルタイプのみ
        スキル状態の遷移タイプ：manual, manual-condition, auto
        ただし、上記タイプでもactive, cooldown終了が時刻で指定されない場合がある
        （例）manual アクセスしてリンクに失敗したらcooldown
        */
-      return !!s.state.data?.cooldownTimeout
+      return !!s.transition.data?.cooldownTimeout
     })
   },
   onActivated: (context, state, self) => {
@@ -35,23 +35,23 @@ const skill: SkillLogic = {
         if (d.type !== "supporter") return
         const s = d.skill
         if (s.type !== "possess") return
-        if (s.state.type !== "active") return
+        if (s.transition.state !== "active") return
         // active, cooldownの時間があるスキルタイプのみ
-        if (s.state.data?.cooldownTimeout) {
-          const duration = s.state.data.activeTimeout - s.state.data.activatedAt
+        if (s.transition.data?.cooldownTimeout) {
+          const duration = s.transition.data.activeTimeout - s.transition.data.activatedAt
           if (duration < 0) context.log.error("スキルのactive時間が負数です")
           const v = duration * (1 + percent / 100)
           // 端数を切り捨てて分単位に調整
           const unit = 60 * 1000 // ms
           const nextDuration = unit * Math.floor(v / unit)
-          const nextTimeout = s.state.data.activatedAt + nextDuration
-          s.state = {
-            type: "active",
-            transition: s.state.transition,
+          const nextTimeout = s.transition.data.activatedAt + nextDuration
+          s.transition = {
+            state: "active",
+            type: s.transition.type,
             data: {
-              activatedAt: s.state.data.activatedAt,
+              activatedAt: s.transition.data.activatedAt,
               activeTimeout: nextTimeout,
-              cooldownTimeout: s.state.data.cooldownTimeout,
+              cooldownTimeout: s.transition.data.cooldownTimeout,
             }
           }
           context.log.log(`${d.name} ${formatDuration(duration)} => ${formatDuration(nextDuration)}`)
