@@ -1,3 +1,4 @@
+import { SkillData } from "./data"
 import { SkillLogic } from "./logic"
 import { SkillProperty } from "./manager"
 import { SkillTransition } from "./transition"
@@ -26,6 +27,10 @@ export interface Skill extends SkillLogic {
    * @see {@link SkillProperty}
    */
   property: SkillProperty
+  /**
+   * スキルの処理に関わる任意のデータを保存できます
+   */
+  data: SkillData
 }
 
 interface SkillHolderBase<T> {
