@@ -1,4 +1,8 @@
 import { DencoState } from "../core/denco";
+import { SkillData, SkillProperty } from "../core/skill";
+
+const mockProperty = jest.fn<SkillProperty, []>()
+const mockData = jest.fn<SkillData, []>()
 
 /**
  * 任意のDEF増加スキルのでんこ
@@ -21,13 +25,8 @@ export function getDefPercentDenco(def: number): DencoState {
       type: "possess",
       level: 1,
       name: `test-defense-percent:${def}`,
-      property: {
-        readBoolean: () => false,
-        readNumber: () => 0,
-        readString: () => "",
-        readNumberArray: () => [],
-        readStringArray: () => [],
-      },
+      property: new mockProperty(),
+      data: new mockData(),
       transition: {
         state: "active",
         type: "always",
@@ -67,13 +66,8 @@ export function getFixedDamageDenco(damage: number): DencoState {
       type: "possess",
       level: 1,
       name: "test-skill1",
-      property: {
-        readBoolean: () => false,
-        readNumber: () => 0,
-        readString: () => "",
-        readNumberArray: () => [],
-        readStringArray: () => [],
-      },
+      property: new mockProperty(),
+      data: new mockData(),
       transition: {
         state: "active",
         type: "always",
