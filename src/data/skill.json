@@ -2560,6 +2560,57 @@
     ]
   },
   {
+    "numbering": "50",
+    "class": "D50_Naho",
+    "type": "manual",
+    "active": 1800,
+    "wait": 10800,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "スケッチタイム Lv.1",
+        "DEF": 49
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "スケッチタイム Lv.2",
+        "DEF": 55
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "スケッチタイム Lv.3",
+        "DEF": 61
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "スケッチタイム Lv.4",
+        "DEF": 67
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "スケッチタイム Lv.5",
+        "DEF": 73
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "スケッチタイム Lv.6",
+        "DEF": 79
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "なんにも気にならない！の心",
+        "DEF": 85
+      }
+    ]
+  },
+  {
     "numbering": "61",
     "class": "D61_Chitose",
     "type": "manual",
