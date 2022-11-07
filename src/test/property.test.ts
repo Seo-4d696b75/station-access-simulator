@@ -1,4 +1,30 @@
-import { activateSkill, DencoManager, getSkill, initContext, initUser, SkillManager } from ".."
+import { cloneDeep, isEqual } from "lodash";
+import { activateSkill, DencoManager, getSkill, initContext, initUser, SkillManager } from "..";
+import { MutableTypedMap, TypedMap } from "../core/property";
+
+describe("copy, equals of TypedMap", () => {
+  test("TypedMap", () => {
+    const p = new Map<string, any>([["key1", 1], ["key2", "string"]])
+    const m1 = new TypedMap(p)
+    expect(m1.readNumber("key1")).toBe(1)
+    expect(m1.readString("key2")).toBe("string")
+    const m2 = cloneDeep(m1)
+    expect(m2.readNumber("key1")).toBe(1)
+    expect(m2.readString("key2")).toBe("string")
+    expect(isEqual(m1, m2)).toBeTruthy()
+    expect(m1.property).not.toBe(m2.property)
+  })
+  test("MutableTypedMap", () => {
+    const m1 = new MutableTypedMap()
+    m1.putNumber("key1", 1)
+    m1.putString("key2", "string")
+    const m2 = cloneDeep(m1)
+    expect(m2.readNumber("key1")).toBe(1)
+    expect(m2.readString("key2")).toBe("string")
+    expect(isEqual(m1, m2)).toBeTruthy()
+    expect(m1.property).not.toBe(m2.property)
+  })
+})
 
 describe("型安全なプロパティの読み書き", () => {
   const dencos = [
