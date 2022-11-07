@@ -1,4 +1,5 @@
 import { isEqual } from "lodash";
+import { SkillHolder } from "..";
 import { DencoState } from "../core/denco";
 import { copyState, ReadonlyState } from "../core/state";
 import { StationLink } from "../core/station";
@@ -17,7 +18,7 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
     nextExp: state.nextExp,
     ap: state.ap,
     link: state.link.map(e => copyState<StationLink>(e)),
-    skill: copyState(state.skill),
+    skill: copyState<SkillHolder>(state.skill),
     film: {
       ...state.film
     },

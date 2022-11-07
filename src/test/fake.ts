@@ -1,8 +1,5 @@
 import { DencoState } from "../core/denco";
-import { SkillData, SkillProperty } from "../core/skill";
-
-const mockProperty = jest.fn<SkillProperty, []>()
-const mockData = jest.fn<SkillData, []>()
+import { MutableTypedMap, TypedMap } from "../core/property";
 
 /**
  * 任意のDEF増加スキルのでんこ
@@ -25,8 +22,8 @@ export function getDefPercentDenco(def: number): DencoState {
       type: "possess",
       level: 1,
       name: `test-defense-percent:${def}`,
-      property: new mockProperty(),
-      data: new mockData(),
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       transition: {
         state: "active",
         type: "always",
@@ -66,8 +63,8 @@ export function getFixedDamageDenco(damage: number): DencoState {
       type: "possess",
       level: 1,
       name: "test-skill1",
-      property: new mockProperty(),
-      data: new mockData(),
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       transition: {
         state: "active",
         type: "always",

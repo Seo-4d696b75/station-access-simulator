@@ -1,26 +1,9 @@
 import moment from "moment-timezone"
 import { initContext } from "../core/context"
 import { DencoState } from "../core/denco"
-import { activateSkill, deactivateSkill, getSkill, isSkillActive, Skill, SkillCooldownTimeout, SkillData, SkillProperty } from "../core/skill"
+import { MutableTypedMap, TypedMap } from "../core/property"
+import { activateSkill, deactivateSkill, getSkill, isSkillActive, Skill, SkillCooldownTimeout } from "../core/skill"
 import { initUser, refreshState } from "../core/user"
-
-// SkillPropertyのモック
-const mockProperty = jest.fn<SkillProperty, []>()
-
-// SkillDataのモック
-const mockSkillData: SkillData = {
-  clear: () => { },
-  readBoolean: jest.fn(),
-  readString: jest.fn(),
-  readNumber: jest.fn(),
-  readStringArray: jest.fn(),
-  readNumberArray: jest.fn(),
-  putBoolean: jest.fn(),
-  putString: jest.fn(),
-  putNumber: jest.fn(),
-  putStringArray: jest.fn(),
-  putNumberArray: jest.fn(),
-}
 
 describe("スキル処理", () => {
   test("manual-activateSkill", () => {
@@ -35,7 +18,6 @@ describe("スキル処理", () => {
     const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
 
-    const clearData = jest.fn(() => { })
     const skill: Skill = {
       level: 1,
       name: "test-skill",
@@ -44,14 +26,12 @@ describe("スキル処理", () => {
         type: "manual",
         data: undefined
       },
-      property: new mockProperty(),
-      data: {
-        ...mockSkillData,
-        clear: clearData,
-      },
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       onActivated: onActivated,
       deactivateAt: deactivateAt,
     }
+    skill.data.putBoolean("key", true)
     let denco: DencoState = {
       level: 5,
       name: "denco",
@@ -86,7 +66,7 @@ describe("スキル処理", () => {
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
     // 初期化確認
-    expect(clearData.mock.calls.length).toBe(1)
+    expect(() => getSkill(denco).data.readBoolean("key")).toThrowError()
   })
   test("manual-condition-activateSkill", () => {
     const context = initContext("test", "test", false)
@@ -100,7 +80,6 @@ describe("スキル処理", () => {
     const canEnabled = jest.fn((_, state, self) => true)
     const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
-    const clearData = jest.fn(() => { })
     const skill: Skill = {
       level: 1,
       name: "test-skill",
@@ -109,14 +88,12 @@ describe("スキル処理", () => {
         type: "manual-condition",
         data: undefined
       },
-      property: new mockProperty(),
-      data: {
-        ...mockSkillData,
-        clear: clearData,
-      },
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       onActivated: onActivated,
       deactivateAt: deactivateAt,
     }
+    skill.data.putNumber("key", 1)
     let denco: DencoState = {
       level: 5,
       name: "denco",
@@ -156,7 +133,7 @@ describe("スキル処理", () => {
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
     // 初期化確認
-    expect(clearData.mock.calls.length).toBe(1)
+    expect(() => getSkill(denco).data.readNumber("key")).toThrowError()
   })
   test("auto-activateSkill", () => {
     const context = initContext("test", "test", false)
@@ -169,7 +146,7 @@ describe("スキル処理", () => {
     }
     const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
-    const clearData = jest.fn(() => { })
+
     const skill: Skill = {
       level: 1,
       name: "test-skill",
@@ -178,14 +155,12 @@ describe("スキル処理", () => {
         type: "auto",
         data: undefined
       },
-      property: new mockProperty(),
-      data: {
-        ...mockSkillData,
-        clear: clearData,
-      },
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       onActivated: onActivated,
       deactivateAt: deactivateAt,
     }
+    skill.data.putString("key", "string")
     let denco: DencoState = {
       level: 5,
       name: "denco",
@@ -218,7 +193,7 @@ describe("スキル処理", () => {
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
     // 初期化確認
-    expect(clearData.mock.calls.length).toBe(1)
+    expect(() => getSkill(denco).data.readString("key")).toThrowError()
   })
 
   test("auto-condition-activateSkill", () => {
@@ -228,7 +203,7 @@ describe("スキル処理", () => {
     // mock callback
     const canActivated = jest.fn((_, state, self) => true)
     const onActivated = jest.fn((_, state, self) => state)
-    const clearData = jest.fn(() => { })
+
     const skill: Skill = {
       level: 1,
       name: "test-skill",
@@ -237,13 +212,11 @@ describe("スキル処理", () => {
         type: "auto-condition",
         data: undefined
       },
-      property: new mockProperty(),
-      data: {
-        ...mockSkillData,
-        clear: clearData,
-      },
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       onActivated: onActivated,
     }
+    skill.data.putNumberArray("key", [1])
     let denco: DencoState = {
       level: 5,
       name: "denco",
@@ -279,7 +252,7 @@ describe("スキル処理", () => {
     expect(onActivated.mock.calls[0][1]).toMatchObject(state)
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
     // 初期化確認
-    expect(clearData.mock.calls.length).toBe(1)
+    expect(() => getSkill(denco).data.readNumberArray("key")).toThrowError()
   })
 
   test("deactivateSkill-エラー", () => {
@@ -301,8 +274,8 @@ describe("スキル処理", () => {
         type: "manual",
         data: undefined
       },
-      property: new mockProperty(),
-      data: mockSkillData,
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       deactivateAt: deactivateAt,
       completeCooldownAt: completeCooldownAt,
     }
@@ -361,8 +334,8 @@ describe("スキル処理", () => {
         type: "manual",
         data: undefined
       },
-      property: new mockProperty(),
-      data: mockSkillData,
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       deactivateAt: undefined,
     }
     let denco: DencoState = {
@@ -422,8 +395,8 @@ describe("スキル処理", () => {
         type: "manual-condition",
         data: undefined
       },
-      property: new mockProperty(),
-      data: mockSkillData,
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       deactivateAt: undefined,
       canEnabled: canEnabled,
     }
@@ -482,8 +455,8 @@ describe("スキル処理", () => {
         type: "auto",
         data: undefined
       },
-      property: new mockProperty(),
-      data: mockSkillData,
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       deactivateAt: undefined,
     }
     let denco: DencoState = {
@@ -538,8 +511,8 @@ describe("スキル処理", () => {
         type: "auto-condition",
         data: undefined
       },
-      property: new mockProperty(),
-      data: mockSkillData,
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       canActivated: canActivated,
     }
     let denco: DencoState = {
@@ -581,8 +554,8 @@ describe("スキル処理", () => {
         type: "always",
         data: undefined
       },
-      property: new mockProperty(),
-      data: mockSkillData,
+      property: new TypedMap(),
+      data: new MutableTypedMap(),
       onHourCycle: onHourCycle,
     }
     let denco: DencoState = {
