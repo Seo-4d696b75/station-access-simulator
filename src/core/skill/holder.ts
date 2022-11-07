@@ -1,3 +1,4 @@
+import { ReadonlyState } from "../state"
 import { SkillData } from "./data"
 import { SkillLogic } from "./logic"
 import { SkillProperty } from "./manager"
@@ -28,6 +29,8 @@ export interface Skill extends SkillLogic {
    */
   property: SkillProperty
   /**
+   * カスタムデータ
+   * 
    * スキルの処理に関わる任意のデータを保存できます
    */
   data: SkillData
@@ -68,6 +71,6 @@ export function getSkill<S>(denco: { skill: S & SkillHolderBase<"possess"> | Ski
 * @param skill 
 * @returns 
 */
-export function isSkillActive(skill: SkillHolder): skill is SkillHolderBase<"possess"> & Skill {
+export function isSkillActive<S extends Skill | ReadonlyState<Skill>>(skill: S & SkillHolderBase<"possess"> | SkillHolderBase<"none"> | SkillHolderBase<"not_acquired">): skill is S & SkillHolderBase<"possess"> {
   return skill.type === "possess" && skill.transition.state === "active"
 }

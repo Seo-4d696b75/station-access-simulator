@@ -34,6 +34,9 @@ export interface ActiveSkill {
 /**
  * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
  * 
+ * すべてのコールバックは対象のタイミングにおいて**スキル自身がactiveな場合のみ**呼ばれます
+ * 
+ * ## スキルレベルに依存するデータ
  * スキルレベルに依存するデータは各コールバック関数の引数に渡される{@link Skill property}オブジェクトから参照できます  
  * （例）引数`self: ActiveSkill`に対して`self.skill.property`からアクセスできる
  * 
@@ -80,7 +83,7 @@ export interface SkillLogic {
    * 
    * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
    */
-  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, access: ReadonlyState<AccessResult>) => undefined | AccessUserResult
+  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, access: ReadonlyState<AccessResult>) => void | AccessUserResult
 
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
