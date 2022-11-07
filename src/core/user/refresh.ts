@@ -88,7 +88,20 @@ function checkLevelup(context: Context, denco: ReadonlyState<DencoState>): Denco
         currentExp: d.currentExp - d.nextExp,
         film: d.film,
         link: d.link,
-        skill: SkillManager.getSkill(d.numbering, level)
+        skill: d.skill,
+      }
+      const nextSkill = SkillManager.getSkill(d.numbering, level)
+      if (d.skill.type === "possess"
+        && nextSkill.type === "possess"
+        && d.skill.level !== nextSkill.level) {
+        d.skill = {
+          ...nextSkill,
+          // 現在のスキル状態 transition.* はそのまま
+          // 有効時間などは前スキルで決定されたデータのまま
+          transition: d.skill.transition,
+          // custom-propertyは変更しない
+          data: d.skill.data
+        }
       }
     } else {
       // これ以上のレベルアップはなし
