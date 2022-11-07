@@ -15,9 +15,4 @@ import { ReadableProperty, WritableProperty } from "../property";
  * - でんこ初期化などスキルを初期化したとき
  * - スキルの状態遷移が`idle`or`unable`から`active`に変化したとき
  */
-export type SkillData = ReadableProperty & WritableProperty & {
-  /**
-   * すべての値を削除します
-   */
-  readonly clear: () => void
-}
+export type SkillData = ReadableProperty & MutableProperty

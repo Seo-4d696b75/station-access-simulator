@@ -20,25 +20,52 @@ export type PropertyReader<T> = (key: string, defaultValue?: T) => T
  */
 export type PropertyWriter<T> = (key: string, value: T) => void
 
-function isPrimitive<T>(typeName: string): (value: any) => value is T {
-  let func = (value: any): value is T => {
-    return typeof value === typeName
-  }
-  return func
+export type ReadableProperty = {
+  readonly [key in keyof PropertyTypes as `read${Capitalize<key>}`]: PropertyReader<PropertyTypes[key]>
 }
 
-function isPrimitiveArray<T>(typeName: string): (array: any) => array is T[] {
-  let func = (array: any): array is T[] => {
-    return Array.isArray(array) && array.every(e => typeof e === typeName)
-  }
-  return func
+export type MutableProperty = {
+  readonly [key in keyof PropertyTypes as `put${Capitalize<key>}`]: PropertyWriter<PropertyTypes[key]>
+} & {
+  /**
+   * すべての値を削除します
+   */
+  readonly clear: () => void
 }
 
-function getPropertyReader<V>(property: Map<string, any>, defaultProperty: Map<string, any> | undefined, typeGuard: (v: any) => v is V): PropertyReader<V> {
-  return (key, defaultValue) => {
-    let value = property.get(key)
+const isBoolean = (v: any): v is boolean => {
+  return typeof v === "boolean"
+}
+
+const isNumber = (v: any): v is number => {
+  return typeof v === "number"
+}
+
+const isString = (v: any): v is string => {
+  return typeof v === "string"
+}
+
+const isNumberArray = (v: any): v is number[] => {
+  return Array.isArray(v) && v.every(e => isNumber(e))
+}
+
+const isStringArray = (v: any): v is string[] => {
+  return Array.isArray(v) && v.every(e => isString(e))
+}
+
+export class TypedMap {
+  property: Map<string, any>
+  defaultProperty: Map<string, any> | undefined
+
+  constructor(property?: Map<string, any>, defaultProperty?: Map<string, any>) {
+    this.property = property ?? new Map()
+    this.defaultProperty = defaultProperty
+  }
+
+  read<V>(typeGuard: (v: any) => v is V, key: string, defaultValue?: V): V {
+    let value = this.property.get(key)
     if (value === undefined) {
-      value = defaultProperty?.get(key)
+      value = this.defaultProperty?.get(key)
     }
     // if (!value) {
     // Note typeKey === "number"　の場合だと0でうまく機能しない
@@ -53,45 +80,65 @@ function getPropertyReader<V>(property: Map<string, any>, defaultProperty: Map<s
     }
     return value
   }
+
+  readBoolean(key: string, defaultValue?: boolean): boolean {
+    return this.read(isBoolean, key, defaultValue)
+  }
+
+  readNumber(key: string, defaultValue?: number): number {
+    return this.read(isNumber, key, defaultValue)
+  }
+
+  readString(key: string, defaultValue?: string): string {
+    return this.read(isString, key, defaultValue)
+  }
+
+  readNumberArray(key: string, defaultValue?: number[]): number[] {
+    return this.read(isNumberArray, key, defaultValue)
+  }
+
+  readStringArray(key: string, defaultValue?: string[]): string[] {
+    return this.read(isStringArray, key, defaultValue)
+  }
 }
 
-function getPropertyWriter<T>(property: Map<string, any>, typeGuard: (v: any) => v is T): PropertyWriter<T> {
-  return (key, value) => {
-    const current = property.get(key)
+export class MutableTypedMap extends TypedMap {
+  constructor(property?: Map<string, any>) {
+    super(property)
+  }
+
+  put<T>(typeGuard: (v: any) => v is T, key: string, value: T) {
+    const current = this.property.get(key)
     if (current !== undefined) {
       // 型チェック
       if (!typeGuard(current)) {
         throw new Error(`property type mismatched. key:${key} current:${current} value to be written:${value}`)
       }
     }
-    property.set(key, value)
+    this.property.set(key, value)
   }
-}
 
-export type ReadableProperty = {
-  readonly [key in keyof PropertyTypes as `read${Capitalize<key>}`]: PropertyReader<PropertyTypes[key]>
-}
-
-export type WritableProperty = {
-  readonly [key in keyof PropertyTypes as `put${Capitalize<key>}`]: PropertyWriter<PropertyTypes[key]>
-}
-
-export function initReadableProperty(property: Map<string, any>, defaultProperty: Map<string, any> | undefined): ReadableProperty {
-  return {
-    readBoolean: getPropertyReader<boolean>(property, defaultProperty, isPrimitive("boolean")),
-    readString: getPropertyReader<string>(property, defaultProperty, isPrimitive("string")),
-    readNumber: getPropertyReader<number>(property, defaultProperty, isPrimitive("number")),
-    readStringArray: getPropertyReader<string[]>(property, defaultProperty, isPrimitiveArray("string")),
-    readNumberArray: getPropertyReader<number[]>(property, defaultProperty, isPrimitiveArray("number")),
+  putBoolean(key: string, value: boolean) {
+    this.put(isBoolean, key, value)
   }
-}
 
-export function initWritableProperty(property: Map<string, any>): WritableProperty {
-  return {
-    putBoolean: getPropertyWriter<boolean>(property, isPrimitive("boolean")),
-    putString: getPropertyWriter<string>(property, isPrimitive("string")),
-    putNumber: getPropertyWriter<number>(property, isPrimitive("number")),
-    putStringArray: getPropertyWriter<string[]>(property, isPrimitiveArray("string")),
-    putNumberArray: getPropertyWriter<number[]>(property, isPrimitiveArray("number")),
+  putNumber(key: string, value: number) {
+    this.put(isNumber, key, value)
+  }
+
+  putString(key: string, value: string) {
+    this.put(isString, key, value)
+  }
+
+  putNumberArray(key: string, value: number[]) {
+    this.put(isNumberArray, key, value)
+  }
+
+  putStringArray(key: string, value: string[]) {
+    this.put(isStringArray, key, value)
+  }
+
+  clear() {
+    this.property.clear()
   }
 }
