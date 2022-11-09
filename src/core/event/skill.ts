@@ -95,11 +95,14 @@ export type EventSkillTrigger = {
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
  * 
- * {@link Skill onAccessComplete}からの呼び出しを想定
+ * {@link Skill onAccessComplete}からの呼び出しが想定されています
  * 
+ * ### 発動条件の指定
+ * 引数`trigger`で発動の条件・発動のよる状態の更新処理を指定できます.  
  * `trigger.probability`に{@link ProbabilityPercent}を指定した場合は確率補正も考慮して確率計算を行い  
- * 発動が可能な場合のみ`evaluate`で指定されたスキル発動時の状態変更を適用します
+ * 発動が可能な場合のみ`recipe`で指定されたスキル発動時の状態変更を適用します
  * 
+ * ### スキル無効化の影響
  * 発動確率以外にも直前のアクセスで該当スキルが無効化されている場合は状態変更は行いません
  * 
  * @param context ログ・乱数等の共通状態
@@ -113,7 +116,6 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
   let next = copyState<AccessUserResult>(state)
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
-    throw Error()
   }
   if (self.skillInvalidated) {
     context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
