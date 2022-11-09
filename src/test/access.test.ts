@@ -1,9 +1,10 @@
 import moment from "moment-timezone"
-import { init } from ".."
+import { DencoState, init } from ".."
 import { AccessConfig, getAccessDenco, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
-import { activateSkill } from "../core/skill"
+import { TypedMap } from "../core/property"
+import { activateSkill, Skill } from "../core/skill"
 import { LinksResult } from "../core/station"
 import StationManager from "../core/stationManager"
 import { getTargetDenco, initUser } from "../core/user"
@@ -18,6 +19,68 @@ const linkSuccessScore = 100
 
 describe("基本的なアクセス処理", () => {
   beforeAll(init)
+  test("コールバック", () => {
+    const context = initContext("test", "test", false)
+
+    const onAccessComplete = jest.fn((_, state, self, access) => undefined)
+    const onDencoReboot = jest.fn((_, state, self) => undefined)
+
+    const skill: Skill = {
+      level: 1,
+      name: "test-skill",
+      transition: {
+        state: "active", // activeでしかコールバックされない！
+        type: "manual",
+        data: undefined
+      },
+      property: new TypedMap(),
+      data: new TypedMap(),
+      onAccessComplete: onAccessComplete,
+      onDencoReboot: onDencoReboot,
+    }
+    let denco: DencoState = {
+      level: 5,
+      name: "denco",
+      numbering: "5", // DencoLevelStatusが取得できるよう便宜的に指定
+      currentExp: 0,
+      nextExp: 100,
+      currentHp: 50,
+      maxHp: 50,
+      ap: 10,
+      link: StationManager.getRandomLink(context, 1),
+      film: {},
+      type: "supporter",
+      attr: "flat",
+      skill: {
+        type: "possess",
+        ...skill
+      }
+    }
+    let defense = initUser(context, "test-user", [denco])
+    let reika = DencoManager.getDenco(context, "5", 50)
+    reika.ap = 1000
+    let offense = initUser(context, "test-user2", [reika])
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: denco.link[0],
+    }
+    const result = startAccess(context, config)
+
+    // verify
+    let d = getAccessDenco(result, "defense")
+    expect(d.reboot).toBe(true)
+    expect(onAccessComplete.mock.calls.length).toBe(1)
+    expect(onAccessComplete.mock.calls[0][2]).toMatchObject(d)
+    expect(onDencoReboot.mock.calls.length).toBe(1)
+    expect(onDencoReboot.mock.calls[0][2]).toMatchObject(d)
+  })
   test("守備側なし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
