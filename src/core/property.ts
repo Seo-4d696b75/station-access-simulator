@@ -100,22 +100,16 @@ export class TypedMap {
   readStringArray(key: string, defaultValue?: string[]): string[] {
     return this.read(isStringArray, key, defaultValue)
   }
-}
 
-export class MutableTypedMap extends TypedMap {
-  constructor(property?: Map<string, any>) {
-    super(property)
-  }
-
-  put<T>(typeGuard: (v: any) => v is T, key: string, value: T) {
-    const current = this.property.get(key)
+  put<T>(typeGuard: (v: any) => v is T, key: string, value: T, dst: Map<string, any> = this.property) {
+    const current = dst.get(key)
     if (current !== undefined) {
       // 型チェック
       if (!typeGuard(current)) {
         throw new Error(`property type mismatched. key:${key} current:${current} value to be written:${value}`)
       }
     }
-    this.property.set(key, value)
+    dst.set(key, value)
   }
 
   putBoolean(key: string, value: boolean) {
@@ -140,5 +134,18 @@ export class MutableTypedMap extends TypedMap {
 
   clear() {
     this.property.clear()
+  }
+
+  merge(other: TypedMap) {
+    other.property.forEach((value, key) => {
+      this.property.set(key, value)
+    })
+    if (other.defaultProperty) {
+      const dst = this.defaultProperty ?? new Map()
+      other.defaultProperty.forEach((value, key) => {
+        dst.set(key, value)
+      })
+      this.defaultProperty = dst
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { cloneDeepWith, merge } from "lodash";
+import { cloneDeepWith, mergeWith } from "lodash";
 import { MutableProperty } from "./property";
 
 type Primitive = number | string | boolean | bigint | symbol | undefined | null;
@@ -32,5 +32,12 @@ export function copyState<T>(state: ReadonlyState<T>): T {
  * @param dst 更新される現在の状態（変更される）
  */
 export function copyStateTo<T>(src: ReadonlyState<T>, dst: T) {
-  merge(dst, src)
+  mergeWith(dst, src, (d, s) => {
+    // TypedMapだけはPlaneなオブジェクトではないので特別な対応が必要
+    // see: https://lodash.com/docs/4.17.15#merge
+    // Array and plain object properties are merged recursively. Other objects and value types are overridden by assignment. 
+    if (d?.constructor?.name === "TypedMap" && s?.constructor?.name === "TypedMap") {
+      d.merge(s)
+    }
+  })
 }

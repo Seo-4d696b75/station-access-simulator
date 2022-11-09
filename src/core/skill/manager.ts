@@ -1,4 +1,4 @@
-import { MutableTypedMap, ReadableProperty, TypedMap } from "../property"
+import { ReadableProperty, TypedMap } from "../property"
 import { SkillHolder } from "./holder"
 import { SkillLogic } from "./logic"
 import { SkillTransitionType } from "./transition"
@@ -163,7 +163,7 @@ export class SkillManager {
           },
           evaluateInPink: data.evaluateInPink,
           property: new TypedMap(property.property, data.skillDefaultProperties),
-          data: new MutableTypedMap(),
+          data: new TypedMap(),
           ...data.skill,
         }
       } else {

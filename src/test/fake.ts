@@ -1,5 +1,5 @@
 import { DencoState } from "../core/denco";
-import { MutableTypedMap, TypedMap } from "../core/property";
+import { TypedMap } from "../core/property";
 
 /**
  * 任意のDEF増加スキルのでんこ
@@ -23,7 +23,7 @@ export function getDefPercentDenco(def: number): DencoState {
       level: 1,
       name: `test-defense-percent:${def}`,
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       transition: {
         state: "active",
         type: "always",
@@ -64,7 +64,7 @@ export function getFixedDamageDenco(damage: number): DencoState {
       level: 1,
       name: "test-skill1",
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       transition: {
         state: "active",
         type: "always",

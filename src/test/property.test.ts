@@ -1,28 +1,40 @@
-import { cloneDeep, isEqual } from "lodash";
-import { activateSkill, DencoManager, getSkill, initContext, initUser, SkillManager } from "..";
-import { MutableTypedMap, TypedMap } from "../core/property";
+import { isEqual } from "lodash";
+import { activateSkill, copyState, copyStateTo, DencoManager, getSkill, initContext, initUser, SkillManager } from "..";
+import { TypedMap } from "../core/property";
 
-describe("copy, equals of TypedMap", () => {
-  test("TypedMap", () => {
+describe("copy, equals, merge of TypedMap", () => {
+  test("read", () => {
     const p = new Map<string, any>([["key1", 1], ["key2", "string"]])
     const m1 = new TypedMap(p)
     expect(m1.readNumber("key1")).toBe(1)
     expect(m1.readString("key2")).toBe("string")
-    const m2 = cloneDeep(m1)
+    const m2 = copyState(m1)
     expect(m2.readNumber("key1")).toBe(1)
     expect(m2.readString("key2")).toBe("string")
     expect(isEqual(m1, m2)).toBeTruthy()
     expect(m1.property).not.toBe(m2.property)
+    const m3 = new TypedMap(new Map<string, any>([["key1", true], ["key3", [1, 2, 3]]]))
+    copyStateTo({ data: m1 }, { data: m3 })
+    expect(m3.readNumber("key1")).toBe(1)
+    expect(m3.readString("key2")).toBe("string")
+    expect(m3.readNumberArray("key3")).toEqual([1, 2, 3])
   })
-  test("MutableTypedMap", () => {
-    const m1 = new MutableTypedMap()
+  test("write", () => {
+    const m1 = new TypedMap()
     m1.putNumber("key1", 1)
     m1.putString("key2", "string")
-    const m2 = cloneDeep(m1)
+    const m2 = copyState(m1)
     expect(m2.readNumber("key1")).toBe(1)
     expect(m2.readString("key2")).toBe("string")
     expect(isEqual(m1, m2)).toBeTruthy()
     expect(m1.property).not.toBe(m2.property)
+    const m3 = new TypedMap()
+    m3.putNumber("key1", 10)
+    m3.putBoolean("key3", true)
+    copyStateTo({ data: m1 }, { data: m3 })
+    expect(m3.readNumber("key1")).toBe(1)
+    expect(m3.readString("key2")).toBe("string")
+    expect(m3.readBoolean("key3")).toBe(true)
   })
 })
 
