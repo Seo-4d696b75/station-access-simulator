@@ -1,7 +1,7 @@
 import { calcAccessDamage, getBaseDamage, getDefense, SkillLogic } from "..";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" &&
       self.which === "defense" &&
       self.who !== "defense" &&

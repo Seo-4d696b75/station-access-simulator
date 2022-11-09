@@ -22,8 +22,8 @@ describe("そらのスキル", () => {
     state = refreshState(context, state)
     sora = state.formation[0]
     let skill = getSkill(sora)
-    expect(skill.state.transition).toBe("auto-condition")
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transition.state).toBe("active")
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
 
@@ -32,8 +32,8 @@ describe("そらのスキル", () => {
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
-    expect(skill.state.transition).toBe("auto-condition")
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
 
     // 土曜昼間
@@ -41,8 +41,8 @@ describe("そらのスキル", () => {
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
-    expect(skill.state.transition).toBe("auto-condition")
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
 
 
@@ -51,8 +51,8 @@ describe("そらのスキル", () => {
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
-    expect(skill.state.transition).toBe("auto-condition")
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
   })
 

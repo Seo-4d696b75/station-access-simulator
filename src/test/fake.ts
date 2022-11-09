@@ -1,4 +1,5 @@
 import { DencoState } from "../core/denco";
+import { TypedMap } from "../core/property";
 
 /**
  * 任意のDEF増加スキルのでんこ
@@ -21,19 +22,14 @@ export function getDefPercentDenco(def: number): DencoState {
       type: "possess",
       level: 1,
       name: `test-defense-percent:${def}`,
-      property: {
-        readBoolean: () => false,
-        readNumber: () => 0,
-        readString: () => "",
-        readNumberArray: () => [],
-        readStringArray: () => [],
-      },
-      state: {
-        type: "active",
-        transition: "always",
+      property: new TypedMap(),
+      data: new TypedMap(),
+      transition: {
+        state: "active",
+        type: "always",
         data: undefined
       },
-      evaluate: (context, state, step, self) => {
+      triggerOnAccess: (context, state, step, self) => {
         if (step === "damage_common" && self.which === "defense") {
           return (state) => {
             state.defendPercent += def
@@ -67,19 +63,14 @@ export function getFixedDamageDenco(damage: number): DencoState {
       type: "possess",
       level: 1,
       name: "test-skill1",
-      property: {
-        readBoolean: () => false,
-        readNumber: () => 0,
-        readString: () => "",
-        readNumberArray: () => [],
-        readStringArray: () => [],
-      },
-      state: {
-        type: "active",
-        transition: "always",
+      property: new TypedMap(),
+      data: new TypedMap(),
+      transition: {
+        state: "active",
+        type: "always",
         data: undefined
       },
-      evaluate: (context, state, step, self) => {
+      triggerOnAccess: (context, state, step, self) => {
         if (step === "damage_fixed" && self.which === which) {
           return (state) => {
             state.damageFixed += damage

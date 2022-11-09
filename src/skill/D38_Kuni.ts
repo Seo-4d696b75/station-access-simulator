@@ -2,7 +2,7 @@ import { addDamage, counterAttack, getAccessDenco } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     // みことのリブート有無は通常ダメージ計算＋固定ダメージ計算が終わるまで分からない
     if (step === "after_damage"
       && self.which === "defense"

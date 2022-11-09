@@ -9,7 +9,7 @@
  * - `auto-condition` 特定の条件で自動的に有効・無効状態を遷移する クールダウンが無い `unable <> active`
  * - `always` 常に有効化されている
  */
-export type SkillStateTransition =
+export type SkillTransitionType =
   "manual" |
   "manual-condition" |
   "auto" |
@@ -26,16 +26,16 @@ export type SkillStateTransition =
 * - cooldown スキルがクールダウン中の状態スキル評価の対象外
 * 
 */
-export type SkillStateType =
+export type SkillTransitionState =
   "not_init" |
   "unable" |
   "idle" |
   "active" |
   "cooldown"
 
-interface SkillStateBase<Transition, Type, D = undefined> {
-  transition: Transition,
+interface SkillTransitionBase<Type extends SkillTransitionType, State extends SkillTransitionState, D = undefined> {
   type: Type,
+  state: State,
   data: D,
 }
 
@@ -66,33 +66,33 @@ export interface SkillActiveTimeout extends SkillCooldownTimeout {
   activeTimeout: number
 }
 
-type ManualSkillState =
-  SkillStateBase<"manual", "idle"> |
-  SkillStateBase<"manual", "active", SkillActiveTimeout | undefined> |
-  SkillStateBase<"manual", "cooldown", SkillCooldownTimeout>
+type ManualSkillTransition =
+  SkillTransitionBase<"manual", "idle"> |
+  SkillTransitionBase<"manual", "active", SkillActiveTimeout | undefined> |
+  SkillTransitionBase<"manual", "cooldown", SkillCooldownTimeout>
 
-type ManualConditionSkillState =
-  SkillStateBase<"manual-condition", "unable"> |
-  SkillStateBase<"manual-condition", "idle"> |
-  SkillStateBase<"manual-condition", "active", SkillActiveTimeout | undefined> |
-  SkillStateBase<"manual-condition", "cooldown", SkillCooldownTimeout>
+type ManualConditionSkillTransition =
+  SkillTransitionBase<"manual-condition", "unable"> |
+  SkillTransitionBase<"manual-condition", "idle"> |
+  SkillTransitionBase<"manual-condition", "active", SkillActiveTimeout | undefined> |
+  SkillTransitionBase<"manual-condition", "cooldown", SkillCooldownTimeout>
 
-type AutoSkillState =
-  SkillStateBase<"auto", "unable"> |
-  SkillStateBase<"auto", "active", SkillActiveTimeout | undefined> |
-  SkillStateBase<"auto", "cooldown", SkillCooldownTimeout>
+type AutoSkillTransition =
+  SkillTransitionBase<"auto", "unable"> |
+  SkillTransitionBase<"auto", "active", SkillActiveTimeout | undefined> |
+  SkillTransitionBase<"auto", "cooldown", SkillCooldownTimeout>
 
-type AutoConditionSkillState =
-  SkillStateBase<"auto-condition", "unable"> |
-  SkillStateBase<"auto-condition", "active">
+type AutoConditionSkillTransition =
+  SkillTransitionBase<"auto-condition", "unable"> |
+  SkillTransitionBase<"auto-condition", "active">
 
-type AlwaysSkillState =
-  SkillStateBase<"always", "active">
+type AlwaysSkillTransition =
+  SkillTransitionBase<"always", "active">
 
-export type SkillState =
-  SkillStateBase<SkillStateTransition, "not_init"> |
-  ManualSkillState |
-  ManualConditionSkillState |
-  AutoSkillState |
-  AutoConditionSkillState |
-  AlwaysSkillState
+export type SkillTransition =
+  SkillTransitionBase<SkillTransitionType, "not_init"> |
+  ManualSkillTransition |
+  ManualConditionSkillTransition |
+  AutoSkillTransition |
+  AutoConditionSkillTransition |
+  AlwaysSkillTransition

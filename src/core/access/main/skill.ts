@@ -1,4 +1,4 @@
-import { AccessDencoState, AccessEvaluateStep, AccessSideState, AccessSkillRecipe, AccessSkillTrigger, AccessSkillTriggers, AccessState, filterActiveSkill } from ".."
+import { AccessDencoState, AccessSideState, AccessSkillRecipe, AccessSkillStep, AccessSkillTrigger, AccessSkillTriggers, AccessState, filterActiveSkill } from ".."
 import { Context } from "../../context"
 import { Denco } from "../../denco"
 import { random } from "../../random"
@@ -12,7 +12,7 @@ import { copyState, ReadonlyState } from "../../state"
  * @param step どの段階を評価するか
  * @returns 新しい状態
  */
-export function evaluateSkillAt(context: Context, current: ReadonlyState<AccessState>, step: AccessEvaluateStep): AccessState {
+export function triggerSkillAt(context: Context, current: ReadonlyState<AccessState>, step: AccessSkillStep): AccessState {
   let state = copyState<AccessState>(current)
   // 編成順に スキル発動有無の確認 > 発動による状態の更新 
   // ただしアクティブなスキルの確認は初めに一括で行う（同じステップで発動するスキル無効化は互いに影響しない）
@@ -25,16 +25,15 @@ export function evaluateSkillAt(context: Context, current: ReadonlyState<AccessS
     const skill = d.skill
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
-      throw Error()
     }
-    if (skill.evaluate && (!state.pinkMode || skill.evaluateInPink)) {
+    if (skill.triggerOnAccess && (!state.pinkMode || skill.canTriggerInPink)) {
       const active = {
         ...d,
         skill: skill,
         skillPropertyReader: skill.property,
       }
       // 状態に依存するスキル発動有無の判定は毎度行う
-      const result = skill.evaluate(context, state, step, active)
+      const result = skill.triggerOnAccess(context, state, step, active)
       const recipes = getTargetRecipes(context, state, step, active, result)
       recipes.forEach(recipe => {
         markTriggerSkill(state.offense, step, d)
@@ -50,13 +49,13 @@ export function evaluateSkillAt(context: Context, current: ReadonlyState<AccessS
       if (skill.type !== "possess") {
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
-      if (skill.evaluate && (!state.pinkMode || skill.evaluateInPink)) {
+      if (skill.triggerOnAccess && (!state.pinkMode || skill.canTriggerInPink)) {
         const active = {
           ...copyState<AccessDencoState>(d),
           skill: skill,
           skillPropertyReader: skill.property,
         }
-        const result = skill.evaluate(context, state, step, active)
+        const result = skill.triggerOnAccess(context, state, step, active)
         const recipes = getTargetRecipes(context, state, step, active, result)
         recipes.forEach(recipe => {
           markTriggerSkill(defense, step, d)
@@ -69,12 +68,12 @@ export function evaluateSkillAt(context: Context, current: ReadonlyState<AccessS
   return state
 }
 
-function getTargetRecipes(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: void | AccessSkillTriggers): AccessSkillRecipe[] {
+function getTargetRecipes(context: Context, state: AccessState, step: AccessSkillStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: void | AccessSkillTriggers): AccessSkillRecipe[] {
   if (typeof result === "undefined") return []
   const list = Array.isArray(result) ? result : [result]
   const recipe: AccessSkillRecipe[] = []
   list.forEach(trigger => {
-    const r = canSkillEvaluated(context, state, step, d, trigger)
+    const r = canTriggerSkill(context, state, step, d, trigger)
     if (r) recipe.push(r)
   })
   return recipe
@@ -89,7 +88,7 @@ function getTargetRecipes(context: Context, state: AccessState, step: AccessEval
  * @param d 発動する可能性があるアクティブなスキル
  * @returns 
  */
-function canSkillEvaluated(context: Context, state: AccessState, step: AccessEvaluateStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, trigger: AccessSkillTrigger): AccessSkillRecipe | null {
+function canTriggerSkill(context: Context, state: AccessState, step: AccessSkillStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, trigger: AccessSkillTrigger): AccessSkillRecipe | null {
   if (typeof trigger === "function") return trigger
   let percent = Math.min(trigger.probability, 100)
   percent = Math.max(percent, 0)
@@ -122,7 +121,7 @@ function canSkillEvaluated(context: Context, state: AccessState, step: AccessEva
   }
 }
 
-function markTriggerSkill(state: AccessSideState, step: AccessEvaluateStep, denco: Denco) {
+function markTriggerSkill(state: AccessSideState, step: AccessSkillStep, denco: Denco) {
   const list = state.triggeredSkills
   const idx = list.findIndex(d => d.numbering === denco.numbering)
   if (idx < 0) {

@@ -21,7 +21,7 @@ describe("しぐれのスキル", () => {
     let defense = initUser(context, "とあるマスター", [reika])
     let offense = initUser(context, "とあるマスター２", [charlotte, sigure])
     sigure = offense.formation[1]
-    expect(getSkill(sigure).state.type).toBe("active")
+    expect(getSkill(sigure).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -46,7 +46,7 @@ describe("しぐれのスキル", () => {
     let defense = initUser(context, "とあるマスター", [sigure])
     let offense = initUser(context, "とあるマスター２", [reika])
     sigure = defense.formation[0]
-    expect(getSkill(sigure).state.type).toBe("active")
+    expect(getSkill(sigure).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -72,7 +72,7 @@ describe("しぐれのスキル", () => {
     let defense = initUser(context, "とあるマスター", [saya, sigure])
     let offense = initUser(context, "とあるマスター２", [reika])
     sigure = defense.formation[1]
-    expect(getSkill(sigure).state.type).toBe("active")
+    expect(getSkill(sigure).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -98,7 +98,7 @@ describe("しぐれのスキル", () => {
     let defense = initUser(context, "とあるマスター", [saya, sigure])
     let offense = initUser(context, "とあるマスター２", [reika])
     sigure = defense.formation[1]
-    expect(getSkill(sigure).state.type).toBe("active")
+    expect(getSkill(sigure).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -131,7 +131,7 @@ describe("しぐれのスキル", () => {
     let defense = initUser(context, "とあるマスター", [charlotte, sigure])
     let offense = initUser(context, "とあるマスター２", [reika])
     sigure = defense.formation[1]
-    expect(getSkill(sigure).state.type).toBe("active")
+    expect(getSkill(sigure).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -159,7 +159,7 @@ describe("しぐれのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     defense = activateSkill(context, defense, 2)
     sigure = defense.formation[1]
-    expect(getSkill(sigure).state.type).toBe("active")
+    expect(getSkill(sigure).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -191,7 +191,7 @@ describe("しぐれのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [reika])
     defense = activateSkill(context, defense, 2)
     sigure = defense.formation[1]
-    expect(getSkill(sigure).state.type).toBe("active")
+    expect(getSkill(sigure).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,

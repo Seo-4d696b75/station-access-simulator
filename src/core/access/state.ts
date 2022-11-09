@@ -7,6 +7,8 @@ import { UserPropertyReader } from "../user"
 /**
  * アクセスにおけるスキルの評価ステップ
  * 
+ * 
+ * ### 呼び出しの順序
  * 以下の順序の各ステップでスキルを評価する
  * ただし、フットバース利用など特殊な状態で一部ステップはスキップされる場合あがある
  * 
@@ -27,12 +29,13 @@ import { UserPropertyReader } from "../user"
  * 5. .....
  * となる
  * 
+ * ### 呼び出しの対象
  * 評価される対象スキルは以下の条件を満たすでんこのスキルを編成順に行われる
  * - スキルを保持している
  * - スキルがactive状態
  * - アクセス処理の途中で無効化スキルの影響を受けていない
  */
-export type AccessEvaluateStep =
+export type AccessSkillStep =
   "pink_check" |
   "probability_check" |
   "before_access" |
@@ -130,7 +133,7 @@ export interface AccessDencoState extends DencoState {
 
 
 export interface AccessTriggeredSkill extends Denco {
-  readonly step: AccessEvaluateStep
+  readonly step: AccessSkillStep
 }
 
 

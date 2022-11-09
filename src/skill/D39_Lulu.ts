@@ -2,7 +2,7 @@ import { getBaseDamage } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "defense" && self.hpBefore === self.maxHp) {
       return {
         probability: self.skill.property.readNumber("probability"),

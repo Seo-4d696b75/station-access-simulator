@@ -3,7 +3,7 @@ import { getAccessDenco } from "../core/access";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (self.who === "defense" && step === "start_access") {
       const offense = getAccessDenco(state, "offense")
       const target = self.skill.property.readStringArray("target")

@@ -3,7 +3,7 @@ import { formatLinkTime } from "../core/format";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     // カウンター被弾などアクセス側でも発動可能
     if (step === "after_damage" && self.reboot) {
       // 一番長いリンク時間を選択

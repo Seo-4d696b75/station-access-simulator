@@ -1,4 +1,4 @@
-import { evaluateSkillAtEvent, formatLinkTime, SkillLogic } from "..";
+import { formatLinkTime, SkillLogic, triggerSkillAtEvent } from "..";
 
 const skill: SkillLogic = {
   canEnabled: (context, state, self) => {
@@ -23,7 +23,7 @@ const skill: SkillLogic = {
   },
   onActivated: (context, state, self) => {
     // スキルが有効化した瞬間にスキル発動
-    return evaluateSkillAtEvent(context, state, self, (state) => {
+    return triggerSkillAtEvent(context, state, self, (state) => {
       const links = state.formation[self.carIndex].link
       const stations = links.map(link => link.name).join(",")
       if (links.length <= 1) context.log.error("リンク数>1が必要です")

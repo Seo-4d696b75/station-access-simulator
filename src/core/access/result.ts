@@ -1,7 +1,8 @@
-import { AccessConfig, filterActiveSkill } from "."
+import { AccessConfig } from "."
 import { Context } from "../context"
+import { isSkillActive } from "../skill"
 import { refreshSkillState } from "../skill/refresh"
-import { copyState, ReadonlyState } from "../state"
+import { copyState, copyStateTo, ReadonlyState } from "../state"
 import { LinksResult, Station } from "../station"
 import { UserState } from "../user"
 import { refreshEXPState } from "../user/refresh"
@@ -82,6 +83,8 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
 
   // アクセス直後のスキル発動イベント
   checkSKillState(context, result)
+  checkSkillOnReboot(context, result, "offense")
+  checkSkillOnReboot(context, result, "defense")
   checkSkillAfterAccess(context, result, "offense")
   checkSkillAfterAccess(context, result, "defense")
   checkSKillState(context, result)
@@ -111,8 +114,9 @@ function initUserResult(context: Context, state: ReadonlyState<UserState>, acces
 
 function completeDencoLink(context: Context, state: AccessResult, which: AccessSide) {
   const side = which === "offense" ? state.offense : state.defense
+  if (!side) return
   // 編成全員のリンク解除を確認する
-  side?.formation.map(d => {
+  side.formation.map(d => {
     if (d.reboot) {
       // リブートにより全リンク解除
       const disconnectedLink = d.link
@@ -193,29 +197,59 @@ function checkSKillState(context: Context, result: AccessResult) {
   }
 }
 
+function checkSkillOnReboot(context: Context, state: AccessResult, which: AccessSide) {
+  const side = which === "offense" ? state.offense : state.defense
+  if (!side) return
+
+  // リブートのコールバック
+  // コールバックで状態が変化する場合があるので最初に対象を検査
+  // 無効化スキルの影響は無視
+  side.formation
+    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.reboot)
+    .map(d => d.carIndex)
+    .forEach(idx => {
+      const d = side.formation[idx]
+      const skill = d.skill
+      if (skill.type === "possess" && skill.onDencoReboot) {
+        let self = {
+          ...d,
+          skill: skill,
+        }
+        const next = skill.onDencoReboot(context, side, self)
+        if (next) {
+          copyStateTo<UserState>(next, side)
+        }
+      }
+    })
+}
+
 function checkSkillAfterAccess(context: Context, state: AccessResult, which: AccessSide) {
   const side = (which === "offense") ? state.offense : state.defense
   if (!side) return
   let formation = side
-  filterActiveSkill(side.formation).forEach(idx => {
-    // スキル発動による状態変更を考慮して評価直前にコピー
-    const d = copyState(formation.formation[idx])
-    const skill = d.skill
-    if (skill.type !== "possess") {
-      context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
-    }
-    const predicate = skill?.onAccessComplete
-    if (skill && predicate) {
-      const self = {
-        ...d,
-        skill: skill,
+  // 無効化スキルの影響は無視
+  side.formation
+    .filter(d => isSkillActive(d.skill))
+    .map(d => d.carIndex)
+    .forEach(idx => {
+      // スキル発動による状態変更を考慮して評価直前にコピー
+      const d = copyState(formation.formation[idx])
+      const skill = d.skill
+      if (skill.type !== "possess") {
+        context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
-      const next = predicate(context, formation, self, state)
-      if (next) {
-        formation = next
+      if (skill && skill.onAccessComplete) {
+        const self = {
+          ...d,
+          skill: skill,
+        }
+        const next = skill.onAccessComplete(context, formation, self, state)
+        if (next) {
+          formation = next
+        }
       }
-    }
-  })
+    })
   if (which === "offense") {
     state.offense = formation
   } else {

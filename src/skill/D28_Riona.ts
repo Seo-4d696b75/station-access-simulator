@@ -2,7 +2,7 @@ import { getDefense } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense" && state.defense) {
       // アクセス数の差
       const diff = (getDefense(state).user.history.getStationAccessCount(context, state.station))

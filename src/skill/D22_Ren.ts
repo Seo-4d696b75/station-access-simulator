@@ -3,7 +3,7 @@ import { SkillLogic } from "../core/skill";
 
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "before_access" && self.who === "offense" && state.defense) {
       const defense = getAccessDenco(state, "defense")
       const target = self.skill.property.readStringArray("invalidated")

@@ -1,7 +1,7 @@
 import moment from "moment-timezone"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
-import SkillManager from "../core/skillManager"
+import SkillManager from "../core/skill"
 import StationManager from "../core/stationManager"
 
 const stations = [

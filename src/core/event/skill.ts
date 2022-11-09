@@ -22,7 +22,7 @@ export interface EventTriggeredSkill {
    */
   readonly denco: ReadonlyState<DencoState>
   readonly skillName: string
-  readonly step: SkillEventEvaluateStep
+  readonly step: EventSkillStep
 }
 
 /**
@@ -68,7 +68,7 @@ export interface SkillEventDencoState extends DencoState {
  * - スキルがactive状態
  * - アクセス直後の場合 {@link SkillLogic}#onAccessComplete は直前のアクセス処理中に無効化スキルの影響を受けていない
  */
-export type SkillEventEvaluateStep =
+export type EventSkillStep =
   "probability_check" |
   "self"
 
@@ -95,11 +95,14 @@ export type EventSkillTrigger = {
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
  * 
- * {@link Skill onAccessComplete}からの呼び出しを想定
+ * {@link Skill onAccessComplete}からの呼び出しが想定されています
  * 
+ * ### 発動条件の指定
+ * 引数`trigger`で発動の条件・発動のよる状態の更新処理を指定できます.  
  * `trigger.probability`に{@link ProbabilityPercent}を指定した場合は確率補正も考慮して確率計算を行い  
- * 発動が可能な場合のみ`evaluate`で指定されたスキル発動時の状態変更を適用します
+ * 発動が可能な場合のみ`recipe`で指定されたスキル発動時の状態変更を適用します
  * 
+ * ### スキル無効化の影響
  * 発動確率以外にも直前のアクセスで該当スキルが無効化されている場合は状態変更は行いません
  * 
  * @param context ログ・乱数等の共通状態
@@ -108,12 +111,11 @@ export type EventSkillTrigger = {
  * @param trigger スキル発動の確率計算の方法・発動時の処理方法
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, trigger: EventSkillTrigger): AccessUserResult {
+export function triggerSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, trigger: EventSkillTrigger): AccessUserResult {
   context = context.fixClock()
   let next = copyState<AccessUserResult>(state)
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
-    throw Error()
   }
   if (self.skillInvalidated) {
     context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
@@ -161,11 +163,11 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
  * スキルを評価する
  * 
  * アクセス中のスキル発動とは別に単独で発動する場合に使用します  
- * - アクセス直後のタイミングで評価する場合は {@link evaluateSkillAfterAccess}を使用してください
- * - アクセス処理中のスキル評価は{@link Skill}のコールバック関数`evaluate`で行ってください
+ * - アクセス直後のタイミングで評価する場合は {@link triggerSkillAfterAccess}を使用してください
+ * - アクセス処理中のスキル評価は{@link Skill}のコールバック関数`triggerOnAccess`で行ってください
  * 
  * `probability`に`number`を指定した場合は確率補正も考慮して確率計算を行い  
- * 発動が可能な場合のみ`evaluate`で指定されたスキル発動時の状態変更を適用します
+ * 発動が可能な場合のみ`recipe`で指定されたスキル発動時の状態変更を適用します
  * 
  * @param context 
  * @param state 現在の状態
@@ -173,7 +175,7 @@ export function evaluateSkillAfterAccess(context: Context, state: ReadonlyState<
  * @param trigger スキル発動の確率計算の方法・発動時の処理
  * @returns スキルを評価して更新した新しい状態
  */
-export function evaluateSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, trigger: EventSkillTrigger): UserState {
+export function triggerSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, trigger: EventSkillTrigger): UserState {
   let next = copyState<UserState>(state)
   const idx = state.formation.findIndex(d => d.numbering === self.numbering)
   if (idx < 0) {
@@ -245,8 +247,8 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
       ...s,
       skill: skill,
     }
-    const trigger = skill.evaluateOnEvent?.(context, state, active)
-    const recipe = canSkillEvaluated(context, state, trigger)
+    const trigger = skill.triggerOnEvent?.(context, state, active)
+    const recipe = canTriggerSkill(context, state, trigger)
     if (recipe) {
       state = recipe(state) ?? state
       let e: SkillTriggerEvent = {
@@ -264,7 +266,7 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   })
 
   // 発動確率の確認
-  const recipe = canSkillEvaluated(context, state, trigger)
+  const recipe = canTriggerSkill(context, state, trigger)
   if (!recipe) {
     context.log.log("スキル評価イベントの終了（発動なし）")
     // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
@@ -289,7 +291,7 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   return state
 }
 
-function canSkillEvaluated(context: Context, state: ReadonlyState<SkillEventState>, trigger: EventSkillTrigger | void): EventSkillRecipe | undefined {
+function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>, trigger: EventSkillTrigger | void): EventSkillRecipe | undefined {
   if (typeof trigger === "undefined") return
   if (typeof trigger === "function") return trigger
   let percent = trigger.probability

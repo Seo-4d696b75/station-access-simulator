@@ -1,11 +1,11 @@
-import { AccessDencoResult, AccessDencoState, AccessEvaluateStep, AccessResult, AccessSkillTriggers, AccessState, AccessUserResult } from "../access"
+import { AccessDencoResult, AccessDencoState, AccessResult, AccessSkillStep, AccessSkillTriggers, AccessState, AccessUserResult } from "../access"
 import { Context } from "../context"
 import { DencoState } from "../denco"
 import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "../event"
 import { ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill } from "./holder"
-import { SkillActiveTimeout, SkillCooldownTimeout } from "./state"
+import { SkillActiveTimeout, SkillCooldownTimeout } from "./transition"
 
 /**
 * スキルの発動確率を百分率で表現
@@ -34,6 +34,9 @@ export interface ActiveSkill {
 /**
  * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
  * 
+ * すべてのコールバックは対象のタイミングにおいて**スキル自身がactiveな場合のみ**呼ばれます
+ * 
+ * ## スキルレベルに依存するデータ
  * スキルレベルに依存するデータは各コールバック関数の引数に渡される{@link Skill property}オブジェクトから参照できます  
  * （例）引数`self: ActiveSkill`に対して`self.skill.property`からアクセスできる
  * 
@@ -41,6 +44,8 @@ export interface ActiveSkill {
 export interface SkillLogic {
   /**
    * アクセス時の各段階においてスキル発動の判定とスキル発動処理を定義します
+   * 
+   * 他の無効化スキルの影響を受けている場合は呼ばれません
    * 
    * @param context 同一のアクセス処理中は同一のオブジェクトが使用されます
    * @param state アクセス全般の状態  
@@ -54,7 +59,7 @@ export interface SkillLogic {
    * - AccessSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  evaluate?: (context: Context, state: ReadonlyState<AccessState>, step: AccessEvaluateStep, self: ReadonlyState<AccessDencoState & ActiveSkill>) => void | AccessSkillTriggers
+  triggerOnAccess?: (context: Context, state: ReadonlyState<AccessState>, step: AccessSkillStep, self: ReadonlyState<AccessDencoState & ActiveSkill>) => void | AccessSkillTriggers
 
 
   /**
@@ -73,20 +78,52 @@ export interface SkillLogic {
    * - EventSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  evaluateOnEvent?: (context: Context, state: ReadonlyState<SkillEventState>, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => void | EventSkillTrigger
+  triggerOnEvent?: (context: Context, state: ReadonlyState<SkillEventState>, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => void | EventSkillTrigger
 
   /**
-   * アクセス処理が完了した直後の処理をここで行う
+   * アクセス処理が完了した直後に呼ばれます
    * 
-   * @returns アクセス直後にスキルが発動する場合はここで処理して発動結果を返す
+   * **直前のアクセス処理で無効化スキルの影響を受けている場合があります**
+   * 他のスキルにより無効化されていてもこの関数は呼ばれます（単にactive状態なら呼ばれます）
+   * 
+   * ### アクセス直後のスキル発動
+   * このコールバックで処理します.
+   * 関数`triggerSkillAfterAccess`を利用して更新した新しい状態をこの関数から返します
+   * 
+   * ### 他コールバックの順序
+   * アクセス処理が終了すると、
+   * - `onDencoReboot` : このスキルを保持するでんこがリブートした場合のみ
+   * - `onAccessComplete` : この関数
+   * 
+   * @param context
+   * @param state **Readonly** 現在の状態
+   * @param self **Readonly** 直前のアクセスの結果を反映しています. スキルのレベルや効果量などスキルの状態も参照できます.
+   * @param access **Readonly** 直前のアクセスの状態 
+   * @returns 状態を更新する場合は新しい状態を返します
    */
-  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, access: ReadonlyState<AccessResult>) => undefined | AccessUserResult
+  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, access: ReadonlyState<AccessResult>) => void | AccessUserResult
 
+  /**
+   * スキルを保持するでんこがリブートした直後に呼ばれます
+   * 
+   * ### アクセス処理中にダメージが発生して場合
+   * 
+   *   - 非アクセスでダメージを受ける
+   *   - スキルでカウンターを受ける　（例）シーナ・くに
+   *   - スキルでダメージが発生する （例）まりか
+   * 
+   * アクセスによる影響（HPの変化・経験値の追加・レベルアップなど）を反映した状態が引数に渡されます
+   * 
+   * ### スキルの影響
+   * 未実装
+   */
+  onDencoReboot?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  
   /**
    * フットバースでも発動するスキルの場合はtrueを指定  
    * 一部のスキル発動ステップはフットバース時はスキップされる
    */
-  evaluateInPink?: boolean
+  canTriggerInPink?: boolean
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`においてアクティブな状態`active`が終了して`cooldown`へ移行する判定の方法を指定する
@@ -133,10 +170,27 @@ export interface SkillLogic {
    */
   onActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
 
+  /**
+   * １時間の時間経過ごとに呼ばれます
+   * 
+   * （例）もえのスキル発動処理
+   * 
+   * ### スケジュールの時刻
+   * 関数`initUser`でユーザ状態を初期化した時刻から起算してぴったり1時間ごとに
+   * コールバックのタイミングがスケジュールされます  
+   * 
+   * 各ユーザの初期化タイミングによってスケジュールされる時刻がユーザ間で異なる可能性があります
+   * 
+   * ### コールバックのタイミング
+   * スケジュールされただけではこの関数は呼ばれません.  
+   * 関数`refreshState`でユーザ状態を更新するとき、
+   * 現在時刻がスケジュールされた時刻を過ぎていると実際にコールバックされます.  
+   * つまりスケジュールされた時刻以降で最初に`refreshState`が呼ばれたタイミングでこの関数が呼ばれます.
+   */
   onHourCycle?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
 
-  onFormationChanged?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
-  onDencoHPChanged?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
-  onLinkSuccess?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
-  onDencoReboot?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  // TODO コールバックの実装
+  // onFormationChanged?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  // onDencoHPChanged?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  // onLinkSuccess?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
 }

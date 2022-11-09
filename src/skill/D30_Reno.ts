@@ -2,7 +2,7 @@ import moment from "moment-timezone";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common") {
       const hour = moment(context.currentTime).hour()
       const night = hour < 6 || hour >= 18

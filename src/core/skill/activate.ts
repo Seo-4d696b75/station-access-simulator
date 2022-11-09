@@ -28,27 +28,27 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
   if (d.skill.type !== "possess") {
     context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
   }
-  if (d.skill.state.type === "not_init") {
+  if (d.skill.transition.state === "not_init") {
     context.log.error(`スキル状態が初期化されていません ${d.name}`)
   }
   const skill = d.skill
-  switch (skill.state.transition) {
+  switch (skill.transition.type) {
     case "manual":
     case "manual-condition": {
-      switch (skill.state.type) {
+      switch (skill.transition.state) {
         case "idle": {
-          return activateSkillAndCallback(context, state, d, d.skill, skill.state.transition, carIndex)
+          return activateSkillAndCallback(context, state, d, d.skill, skill.transition.type, carIndex)
         }
         case "active": {
           return state
         }
         default: {
-          context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},transition:${skill.state.transition})`)
+          context.log.error(`スキル状態をactiveに変更できません(state:${skill.transition.state},transition:${skill.transition.type})`)
         }
       }
     }
     case "auto": {
-      switch (skill.state.type) {
+      switch (skill.transition.state) {
         case "unable": {
           return activateSkillAndCallback(context, state, d, d.skill, "auto", carIndex)
         }
@@ -56,32 +56,34 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
           return state
         }
         default: {
-          context.log.error(`スキル状態をactiveに変更できません(state:${skill.state.type},type:auto)`)
+          context.log.error(`スキル状態をactiveに変更できません(state:${skill.transition.state},type:auto)`)
         }
       }
     }
     default: {
-      context.log.error(`スキル状態をactiveに変更できません type:${skill.state.transition}`)
+      context.log.error(`スキル状態をactiveに変更できません type:${skill.transition.type}`)
     }
   }
 }
 
 function activateSkillAndCallback(context: Context, state: UserState, d: DencoState, skill: Skill & { type: "possess" }, transition: "manual" | "manual-condition" | "auto", carIndex: number): UserState {
-  context.log.log(`スキル状態の変更：${d.name} ${skill.state.type} -> active`)
+  context.log.log(`スキル状態の変更：${d.name} ${skill.transition.state} -> active`)
   let self = {
     ...d,
     carIndex: carIndex,
     skill: skill,
   }
   const timeout = skill.deactivateAt?.(context, state, self)
-  skill.state = {
-    type: "active",
-    transition: transition,
+  skill.transition = {
+    state: "active",
+    type: transition,
     data: timeout ? {
       ...timeout,
       activatedAt: context.currentTime
     } : undefined,
   }
+  // カスタムデータの初期化
+  skill.data.clear()
   // callback #onActivated
   const callback = skill.onActivated
   if (callback) {
@@ -127,21 +129,21 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
     context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
   }
   const skill = d.skill
-  switch (skill.state.transition) {
+  switch (skill.transition.type) {
     case "manual":
     case "manual-condition":
     case "auto": {
-      if (skill.state.type === "active") {
-        if (skill.state.data) {
-          context.log.error(`スキル状態をcooldownに変更できません, active終了時刻が設定済みです: ${JSON.stringify(skill.state.data)}`)
+      if (skill.transition.state === "active") {
+        if (skill.transition.data) {
+          context.log.error(`スキル状態をcooldownに変更できません, active終了時刻が設定済みです: ${JSON.stringify(skill.transition.data)}`)
         }
         const callback = skill.completeCooldownAt
         if (!callback) {
           context.log.error(`スキル状態をcooldownに変更できません, cooldownの終了時刻を指定する関数 completeCooldownAt が未定義です`)
         }
-        skill.state = {
-          type: "cooldown",
-          transition: skill.state.transition,
+        skill.transition = {
+          state: "cooldown",
+          type: skill.transition.type,
           data: callback(context, state, {
             ...d,
             carIndex: carIndex,
@@ -152,11 +154,11 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
         refreshSkillState(context, state)
         return
       } else {
-        context.log.error(`スキル状態をcooldownに変更できません(state:${skill.state.type})`)
+        context.log.error(`スキル状態をcooldownに変更できません(state:${skill.transition.state})`)
       }
     }
     default: {
-      context.log.error(`スキル状態をcooldownに変更できません transition:${skill.state.transition}`)
+      context.log.error(`スキル状態をcooldownに変更できません transition:${skill.transition.type}`)
     }
   }
 }

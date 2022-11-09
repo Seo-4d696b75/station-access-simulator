@@ -44,7 +44,7 @@ describe("ふぶのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [charlotte, fubu])
     offense = activateSkill(context, offense, 1)
     fubu = offense.formation[1]
-    expect(getSkill(fubu).state.type).toBe("active")
+    expect(getSkill(fubu).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -69,7 +69,7 @@ describe("ふぶのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [fubu])
     defense = activateSkill(context, defense, 0)
     fubu = defense.formation[0]
-    expect(getSkill(fubu).state.type).toBe("active")
+    expect(getSkill(fubu).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -112,7 +112,7 @@ describe("ふぶのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
     defense = activateSkill(context, defense, 1)
     fubu = defense.formation[1]
-    expect(getSkill(fubu).state.type).toBe("active")
+    expect(getSkill(fubu).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -158,8 +158,8 @@ describe("ふぶのスキル", () => {
     defense = activateSkill(context, defense, 2)
     fubu = defense.formation[1]
     hiiru = defense.formation[2]
-    expect(getSkill(fubu).state.type).toBe("active")
-    expect(getSkill(hiiru).state.type).toBe("active")
+    expect(getSkill(fubu).transition.state).toBe("active")
+    expect(getSkill(hiiru).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,

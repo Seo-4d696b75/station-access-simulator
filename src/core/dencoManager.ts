@@ -1,6 +1,6 @@
 import { Context } from "./context"
 import { Denco, DencoState } from "./denco"
-import skillManager from "./skillManager"
+import skillManager from "./skill"
 import { StationLink } from "./station"
 import stationManager from "./stationManager"
 

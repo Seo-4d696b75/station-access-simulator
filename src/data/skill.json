@@ -2441,6 +2441,65 @@
     ]
   },
   {
+    "numbering": "46",
+    "class": "D46_Ataru",
+    "type": "manual",
+    "count_max": 20,
+    "count_decrease": 2,
+    "wait": 3600,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ゆずれないプライド Lv.1",
+        "active": 7200,
+        "ATK": 1.5
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ゆずれないプライド Lv.2",
+        "active": 8400,
+        "ATK": 2.0
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ゆずれないプライド Lv.3",
+        "active": 9600,
+        "ATK": 2.5
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ゆずれないプライド Lv.4",
+        "active": 10800,
+        "ATK": 3.0
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ゆずれないプライド Lv.5",
+        "active": 12000,
+        "ATK": 3.5
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ゆずれないプライド Lv.6",
+        "active": 13200,
+        "ATK": 4.0
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "ボクは絶対に負けません！",
+        "active": 14400,
+        "ATK": 4.5
+      }
+    ]
+  },
+  {
     "numbering": "48",
     "class": "D48_Spica",
     "type": "always",
