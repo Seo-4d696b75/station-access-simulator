@@ -1,7 +1,7 @@
 import moment from "moment-timezone"
 import { initContext } from "../core/context"
 import { DencoState } from "../core/denco"
-import { MutableTypedMap, TypedMap } from "../core/property"
+import { TypedMap } from "../core/property"
 import { activateSkill, deactivateSkill, getSkill, isSkillActive, Skill, SkillCooldownTimeout } from "../core/skill"
 import { initUser, refreshState } from "../core/user"
 
@@ -27,7 +27,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       onActivated: onActivated,
       deactivateAt: deactivateAt,
     }
@@ -89,7 +89,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       onActivated: onActivated,
       deactivateAt: deactivateAt,
     }
@@ -156,7 +156,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       onActivated: onActivated,
       deactivateAt: deactivateAt,
     }
@@ -213,7 +213,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       onActivated: onActivated,
     }
     skill.data.putNumberArray("key", [1])
@@ -275,7 +275,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       deactivateAt: deactivateAt,
       completeCooldownAt: completeCooldownAt,
     }
@@ -335,7 +335,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       deactivateAt: undefined,
     }
     let denco: DencoState = {
@@ -396,7 +396,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       deactivateAt: undefined,
       canEnabled: canEnabled,
     }
@@ -456,7 +456,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       deactivateAt: undefined,
     }
     let denco: DencoState = {
@@ -512,7 +512,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       canActivated: canActivated,
     }
     let denco: DencoState = {
@@ -555,7 +555,7 @@ describe("スキル処理", () => {
         data: undefined
       },
       property: new TypedMap(),
-      data: new MutableTypedMap(),
+      data: new TypedMap(),
       onHourCycle: onHourCycle,
     }
     let denco: DencoState = {
