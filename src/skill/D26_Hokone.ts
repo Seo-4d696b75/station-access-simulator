@@ -2,7 +2,7 @@ import { calcAccessDamage, getAccessDenco } from "../core/access/index";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (self.who === "offense" && state.defense) {
       const defense = getAccessDenco(state, "defense")
       if (step === "damage_special" && defense.numbering === "25") {

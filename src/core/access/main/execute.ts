@@ -4,7 +4,7 @@ import { copyState, ReadonlyState } from "../../state"
 import { calcAccessScoreExp, calcDamageScoreExp, calcLinkScoreExp } from "../score"
 import { completeDisplayScoreExp } from "./display"
 import { completeDencoHP, updateDencoHP } from "./hp"
-import { checkProbabilityBoost, evaluateSkillAt } from "./skill"
+import { checkProbabilityBoost, triggerSkillAt } from "./skill"
 
 /**
  * アクセスを処理する
@@ -52,14 +52,14 @@ export function execute(context: Context, initial: ReadonlyState<AccessState>, t
         // PROBABILITY_CHECK の前に評価する
         // 現状メロしか存在せずこの実装でもよいだろう
         context.log.log("スキルを評価：フットバースの確認")
-        state = evaluateSkillAt(context, state, "pink_check")
+        state = triggerSkillAt(context, state, "pink_check")
       }
     }
     if (state.pinkMode) context.log.log("フットバースが発動！")
 
     // 確率補正の可能性 とりあえず発動させて後で調整
     context.log.log("スキルを評価：確率ブーストの確認")
-    state = evaluateSkillAt(context, state, "probability_check")
+    state = triggerSkillAt(context, state, "probability_check")
 
 
     // アクセスによるスコアと経験値
@@ -73,9 +73,9 @@ export function execute(context: Context, initial: ReadonlyState<AccessState>, t
 
   // 他ピンクに関係なく発動するもの
   context.log.log("スキルを評価：アクセス開始前")
-  state = evaluateSkillAt(context, state, "before_access")
+  state = triggerSkillAt(context, state, "before_access")
   context.log.log("スキルを評価：アクセス開始")
-  state = evaluateSkillAt(context, state, "start_access")
+  state = triggerSkillAt(context, state, "start_access")
 
 
   if (hasDefense(state) && !state.pinkMode) {
@@ -99,11 +99,11 @@ export function execute(context: Context, initial: ReadonlyState<AccessState>, t
 
     // ダメージ増減の設定
     context.log.log("スキルを評価：ATK&DEFの増減")
-    state = evaluateSkillAt(context, state, "damage_common")
+    state = triggerSkillAt(context, state, "damage_common")
 
     // 特殊なダメージの計算
     context.log.log("スキルを評価：特殊なダメージ計算")
-    state = evaluateSkillAt(context, state, "damage_special")
+    state = triggerSkillAt(context, state, "damage_special")
 
     // 基本ダメージの計算
     if (!state.damageBase) {
@@ -115,7 +115,7 @@ export function execute(context: Context, initial: ReadonlyState<AccessState>, t
 
     // 固定ダメージの計算
     context.log.log("スキルを評価：固定ダメージ")
-    state = evaluateSkillAt(context, state, "damage_fixed")
+    state = triggerSkillAt(context, state, "damage_fixed")
     context.log.log(`固定ダメージの計算：${state.damageFixed}`)
 
     // 最終ダメージ計算 固定ダメージ等の影響でも負数にはならない
@@ -172,7 +172,7 @@ export function execute(context: Context, initial: ReadonlyState<AccessState>, t
   context.log.log(`守備側のリンク解除：${state.linkDisconnected}`)
 
   context.log.log("スキルを評価：ダメージ計算完了後")
-  state = evaluateSkillAt(context, state, "after_damage")
+  state = triggerSkillAt(context, state, "after_damage")
 
   if (top) {
     context.log.log("最終的なアクセス結果を決定")

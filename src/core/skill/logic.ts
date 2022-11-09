@@ -1,4 +1,4 @@
-import { AccessDencoResult, AccessDencoState, AccessEvaluateStep, AccessResult, AccessSkillTriggers, AccessState, AccessUserResult } from "../access"
+import { AccessDencoResult, AccessDencoState, AccessResult, AccessSkillStep, AccessSkillTriggers, AccessState, AccessUserResult } from "../access"
 import { Context } from "../context"
 import { DencoState } from "../denco"
 import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "../event"
@@ -59,7 +59,7 @@ export interface SkillLogic {
    * - AccessSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  evaluate?: (context: Context, state: ReadonlyState<AccessState>, step: AccessEvaluateStep, self: ReadonlyState<AccessDencoState & ActiveSkill>) => void | AccessSkillTriggers
+  triggerOnAccess?: (context: Context, state: ReadonlyState<AccessState>, step: AccessSkillStep, self: ReadonlyState<AccessDencoState & ActiveSkill>) => void | AccessSkillTriggers
 
 
   /**
@@ -78,7 +78,7 @@ export interface SkillLogic {
    * - EventSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  evaluateOnEvent?: (context: Context, state: ReadonlyState<SkillEventState>, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => void | EventSkillTrigger
+  triggerOnEvent?: (context: Context, state: ReadonlyState<SkillEventState>, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => void | EventSkillTrigger
 
   /**
    * アクセス処理が完了した直後に呼ばれます
@@ -88,7 +88,7 @@ export interface SkillLogic {
    * 
    * ### アクセス直後のスキル発動
    * このコールバックで処理します.
-   * 関数`evaluateSkillAfterAccess`を利用して更新した新しい状態をこの関数から返します
+   * 関数`triggerSkillAfterAccess`を利用して更新した新しい状態をこの関数から返します
    * 
    * ### 他コールバックの順序
    * アクセス処理が終了すると、
@@ -123,7 +123,7 @@ export interface SkillLogic {
    * フットバースでも発動するスキルの場合はtrueを指定  
    * 一部のスキル発動ステップはフットバース時はスキップされる
    */
-  evaluateInPink?: boolean
+  canTriggerInPink?: boolean
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`においてアクティブな状態`active`が終了して`cooldown`へ移行する判定の方法を指定する

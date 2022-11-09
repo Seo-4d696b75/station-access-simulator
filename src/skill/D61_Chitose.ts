@@ -1,7 +1,7 @@
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "before_access" && state.defense) {
       const all = Array.from(state.offense.formation)
       all.push(...state.defense.formation)

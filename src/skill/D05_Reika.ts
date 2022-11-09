@@ -1,7 +1,7 @@
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.which === "offense") {
       return (state) => {
         const atk = self.skill.property.readNumber("ATK")

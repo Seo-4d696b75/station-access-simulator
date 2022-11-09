@@ -1,7 +1,7 @@
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "defense") {
       const keyword = self.skill.property.readString("keyword")
       const max = self.skill.property.readNumber("station_max")

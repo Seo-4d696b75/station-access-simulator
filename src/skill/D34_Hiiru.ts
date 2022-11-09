@@ -1,7 +1,7 @@
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "probability_check") {
       return (state) => {
         const boost = self.skill.property.readNumber("boost")
@@ -14,7 +14,7 @@ const skill: SkillLogic = {
       }
     }
   },
-  evaluateOnEvent: (context, state, self) => {
+  triggerOnEvent: (context, state, self) => {
     return (state) => {
       const boost = self.skill.property.readNumber("boost")
       context.log.log(`テンション上げていこう↑↑ boost:${boost}%`)

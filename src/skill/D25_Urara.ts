@@ -1,4 +1,4 @@
-import { evaluateSkillAtEvent, EventSkillTrigger } from "../core/event";
+import { EventSkillTrigger, triggerSkillAtEvent } from "../core/event";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
@@ -38,7 +38,7 @@ const skill: SkillLogic = {
         context.log.log(`クールタイムかいじょできる。スキル:${names}`)
       }
     }
-    return evaluateSkillAtEvent(context, state, self, trigger)
+    return triggerSkillAtEvent(context, state, self, trigger)
   },
   deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active") // 0ms

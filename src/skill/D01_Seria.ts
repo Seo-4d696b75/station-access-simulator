@@ -1,4 +1,4 @@
-import { evaluateSkillAfterAccess, EventSkillTrigger } from "../core/event"
+import { EventSkillTrigger, triggerSkillAfterAccess } from "../core/event"
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
@@ -24,7 +24,7 @@ const skill: SkillLogic = {
           })
         },
       }
-      return evaluateSkillAfterAccess(context, state, self, trigger)
+      return triggerSkillAfterAccess(context, state, self, trigger)
     }
   },
   deactivateAt: (context, state, self) => {

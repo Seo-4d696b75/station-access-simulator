@@ -1,4 +1,4 @@
-import { evaluateSkillAtEvent } from "../core/event";
+import { triggerSkillAtEvent } from "../core/event";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
@@ -8,7 +8,7 @@ const skill: SkillLogic = {
   },
   onHourCycle: (context, state, self) => {
     if (isSkillActive(self.skill)) {
-      return evaluateSkillAtEvent(context, state, self, (state) => {
+      return triggerSkillAtEvent(context, state, self, (state) => {
         const heal = self.skill.property.readNumber("heal")
         context.log.log(`編成内のみなさまのHPを回復いたしますよ♪ +${heal}%`)
         state.formation.forEach(d => {

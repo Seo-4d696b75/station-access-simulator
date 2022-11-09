@@ -1,4 +1,4 @@
-import { evaluateSkillAfterAccess, SkillLogic } from "..";
+import { SkillLogic, triggerSkillAfterAccess } from "..";
 
 const skill: SkillLogic = {
   onAccessComplete: (context, state, self, access) => {
@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       let target = state.formation[idx]
       // 再配布できる場合
       if (target.currentExp < target.nextExp) {
-        return evaluateSkillAfterAccess(context, state, self, (state) => {
+        return triggerSkillAfterAccess(context, state, self, (state) => {
           const percent = self.skill.property.readNumber("EXP")
           let dst = state.formation[idx] // 編成位置は変わらない前提
           const value = Math.floor(exp * percent / 100)

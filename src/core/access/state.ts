@@ -35,7 +35,7 @@ import { UserPropertyReader } from "../user"
  * - スキルがactive状態
  * - アクセス処理の途中で無効化スキルの影響を受けていない
  */
-export type AccessEvaluateStep =
+export type AccessSkillStep =
   "pink_check" |
   "probability_check" |
   "before_access" |
@@ -133,7 +133,7 @@ export interface AccessDencoState extends DencoState {
 
 
 export interface AccessTriggeredSkill extends Denco {
-  readonly step: AccessEvaluateStep
+  readonly step: AccessSkillStep
 }
 
 

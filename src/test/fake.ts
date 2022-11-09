@@ -29,7 +29,7 @@ export function getDefPercentDenco(def: number): DencoState {
         type: "always",
         data: undefined
       },
-      evaluate: (context, state, step, self) => {
+      triggerOnAccess: (context, state, step, self) => {
         if (step === "damage_common" && self.which === "defense") {
           return (state) => {
             state.defendPercent += def
@@ -70,7 +70,7 @@ export function getFixedDamageDenco(damage: number): DencoState {
         type: "always",
         data: undefined
       },
-      evaluate: (context, state, step, self) => {
+      triggerOnAccess: (context, state, step, self) => {
         if (step === "damage_fixed" && self.which === which) {
           return (state) => {
             state.damageFixed += damage

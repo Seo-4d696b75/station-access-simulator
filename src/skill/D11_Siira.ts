@@ -1,7 +1,7 @@
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "defense") {
       return {
         probability: self.skill.property.readNumber("probability"),

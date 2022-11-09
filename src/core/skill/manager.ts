@@ -64,7 +64,7 @@ interface SkillDataset {
   moduleName: string
   skill: SkillLogic
   transition: SkillTransitionType
-  evaluateInPink: boolean
+  triggerInPink: boolean
   skillProperties: SkillLevelProperty[]
   skillDefaultProperties: Map<string, any>
 }
@@ -128,7 +128,7 @@ export class SkillManager {
         skillProperties: properties,
         skillDefaultProperties: map,
         transition: type,
-        evaluateInPink: false,
+        triggerInPink: false,
       }
       this.map.set(numbering, dataset)
     }
@@ -161,7 +161,7 @@ export class SkillManager {
             type: data.transition,
             data: undefined,
           },
-          evaluateInPink: data.evaluateInPink,
+          canTriggerInPink: data.triggerInPink,
           property: new TypedMap(property.property, data.skillDefaultProperties),
           data: new TypedMap(),
           ...data.skill,

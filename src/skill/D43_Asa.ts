@@ -1,5 +1,5 @@
 import { formatDuration } from "../core/date";
-import { evaluateSkillAtEvent, SkillEventState } from "../core/event";
+import { SkillEventState, triggerSkillAtEvent } from "../core/event";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
@@ -58,7 +58,7 @@ const skill: SkillLogic = {
         }
       })
     }
-    return evaluateSkillAtEvent(context, state, self, trigger)
+    return triggerSkillAtEvent(context, state, self, trigger)
   },
   deactivateAt: (context, state, self) => {
     const active = self.skill.property.readNumber("active")

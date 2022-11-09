@@ -1,5 +1,5 @@
 import moment from "moment-timezone"
-import { evaluateSkillAtEvent, EventSkillTrigger } from "."
+import { EventSkillTrigger, triggerSkillAtEvent } from "."
 import { Context, TIME_FORMAT } from "../context"
 import { Denco, DencoState } from "../denco"
 import { copyState, copyStateTo, ReadonlyState } from "../state"
@@ -60,7 +60,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${moment(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
-        const next = evaluateSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
+        const next = triggerSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
         copyStateTo<UserState>(next, state)
         break
       }

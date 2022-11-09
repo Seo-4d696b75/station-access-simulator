@@ -1,7 +1,7 @@
 import { getBaseDamage, SkillLogic } from "..";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "defense" && self.currentHp > 1) {
       const base = getBaseDamage(context, state)
       const damage = base.variable + base.constant

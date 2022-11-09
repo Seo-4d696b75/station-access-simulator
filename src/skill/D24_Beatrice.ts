@@ -2,7 +2,7 @@ import { getAccessDenco } from "../core/access/index";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "defense") {
       const offense = getAccessDenco(state, "offense")
       if (offense.ap > self.ap) {

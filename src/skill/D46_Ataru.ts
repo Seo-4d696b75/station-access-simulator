@@ -41,7 +41,7 @@ const skill: SkillLogic = {
       return next
     }
   },
-  evaluate: (context, state, step, self) => {
+  triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense" && state.defense) {
       return (state) => {
         const cnt = self.skill.data.readNumber(KEY, 0)
