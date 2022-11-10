@@ -1,6 +1,5 @@
-import assert from "assert"
 import moment from "moment-timezone"
-import { activateSkill, getSkill, init } from ".."
+import { activateSkill, assert, getSkill, init } from ".."
 import { AccessConfig, getDefense, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"

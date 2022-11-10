@@ -86,6 +86,17 @@ export class Context {
       this.scorePredicate,
     )
   }
+
+  assert(value: unknown, message?: string | Error): asserts value {
+    if (value) return
+    this.log.error(message?.toString() ?? "assertion failed")
+  }
+}
+
+export function assert(value: unknown, message?: string | Error): asserts value {
+  if (value) return
+  const e = typeof message === "string" ? Error(message) : message
+  throw e
 }
 
 /**

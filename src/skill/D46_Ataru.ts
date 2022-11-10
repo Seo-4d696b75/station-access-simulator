@@ -1,5 +1,5 @@
-import assert from "assert";
 import { AccessUserResult } from "../core/access";
+import { assert } from "../core/context";
 import { SkillLogic } from "../core/skill";
 import { copyState } from "../core/state";
 import { UserState } from "../core/user";
