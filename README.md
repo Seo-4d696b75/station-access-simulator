@@ -14,7 +14,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.1.5/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.2.0/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -29,14 +29,52 @@ $ > npm install ekimemo-access-simulator
 
 # Release Note
 [各バージョンの差分詳細はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
-**v0.1.5**  
+
+**v0.2.0**
+- スキルの発動条件・発動処理のコールバック定義を変更
+  - アクセス時の発動条件・発動処理を同一のコールバックに統一  
+    `canEvaluate, evaluate` => `triggerOnAccess`  
+    関数の返り値で発動確率・発動時の処理を同時に指定できます
+  - 命名の変更  
+    `evaluateOnEvent` => `triggerOnEvent`
+- 週末・祝日の判定処理を追加
+- ユーザの情報へのアクセスを追加
+  - ユーザの駅アクセス情報の定義 `StationStatistics`
+  - 当日の移動・アクセス情報の定義 `DailyStatistics`
+  - 読み出し方法の追加 `UserPropertyReader`
+- スキル状態に発動時刻の記録を追加（アサのスキルが利用）
+- スキル状態にカスタムデータ（任意のデータ）を定義可能に  
+  - 型安全な読み書き `boolean, number, string, number[], string[]`
+  - 状態の複製機能
+  - あたるのスキルで利用
+- スキルのコールバック関数`onDencoReboot`の実装
+- 不具合の修正
+  - いろはのスキルの自身より高レベルのでんこにリンクを渡せてしまう
+  - レベルアップでスキル状態がリセットされてしまう
 - スキルの追加
-- スキルプロパティが対応するデータ型を数値以外にも拡張
-- スキル状態の更新関数の不具合修正
-- アクセス以外のスキル発動時にひいるのスキル発動が正しく記録されない不具合を修正
-- アクセスにおける攻撃側農業による相手のHP回復に対応
-- コンソール出力のカラー出力など修正
-- スキル無効化型のスキルを追加・テスト実施
+  - 27 やちよ
+  - 28 リオナ
+  - 30 レーノ
+  - 31 ありす
+  - 32 コタン
+  - 33 エリア
+  - 35 いおり
+  - 37 みこと
+  - 38 くに
+  - 39 るる
+  - 41 にちな
+  - 42 そら
+  - 43 アサ
+  - 44 さいか
+  - 45 カノン
+  - 46 あたる
+  - 48 スピカ
+  - 49 メイ
+  - 50 なほ
+
+
+**v0.1.6**
+- タイポの修正
 
 # Basic Usage
 まずはライブラリを初期化してでんこ・スキルのデータをロードします

@@ -1,64 +1,20 @@
 import { DencoManager, init } from "../.."
+import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
-import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
-import { hasSkillTriggered, startAccess } from "../../core/access"
+import { activateSkill, getSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { testManualSkill } from "../skillState"
 
 describe("ベアトリスのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let beatrice = DencoManager.getDenco(context, "24", 50)
-    expect(beatrice.skill.type).toBe("possess")
-    let defense = initUser(context, "とあるマスター", [beatrice])
-    const now = moment().valueOf()
-    context.clock = now
-    beatrice = defense.formation[0]
-    expect(beatrice.name).toBe("beatrice")
-    let skill = getSkill(beatrice)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    expect(() => disactivateSkill(context, defense, 0)).toThrowError()
-    defense = activateSkill(context, defense, 0)
-    beatrice = defense.formation[0]
-    skill = getSkill(beatrice)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.data).not.toBeUndefined()
-    if (skill.state.type === "active" && skill.state.transition === "manual" && skill.state.data) {
-      let data = skill.state.data
-      expect(data.activeTimeout).toBe(now + 14400 * 1000)
-      expect(data.cooldownTimeout).toBe(now + 14400 * 1000 + 3600 * 1000)
-    }
-    expect(() => disactivateSkill(context, defense, 0)).toThrowError()
 
-    // 10分経過
-    context.clock = now + 600 * 1000
-    defense = refreshState(context, defense)
-    beatrice = defense.formation[0]
-    skill = getSkill(beatrice)
-    expect(skill.state.type).toBe("active")
-
-    // ４時間経過
-    context.clock = now + 14400 * 1000
-    defense = refreshState(context, defense)
-    beatrice = defense.formation[0]
-    skill = getSkill(beatrice)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.transition).toBe("manual")
-    if (skill.state.type === "cooldown" && skill.state.transition === "manual") {
-      let timeout = skill.state.data
-      expect(timeout.cooldownTimeout).toBe(now + (14400 + 3600) * 1000)
-    }
-
-    // 5時間経過
-    context.clock = now + (14400 + 3600) * 1000
-    defense = refreshState(context, defense)
-    beatrice = defense.formation[0]
-    skill = getSkill(beatrice)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "24",
+    name: "beatrice",
+    active: 14400,
+    cooldown: 3600
   })
+
   test("発動なし-非アクティブ", () => {
     const context = initContext("test", "test", false)
     let beatrice = DencoManager.getDenco(context, "24", 50, 1)

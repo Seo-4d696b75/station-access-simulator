@@ -2,7 +2,7 @@ import moment from "moment-timezone"
 import { init } from "../.."
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
 
 describe("もえのスキル", () => {
@@ -16,10 +16,10 @@ describe("もえのスキル", () => {
     let state = initUser(context, "とあるマスター", [moe])
     moe = state.formation[0]
     let skill = getSkill(moe)
-    expect(skill.state.type).toBe("unable")
-    expect(skill.state.transition).toBe("auto-condition")
+    expect(skill.transition.state).toBe("unable")
+    expect(skill.transition.type).toBe("auto-condition")
     expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
   })
   test("スキル発動-1", () => {
     const context = initContext("test", "test", false)
@@ -33,7 +33,7 @@ describe("もえのスキル", () => {
     expect(state.queue[0].time).toBe(moment("2020-01-01T13:00:00.000").valueOf())
     moe = state.formation[0]
     let skill = getSkill(moe)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
     // 13:00
     context.clock = now + 600 * 1000
     state = refreshState(context, state)
@@ -46,7 +46,7 @@ describe("もえのスキル", () => {
     state = refreshState(context, state)
     moe = state.formation[0]
     skill = getSkill(moe)
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.state).toBe("active")
     // 14:00
     context.clock = now + 70 * 60 * 1000
     state = refreshState(context, state)
@@ -62,7 +62,7 @@ describe("もえのスキル", () => {
     expect(charlotte.currentHp).toBe(charlotte.maxHp)
     moe = state.formation[0]
     skill = getSkill(moe)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
     expect(state.queue.length).toBe(1)
     expect(state.queue[0].type).toBe("hour_cycle")
     expect(state.queue[0].time).toBe(moment("2020-01-01T15:00:00.000").valueOf())
@@ -80,9 +80,9 @@ describe("もえのスキル", () => {
     expect(state.queue[0].time).toBe(moment("2020-01-01T13:00:00.000").valueOf())
     moe = state.formation[0]
     let skill = getSkill(moe)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
-    // chage HP
+    // change HP
     charlotte = state.formation[1]
     sheena = state.formation[2]
     moe.currentHp = Math.floor(moe.maxHp * 0.9)
@@ -93,7 +93,7 @@ describe("もえのスキル", () => {
     state = refreshState(context, state)
     moe = state.formation[0]
     skill = getSkill(moe)
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.state).toBe("active")
 
     // time
     context.clock = now + 600 * 1000
@@ -103,7 +103,7 @@ describe("もえのスキル", () => {
     sheena = state.formation[2]
     skill = getSkill(moe)
     // まだ回復できる
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.state).toBe("active")
     expect(state.event.length).toBe(1)
     // スキル発動のイベント
     let event = state.event[0]

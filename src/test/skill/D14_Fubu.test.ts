@@ -1,62 +1,17 @@
-import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, refreshState, startAccess } from "../.."
+import { activateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import { testManualSkill } from "../skillState"
 
 describe("ふぶのスキル", () => {
   beforeAll(init)
 
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let fubu = DencoManager.getDenco(context, "14", 50)
-    expect(fubu.skill.type).toBe("possess")
-    let defense = initUser(context, "とあるマスター", [fubu])
-    const now = moment().valueOf()
-    context.clock = now
-    fubu = defense.formation[0]
-    expect(fubu.name).toBe("fubu")
-    let skill = getSkill(fubu)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    expect(() => disactivateSkill(context, defense, 0)).toThrowError()
-    defense = activateSkill(context, defense, 0)
-    fubu = defense.formation[0]
-    skill = getSkill(fubu)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.data).not.toBeUndefined()
-    if (skill.state.type === "active" && skill.state.transition === "manual" && skill.state.data) {
-      let data = skill.state.data
-      expect(data.activeTimeout).toBe(now + 1800 * 1000)
-      expect(data.cooldownTimeout).toBe(now + 1800 * 1000 + 7200 * 1000)
-    }
-    expect(() => disactivateSkill(context, defense, 0)).toThrowError()
-
-    // 10分経過
-    context.clock = now + 600 * 1000
-    defense = refreshState(context, defense)
-    fubu = defense.formation[0]
-    skill = getSkill(fubu)
-    expect(skill.state.type).toBe("active")
-
-    // 30分経過
-    context.clock = now + 1800 * 1000
-    defense = refreshState(context, defense)
-    fubu = defense.formation[0]
-    skill = getSkill(fubu)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.transition).toBe("manual")
-    if (skill.state.type === "cooldown" && skill.state.transition === "manual") {
-      let timeout = skill.state.data
-      expect(timeout.cooldownTimeout).toBe(now + (1800 + 7200) * 1000)
-    }
-
-    // 30分 + 2時間経過
-    context.clock = now + (1800 + 7200) * 1000
-    defense = refreshState(context, defense)
-    fubu = defense.formation[0]
-    skill = getSkill(fubu)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "14",
+    name: "fubu",
+    active: 1800,
+    cooldown: 7200,
   })
+
   test("発動なし-非アクティブ", () => {
     const context = initContext("test", "test", false)
     let fubu = DencoManager.getDenco(context, "14", 50)
@@ -89,7 +44,7 @@ describe("ふぶのスキル", () => {
     let offense = initUser(context, "とあるマスター２", [charlotte, fubu])
     offense = activateSkill(context, offense, 1)
     fubu = offense.formation[1]
-    expect(getSkill(fubu).state.type).toBe("active")
+    expect(getSkill(fubu).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -114,7 +69,7 @@ describe("ふぶのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [fubu])
     defense = activateSkill(context, defense, 0)
     fubu = defense.formation[0]
-    expect(getSkill(fubu).state.type).toBe("active")
+    expect(getSkill(fubu).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -145,7 +100,7 @@ describe("ふぶのスキル", () => {
       expect(accessFubu.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-守備側編成内", () => {
@@ -157,7 +112,7 @@ describe("ふぶのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [charlotte, fubu])
     defense = activateSkill(context, defense, 1)
     fubu = defense.formation[1]
-    expect(getSkill(fubu).state.type).toBe("active")
+    expect(getSkill(fubu).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -188,7 +143,7 @@ describe("ふぶのスキル", () => {
       expect(accessCharlotte.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-確率ブースト", () => {
@@ -203,8 +158,8 @@ describe("ふぶのスキル", () => {
     defense = activateSkill(context, defense, 2)
     fubu = defense.formation[1]
     hiiru = defense.formation[2]
-    expect(getSkill(fubu).state.type).toBe("active")
-    expect(getSkill(hiiru).state.type).toBe("active")
+    expect(getSkill(fubu).transition.state).toBe("active")
+    expect(getSkill(hiiru).transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,

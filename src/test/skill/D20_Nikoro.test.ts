@@ -1,6 +1,6 @@
-import { AccessConfig, activateSkill, DencoManager, disactivateSkill, EventTriggeredSkill, getAccessDenco, getSkill, hasSkillTriggered, init, initContext, initUser, LevelupDenco, LevelupEvent, LinksResult, refreshState, SkillTrigger, startAccess } from "../.."
-import moment from "moment-timezone"
-
+import { AccessConfig, DencoManager, EventTriggeredSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, LevelupDenco, LinksResult, startAccess } from "../.."
+import "../matcher"
+import { testAlwaysSkill } from "../skillState"
 
 // デフォルトの経験値計算式を使用する
 const accessScore = 100
@@ -8,30 +8,12 @@ const linkSuccessScore = 100
 
 describe("にころのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let nikoro = DencoManager.getDenco(context, "20", 50)
-    expect(nikoro.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [nikoro])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    nikoro = state.formation[0]
-    let skill = getSkill(nikoro)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    nikoro = state.formation[0]
-    skill = getSkill(nikoro)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "20",
+    name: "nikoro"
   })
+
   test("発動なし-守備側編", () => {
     const context = initContext("test", "test", false)
     let nikoro = DencoManager.getDenco(context, "20", 50)
@@ -192,22 +174,22 @@ describe("にころのスキル", () => {
       expect(result.defense.event[1].type).toBe("reboot")
       expect(result.defense.event[2].type).toBe("skill_trigger")
       expect(result.linkSuccess).toBe(true)
-      expect(result.linkDisconncted).toBe(true)
+      expect(result.linkDisconnected).toBe(true)
       expect(result.defense.score.access).toBe(0)
       expect(result.defense.score.skill).toBe(0)
       let event = result.defense.event[1]
       let reboot = event.data as LinksResult
       expect(reboot.link.length).toBe(2)
       expect(result.defense.score.link).toBe(reboot.totalScore)
-      expect(result.defense.displayedScore).toBe(reboot.link[0].totatlScore) // 解除されたリンクのスコア・経験値
-      expect(result.defense.displayedExp).toBe(reboot.link[0].totatlScore)
+      expect(result.defense.displayedScore).toBe(reboot.link[0].totalScore) // 解除されたリンクのスコア・経験値
+      expect(result.defense.displayedExp).toBe(reboot.link[0].totalScore)
       let d = getAccessDenco(result, "defense")
       expect(d.reboot).toBe(true)
       expect(d.exp.access).toBe(0)
       expect(d.exp.skill).toBe(0)
       expect(d.exp.link).toBe(reboot.exp)
-      expect(d.disconnetedLink).not.toBeUndefined()
-      expect(d.disconnetedLink).toMatchObject(reboot)
+      expect(d.disconnectedLink).not.toBeUndefined()
+      expect(d.disconnectedLink).toMatchObject(reboot)
       event = result.defense.event[2]
       let trigger = event.data as EventTriggeredSkill
       expect(d).toMatchObject(trigger.denco)
@@ -255,15 +237,15 @@ describe("にころのスキル", () => {
       expect(result.defense.event[0].type).toBe("access")
       expect(result.defense.event[1].type).toBe("skill_trigger")
       expect(result.linkSuccess).toBe(true)
-      expect(result.linkDisconncted).toBe(true)
+      expect(result.linkDisconnected).toBe(true)
       expect(result.defense.score.access).toBe(0)
       expect(result.defense.score.skill).toBe(0)
       let d = getAccessDenco(result, "defense")
       expect(d.reboot).toBe(false)
       expect(d.exp.access).toBe(0)
       expect(d.exp.skill).toBe(0)
-      expect(d.disconnetedLink).not.toBeUndefined()
-      let reboot = d.disconnetedLink as LinksResult
+      expect(d.disconnectedLink).not.toBeUndefined()
+      let reboot = d.disconnectedLink as LinksResult
       expect(reboot.link.length).toBe(1)
       expect(reboot.link[0]).toMatchObject(nikoro.link[0])
       expect(result.defense.score.link).toBe(reboot.totalScore)
@@ -317,30 +299,30 @@ describe("にころのスキル", () => {
       expect(result.defense.event[2].type).toBe("levelup")
       expect(result.defense.event[3].type).toBe("skill_trigger")
       expect(result.linkSuccess).toBe(true)
-      expect(result.linkDisconncted).toBe(true)
+      expect(result.linkDisconnected).toBe(true)
       expect(result.defense.score.access).toBe(0)
       expect(result.defense.score.skill).toBe(0)
       let event = result.defense.event[1]
       let reboot = event.data as LinksResult
       expect(reboot.link.length).toBe(2)
       expect(result.defense.score.link).toBe(reboot.totalScore)
-      expect(result.defense.displayedScore).toBe(reboot.link[0].totatlScore) // 解除されたリンクのスコア・経験値
-      expect(result.defense.displayedExp).toBe(reboot.link[0].totatlScore)
+      expect(result.defense.displayedScore).toBe(reboot.link[0].totalScore) // 解除されたリンクのスコア・経験値
+      expect(result.defense.displayedExp).toBe(reboot.link[0].totalScore)
       let d = getAccessDenco(result, "defense")
       expect(d.reboot).toBe(true)
       expect(d.exp.access).toBe(0)
       expect(d.exp.skill).toBe(0)
       expect(d.exp.link).toBe(reboot.exp)
-      expect(d.disconnetedLink).not.toBeUndefined()
-      expect(d.disconnetedLink).toMatchObject(reboot)
+      expect(d.disconnectedLink).not.toBeUndefined()
+      expect(d.disconnectedLink).toMatchObject(reboot)
       event = result.defense.event[2]
       let levelup = event.data as LevelupDenco
       expect(levelup.before.name).toBe("nikoro")
-      expect(d).toMatchObject(levelup.after)
+      expect(d).toMatchDencoState(levelup.after)
       expect(levelup.after.level).toBe(60)
       event = result.defense.event[3]
       let trigger = event.data as EventTriggeredSkill
-      expect(d).toMatchObject(trigger.denco)
+      expect(d).toMatchDencoState(trigger.denco)
       expect(trigger.carIndex).toBe(0)
       expect(trigger.step).toBe("self")
       expect(trigger.time).toBe(result.time)

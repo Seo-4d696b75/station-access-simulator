@@ -1,25 +1,19 @@
 import { DencoManager, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access"
-import { initContext, Random, RandomMode } from "../../core/context"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { initContext } from "../../core/context"
+import { Random, RandomMode } from "../../core/random"
+import { activateSkill, getSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("みらいのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let mirai = DencoManager.getDenco(context, "23", 1)
-    expect(mirai.skill.type).toBe("not_acquired")
-    mirai = DencoManager.getDenco(context, "23", 50)
-    expect(mirai.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [mirai])
-    mirai = state.formation[0]
-    let skill = getSkill(mirai)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("always")
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+
+  testAlwaysSkill({
+    number: "23",
+    name: "mirai"
   })
+
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"
@@ -34,6 +28,23 @@ describe("みらいのスキル", () => {
       },
       defense: {
         state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(hasSkillTriggered(result.offense, mirai)).toBe(false)
+    expect(result.attackPercent).toBe(0)
+  })
+  test("発動なし-確率", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let mirai = DencoManager.getDenco(context, "23", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
+    const offense = initUser(context, "とあるマスター１", [mirai])
+    const config = {
+      offense: {
+        state: offense,
         carIndex: 0
       },
       station: charlotte.link[0],

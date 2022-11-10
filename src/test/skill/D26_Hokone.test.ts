@@ -1,59 +1,21 @@
 import { DencoManager, init } from "../.."
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
-import moment from "moment-timezone"
-import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
-import { DencoState } from "../../core/denco"
-import { getFixedDamageDenco } from "../util"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { getFixedDamageDenco } from "../fake"
+import { testManualSkill } from "../skillState"
 
 describe("ほこねのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let hokone = DencoManager.getDenco(context, "26", 50)
-    expect(hokone.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [hokone])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    hokone = state.formation[0]
-    expect(hokone.name).toBe("hokone")
-    let skill = getSkill(hokone)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, state, 0)
-    hokone = state.formation[0]
-    skill = getSkill(hokone)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.data).not.toBeUndefined()
-    let data = skill.state.data as SkillActiveTimeout
-    expect(data.activeTimeout).toBe(now + 1200 * 1000)
-    expect(data.cooldownTimeout).toBe(now + 1200 * 1000 + 7200 * 1000)
 
-    // 10分経過
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    hokone = state.formation[0]
-    skill = getSkill(hokone)
-    expect(skill.state.type).toBe("active")
-
-    // 20分経過
-    context.clock = now + 1200 * 1000
-    state = refreshState(context, state)
-    hokone = state.formation[0]
-    skill = getSkill(hokone)
-    expect(skill.state.type).toBe("cooldown")
-    let timeout = skill.state.data as SkillCooldownTimeout
-    expect(timeout.cooldownTimeout).toBe(now + (1200 + 7200) * 1000)
-
-    // 2時間20分経過
-    context.clock = now + (1200 + 7200) * 1000
-    state = refreshState(context, state)
-    hokone = state.formation[0]
-    skill = getSkill(hokone)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "26",
+    name: "hokone",
+    active: 1200,
+    cooldown: 7200
   })
+
   test("発動なし-相手なし", () => {
     const context = initContext("test", "test", false)
     let hokone = DencoManager.getDenco(context, "26", 50)
@@ -215,7 +177,7 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
     expect(result.attackPercent).toBe(0)

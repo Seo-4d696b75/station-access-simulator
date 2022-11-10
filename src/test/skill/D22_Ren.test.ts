@@ -1,64 +1,21 @@
-import { DencoManager, init } from "../.."
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { DencoManager, init } from "../.."
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { initContext } from "../../core/context"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { testManualSkill } from "../skillState"
 
 describe("レンのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let ren = DencoManager.getDenco(context, "22", 50)
-    expect(ren.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [ren])
-    const now = moment().valueOf()
-    context.clock = now
-    ren = state.formation[0]
-    expect(ren.name).toBe("ren")
-    let skill = getSkill(ren)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
-    state = activateSkill(context, state, 0)
-    ren = state.formation[0]
-    skill = getSkill(ren)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.data).not.toBeUndefined()
-    if (skill.state.type === "active" && skill.state.transition === "manual" && skill.state.data) {
-      let data = skill.state.data
-      expect(data.activeTimeout).toBe(now + 1500 * 1000)
-      expect(data.cooldownTimeout).toBe(now + 1500 * 1000 + 5400 * 1000)
-    }
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
 
-    // 10分経過
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    ren = state.formation[0]
-    skill = getSkill(ren)
-    expect(skill.state.type).toBe("active")
-
-    // 25分経過
-    context.clock = now + 1500 * 1000
-    state = refreshState(context, state)
-    ren = state.formation[0]
-    skill = getSkill(ren)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.transition).toBe("manual")
-    if (skill.state.type === "cooldown" && skill.state.transition === "manual") {
-      let timeout = skill.state.data
-      expect(timeout.cooldownTimeout).toBe(now + (1500 + 5400) * 1000)
-    }
-
-    // 25分 + 1.5時間経過
-    context.clock = now + (1500 + 5400) * 1000
-    state = refreshState(context, state)
-    ren = state.formation[0]
-    skill = getSkill(ren)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "22",
+    name: "ren",
+    active: 1500,
+    cooldown: 5400,
   })
+
   test("発動なし-非アクティブ", () => {
     const context = initContext("test", "test", false)
     context.clock = moment('2022-01-01T23:00:00+0900').valueOf()

@@ -1,18 +1,9 @@
-import { activateSkill, disactivateSkill, getSkill, isSkillActive, Skill, SkillActiveTimeout, SkillCooldownTimeout } from "../core/skill"
+import moment from "moment-timezone"
 import { initContext } from "../core/context"
 import { DencoState } from "../core/denco"
+import { TypedMap } from "../core/property"
+import { activateSkill, deactivateSkill, getSkill, isSkillActive, Skill, SkillCooldownTimeout } from "../core/skill"
 import { initUser, refreshState } from "../core/user"
-import moment from "moment-timezone"
-import { SkillProperty } from "../core/skillManager"
-
-// SkillPropertyのモック
-const mockProperty = jest.fn<SkillProperty, []>().mockImplementation( () => ({
-  readBoolean: jest.fn(),
-  readString: jest.fn(),
-  readNumber: jest.fn(),
-  readStringArray: jest.fn(),
-  readNumberArray: jest.fn(),
-}))
 
 describe("スキル処理", () => {
   test("manual-activateSkill", () => {
@@ -20,25 +11,27 @@ describe("スキル処理", () => {
     const now = moment().valueOf()
     context.clock = now
     // mock callback
-    const timeout: SkillActiveTimeout = {
+    const timeout = {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
-    const disactivateAt = jest.fn((_, state, self) => timeout)
+    const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
-    
+
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "manual",
+      transition: {
+        state: "not_init",
+        type: "manual",
         data: undefined
       },
-      property: new mockProperty(),
+      property: new TypedMap(),
+      data: new TypedMap(),
       onActivated: onActivated,
-      disactivateAt: disactivateAt,
+      deactivateAt: deactivateAt,
     }
+    skill.data.putBoolean("key", true)
     let denco: DencoState = {
       level: 5,
       name: "denco",
@@ -61,42 +54,46 @@ describe("スキル処理", () => {
     denco = state.formation[0]
     expect(denco.skill.type).toBe("possess")
     let s = denco.skill as Skill
-    expect(s.state.type).toBe("idle")
+    expect(s.transition.state).toBe("idle")
     const next = activateSkill(context, state, 0)
     // state: active変更前
-    expect(disactivateAt.mock.calls.length).toBe(1)
+    expect(deactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
     expect(isSkillActive(denco.skill)).toBe(true)
-    expect(getSkill(denco).state.data).toMatchObject(timeout)
+    expect(getSkill(denco).transition.data).toMatchObject(timeout)
     expect(onActivated.mock.calls.length).toBe(1)
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
+    // 初期化確認
+    expect(() => getSkill(denco).data.readBoolean("key")).toThrowError()
   })
   test("manual-condition-activateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
     // mock callback
-    const timeout: SkillActiveTimeout = {
+    const timeout = {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
     const canEnabled = jest.fn((_, state, self) => true)
-    const disactivateAt = jest.fn((_, state, self) => timeout)
+    const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "manual-condition",
+      transition: {
+        state: "not_init",
+        type: "manual-condition",
         data: undefined
       },
-      property: new mockProperty(),
+      property: new TypedMap(),
+      data: new TypedMap(),
       onActivated: onActivated,
-      disactivateAt: disactivateAt,
+      deactivateAt: deactivateAt,
     }
+    skill.data.putNumber("key", 1)
     let denco: DencoState = {
       level: 5,
       name: "denco",
@@ -123,42 +120,47 @@ describe("スキル処理", () => {
     }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
+    expect(getSkill(denco).transition.state).toBe("idle")
     expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
     let next = activateSkill(context, state, 0)
     // state: active変更前
-    expect(disactivateAt.mock.calls.length).toBe(1)
+    expect(deactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
     expect(isSkillActive(denco.skill)).toBe(true)
-    expect(getSkill(denco).state.data).toMatchObject(timeout)
+    expect(getSkill(denco).transition.data).toMatchObject(timeout)
     expect(onActivated.mock.calls.length).toBe(1)
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
+    // 初期化確認
+    expect(() => getSkill(denco).data.readNumber("key")).toThrowError()
   })
   test("auto-activateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
     // mock callback
-    const timeout: SkillActiveTimeout = {
+    const timeout = {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
-    const disactivateAt = jest.fn((_, state, self) => timeout)
+    const deactivateAt = jest.fn((_, state, self) => timeout)
     const onActivated = jest.fn((_, state, self) => state)
+
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "auto",
+      transition: {
+        state: "not_init",
+        type: "auto",
         data: undefined
       },
-      property: new mockProperty(),
+      property: new TypedMap(),
+      data: new TypedMap(),
       onActivated: onActivated,
-      disactivateAt: disactivateAt,
+      deactivateAt: deactivateAt,
     }
+    skill.data.putString("key", "string")
     let denco: DencoState = {
       level: 5,
       name: "denco",
@@ -179,17 +181,19 @@ describe("スキル処理", () => {
     }
     const state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("unable")
+    expect(getSkill(denco).transition.state).toBe("unable")
     const next = activateSkill(context, state, 0)
     // state: active変更前
-    expect(disactivateAt.mock.calls.length).toBe(1)
+    expect(deactivateAt.mock.calls.length).toBe(1)
     // state: active変更前
     denco = next.formation[0]
     expect(isSkillActive(denco.skill)).toBe(true)
-    expect(getSkill(denco).state.data).toMatchObject(timeout)
+    expect(getSkill(denco).transition.data).toMatchObject(timeout)
     expect(onActivated.mock.calls.length).toBe(1)
     expect(onActivated.mock.calls[0][1]).toMatchObject(next)
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
+    // 初期化確認
+    expect(() => getSkill(denco).data.readString("key")).toThrowError()
   })
 
   test("auto-condition-activateSkill", () => {
@@ -199,17 +203,20 @@ describe("スキル処理", () => {
     // mock callback
     const canActivated = jest.fn((_, state, self) => true)
     const onActivated = jest.fn((_, state, self) => state)
+
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "auto-condition",
+      transition: {
+        state: "not_init",
+        type: "auto-condition",
         data: undefined
       },
-      property: new mockProperty(),
+      property: new TypedMap(),
+      data: new TypedMap(),
       onActivated: onActivated,
     }
+    skill.data.putNumberArray("key", [1])
     let denco: DencoState = {
       level: 5,
       name: "denco",
@@ -236,37 +243,40 @@ describe("スキル処理", () => {
     }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("active")
+    expect(getSkill(denco).transition.state).toBe("active")
     expect(() => activateSkill(context, state, 0))
     expect(canActivated.mock.calls.length).toBeGreaterThan(0)
     expect(isSkillActive(denco.skill)).toBe(true)
-    expect(getSkill(denco).state.data).toBeUndefined()
+    expect(getSkill(denco).transition.data).toBeUndefined()
     expect(onActivated.mock.calls.length).toBe(1)
     expect(onActivated.mock.calls[0][1]).toMatchObject(state)
     expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
+    // 初期化確認
+    expect(() => getSkill(denco).data.readNumberArray("key")).toThrowError()
   })
 
-  test("disactivateSkill-エラー", () => {
+  test("deactivateSkill-エラー", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
     // mock callback
-    const timeout: SkillActiveTimeout = {
+    const timeout = {
       activeTimeout: now + 1000,
       cooldownTimeout: now + 2000,
     }
-    const disactivateAt = jest.fn((_, state, self) => timeout)
+    const deactivateAt = jest.fn((_, state, self) => timeout)
     const completeCooldownAt = jest.fn((_, state, self) => timeout)
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "manual",
+      transition: {
+        state: "not_init",
+        type: "manual",
         data: undefined
       },
-      property: new mockProperty(),
-      disactivateAt: disactivateAt,
+      property: new TypedMap(),
+      data: new TypedMap(),
+      deactivateAt: deactivateAt,
       completeCooldownAt: completeCooldownAt,
     }
     let denco: DencoState = {
@@ -289,25 +299,25 @@ describe("スキル処理", () => {
     }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
+    expect(getSkill(denco).transition.state).toBe("idle")
     state = activateSkill(context, state, 0)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("active")
-    expect(getSkill(denco).state.data).toMatchObject(timeout)
-    expect(() => disactivateSkill(context, state, 0))
+    expect(getSkill(denco).transition.state).toBe("active")
+    expect(getSkill(denco).transition.data).toMatchObject(timeout)
+    expect(() => deactivateSkill(context, state, 0))
     context.clock = now + 1000
     state = refreshState(context, state)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("cooldown")
+    expect(getSkill(denco).transition.state).toBe("cooldown")
     context.clock = now + 2000
     state = refreshState(context, state)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
-    expect(disactivateAt.mock.calls.length).toBe(1)
+    expect(getSkill(denco).transition.state).toBe("idle")
+    expect(deactivateAt.mock.calls.length).toBe(1)
     expect(completeCooldownAt.mock.calls.length).toBe(0)
   })
 
-  test("manual-disactivateSkill", () => {
+  test("manual-deactivateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -319,13 +329,14 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "manual",
+      transition: {
+        state: "not_init",
+        type: "manual",
         data: undefined
       },
-      property: new mockProperty(),
-      disactivateAt: undefined,
+      property: new TypedMap(),
+      data: new TypedMap(),
+      deactivateAt: undefined,
     }
     let denco: DencoState = {
       level: 5,
@@ -347,26 +358,26 @@ describe("スキル処理", () => {
     }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
+    expect(getSkill(denco).transition.state).toBe("idle")
     state = activateSkill(context, state, 0)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("active")
-    expect(getSkill(denco).state.data).toBeUndefined()
+    expect(getSkill(denco).transition.state).toBe("active")
+    expect(getSkill(denco).transition.data).toBeUndefined()
     context.clock = now + 1000
-    expect(() => disactivateSkill(context, state, 0))
+    expect(() => deactivateSkill(context, state, 0))
     getSkill(denco).completeCooldownAt = completeCooldownAt
-    state = disactivateSkill(context, state, 0)
+    state = deactivateSkill(context, state, 0)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("cooldown")
-    expect(getSkill(denco).state.data).toMatchObject(timeout)
+    expect(getSkill(denco).transition.state).toBe("cooldown")
+    expect(getSkill(denco).transition.data).toMatchObject(timeout)
     context.clock = now + 2000
     state = refreshState(context, state)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
+    expect(getSkill(denco).transition.state).toBe("idle")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
   })
 
-  test("manual-condition-disactivateSkill", () => {
+  test("manual-condition-deactivateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -379,13 +390,14 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "manual-condition",
+      transition: {
+        state: "not_init",
+        type: "manual-condition",
         data: undefined
       },
-      property: new mockProperty(),
-      disactivateAt: undefined,
+      property: new TypedMap(),
+      data: new TypedMap(),
+      deactivateAt: undefined,
       canEnabled: canEnabled,
     }
     let denco: DencoState = {
@@ -408,25 +420,25 @@ describe("スキル処理", () => {
     }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
+    expect(getSkill(denco).transition.state).toBe("idle")
     state = activateSkill(context, state, 0)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("active")
-    expect(getSkill(denco).state.data).toBeUndefined()
+    expect(getSkill(denco).transition.state).toBe("active")
+    expect(getSkill(denco).transition.data).toBeUndefined()
     context.clock = now + 1000
-    expect(() => disactivateSkill(context, state, 0))
+    expect(() => deactivateSkill(context, state, 0))
     getSkill(denco).completeCooldownAt = completeCooldownAt
-    state = disactivateSkill(context, state, 0)
+    state = deactivateSkill(context, state, 0)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("cooldown")
-    expect(getSkill(denco).state.data).toMatchObject(timeout)
+    expect(getSkill(denco).transition.state).toBe("cooldown")
+    expect(getSkill(denco).transition.data).toMatchObject(timeout)
     context.clock = now + 2000
     state = refreshState(context, state)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("idle")
+    expect(getSkill(denco).transition.state).toBe("idle")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
   })
-  test("auto-disactivateSkill", () => {
+  test("auto-deactivateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -438,13 +450,14 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "auto",
+      transition: {
+        state: "not_init",
+        type: "auto",
         data: undefined
       },
-      property: new mockProperty(),
-      disactivateAt: undefined,
+      property: new TypedMap(),
+      data: new TypedMap(),
+      deactivateAt: undefined,
     }
     let denco: DencoState = {
       level: 5,
@@ -466,25 +479,25 @@ describe("スキル処理", () => {
     }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("unable")
+    expect(getSkill(denco).transition.state).toBe("unable")
     state = activateSkill(context, state, 0)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("active")
-    expect(getSkill(denco).state.data).toBeUndefined()
+    expect(getSkill(denco).transition.state).toBe("active")
+    expect(getSkill(denco).transition.data).toBeUndefined()
     context.clock = now + 1000
-    expect(() => disactivateSkill(context, state, 0))
+    expect(() => deactivateSkill(context, state, 0))
     getSkill(denco).completeCooldownAt = completeCooldownAt
-    state = disactivateSkill(context, state, 0)
+    state = deactivateSkill(context, state, 0)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("cooldown")
-    expect(getSkill(denco).state.data).toMatchObject(timeout)
+    expect(getSkill(denco).transition.state).toBe("cooldown")
+    expect(getSkill(denco).transition.data).toMatchObject(timeout)
     context.clock = now + 2000
     state = refreshState(context, state)
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("unable")
+    expect(getSkill(denco).transition.state).toBe("unable")
     expect(completeCooldownAt.mock.calls.length).toBe(1)
   })
-  test("auto-condition-disactivateSkill", () => {
+  test("auto-condition-deactivateSkill", () => {
     const context = initContext("test", "test", false)
     const now = moment().valueOf()
     context.clock = now
@@ -493,12 +506,13 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "auto-condition",
+      transition: {
+        state: "not_init",
+        type: "auto-condition",
         data: undefined
       },
-      property: new mockProperty(),
+      property: new TypedMap(),
+      data: new TypedMap(),
       canActivated: canActivated,
     }
     let denco: DencoState = {
@@ -521,10 +535,10 @@ describe("スキル処理", () => {
     }
     let state = initUser(context, "test-user", [denco])
     denco = state.formation[0]
-    expect(getSkill(denco).state.type).toBe("active")
+    expect(getSkill(denco).transition.state).toBe("active")
     expect(canActivated.mock.calls.length).toBeGreaterThan(0)
-    expect(getSkill(denco).state.data).toBeUndefined()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+    expect(getSkill(denco).transition.data).toBeUndefined()
+    expect(() => deactivateSkill(context, state, 0)).toThrowError()
   })
   test("onHourCycle-コールバック", () => {
     const context = initContext("test", "test", false)
@@ -535,12 +549,13 @@ describe("スキル処理", () => {
     const skill: Skill = {
       level: 1,
       name: "test-skill",
-      state: {
-        type: "not_init",
-        transition: "always",
+      transition: {
+        state: "not_init",
+        type: "always",
         data: undefined
       },
-      property: new mockProperty(),
+      property: new TypedMap(),
+      data: new TypedMap(),
       onHourCycle: onHourCycle,
     }
     let denco: DencoState = {

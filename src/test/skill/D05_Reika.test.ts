@@ -1,59 +1,21 @@
-import moment from "moment-timezone"
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, getSkill, isSkillActive, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { initUser, refreshState } from "../../core/user"
+import { activateSkill, isSkillActive } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { testManualSkill } from "../skillState"
 
 describe("レイカのスキル", () => {
   beforeAll(init)
 
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let reika = DencoManager.getDenco(context, "5", 50)
-    expect(reika.skill.type).toBe("possess")
-    let defense = initUser(context, "とあるマスター", [reika])
-    const now = moment().valueOf()
-    context.clock = now
-    defense = refreshState(context, defense)
-    reika = defense.formation[0]
-    expect(reika.name).toBe("reika")
-    let skill = getSkill(reika)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    defense = activateSkill(context, defense, 0)
-    reika = defense.formation[0]
-    skill = getSkill(reika)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.data).not.toBeUndefined()
-    let data = skill.state.data as SkillActiveTimeout
-    expect(data.activeTimeout).toBe(now + 900 * 1000)
-    expect(data.cooldownTimeout).toBe(now + 900 * 1000 + 5400 * 1000)
-
-    // 10分経過
-    context.clock = now + 600 * 1000
-    defense = refreshState(context, defense)
-    reika = defense.formation[0]
-    skill = getSkill(reika)
-    expect(skill.state.type).toBe("active")
-
-    // 15分経過
-    context.clock = now + 900 * 1000
-    defense = refreshState(context, defense)
-    reika = defense.formation[0]
-    skill = getSkill(reika)
-    expect(skill.state.type).toBe("cooldown")
-    let timeout = skill.state.data as SkillCooldownTimeout
-    expect(timeout.cooldownTimeout).toBe(now + (900 + 5400) * 1000)
-
-    // 1時間45分経過
-    context.clock = now + (900 + 5400) * 1000
-    defense = refreshState(context, defense)
-    reika = defense.formation[0]
-    skill = getSkill(reika)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "5",
+    name: "reika",
+    active: 900,
+    cooldown: 5400,
   })
+
   test("発動なし-非アクティブ", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)

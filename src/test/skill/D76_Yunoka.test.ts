@@ -1,59 +1,22 @@
 import { DencoManager, init } from "../.."
+import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
-import moment from "moment-timezone"
-import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access"
-import { DencoState } from "../../core/denco"
-import { getDefPercentDenco, getFixedDamageDenco } from "../util"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { getDefPercentDenco, getFixedDamageDenco } from "../fake"
+import { testManualSkill } from "../skillState"
 
 describe("ゆのかのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let yunoka = DencoManager.getDenco(context, "76", 50)
-    expect(yunoka.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [yunoka])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    yunoka = state.formation[0]
-    expect(yunoka.name).toBe("yunoka")
-    let skill = getSkill(yunoka)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, state, 0)
-    yunoka = state.formation[0]
-    skill = getSkill(yunoka)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.data).not.toBeUndefined()
-    let data = skill.state.data as SkillActiveTimeout
-    expect(data.activeTimeout).toBe(now + 900 * 1000)
-    expect(data.cooldownTimeout).toBe(now + 900 * 1000 + 5400 * 1000)
 
-    // 10分経過
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    yunoka = state.formation[0]
-    skill = getSkill(yunoka)
-    expect(skill.state.type).toBe("active")
 
-    // 15分経過
-    context.clock = now + 900 * 1000
-    state = refreshState(context, state)
-    yunoka = state.formation[0]
-    skill = getSkill(yunoka)
-    expect(skill.state.type).toBe("cooldown")
-    let timeout = skill.state.data as SkillCooldownTimeout
-    expect(timeout.cooldownTimeout).toBe(now + (900 + 5400) * 1000)
-
-    // 15分+90分経過
-    context.clock = now + (1200 + 5400) * 1000
-    state = refreshState(context, state)
-    yunoka = state.formation[0]
-    skill = getSkill(yunoka)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "76",
+    name: "yunoka",
+    active: 900,
+    cooldown: 5400,
   })
+  
   test("発動なし-相手なし", () => {
     const context = initContext("test", "test", false)
     let yunoka = DencoManager.getDenco(context, "76", 50)
@@ -138,7 +101,7 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(hasSkillTriggered(result.offense, yunoka)).toBe(true)
     expect(result.attackPercent).toBe(39)
     expect(result.damageBase?.variable).toBe(346)

@@ -1,22 +1,16 @@
-import { activateSkill, disactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import { testAlwaysSkill } from "../skillState"
 
 
 describe("いずなのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let izuna = DencoManager.getDenco(context, "13", 50)
-    let state = initUser(context, "master", [izuna])
-    izuna = state.formation[0]
-    expect(izuna.name).toBe("izuna")
-    expect(izuna.skill.type).toBe("possess")
-    let skill = getSkill(izuna)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+
+  testAlwaysSkill({
+    number: "13",
+    name: "izuna"
   })
+
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
     let izuna = DencoManager.getDenco(context, "13", 50)
@@ -97,7 +91,7 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     if (result.defense) {
       // リブート確認
@@ -144,7 +138,7 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-ディフェンダー3", () => {
@@ -185,7 +179,7 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
   test("発動あり-ディフェンダー4", () => {
@@ -227,7 +221,7 @@ describe("いずなのスキル", () => {
       expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
       expect(result.defense.displayedExp).toBe(0)
     }
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
 })

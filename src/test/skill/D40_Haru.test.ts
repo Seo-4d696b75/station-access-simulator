@@ -1,37 +1,19 @@
-import { DencoManager, init } from "../.."
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
-import { getDefense, hasSkillTriggered, startAccess } from "../../core/access"
+import { DencoManager, init } from "../.."
+import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { initContext } from "../../core/context"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("ハルのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let haru = DencoManager.getDenco(context, "40", 50)
-    expect(haru.skill.type).toBe("possess")
-    expect(haru.name).toBe("haru")
-    let state = initUser(context, "とあるマスター", [haru])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    haru = state.formation[0]
-    let skill = getSkill(haru)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    haru = state.formation[0]
-    skill = getSkill(haru)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "40",
+    name: "haru"
   })
+
   test("発動あり-相手編成", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"

@@ -18,8 +18,8 @@ describe("いろはスキル", () => {
     state = refreshState(context, state)
     iroha = state.formation[0]
     let skill = getSkill(iroha)
-    expect(skill.state.transition).toBe("manual-condition")
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.type).toBe("manual-condition")
+    expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
 
     // リンク数2 && 編成ひとり
@@ -27,7 +27,7 @@ describe("いろはスキル", () => {
     state = initUser(context, "master", [iroha])
     iroha = state.formation[0]
     skill = getSkill(iroha)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     // リンク数1 && 編成ふたり以上
     iroha = DencoManager.getDenco(context, "10", 50, 1)
@@ -35,15 +35,23 @@ describe("いろはスキル", () => {
     state = initUser(context, "master", [iroha, reika])
     iroha = state.formation[0]
     skill = getSkill(iroha)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     // リンク数2 && 編成ふたり以上
     iroha = DencoManager.getDenco(context, "10", 50, 2)
-    reika = DencoManager.getDenco(context, "5", 50)
+    reika = DencoManager.getDenco(context, "5", 10)
     state = initUser(context, "master", [iroha, reika])
     iroha = state.formation[0]
     skill = getSkill(iroha)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
+
+    // リンク数2 && 編成ふたり以上 && 移譲相手の方が高レベル
+    iroha = DencoManager.getDenco(context, "10", 50, 2)
+    reika = DencoManager.getDenco(context, "5", 80)
+    state = initUser(context, "master", [iroha, reika])
+    iroha = state.formation[0]
+    skill = getSkill(iroha)
+    expect(skill.transition.state).toBe("unable")
   })
 
   test("スキル発動-先頭", () => {
@@ -55,7 +63,7 @@ describe("いろはスキル", () => {
     let state = initUser(context, "master", [iroha, reika])
     iroha = state.formation[0]
     let skill = getSkill(iroha)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
     const links = iroha.link
 
     state = activateSkill(context, state, 0)
@@ -72,8 +80,8 @@ describe("いろはスキル", () => {
     // スキル状態は即座に idle -> active -> wait
     iroha = state.formation[0]
     skill = getSkill(iroha)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.data).toMatchObject({ cooldownTimeout: now + 7200 * 1000 })
+    expect(skill.transition.state).toBe("cooldown")
+    expect(skill.transition.data).toMatchObject({ cooldownTimeout: now + 7200 * 1000 })
     // リンクの移譲の確認
     expect(iroha.link.length).toBe(1)
     const link = links.filter(l => l.name !== iroha.link[0].name)[0]
@@ -85,7 +93,7 @@ describe("いろはスキル", () => {
     state = refreshState(context, state)
     iroha = state.formation[0]
     skill = getSkill(iroha)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
   })
 
   test("スキル発動-先頭以外", () => {
@@ -97,7 +105,7 @@ describe("いろはスキル", () => {
     let state = initUser(context, "master", [reika, iroha])
     iroha = state.formation[1]
     let skill = getSkill(iroha)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
     state = activateSkill(context, state, 1)
     expect(state.event.length).toBe(1)
     let event = state.event[0]
@@ -109,8 +117,8 @@ describe("いろはスキル", () => {
     }
     iroha = state.formation[1]
     skill = getSkill(iroha)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.data).toMatchObject({ cooldownTimeout: now + 7200 * 1000 })
+    expect(skill.transition.state).toBe("cooldown")
+    expect(skill.transition.data).toMatchObject({ cooldownTimeout: now + 7200 * 1000 })
     expect(iroha.link.length).toBe(2)
     reika = state.formation[0]
     expect(reika.link.length).toBe(1)
@@ -119,6 +127,6 @@ describe("いろはスキル", () => {
     state = refreshState(context, state)
     iroha = state.formation[1]
     skill = getSkill(iroha)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
   })
 })

@@ -1,8 +1,8 @@
-import { DencoManager, init } from "../.."
-import { getCurrentTime, initContext } from "../../core/context"
-import { changeFormation, initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
+import { DencoManager, init } from "../.."
+import { initContext } from "../../core/context"
 import { activateSkill, getSkill } from "../../core/skill"
+import { changeFormation, initUser, refreshState } from "../../core/user"
 
 describe("うららのスキル", () => {
   beforeAll(init)
@@ -19,8 +19,8 @@ describe("うららのスキル", () => {
     let state = initUser(context, "master", [urara])
     urara = state.formation[0]
     let skill = getSkill(urara)
-    expect(skill.state.transition).toBe("manual-condition")
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.type).toBe("manual-condition")
+    expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
 
     // cooldownなし(idle)
@@ -28,33 +28,33 @@ describe("うららのスキル", () => {
     state = changeFormation(context, state, [urara, reika])
     urara = state.formation[0]
     skill = getSkill(urara)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     // cooldownなし(active)
     state = activateSkill(context, state, 1)
     urara = state.formation[0]
     skill = getSkill(urara)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
 
     // cooldownあり
     context.clock = now + 900 * 1000
     state = refreshState(context, state)
     reika = state.formation[1]
     skill = getSkill(reika)
-    expect(skill.state.type).toBe("cooldown")
+    expect(skill.transition.state).toBe("cooldown")
     urara = state.formation[0]
     skill = getSkill(urara)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
 
     // 編成の変更
     state = changeFormation(context, state, [urara])
     urara = state.formation[0]
     skill = getSkill(urara)
-    expect(skill.state.type).toBe("unable")
+    expect(skill.transition.state).toBe("unable")
     state = changeFormation(context, state, [urara, reika])
     urara = state.formation[0]
     skill = getSkill(urara)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
 
     context.random.mode = "force"
     state = activateSkill(context, state, 0)
@@ -66,17 +66,17 @@ describe("うららのスキル", () => {
     if (event.type === "skill_trigger") {
       expect(event.data.denco.name).toBe("urara")
       expect(event.data.step).toBe("self")
-      expect(event.data.time).toBe(getCurrentTime(context))
+      expect(event.data.time).toBe(context.currentTime)
     }
     // レイカのスキル cooldown -> idle
     reika = state.formation[1]
     skill = getSkill(reika)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
     // スキル状態は即座に idle -> active -> wait
     urara = state.formation[0]
     skill = getSkill(urara)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.data).toMatchObject({
+    expect(skill.transition.state).toBe("cooldown")
+    expect(skill.transition.data).toMatchObject({
       cooldownTimeout: now + (900 + 7200) * 1000
     })
   })
@@ -133,12 +133,12 @@ describe("うららのスキル", () => {
     // レイカのスキル cooldown -> idle
     reika = state.formation[2]
     let skill = getSkill(reika)
-    expect(skill.state.type).toBe("idle")
+    expect(skill.transition.state).toBe("idle")
     // スキル状態は即座に idle -> active -> wait
     urara = state.formation[0]
     skill = getSkill(urara)
-    expect(skill.state.type).toBe("cooldown")
-    expect(skill.state.data).toMatchObject({
+    expect(skill.transition.state).toBe("cooldown")
+    expect(skill.transition.data).toMatchObject({
       cooldownTimeout: now + (900 + 7200) * 1000
     })
 

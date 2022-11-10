@@ -1,36 +1,19 @@
-import moment from "moment-timezone"
-import { getSkill, init, refreshState } from "../.."
-import { getAccessDenco, startAccess } from "../../core/access"
+import { getSkill, init } from "../.."
+import { getAccessDenco, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill } from "../../core/skill"
+import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("メロのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let mero = DencoManager.getDenco(context, "2", 50)
-    expect(mero.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [mero])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    mero = state.formation[0]
-    let skill = getSkill(mero)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
-
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    mero = state.formation[0]
-    skill = getSkill(mero)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "2",
+    name: "mero"
   })
+
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
     let mero = DencoManager.getDenco(context, "2", 50)
@@ -54,7 +37,7 @@ describe("メロのスキル", () => {
     expect(result.pinkItemUsed).toBe(true)
     expect(result.pinkMode).toBe(true)
     expect(result.offense.triggeredSkills.length).toBe(0)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     let accessReika = getAccessDenco(result, "defense")
     expect(accessReika.reboot).toBe(false)
@@ -112,7 +95,7 @@ describe("メロのスキル", () => {
     expect(result.pinkItemSet).toBe(false)
     expect(result.pinkItemUsed).toBe(false)
     expect(result.pinkMode).toBe(true)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.offense.triggeredSkills.length).toBe(1)
     let trigger = result.offense.triggeredSkills[0]
@@ -136,7 +119,7 @@ describe("メロのスキル", () => {
     offense = activateSkill(context, offense, 1)
     hiiru = offense.formation[1]
     let skill = getSkill(hiiru)
-    expect(skill.state.type).toBe("active")
+    expect(skill.transition.state).toBe("active")
     const config = {
       offense: {
         state: offense,
@@ -152,7 +135,7 @@ describe("メロのスキル", () => {
     expect(result.pinkItemSet).toBe(false)
     expect(result.pinkItemUsed).toBe(false)
     expect(result.pinkMode).toBe(true)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.offense.triggeredSkills.length).toBe(1)
     // メロ本人 ひいるの確率ブーストは乗らない

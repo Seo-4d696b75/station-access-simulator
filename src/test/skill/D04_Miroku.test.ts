@@ -1,37 +1,20 @@
 import moment from "moment-timezone"
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
-import { initUser, refreshState } from "../../core/user"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("みろくのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let miroku = DencoManager.getDenco(context, "4", 50)
-    expect(miroku.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [miroku])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    miroku = state.formation[0]
-    let skill = getSkill(miroku)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = Date.now() + 600 * 1000
-    state = refreshState(context, state)
-    miroku = state.formation[0]
-    skill = getSkill(miroku)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "4",
+    name: "miroku"
   })
+
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -55,7 +38,7 @@ describe("みろくのスキル", () => {
     expect(result.pinkItemUsed).toBe(true)
     expect(result.pinkMode).toBe(true)
     expect(result.defense?.triggeredSkills.length).toBe(0)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     let accessLuna = getAccessDenco(result, "defense")
     expect(accessLuna.reboot).toBe(false)
@@ -154,7 +137,7 @@ describe("みろくのスキル", () => {
     expect(trigger.numbering).toBe("4")
     expect(trigger.name).toBe("miroku")
     expect(trigger.step).toBe("after_damage")
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.damageBase?.variable).toBe(95)
     let accessLuna = getAccessDenco(result, "defense")
@@ -217,7 +200,7 @@ describe("みろくのスキル", () => {
     expect(trigger.numbering).toBe("4")
     expect(trigger.name).toBe("miroku")
     expect(trigger.step).toBe("after_damage")
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.damageBase?.variable).toBe(247)
     let accessLuna = getAccessDenco(result, "defense")
@@ -252,7 +235,7 @@ describe("みろくのスキル", () => {
     expect(result.offense.triggeredSkills.length).toBe(2)
     expect(hasSkillTriggered(result.offense, miroku)).toBe(true)
     expect(hasSkillTriggered(result.offense, reika)).toBe(true)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.attackPercent).toBe(25)
     expect(result.defendPercent).toBe(50)
@@ -294,7 +277,7 @@ describe("みろくのスキル", () => {
     expect(trigger.numbering).toBe("5")
     expect(trigger.name).toBe("reika")
     expect(trigger.step).toBe("damage_common")
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     let accessLuna = getAccessDenco(result, "defense")
     expect(accessLuna.reboot).toBe(true)

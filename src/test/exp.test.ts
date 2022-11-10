@@ -1,6 +1,6 @@
 import moment from "moment-timezone"
-import { init } from ".."
-import { AccessConfig, getDefense, startAccess } from "../core/access"
+import { activateSkill, assert, getSkill, init } from ".."
+import { AccessConfig, getDefense, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
 import { AccessEventData, LevelupDenco } from "../core/event"
@@ -11,22 +11,42 @@ describe("経験値の処理", () => {
   beforeAll(init)
   test("レベルアップ1", () => {
     const context = initContext("test", "test", false)
-    let reika = DencoManager.getDenco(context, "5", 1)
-    expect(reika.level).toBe(1)
+    const time = moment().valueOf()
+    context.clock = time
+
+    let reika = DencoManager.getDenco(context, "5", 5)
+    expect(reika.level).toBe(5)
     expect(reika.currentExp).toBe(0)
-    expect(reika.nextExp).toBe(400)
+    expect(reika.nextExp).toBe(2100)
     let state = initUser(context, "とあるマスター１", [
       reika
     ])
-    const time = moment().valueOf()
-    context.clock = time
+
+    // スキル有効化
+    state = activateSkill(context, state, 0)
     reika = state.formation[0]
-    reika.currentExp = 500
+    getSkill(reika).data.putBoolean("key", true)
+
+
+    // 経験値追加
+    reika.currentExp = 3000
     state = refreshState(context, state)
     let current = state.formation[0]
-    expect(current.level).toBe(2)
-    expect(current.currentExp).toBe(100)
+    expect(current.level).toBe(6)
+    expect(current.currentExp).toBe(900)
 
+    // スキルの状態
+    let skill = getSkill(current)
+    expect(skill.type).toBe("possess")
+    assert(skill.type === "possess")
+    expect(skill.transition.state).toBe("active")
+    expect(skill.transition.data).toMatchObject({
+      activeTimeout: time + 900 * 1000,
+      cooldownTimeout: time + (900 + 5400) * 1000,
+    })
+    expect(skill.data.readBoolean("key")).toBe(true)
+
+    // イベント発生
     expect(state.event.length).toBe(1)
     const event = state.event[0]
     expect(event.type).toBe("levelup")
@@ -37,6 +57,8 @@ describe("経験値の処理", () => {
   })
   test("レベルアップ2", () => {
     const context = initContext("test", "test", false)
+    const time = moment().valueOf()
+    context.clock = time
     let reika = DencoManager.getDenco(context, "5", 10)
     expect(reika.level).toBe(10)
     expect(reika.currentExp).toBe(0)
@@ -44,16 +66,38 @@ describe("経験値の処理", () => {
     let state = initUser(context, "とあるマスター１", [
       reika
     ])
-    const time = moment().valueOf()
-    context.clock = time
-    state = refreshState(context, state)
+
+    // スキル有効化
+    state = activateSkill(context, state, 0)
     reika = state.formation[0]
+    expect(getSkill(reika).level).toBe(1)
+    expect(getSkill(reika).property.readNumber("ATK")).toBe(10)
+    getSkill(reika).data.putNumberArray("key", [1, 2, 3])
+
+    // 経験値追加
     reika.currentExp = 44758
     state = refreshState(context, state)
     let current = state.formation[0]
     expect(current.level).toBe(16)
     expect(current.currentExp).toBe(5858)
 
+    // スキルの状態 レベルアップ
+    let skill = getSkill(current)
+    expect(skill.type).toBe("possess")
+    assert(skill.type === "possess")
+    expect(skill.level).toBe(2)
+    expect(skill.transition.state).toBe("active")
+    expect(skill.transition.data).toMatchObject({
+      // 有効時間はレベルアップ前のまま
+      activeTimeout: time + 900 * 1000,
+      cooldownTimeout: time + (900 + 5400) * 1000,
+    })
+    // skill-propertyは変化する
+    expect(skill.property.readNumber("ATK")).toBe(15)
+    // custom-propertyは変化しない
+    expect(skill.data.readNumberArray("key")).toEqual([1, 2, 3])
+
+    // イベント発生
     expect(state.event.length).toBe(1)
     const event = state.event[0]
     expect(event.type).toBe("levelup")
@@ -118,7 +162,7 @@ describe("経験値の処理", () => {
       expect(levelup.before).toMatchObject(reika)
       expect(afterAccess).toMatchObject(reika)
       // レベルアップ後の状態
-      let tmp = initUser(context, "hoge", [reika])
+      let tmp = initUser(context, "someone", [reika])
       tmp = refreshState(context, tmp)
       reika = tmp.formation[0]
       // 最終状態

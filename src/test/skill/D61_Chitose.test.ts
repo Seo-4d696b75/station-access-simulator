@@ -1,57 +1,22 @@
-import { DencoManager, init } from "../.."
-import { initContext } from "../../core/context"
-import { initUser, refreshState } from "../../core/user"
 import moment from "moment-timezone"
-import { activateSkill, disactivateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { getDefense, hasSkillTriggered, startAccess } from "../../core/access"
+import { DencoManager, init } from "../.."
+import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { initContext } from "../../core/context"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { testManualSkill } from "../skillState"
 
 describe("ちとせのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let chitose = DencoManager.getDenco(context, "61", 50)
-    expect(chitose.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [chitose])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    chitose = state.formation[0]
-    expect(chitose.name).toBe("chitose")
-    let skill = getSkill(chitose)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, state, 0)
-    chitose = state.formation[0]
-    skill = getSkill(chitose)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.data).not.toBeUndefined()
-    let data = skill.state.data as SkillActiveTimeout
-    expect(data.activeTimeout).toBe(now + 900 * 1000)
-    expect(data.cooldownTimeout).toBe(now + 900 * 1000 + 14400 * 1000)
 
-    // 10分経過
-    context.clock = now + 600 * 1000
-    state = refreshState(context, state)
-    chitose = state.formation[0]
-    skill = getSkill(chitose)
-    expect(skill.state.type).toBe("active")
 
-    // 15分経過
-    context.clock = now + 900 * 1000
-    state = refreshState(context, state)
-    chitose = state.formation[0]
-    skill = getSkill(chitose)
-    expect(skill.state.type).toBe("cooldown")
-    let timeout = skill.state.data as SkillCooldownTimeout
-    expect(timeout.cooldownTimeout).toBe(now + (900 + 14400) * 1000)
-
-    // 2時間20分経過
-    context.clock = now + (900 + 14400) * 1000
-    state = refreshState(context, state)
-    chitose = state.formation[0]
-    skill = getSkill(chitose)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "61",
+    name: "chitose",
+    active: 900,
+    cooldown: 14400,
   })
+
   test("発動あり-攻撃側", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"

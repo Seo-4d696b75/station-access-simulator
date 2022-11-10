@@ -1,26 +1,19 @@
 import { init } from "../.."
-import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access"
+import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
+import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("シーナのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let sheena = DencoManager.getDenco(context, "7", 1)
-    expect(sheena.skill.type).toBe("not_acquired")
-    sheena = DencoManager.getDenco(context, "7", 50)
-    expect(sheena.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [sheena])
-    sheena = state.formation[0]
-    let skill = getSkill(sheena)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.transition).toBe("always")
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
+
+  testAlwaysSkill({
+    number: "7",
+    name: "sheena"
   })
+
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
@@ -58,7 +51,7 @@ describe("シーナのスキル", () => {
     expect(d.reboot).toBe(false)
     expect(d.currentHp).toBe(20)
     // リンク結果
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(result, "offense")
@@ -104,7 +97,7 @@ describe("シーナのスキル", () => {
     expect(d.reboot).toBe(false)
     expect(d.currentHp).toBe(94)
     // リンク結果
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(result, "offense")
@@ -153,13 +146,13 @@ describe("シーナのスキル", () => {
     expect(d.reboot).toBe(true)
     expect(d.currentHp).toBe(264)
     // リンク結果
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     // 経験値
     d = getAccessDenco(result, "offense")
     expect(d.currentExp).toBe(charlotte.currentExp + d.exp.access + d.exp.skill)
     d = getAccessDenco(result, "defense")
-    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill + (d.disconnetedLink?.exp ?? 0))
+    expect(d.currentExp).toBe(sheena.currentExp + d.exp.access + d.exp.skill + (d.disconnectedLink?.exp ?? 0))
   })
 
   test("発動あり-守備側", () => {
@@ -211,7 +204,7 @@ describe("シーナのスキル", () => {
     expect(d.reboot).toBe(false)
     expect(d.currentHp).toBe(20)
     // リンク結果
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(result, "offense")
@@ -277,7 +270,7 @@ describe("シーナのスキル", () => {
     expect(d.reboot).toBe(false)
     expect(d.currentHp).toBe(8)
     // リンク結果
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(result, "offense")
@@ -340,7 +333,7 @@ describe("シーナのスキル", () => {
     expect(d.reboot).toBe(false)
     expect(d.currentHp).toBe(20)
     // リンク結果
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(result, "offense")
@@ -390,7 +383,7 @@ describe("シーナのスキル", () => {
     expect(d.reboot).toBe(false)
     expect(d.currentHp).toBe(94)
     // リンク結果
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     // 経験値
     d = getAccessDenco(result, "offense")

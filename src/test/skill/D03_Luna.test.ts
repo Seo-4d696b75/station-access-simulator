@@ -1,36 +1,23 @@
 import moment from "moment-timezone"
 import { init } from "../.."
-import { getAccessDenco, getDefense, startAccess } from "../../core/access"
+import { getAccessDenco, getDefense, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, disactivateSkill, getSkill } from "../../core/skill"
-import { initUser, refreshState } from "../../core/user"
+import { initUser } from "../../core/user"
+import { testAlwaysSkill } from "../skillState"
 
 describe("ルナのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let luna = DencoManager.getDenco(context, "3", 50)
-    expect(luna.skill.type).toBe("possess")
-    let state = initUser(context, "とあるマスター", [luna])
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
-    state = refreshState(context, state)
-    luna = state.formation[0]
-    let skill = getSkill(luna)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
 
-    expect(() => activateSkill(context, state, 0)).toThrowError()
-    expect(() => disactivateSkill(context, state, 0)).toThrowError()
-
-
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
-    state = refreshState(context, state)
-    luna = state.formation[0]
-    skill = getSkill(luna)
-    expect(skill.state.transition).toBe("always")
-    expect(skill.state.type).toBe("active")
+  testAlwaysSkill({
+    number: "3",
+    name: "luna",
+    time: [
+      moment('2022-01-01T12:00:00+0900').valueOf(),
+      moment('2022-01-01T23:00:00+0900').valueOf()
+    ]
   })
+
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
     let luna = DencoManager.getDenco(context, "3", 50, 1)
@@ -54,7 +41,7 @@ describe("ルナのスキル", () => {
     expect(result.pinkItemUsed).toBe(true)
     expect(result.pinkMode).toBe(true)
     expect(result.defense?.triggeredSkills.length).toBe(0)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     let accessLuna = getAccessDenco(result, "defense")
     expect(accessLuna.reboot).toBe(false)
@@ -79,7 +66,7 @@ describe("ルナのスキル", () => {
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
     expect(result.offense.triggeredSkills.length).toBe(0)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     let accessReika = getAccessDenco(result, "defense")
     expect(accessReika.reboot).toBe(false)
@@ -112,7 +99,7 @@ describe("ルナのスキル", () => {
     expect(trigger.numbering).toBe("3")
     expect(trigger.name).toBe("luna")
     expect(trigger.step).toBe("damage_common")
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(25)
     let accessLuna = getAccessDenco(result, "defense")
@@ -146,7 +133,7 @@ describe("ルナのスキル", () => {
     expect(trigger.numbering).toBe("3")
     expect(trigger.name).toBe("luna")
     expect(trigger.step).toBe("damage_common")
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(-30)
     let accessLuna = getAccessDenco(result, "defense")

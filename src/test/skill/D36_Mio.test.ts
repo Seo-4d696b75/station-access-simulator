@@ -1,59 +1,22 @@
-import moment from "moment-timezone"
-import { copyDencoState, DencoState, getDefense, init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access"
+import { getDefense, init } from "../.."
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { activateSkill, getSkill, SkillActiveTimeout, SkillCooldownTimeout } from "../../core/skill"
-import { initUser, refreshState } from "../../core/user"
+import { activateSkill } from "../../core/skill"
+import { initUser } from "../../core/user"
+import { getFixedDamageDenco } from "../fake"
+import { testManualSkill } from "../skillState"
 
 describe("ミオのスキル", () => {
   beforeAll(init)
-  test("スキル状態", () => {
-    const context = initContext("test", "test", false)
-    let mio = DencoManager.getDenco(context, "36", 50)
-    expect(mio.skill.type).toBe("possess")
-    expect(mio.name).toBe("mio")
-    let state = initUser(context, "とあるマスター", [mio])
-    const now = moment().valueOf()
-    context.clock = now
-    state = refreshState(context, state)
-    mio = state.formation[0]
-    expect(mio.name).toBe("mio")
-    let skill = getSkill(mio)
-    expect(skill.state.transition).toBe("manual")
-    expect(skill.state.type).toBe("idle")
-    state = activateSkill(context, state, 0)
-    mio = state.formation[0]
-    skill = getSkill(mio)
-    expect(skill.state.type).toBe("active")
-    expect(skill.state.data).not.toBeUndefined()
-    let data = skill.state.data as SkillActiveTimeout
-    expect(data.activeTimeout).toBe(now + 1800 * 1000)
-    expect(data.cooldownTimeout).toBe(now + 1800 * 1000 + 10800 * 1000)
 
-    // 5分経過
-    context.clock = now + 300 * 1000
-    state = refreshState(context, state)
-    mio = state.formation[0]
-    skill = getSkill(mio)
-    expect(skill.state.type).toBe("active")
-
-    // 30分経過
-    context.clock = now + 1800 * 1000
-    state = refreshState(context, state)
-    mio = state.formation[0]
-    skill = getSkill(mio)
-    expect(skill.state.type).toBe("cooldown")
-    let timeout = skill.state.data as SkillCooldownTimeout
-    expect(timeout.cooldownTimeout).toBe(now + (1800 + 10800) * 1000)
-
-    // 3時間30分経過
-    context.clock = now + (1800 + 10800) * 1000
-    state = refreshState(context, state)
-    mio = state.formation[0]
-    skill = getSkill(mio)
-    expect(skill.state.type).toBe("idle")
+  testManualSkill({
+    number: "36",
+    name: "mio",
+    active: 1800,
+    cooldown: 10800,
   })
+  
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"
@@ -75,7 +38,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -105,7 +68,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -135,7 +98,7 @@ describe("ミオのスキル", () => {
       station: mio.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -165,7 +128,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -208,7 +171,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -252,7 +215,7 @@ describe("ミオのスキル", () => {
       station: miroku.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(25)
@@ -292,7 +255,7 @@ describe("ミオのスキル", () => {
       station: miroku.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(19)
     expect(result.attackPercent).toBe(0)
@@ -333,7 +296,7 @@ describe("ミオのスキル", () => {
       station: miroku.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(19)
     expect(result.attackPercent).toBe(45)
@@ -357,7 +320,7 @@ describe("ミオのスキル", () => {
     let chiko = DencoManager.getDenco(context, "29", 50)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let mio = DencoManager.getDenco(context, "36", 80)
-    let d = copyDencoState(test2)
+    let d = getFixedDamageDenco(-20)
     let offense = initUser(context, "とあるマスター", [chiko])
     let defense = initUser(context, "とあるマスター２", [reika, mio, d])
     defense = activateSkill(context, defense, 1)
@@ -373,7 +336,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -412,7 +375,7 @@ describe("ミオのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(true)
+    expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -448,7 +411,7 @@ describe("ミオのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -486,7 +449,7 @@ describe("ミオのスキル", () => {
       station: ichiho.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.linkDisconncted).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(45)
@@ -507,44 +470,3 @@ describe("ミオのスキル", () => {
     expect(accessMio.hpAfter).toBe(1)
   })
 })
-
-
-/**
- * 固定ダメージ軽減スキルのでんこ（ダミー）
- */
-const test2: DencoState = {
-  numbering: "test2",
-  name: "test2",
-  type: "supporter",
-  attr: "flat",
-  level: 50,
-  currentExp: 0,
-  nextExp: 100000,
-  currentHp: 100,
-  maxHp: 100,
-  film: {},
-  ap: 100,
-  link: [],
-  skill: {
-    type: "possess",
-    level: 1,
-    name: "test-skill2",
-    property: {
-      readBoolean: () => false,
-      readNumber: () => 0,
-      readString: () => "",
-      readNumberArray: () => [],
-      readStringArray: () => [],
-    },
-    state: {
-      type: "active",
-      transition: "always",
-      data: undefined
-    },
-    canEvaluate: (context, state, step, self) => step === "damage_fixed" && self.which === "defense",
-    evaluate: (context, state, step, self) => {
-      state.damageFixed -= 20
-      return state
-    }
-  }
-}

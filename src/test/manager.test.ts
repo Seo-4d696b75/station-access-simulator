@@ -1,7 +1,7 @@
 import moment from "moment-timezone"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
-import SkillManager from "../core/skillManager"
+import SkillManager from "../core/skill"
 import StationManager from "../core/stationManager"
 
 const stations = [
@@ -9,11 +9,24 @@ const stations = [
     name: "適当な駅１",
     name_kana: "てきとうなえきいち",
     attr: "heat",
+    lines: [0],
   },
   {
     name: "適当な駅２",
     name_kana: "てきとうなえきに",
     attr: "cool",
+    lines: [1],
+  }
+]
+
+const lines = [
+  {
+    code: 0,
+    name: "路線名１"
+  },
+  {
+    code: 1,
+    name: "路線名２"
   }
 ]
 
@@ -76,7 +89,10 @@ const dencos = [
 
 describe("manager", () => {
   test("station-manager", async () => {
-    await StationManager.load(JSON.stringify(stations))
+    await StationManager.load(
+      JSON.stringify(stations),
+      JSON.stringify(lines),
+    )
     const context = initContext("test", "test", false)
     expect(StationManager.data.length).toBe(2)
     const s = StationManager.getRandomStation(context, 2).find(s_1 => s_1.name === "適当な駅１")
