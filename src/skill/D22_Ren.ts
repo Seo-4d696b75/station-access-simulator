@@ -4,6 +4,7 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
+    // FIXME 足湯では発動しない
     if (step === "before_access" && self.who === "offense" && state.defense) {
       const defense = getAccessDenco(state, "defense")
       const target = self.skill.property.readStringArray("invalidated")
