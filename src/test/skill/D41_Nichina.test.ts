@@ -233,7 +233,7 @@ describe("にちなスキル", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 10)
     let nichina = DencoManager.getDenco(context, "41", 50, 1)
-    nichina.ap = 100
+    nichina.ap = 1000
     let marika = DencoManager.getDenco(context, "58", 50, 1)
     let offense = initUser(context, "とあるマスター", [seria, nichina])
     offense = activateSkill(context, offense, 1)
@@ -255,16 +255,12 @@ describe("にちなスキル", () => {
     // カウンター発動
     let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
-    expect(d.damage?.value).toBe(100)
+    expect(d.damage?.value).toBe(1000)
     expect(hasSkillTriggered(result.defense, marika)).toBe(true)
     // 本人
     d = result.offense.formation[1]
     expect(d.reboot).toBe(true)
-    expect(d.damage?.value).toBe(100)
-    // FIXME
-    // まりか、にちなのスキルは同じ after_damageステップで発動
-    // 攻撃側のにちなから評価される
-    // まりかのスキルが発動してにちながリブートしても、にちなのスキルが発動しない
+    expect(d.damage?.value).toBe(1000)
     expect(hasSkillTriggered(result.offense, nichina)).toBe(true)
     expect(d.link.length).toBe(0)
     // セリアに移譲
