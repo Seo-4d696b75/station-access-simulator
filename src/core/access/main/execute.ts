@@ -37,9 +37,10 @@ export function execute(context: Context, initial: ReadonlyState<AccessState>, t
     state.linkSuccess = true
   }
 
-  state = triggerSkillAfterDamage(context, state)
-
   if (top) {
+
+    state = triggerSkillAfterDamage(context, state)
+    
     decideLinkResult(context, state)
   }
   return state
