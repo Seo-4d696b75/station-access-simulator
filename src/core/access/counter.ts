@@ -2,7 +2,7 @@ import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "."
 import { Context } from "../context"
 import { Denco } from "../denco"
 import { copyState, ReadonlyState } from "../state"
-import { execute } from "./main/execute"
+import { runAccessDamageCalculation } from "./main/execute"
 import { hasDefense } from "./utils"
 
 /**
@@ -49,7 +49,7 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
 
     // カウンター実行
     context.log.log("攻守交代、カウンター攻撃を開始")
-    const result = execute(context, next, false)
+    const result = runAccessDamageCalculation(context, next)
     context.log.log("カウンター攻撃を終了")
     if (!result.defense) {
       context.log.error(`カウンター攻撃の結果に守備側が見つかりません`)

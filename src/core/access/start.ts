@@ -1,13 +1,17 @@
 import moment from "moment-timezone"
-import { AccessDencoState, AccessResult, AccessSide, AccessSideState, AccessState, getAccessDenco } from "."
+import { AccessDencoState, AccessResult, AccessSide, AccessSideState, AccessState, getAccessDenco, getDefense, hasActiveSkill, hasDefense } from "."
 import { Context } from "../context"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, ReadonlyState } from "../state"
 import { Station } from "../station"
 import { UserState } from "../user"
 import { getUserPropertyReader } from "../user/property"
-import { execute } from "./main/execute"
+import { completeDisplayScoreExp } from "./main/display"
+import { runAccessDamageCalculation } from "./main/execute"
+import { completeDencoHP, updateDencoHP } from "./main/hp"
+import { checkProbabilityBoost, filterActiveSkill, triggerSkillAt } from "./main/skill"
 import { completeAccess } from "./result"
+import { calcAccessScoreExp, calcLinkScoreExp } from "./score"
 
 /**
  * アクセス処理の入力・設定を定義します
@@ -81,7 +85,29 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
   }
 
 
-  state = execute(context, state)
+  logAccessStart(context, state)
+  state = checkPink(context, state)
+  state = runAccessStart(context, state)
+
+
+  if (state.defense && !state.pinkMode) {
+    state = runAccessDamageCalculation(context, state)
+  } else if (state.pinkMode) {
+    // ピンク
+    state.linkDisconnected = true
+    state.linkSuccess = true
+  } else {
+    // 相手不在
+    state.linkSuccess = true
+  }
+
+
+
+  state = triggerSkillAfterDamage(context, state)
+
+  decideLinkResult(context, state)
+
+
   context.log.log("アクセス処理の終了")
 
   return completeAccess(context, config, state)
@@ -128,4 +154,165 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
     displayedScore: 0,
     displayedExp: 0,
   }
+}
+
+
+function triggerSkillAfterDamage(context: Context, state: AccessState): AccessState {
+
+  // アクティブなスキルを選択して追加
+  let queue = filterActiveSkill(state)
+
+  context.log.log("アクセス結果を仮決定")
+  context.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
+  context.log.log(`守備側のリンク解除：${state.linkDisconnected}`)
+
+  context.log.log("スキルを評価：ダメージ計算完了後")
+
+  while (true) {
+    // スキル発動間のダメージを記録
+    const offenseHP = state.offense.formation.map(d => d.hpAfter)
+    const defenseHP = state.defense?.formation?.map(d => d.hpAfter) ?? []
+
+    // スキル発動（必要なら）
+    state = triggerSkillAt(context, state, "after_damage", queue)
+
+    // HPの決定 & HP0 になったらリブート
+    // 全員確認する
+    updateDencoHP(context, state, "offense")
+    updateDencoHP(context, state, "defense")
+
+    // 再度スキル発動を確認する必要がある場合
+    const message: string[] = []
+    const next = queue.filter(e => {
+      const side = (e.which === "offense") ? state.offense : getDefense(state)
+      // スキルが既に発動済みならスキップ
+      const hasTriggered = side.triggeredSkills.some(t => {
+        return t.numbering === side.formation[e.carIndex].numbering
+          && t.step === "after_damage"
+      })
+      if (hasTriggered) return false
+      // ダメージ量に変化がない場合はスキップ
+      const damageBuf = (e.which === "offense") ? offenseHP : defenseHP
+      const previous = damageBuf[e.carIndex]
+      const d = side.formation[e.carIndex]
+      if (previous === d.hpAfter) return false
+
+      message.push(`denco:${d.name} HP:${previous} => ${d.hpAfter}`)
+      return true
+    })
+    if (next.length === 0) break
+
+    context.log.log("スキルの評価中にHPが変化したでんこがいます")
+    message.forEach(m => context.log.log(m))
+    context.log.log("スキルを再度評価：ダメージ計算完了後")
+    queue = next
+  }
+
+  return state
+}
+
+function logAccessStart(context: Context, state: ReadonlyState<AccessState>) {
+  // log active skill
+  var names = state.offense.formation
+    .filter(d => hasActiveSkill(d))
+    .map(d => d.name)
+    .join(",")
+  context.log.log(`攻撃：${getAccessDenco(state, "offense").name}`)
+  context.log.log(`アクティブなスキル(攻撃側): ${names}`)
+
+  if (state.defense) {
+    const defense = getDefense(state)
+    names = defense.formation
+      .filter(d => hasActiveSkill(d))
+      .map(d => d.name)
+      .join(",")
+    context.log.log(`守備：${getAccessDenco(state, "defense").name}`)
+    context.log.log(`アクティブなスキル(守備側): ${names}`)
+
+  } else {
+    context.log.log("守備側はいません")
+  }
+}
+
+function checkPink(context: Context, state: AccessState): AccessState {
+  // pink_check
+  // フットバの確認、アイテム優先=>スキル評価
+  if (hasDefense(state)) {
+    if (state.pinkItemSet) {
+      state.pinkItemUsed = true
+      state.pinkMode = true
+      context.log.log("フットバースアイテムを使用")
+    } else {
+      // PROBABILITY_CHECK の前に評価する
+      // 現状メロしか存在せずこの実装でもよいだろう
+      context.log.log("スキルを評価：フットバースの確認")
+      state = triggerSkillAt(context, state, "pink_check")
+    }
+  }
+  if (state.pinkMode) context.log.log("フットバースが発動！")
+
+  return state
+}
+
+/**
+ * 守備側の有無・足湯有無に関わらず実行する処理
+ */
+function runAccessStart(context: Context, state: AccessState): AccessState {
+  // アクセスによるスコアと経験値
+  const [score, exp] = calcAccessScoreExp(context, state.offense, state.station)
+  const accessDenco = getAccessDenco(state, "offense")
+  accessDenco.exp.access += exp
+  state.offense.score.access += score
+  context.log.log(`アクセスによる追加 ${accessDenco.name} score:${score} exp:${exp}`)
+
+  // 他ピンクに関係なく発動するスキル
+
+  // 確率補正の可能性 とりあえず発動させて後で調整
+  context.log.log("スキルを評価：確率ブーストの確認")
+  state = triggerSkillAt(context, state, "probability_check")
+  // 基本的に他スキルを無効化するスキル
+  context.log.log("スキルを評価：アクセス開始前")
+  state = triggerSkillAt(context, state, "before_access")
+  // 経験値追加・スコア追加などのスキル
+  context.log.log("スキルを評価：アクセス開始")
+  state = triggerSkillAt(context, state, "start_access")
+
+  return state
+}
+
+function decideLinkResult(context: Context, state: AccessState) {
+
+  context.log.log("最終的なアクセス結果を決定")
+  // 最後に確率ブーストの有無を判定
+  checkProbabilityBoost(state.offense)
+  if (state.defense) {
+    checkProbabilityBoost(state.defense)
+  }
+
+  // 最終的なリブート有無＆変化後のHPを計算
+  completeDencoHP(context, state, "offense")
+  completeDencoHP(context, state, "defense")
+
+  // 最終的なアクセス結果を計算 カウンターで変化する場合あり
+  if (state.defense && !state.pinkMode) {
+    let defense = getAccessDenco(state, "defense")
+    state.linkDisconnected = defense.reboot
+    let offense = getAccessDenco(state, "offense")
+    state.linkSuccess = state.linkDisconnected && !offense.reboot
+  }
+  context.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
+  context.log.log(`守備側のリンク解除：${state.linkDisconnected}`)
+
+  if (state.linkSuccess) {
+    // リンク成功によるスコア＆経験値の付与
+    const [score, exp] = calcLinkScoreExp(context, state.offense, state)
+    const linkDenco = getAccessDenco(state, "offense")
+    linkDenco.exp.access += exp
+    state.offense.score.access += score
+    context.log.log(`リンク成功による追加 ${linkDenco.name} score:${score} exp:${exp}`)
+  }
+
+  // 表示用の経験値＆スコアの計算
+  completeDisplayScoreExp(context, state, "offense")
+  completeDisplayScoreExp(context, state, "defense")
 }
