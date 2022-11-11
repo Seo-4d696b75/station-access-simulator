@@ -2,7 +2,7 @@ import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "."
 import { Context } from "../context"
 import { Denco } from "../denco"
 import { copyState, ReadonlyState } from "../state"
-import { runAccessDamageCalculation } from "./main/execute"
+import { runAccessDamageCalculation } from "./damage"
 import { hasDefense } from "./utils"
 
 /**

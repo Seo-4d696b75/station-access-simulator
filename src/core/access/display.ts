@@ -1,6 +1,6 @@
-import { AccessSide, AccessState } from ".."
-import { Context } from "../../context"
-import { calcLinkResult, calcScoreToExp } from "../score"
+import { AccessSide, AccessState } from "."
+import { Context } from "../context"
+import { calcLinkResult, calcScoreToExp } from "./score"
 
 /**
  * 表示用の経験値＆スコアの計算（破壊的）

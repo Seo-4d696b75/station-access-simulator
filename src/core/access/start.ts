@@ -6,12 +6,12 @@ import { copyState, ReadonlyState } from "../state"
 import { Station } from "../station"
 import { UserState } from "../user"
 import { getUserPropertyReader } from "../user/property"
-import { completeDisplayScoreExp } from "./main/display"
-import { runAccessDamageCalculation } from "./main/execute"
-import { completeDencoHP, updateDencoHP } from "./main/hp"
-import { checkProbabilityBoost, filterActiveSkill, triggerSkillAt } from "./main/skill"
+import { runAccessDamageCalculation } from "./damage"
+import { completeDisplayScoreExp } from "./display"
+import { completeDencoHP, updateDencoHP } from "./hp"
 import { completeAccess } from "./result"
 import { calcAccessScoreExp, calcLinkScoreExp } from "./score"
+import { checkProbabilityBoost, filterActiveSkill, triggerSkillAt } from "./skill"
 
 /**
  * アクセス処理の入力・設定を定義します

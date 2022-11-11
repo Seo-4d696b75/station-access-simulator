@@ -1,7 +1,7 @@
 import { AccessSideState, AccessState } from "."
 import { Context } from "../context"
 import { copyState, ReadonlyState } from "../state"
-import { runAccessDamageCalculation } from "./main/execute"
+import { runAccessDamageCalculation } from "./damage"
 
 /**
  * 攻守はそのままでアクセス処理を再度実行する

@@ -1,5 +1,5 @@
-import { AccessSide, AccessState } from ".."
-import { Context } from "../../context"
+import { AccessSide, AccessState } from "."
+import { Context } from "../context"
 
 /**
  * アクセス終了時の最終的なHPを決定・記録する（破壊的）
