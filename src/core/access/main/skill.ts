@@ -1,9 +1,33 @@
-import { AccessDencoState, AccessSideState, AccessSkillRecipe, AccessSkillStep, AccessSkillTrigger, AccessSkillTriggers, AccessState, filterActiveSkill } from ".."
+import { AccessDencoState, AccessSide, AccessSideState, AccessSkillRecipe, AccessSkillStep, AccessSkillTrigger, AccessSkillTriggers, AccessState, getDefense, hasActiveSkill } from ".."
 import { Context } from "../../context"
 import { Denco } from "../../denco"
 import { random } from "../../random"
 import { ActiveSkill } from "../../skill"
 import { copyState, ReadonlyState } from "../../state"
+
+
+export interface SkillTriggerQueueEntry {
+  carIndex: number
+  which: AccessSide
+}
+/**
+ * 編成からアクティブなスキル（スキルの保有・スキル状態・スキル無効化の影響を考慮）を抽出する
+ * @param state
+ * @returns 
+ */
+export function filterActiveSkill(state: ReadonlyState<AccessState>): SkillTriggerQueueEntry[] {
+  // 編成順に スキル発動有無の確認 > 発動による状態の更新 
+  const list = Array.from(state.offense.formation)
+  if (state.defense) {
+    list.push(...state.defense.formation)
+  }
+  return list.filter(d => {
+    return hasActiveSkill(d)
+  }).map(d => ({
+    carIndex: d.carIndex,
+    which: d.which,
+  }))
+}
 
 /**
  * 各段階でスキルを評価する
@@ -12,16 +36,24 @@ import { copyState, ReadonlyState } from "../../state"
  * @param step どの段階を評価するか
  * @returns 新しい状態
  */
-export function triggerSkillAt(context: Context, current: ReadonlyState<AccessState>, step: AccessSkillStep): AccessState {
+export function triggerSkillAt(
+  context: Context,
+  current: ReadonlyState<AccessState>,
+  step: AccessSkillStep,
+  target?: readonly SkillTriggerQueueEntry[],
+): AccessState {
   let state = copyState<AccessState>(current)
-  // 編成順に スキル発動有無の確認 > 発動による状態の更新 
   // ただしアクティブなスキルの確認は初めに一括で行う（同じステップで発動するスキル無効化は互いに影響しない）
-  const offenseActive = filterActiveSkill(state.offense.formation)
-  const defense = state.defense
-  const defenseActive = defense ? filterActiveSkill(defense.formation) : undefined
-  offenseActive.forEach(idx => {
+  //  const offenseActive = filterActiveSkill(state.offense.formation)
+  //const defense = state.defense
+  //const defenseActive = defense ? filterActiveSkill(defense.formation) : undefined
+  const list = target ?? filterActiveSkill(state)
+  list.forEach(entry => {
+    const idx = entry.carIndex
+    const side = (entry.which === "offense") ? state.offense : getDefense(state)
+    const sideName = (entry.which === "offense") ? "攻撃側" : "守備側"
     // 他スキルの発動で状態が変化する場合があるので毎度参照してからコピーする
-    const d = copyState<AccessDencoState>(state.offense.formation[idx])
+    const d = copyState<AccessDencoState>(side.formation[idx])
     const skill = d.skill
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
@@ -36,35 +68,14 @@ export function triggerSkillAt(context: Context, current: ReadonlyState<AccessSt
       const result = skill.triggerOnAccess(context, state, step, active)
       const recipes = getTargetRecipes(context, state, step, active, result)
       recipes.forEach(recipe => {
-        markTriggerSkill(state.offense, step, d)
-        context.log.log(`スキルが発動(攻撃側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
+        markTriggerSkill(side, step, d)
+        context.log.log(`スキルが発動(${sideName}) name:${d.name}(${d.numbering}) skill:${skill.name}`)
         state = recipe(state) ?? state
       })
     }
+
   })
-  if (defense && defenseActive) {
-    defenseActive.forEach(idx => {
-      const d = copyState<AccessDencoState>(defense.formation[idx])
-      const skill = d.skill
-      if (skill.type !== "possess") {
-        context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
-      }
-      if (skill.triggerOnAccess && (!state.pinkMode || skill.canTriggerInPink)) {
-        const active = {
-          ...copyState<AccessDencoState>(d),
-          skill: skill,
-          skillPropertyReader: skill.property,
-        }
-        const result = skill.triggerOnAccess(context, state, step, active)
-        const recipes = getTargetRecipes(context, state, step, active, result)
-        recipes.forEach(recipe => {
-          markTriggerSkill(defense, step, d)
-          context.log.log(`スキルが発動(守備側) name:${d.name}(${d.numbering}) skill:${skill.name}`)
-          state = recipe(state) ?? state
-        })
-      }
-    })
-  }
+
   return state
 }
 

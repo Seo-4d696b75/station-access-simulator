@@ -4,7 +4,7 @@ import { copyState, ReadonlyState } from "../../state"
 import { calcAccessScoreExp, calcDamageScoreExp, calcLinkScoreExp } from "../score"
 import { completeDisplayScoreExp } from "./display"
 import { completeDencoHP, updateDencoHP } from "./hp"
-import { checkProbabilityBoost, triggerSkillAt } from "./skill"
+import { checkProbabilityBoost, filterActiveSkill, triggerSkillAt } from "./skill"
 
 /**
  * アクセスを処理する
@@ -37,16 +37,65 @@ export function execute(context: Context, initial: ReadonlyState<AccessState>, t
     state.linkSuccess = true
   }
 
+  state = triggerSkillAfterDamage(context, state)
+
+  if (top) {
+    decideLinkResult(context, state)
+  }
+  return state
+}
+
+function triggerSkillAfterDamage(context: Context, state: AccessState): AccessState {
+
+  // アクティブなスキルを選択して追加
+  let queue = filterActiveSkill(state)
+
   context.log.log("アクセス結果を仮決定")
   context.log.log(`攻撃側のリンク成果：${state.linkSuccess}`)
   context.log.log(`守備側のリンク解除：${state.linkDisconnected}`)
 
   context.log.log("スキルを評価：ダメージ計算完了後")
-  state = triggerSkillAt(context, state, "after_damage")
 
-  if (top) {
-    decideLinkResult(context, state)
+  while (true) {
+    // スキル発動間のダメージを記録
+    const offenseHP = state.offense.formation.map(d => d.hpAfter)
+    const defenseHP = state.defense?.formation?.map(d => d.hpAfter) ?? []
+
+    // スキル発動（必要なら）
+    state = triggerSkillAt(context, state, "after_damage", queue)
+
+    // HPの決定 & HP0 になったらリブート
+    // 全員確認する
+    updateDencoHP(context, state, "offense")
+    updateDencoHP(context, state, "defense")
+
+    // 再度スキル発動を確認する必要がある場合
+    const message: string[] = []
+    const next = queue.filter(e => {
+      const side = (e.which === "offense") ? state.offense : getDefense(state)
+      // スキルが既に発動済みならスキップ
+      const hasTriggered = side.triggeredSkills.some(t => {
+        return t.numbering === side.formation[e.carIndex].numbering
+          && t.step === "after_damage"
+      })
+      if (hasTriggered) return false
+      // ダメージ量に変化がない場合はスキップ
+      const damageBuf = (e.which === "offense") ? offenseHP : defenseHP
+      const previous = damageBuf[e.carIndex]
+      const d = side.formation[e.carIndex]
+      if (previous === d.hpAfter) return false
+
+      message.push(`denco:${d.name} HP:${previous} => ${d.hpAfter}`)
+      return true
+    })
+    if (next.length === 0) break
+
+    context.log.log("スキルの評価中にHPが変化したでんこがいます")
+    message.forEach(m => context.log.log(m))
+    context.log.log("スキルを再度評価：ダメージ計算完了後")
+    queue = next
   }
+
   return state
 }
 
@@ -191,7 +240,10 @@ function runAccessDamageCalculation(context: Context, state: AccessState): Acces
   defense.damage = damageSum
 
   // HPの決定 & HP0 になったらリブート
-  updateDencoHP(context, defense)
+  // 基本的には被アクセスのでんこのみで十分だが
+  // スキルの影響で他でんこのHPが変化する場合もあるので全員確認する
+  updateDencoHP(context, state, "offense")
+  updateDencoHP(context, state, "defense")
 
   // 被アクセス側がリブートしたらリンク解除（ピンク除く）
   state.linkDisconnected = defense.reboot

@@ -50,17 +50,6 @@ export function hasSkillTriggered(state: { readonly triggeredSkills: readonly Ac
 }
 
 /**
- * 編成からアクティブなスキル（スキルの保有・スキル状態・スキル無効化の影響を考慮）を抽出する
- * @param list 
- * @returns 
- */
-export function filterActiveSkill(list: readonly ReadonlyState<AccessDencoState>[]): number[] {
-  return list.filter(d => {
-    return hasActiveSkill(d)
-  }).map(d => d.carIndex)
-}
-
-/**
  * アクセス中のスキル無効化の影響も考慮してアクティブなスキルか判定
  * @param d 
  * @returns 
