@@ -2670,6 +2670,70 @@
     ]
   },
   {
+    "numbering": "51",
+    "class": "D51_Himegi",
+    "type": "manual",
+    "active": 1800,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "姉御のホンキ Lv.1",
+        "ATK": 1.8,
+        "DEF": 1.8,
+        "wait": 21600
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "姉御のホンキ Lv.2",
+        "ATK": 2.0,
+        "DEF": 2.0,
+        "wait": 19200
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "姉御のホンキ Lv.3",
+        "ATK": 2.5,
+        "DEF": 2.5,
+        "wait": 16800
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "姉御のホンキ Lv.4",
+        "ATK": 3.0,
+        "DEF": 3.0,
+        "wait": 14400
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "姉御のホンキ Lv.5",
+        "ATK": 3.5,
+        "DEF": 3.5,
+        "wait": 12000
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "姉御のホンキ Lv.6",
+        "ATK": 4.0,
+        "DEF": 4.0,
+        "wait": 9600
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "義理人情がモットーです！",
+        "ATK": 4.5,
+        "DEF": 4.5,
+        "wait": 7200
+      }
+    ]
+  },
+  {
     "numbering": "58",
     "class": "D58_Marika",
     "type": "manual",
