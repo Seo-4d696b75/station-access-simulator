@@ -115,7 +115,7 @@ export function initContext(type: string = "test", seed: string = "test", consol
   )
 }
 
-class SimulatorError extends Error {
+export class SimulatorError extends Error {
   constructor(...args: any[]) {
     super(...args)
     this.name = this.constructor.name

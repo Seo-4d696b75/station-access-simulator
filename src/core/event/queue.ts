@@ -27,7 +27,6 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
   const now = context.currentTime.valueOf()
   if (now > time) {
     context.log.error(`現在時刻より前の時刻は指定できません time: ${time}, denco: ${JSON.stringify(denco)}`)
-    throw Error()
   }
   const next = copyState<UserState>(state)
   next.queue.push({

@@ -1,3 +1,4 @@
+import { SimulatorError } from "../context"
 import { ReadableProperty, TypedMap } from "../property"
 import { SkillHolder } from "./holder"
 import { SkillLogic } from "./logic"
@@ -75,10 +76,10 @@ export class SkillManager {
 
   async load(data?: string) {
     const list = data ? JSON.parse(data) : await import("../../data/skill.json").then(o => o.default).catch(e => [])
-    if (!Array.isArray(list)) throw Error("fail to load skill property")
+    if (!Array.isArray(list)) throw new SimulatorError("fail to load skill property")
     for (let e of list) {
       if (!e.numbering || !e.class || !e.list) {
-        throw Error(`invalid skill lacking some property ${JSON.stringify(e)}`)
+        throw new SimulatorError(`invalid skill lacking some property ${JSON.stringify(e)}`)
       }
       const numbering = e.numbering as string
       const moduleName = e.class as string
@@ -166,7 +167,7 @@ export class SkillManager {
           ...data.skill,
         }
       } else {
-        throw new Error(`no skill property found for level: ${level} ${numbering}`)
+        throw new SimulatorError(`no skill property found for level: ${level} ${numbering}`)
       }
     } else {
       return {

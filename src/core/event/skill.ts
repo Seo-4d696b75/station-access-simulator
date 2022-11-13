@@ -223,7 +223,6 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   let self = state.formation[state.carIndex]
   if (self.skill.type !== "possess") {
     context.log.error(`スキルを保持していません ${self.name}`)
-    throw Error("no active skill found")
   }
 
   const skill = self.skill
@@ -241,7 +240,6 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
     const skill = s.skill
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${s.name} possess => ${skill.type}`)
-      throw Error()
     }
     const active: SkillEventDencoState & ActiveSkill = {
       ...s,

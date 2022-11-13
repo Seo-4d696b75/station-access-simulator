@@ -1,6 +1,6 @@
 import { computeWidth } from "meaw"
 import { AccessDencoState, AccessResult, AccessSide, AccessUserResult, getAccessDenco } from "./access/index"
-import { Context } from "./context"
+import { Context, SimulatorError } from "./context"
 import { formatDuration } from "./date"
 import { DencoAttribute } from "./denco"
 import { EventTriggeredSkill } from "./event"
@@ -422,7 +422,7 @@ function subString(value: string, width: number): string {
       result += "…"
       str = str.substring(1)
     } else {
-      throw Error()
+      throw new SimulatorError()
     }
   }
   result = controls.reduce((a, b) => a + b, result)

@@ -1,3 +1,4 @@
+import { SimulatorError } from "../context"
 import { ReadonlyState } from "../state"
 import { SkillData } from "./data"
 import { SkillLogic } from "./logic"
@@ -63,7 +64,7 @@ export function getSkill<S>(denco: { skill: S & SkillHolderBase<"possess"> | Ski
   if (denco.skill.type === "possess") {
     return denco.skill
   }
-  throw Error("skill not found")
+  throw new SimulatorError("skill not found")
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Context } from "./context";
+import { Context, SimulatorError } from "./context";
 import { Random } from "./random";
 import { Line, Station, StationAttribute, StationLink } from "./station";
 
@@ -9,7 +9,7 @@ class StationManager {
     const lines = lineData ? JSON.parse(lineData) :
       await import("../data/line.json").then(r => r.default).catch(e => [])
     if (!Array.isArray(lines)) {
-      throw Error("line data root not array")
+      throw new SimulatorError("line data root not array")
     }
     const lineMap = new Map<number, Line>()
     lines.forEach(e => {
@@ -22,12 +22,12 @@ class StationManager {
     const stations = stationData ? JSON.parse(stationData) :
       await import("../data/station.json").then(r => r.default).catch(e => [])
     if (!Array.isArray(stations)) {
-      throw Error("station data root not array")
+      throw new SimulatorError("station data root not array")
     }
     stations.forEach(e => {
       let lines = (e.lines as number[]).map(code => {
         const line = lineMap.get(code)
-        if (!line) throw Error(`路線（code=${code}）が見つかりません`)
+        if (!line) throw new SimulatorError(`路線（code=${code}）が見つかりません`)
         return line
       })
       let s: Station = {
