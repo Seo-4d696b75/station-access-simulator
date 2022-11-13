@@ -118,12 +118,6 @@ export interface SkillLogic {
    * 未実装
    */
   onDencoReboot?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
-  
-  /**
-   * フットバースでも発動するスキルの場合はtrueを指定  
-   * 一部のスキル発動ステップはフットバース時はスキップされる
-   */
-  canTriggerInPink?: boolean
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`においてアクティブな状態`active`が終了して`cooldown`へ移行する判定の方法を指定する

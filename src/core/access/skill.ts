@@ -114,7 +114,7 @@ export function triggerSkillAt(
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
     }
-    if (skill.triggerOnAccess && (!state.pinkMode || skill.canTriggerInPink)) {
+    if (skill.triggerOnAccess) {
       const active = {
         ...d,
         skill: skill,

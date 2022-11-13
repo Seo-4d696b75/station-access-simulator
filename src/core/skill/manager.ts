@@ -161,7 +161,6 @@ export class SkillManager {
             type: data.transition,
             data: undefined,
           },
-          canTriggerInPink: data.triggerInPink,
           property: new TypedMap(property.property, data.skillDefaultProperties),
           data: new TypedMap(),
           ...data.skill,
