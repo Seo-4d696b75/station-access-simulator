@@ -277,5 +277,71 @@ describe("ハルのスキル", () => {
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
   })
+  test("発動なし-相手編成-フットバース", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let haru = DencoManager.getDenco(context, "40", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
+    let fubu = DencoManager.getDenco(context, "14", 50)
+    let defense = initUser(context, "とあるマスター", [charlotte, fubu])
+    defense = activateSkill(context, defense, 1)
+    let offense = initUser(context, "とあるマスター２", [haru])
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+      usePink: true,
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result.offense, haru)).toBe(false)
+    expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
+    // スキル無効化の確認
+    let d = getDefense(result).formation[1]
+    expect(d.skillInvalidated).toBe(false)
+    expect(result.defendPercent).toBe(0)
+  })
+  test("発動なし-両編成-フットバース", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let haru = DencoManager.getDenco(context, "40", 50)
+    let reika = DencoManager.getDenco(context, "5", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
+    let fubu = DencoManager.getDenco(context, "14", 50)
+    let defense = initUser(context, "とあるマスター", [charlotte, fubu])
+    defense = activateSkill(context, defense, 1)
+    let offense = initUser(context, "とあるマスター２", [haru, reika])
+    offense = activateSkill(context, offense, 1)
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+      usePink: true,
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result.offense, haru)).toBe(false)
+    expect(hasSkillTriggered(result.offense, reika)).toBe(false)
+    expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
+    // スキル無効化の確認
+    let d = getDefense(result).formation[1]
+    expect(d.skillInvalidated).toBe(false)
+    d = result.offense.formation[1]
+    expect(d.skillInvalidated).toBe(false)
+    expect(result.defendPercent).toBe(0)
+    expect(result.attackPercent).toBe(0)
+  })
 
 })

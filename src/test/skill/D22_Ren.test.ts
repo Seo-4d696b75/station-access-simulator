@@ -206,4 +206,32 @@ describe("レンのスキル", () => {
     let d = getAccessDenco(result, "offense")
     expect(d.skillInvalidated).toBe(false)
   })
+  test("発動なし-フットバース", () => {
+    const context = initContext("test", "test", false)
+    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    let luna = DencoManager.getDenco(context, "3", 50, 1)
+    let ren = DencoManager.getDenco(context, "22", 50, 1)
+    let defense = initUser(context, "とあるマスター", [luna])
+    let offense = initUser(context, "とあるマスター２", [ren])
+    offense = activateSkill(context, offense, 0)
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: luna.link[0],
+      usePink: true,
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result.offense, ren)).toBe(false)
+    expect(hasSkillTriggered(result.defense, luna)).toBe(false)
+    let d = getAccessDenco(result, "defense")
+    expect(d.skillInvalidated).toBe(false)
+    expect(result.defendPercent).toBe(0)
+  })
 })

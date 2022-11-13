@@ -1,10 +1,12 @@
 import { getAccessDenco } from "../core/access/index";
+import { assert } from "../core/context";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (self.who === "offense"
-      && state.defense !== undefined) {
+      && state.defense
+      && !state.pinkMode) {
       if (step === "damage_common") {
         return (state) => {
           const atk = self.skill.property.readNumber("ATK")
@@ -26,10 +28,7 @@ const skill: SkillLogic = {
             const heal = Math.floor(defense.maxHp * percent / 100)
             // ダメージ計算は既に完了しているのでダメージ量に直接加算する
             const damage = defense.damage
-            if (!damage) {
-              context.log.error(`相手のダメージ量が計算されていません ${defense.name}`)
-              throw Error()
-            }
+            assert(damage, `相手のダメージ量が計算されていません ${defense.name}`)
             context.log.log(`会ったでんこにもポカポカしてほし～よね♪ 回復:${heal} = maxHP:${defense.maxHp} * ${percent}%`)
             context.log.log(`相手(${defense.name})のダメージ量:${damage.value - heal} = ${damage.value} - 回復:${heal}`)
             defense.damage = {
