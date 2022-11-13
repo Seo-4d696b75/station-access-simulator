@@ -4,7 +4,7 @@ import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
-    if (self.who === "defense" && step === "start_access") {
+    if (self.who === "defense" && step === "before_access") {
       const offense = getAccessDenco(state, "offense")
       const target = self.skill.property.readStringArray("target")
       // 対象でんこ && スキルがアクティブ && まだ無効化されていない

@@ -22,7 +22,7 @@ const skill: SkillLogic = {
               const percent = self.skill.property.readNumber("heal")
               const heal = Math.floor(sister.maxHp * percent / 100)
               sister.damage = addDamage(sister.damage, {
-                // TODO この実装だとお姉さまのHP回復量がアクセス表示ダイアログに反映されて現行仕様に反する
+                // FIXME この実装だとお姉さまのHP回復量がアクセス表示ダイアログに反映されて現行仕様に反する
                 // でも回復量がどこの表示にも反映されていない現行仕様の方が変？
                 value: -heal, // 負数のダメージ量を加算
                 attr: false,

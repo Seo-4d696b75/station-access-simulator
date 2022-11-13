@@ -1,7 +1,7 @@
 import { AccessSideState, AccessState } from "."
 import { Context } from "../context"
 import { copyState, ReadonlyState } from "../state"
-import { execute } from "./main/execute"
+import { runAccessDamageCalculation } from "./damage"
 
 /**
  * 攻守はそのままでアクセス処理を再度実行する
@@ -27,7 +27,7 @@ export function repeatAccess(context: Context, state: ReadonlyState<AccessState>
     pinkItemUsed: false,
     depth: state.depth + 1,
   }
-  const result = execute(context, next, false)
+  const result = runAccessDamageCalculation(context, next)
   context.log.log(`アクセス処理を終了 #${state.depth + 1}`)
   return result
 }

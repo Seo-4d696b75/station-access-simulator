@@ -13,7 +13,7 @@ const skill: SkillLogic = {
         const threshold2 = self.skill.property.readNumber("threshold2")
         const atk1 = self.skill.property.readNumber("ATK1")
         const atk2 = self.skill.property.readNumber("ATK2")
-        // TODO どこで端数を切り捨てるか？
+        // FIXME どこで端数を切り捨てるか？
         const atk = atk1 * Math.floor(Math.min(threshold1, dist))
           + atk2 * Math.floor(Math.max(Math.min(threshold2, dist) - threshold1, 0))
         state.attackPercent += atk

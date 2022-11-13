@@ -2670,6 +2670,56 @@
     ]
   },
   {
+    "numbering": "58",
+    "class": "D58_Marika",
+    "type": "manual",
+    "wait": 7200,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ファム・ファタール Lv.1",
+        "active": 1800
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ファム・ファタール Lv.2",
+        "active": 2700
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ファム・ファタール Lv.3",
+        "active": 3600
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ファム・ファタール Lv.4",
+        "active": 5400
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ファム・ファタール Lv.5",
+        "active": 7200
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ファム・ファタール Lv.6",
+        "active": 10800
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "私に触れるとヤケドするわよ?",
+        "active": 14400
+      }
+    ]
+  },
+  {
     "numbering": "61",
     "class": "D61_Chitose",
     "type": "manual",

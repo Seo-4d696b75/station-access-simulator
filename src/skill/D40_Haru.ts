@@ -3,7 +3,7 @@ import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
-    if (step === "before_access" && self.who === "offense" && state.defense) {
+    if (step === "before_access" && self.who === "offense" && state.defense && !state.pinkMode) {
       const all = [
         ...state.offense.formation,
         ...getDefense(state).formation

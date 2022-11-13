@@ -4,10 +4,11 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     // 移動距離1km未満は発動しない?
     const dist = state.offense.user.daily.readDistance(context)
-    if (step === "start_access" &&
-      self.which === "offense" &&
-      state.defense !== undefined &&
-      dist >= 1.0) {
+    if (step === "start_access"
+      && self.which === "offense"
+      && state.defense
+      && !state.pinkMode
+      && dist >= 1.0) {
       return (state) => {
         const distMax = self.skill.property.readNumber("distMax")
         const expMax = self.skill.property.readNumber("expMax")

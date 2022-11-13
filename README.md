@@ -76,6 +76,9 @@ $ > npm install ekimemo-access-simulator
 **v0.1.6**
 - タイポの修正
 
+# Docs
+[アクセス処理の実装を詳しく説明します](./docs/access.md)
+
 # Basic Usage
 まずはライブラリを初期化してでんこ・スキルのデータをロードします
 ```js

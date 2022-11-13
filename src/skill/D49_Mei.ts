@@ -11,7 +11,7 @@ const skill: SkillLogic = {
           const diff = self.currentHp - d.currentHp
           // 0 < diff < 自身の最大HP
           // 正規化して適当にガンマ補正
-          // TODO 正確な計算式は不明
+          // FIXME 正確な計算式は不明
           const maxDEF = self.skill.property.readNumber("def_max")
           const def = Math.floor(maxDEF * Math.pow(diff / self.maxHp, 0.5))
           context.log.log(`わたし、駅を守るのがんばる。 DEF+${def}%`)

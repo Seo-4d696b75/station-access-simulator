@@ -95,7 +95,7 @@ export class Context {
 
 export function assert(value: unknown, message?: string | Error): asserts value {
   if (value) return
-  const e = typeof message === "string" ? Error(message) : message
+  const e = typeof message === "string" ? new SimulatorError(message) : message
   throw e
 }
 
@@ -113,6 +113,21 @@ export function initContext(type: string = "test", seed: string = "test", consol
     Object.assign(seedrandom(seed), { mode: "normal" as RandomMode }),
     "now",
   )
+}
+
+class SimulatorError extends Error {
+  constructor(...args: any[]) {
+    super(...args)
+    this.name = this.constructor.name
+
+    Error.captureStackTrace(this, SimulatorError)
+    const stack = this.stack
+    if (stack) {
+      this.stack = stack.split("\n")
+        .filter((str, idx) => idx !== 1)
+        .join("\n")
+    }
+  }
 }
 
 /**
@@ -170,7 +185,7 @@ export class Logger {
 
   error(message: string): never {
     this.appendMessage(LogTag.ERR, message)
-    throw Error(message)
+    throw new SimulatorError(message)
   }
 
 }

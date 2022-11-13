@@ -111,6 +111,10 @@ export function formatReboot(result: LinksResult, time: number, width: number = 
 
 
 export function formatRebootDetail(result: LinksResult, time: number, width: number = 60): string {
+  if (result.link.length === 0) {
+    // リンク無しの場合は簡易表示のみ
+    return formatReboot(result, time, width)
+  }
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("reboot", "red"), width)
   str += formatLine(`${result.denco.name}がリンクしていた駅のスコアが加算されました`, width)
