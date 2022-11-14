@@ -2734,6 +2734,56 @@
     ]
   },
   {
+    "numbering": "52",
+    "class": "D52_Noa",
+    "type": "always",
+    "ATK": 10,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "カラーオブトレイン Lv.1",
+        "probability": 22
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "カラーオブトレイン Lv.2",
+        "probability": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "カラーオブトレイン Lv.3",
+        "probability": 38
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "カラーオブトレイン Lv.4",
+        "probability": 46
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "カラーオブトレイン Lv.5",
+        "probability": 54
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "カラーオブトレイン Lv.6",
+        "probability": 62
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "個性の美しさ",
+        "probability": 70
+      }
+    ]
+  },
+  {
     "numbering": "58",
     "class": "D58_Marika",
     "type": "manual",
