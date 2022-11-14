@@ -2784,6 +2784,57 @@
     ]
   },
   {
+    "numbering": "53",
+    "class": "D53_Malin",
+    "type": "always",
+    "ATK": 10,
+    "DEF": 10,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "唯我独尊 Lv.1",
+        "probability": 17
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "唯我独尊 Lv.2",
+        "probability": 20
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "唯我独尊 Lv.3",
+        "probability": 23
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "唯我独尊 Lv.4",
+        "probability": 25
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "唯我独尊 Lv.5",
+        "probability": 29
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "唯我独尊 Lv.6",
+        "probability": 32
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "世界はワタシのためにある",
+        "probability": 35
+      }
+    ]
+  },
+  {
     "numbering": "58",
     "class": "D58_Marika",
     "type": "manual",
