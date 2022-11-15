@@ -73,20 +73,6 @@ export class Context {
     return this.clock === "now" ? moment().valueOf() : this.clock
   }
 
-  /**
-   * `getCurrentTime`が返す現在時刻の値で固定する
-   * 
-   * @returns 現在時刻`clock`で固定した新しいcontext 他の状態は同じオブジェクトへの参照を維持する
-   */
-  fixClock(): Context {
-    return new Context(
-      this.log,
-      this.random,
-      this.currentTime,
-      this.scorePredicate,
-    )
-  }
-
   assert(value: unknown, message?: string | Error): asserts value {
     if (value) return
     this.log.error(message?.toString() ?? "assertion failed")
@@ -97,6 +83,32 @@ export function assert(value: unknown, message?: string | Error): asserts value 
   if (value) return
   const e = typeof message === "string" ? new SimulatorError(message) : message
   throw e
+}
+
+
+/**
+ * `currentTime`が返す現在時刻で固定して処理する
+ * 
+ * @param context 対象のcontext
+ * @param block 固定した時刻で処理する
+ */
+export function withFixedClock<R>(context: Context, block: (now: number) => R): R {
+  const clock = context.clock
+  if (clock === "now") {
+    try {
+      const now = context.currentTime
+      context.clock = now
+      return block(now)
+    } catch (e) {
+      // ここではハンドリングしない
+      throw e
+    } finally {
+      // 元に戻す
+      context.clock = clock
+    }
+  } else {
+    return block(clock)
+  }
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Context } from "../context"
+import { Context, withFixedClock } from "../context"
 import { DencoState } from "../denco"
 import { copyState, ReadonlyState } from "../state"
 import { UserState } from "../user"
@@ -15,10 +15,9 @@ import { refreshSkillState } from "./refresh"
  * @param current 現在の状態
  * @returns `active`へ遷移した新しい状態
  */
-export function activateSkill(context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
-  context = context.fixClock()
+export const activateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
   return carIndex.reduce((state, idx) => activateSkillOne(context, state, idx), copyState<UserState>(current))
-}
+})
 
 function activateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
   const d = state.formation[carIndex]
@@ -113,12 +112,11 @@ function activateSkillAndCallback(context: Context, state: UserState, d: DencoSt
  * @param current 現在の状態
  * @returns `cooldown`へ遷移した新しい状態
  */
-export function deactivateSkill(context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
-  context = context.fixClock()
+export const deactivateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
   const state = copyState<UserState>(current)
   carIndex.forEach(idx => deactivateSkillOne(context, state, idx))
   return state
-}
+})
 
 function deactivateSkillOne(context: Context, state: UserState, carIndex: number) {
   const d = state.formation[carIndex]

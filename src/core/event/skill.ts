@@ -1,6 +1,6 @@
 import { SkillTriggerEvent } from "."
 import { AccessDencoResult, AccessUserResult } from "../access"
-import { Context } from "../context"
+import { Context, withFixedClock } from "../context"
 import { Denco, DencoState } from "../denco"
 import { random } from "../random"
 import { ActiveSkill, isSkillActive, ProbabilityPercent, Skill } from "../skill"
@@ -111,8 +111,7 @@ export type EventSkillTrigger = {
  * @param trigger スキル発動の確率計算の方法・発動時の処理方法
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export function triggerSkillAfterAccess(context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, trigger: EventSkillTrigger): AccessUserResult {
-  context = context.fixClock()
+export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, trigger: EventSkillTrigger): AccessUserResult => withFixedClock(context, () => {
   let next = copyState<AccessUserResult>(state)
   if (!isSkillActive(self.skill)) {
     context.log.error(`スキル状態がアクティブでありません ${self.name}`)
@@ -157,7 +156,7 @@ export function triggerSkillAfterAccess(context: Context, state: ReadonlyState<A
   }
   refreshUserState(context, next)
   return next
-}
+})
 
 /**
  * スキルを評価する

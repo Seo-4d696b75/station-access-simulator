@@ -1,4 +1,4 @@
-import { Context } from "../context";
+import { Context, withFixedClock } from "../context";
 import { DencoState } from "../denco";
 import DencoManager from "../dencoManager";
 import { LevelupEvent, refreshEventQueue } from "../event";
@@ -28,12 +28,11 @@ export function refreshState(context: Context, state: ReadonlyState<UserState>):
  * @param context 
  * @param state 
  */
-export function refreshUserState(context: Context, state: UserState) {
-  context = context.fixClock()
+export const refreshUserState = (context: Context, state: UserState) => withFixedClock(context, () => {
   refreshSkillState(context, state)
   refreshEventQueue(context, state)
   refreshEXPState(context, state)
-}
+})
 
 /**
  * 現在の状態の経験値の確認してレベルアップ処理を行う(破壊的)

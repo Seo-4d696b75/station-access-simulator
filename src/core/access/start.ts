@@ -1,6 +1,6 @@
 import moment from "moment-timezone"
 import { AccessDencoState, AccessResult, AccessSide, AccessSideState, AccessState, getAccessDenco, getDefense, hasActiveSkill, hasDefense } from "."
-import { Context } from "../context"
+import { Context, withFixedClock } from "../context"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, ReadonlyState } from "../state"
 import { Station } from "../station"
@@ -41,9 +41,7 @@ export interface AccessConfig {
   usePink?: boolean
 }
 
-export function startAccess(context: Context, config: AccessConfig): AccessResult {
-  context = context.fixClock()
-  const time = context.currentTime
+export const startAccess = (context: Context, config: AccessConfig): AccessResult => withFixedClock(context, (time) => {
   context.log.log(`アクセス処理の開始 ${moment(time).format("YYYY-MM-DD HH:mm:ss.SSS")}`)
 
   var state: AccessState = {
@@ -111,7 +109,7 @@ export function startAccess(context: Context, config: AccessConfig): AccessResul
   context.log.log("アクセス処理の終了")
 
   return completeAccess(context, config, state)
-}
+})
 
 function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessSideState {
   const tmp = copyState<UserState>(f)

@@ -1,3 +1,4 @@
+import assert from "assert"
 import moment from "moment-timezone"
 import { init } from "../.."
 import { getAccessDenco } from "../../core/access/index"
@@ -33,12 +34,11 @@ describe("シャルのスキル", () => {
     expect(entry.type).toBe("hour_cycle")
     entry = state.queue[1]
     expect(entry.type).toBe("skill")
-    if (entry.type === "skill") {
-      // 90分後に発動
-      expect(entry.time).toBe(now + 5400 * 1000)
-      expect(entry.data.denco.name).toBe("charlotte")
-      expect(state.event.length).toBe(0)
-    }
+    assert(entry.type === "skill")
+    // 90分後に発動
+    expect(entry.time).toBe(now + 5400 * 1000)
+    expect(entry.data.denco.name).toBe("charlotte")
+    expect(state.event.length).toBe(0)
 
     // 60分経過
     context.clock = now + 3600 * 1000
@@ -57,21 +57,21 @@ describe("シャルのスキル", () => {
     expect(state.event.length).toBe(2)
     let event = state.event[0]
     expect(event.type).toBe("access")
-    if (event.type === "access") {
-      expect(event.data.access.time).toBe(now)
-      charlotte = copyState<DencoState>(getAccessDenco(event.data.access, "offense"))
-      expect(charlotte.name).toBe("charlotte")
-    }
+    assert(event.type === "access")
+    expect(event.data.access.time).toBe(context.currentTime)
+    charlotte = copyState<DencoState>(getAccessDenco(event.data.access, "offense"))
+    expect(charlotte.name).toBe("charlotte")
+
     event = state.event[1]
     expect(event.type).toBe("skill_trigger")
-    if (event.type === "skill_trigger") {
-      expect(event.data.time).toBe(context.clock)
-      expect(event.data.step).toBe("self")
-      expect(event.data.skillName).toBe(getSkill(charlotte).name)
-      expect(event.data.carIndex).toBe(0)
-      expect(event.data.denco).toMatchDencoState(charlotte)
-      charlotte = state.formation[0]
-      expect(event.data.denco).toMatchDencoState(charlotte)
-    }
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.step).toBe("self")
+    expect(event.data.skillName).toBe(getSkill(charlotte).name)
+    expect(event.data.carIndex).toBe(0)
+    expect(event.data.denco).toMatchDencoState(charlotte)
+    charlotte = state.formation[0]
+    expect(event.data.denco).toMatchDencoState(charlotte)
+
   })
 })
