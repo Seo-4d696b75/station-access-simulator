@@ -1,4 +1,3 @@
-import { isEqual } from "lodash";
 import { SkillHolder } from "..";
 import { DencoState } from "../core/denco";
 import { copyState, ReadonlyState } from "../core/state";
@@ -34,13 +33,17 @@ export function toMatchDencoState(
   // 直接比較するとサブクラスのみ定義されたプロパティの不一致で検証が失敗する場合がある
   const copyReceived = copyDencoState(received)
   const copyExpected = copyDencoState(expected)
-  const pass = isEqual(copyReceived, copyExpected)
-  const message = pass ?
-    "definitely matched as DencoState" :
-    "some properties in DencoState not matched"
-  return {
-    pass: pass,
-    message: () => message,
+  try {
+    expect(copyReceived).toMatchObject(copyExpected)
+    return {
+      pass: true,
+      message: () => "definitely matched as DencoState",
+    }
+  } catch(e: any) {
+    return {
+      pass: false,
+      message: () => String(e)
+    }
   }
 }
 
