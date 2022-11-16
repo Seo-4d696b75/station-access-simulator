@@ -2835,6 +2835,95 @@
     ]
   },
   {
+    "numbering": "54",
+    "class": "D54_Nayori",
+    "type": "always",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "お便りなの♪ Lv.1",
+        "exp_percent": 4,
+        "exp_index": [
+          0,
+          1
+        ]
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "お便りなの♪ Lv.2",
+        "exp_percent": 4,
+        "exp_index": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "お便りなの♪ Lv.3",
+        "exp_percent": 8,
+        "exp_index": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "お便りなの♪ Lv.4",
+        "exp_percent": 8,
+        "exp_index": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "お便りなの♪ Lv.5",
+        "exp_percent": 12,
+        "exp_index": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "お便りなの♪ Lv.6",
+        "exp_percent": 12,
+        "exp_index": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "一枚のミスもない配達",
+        "exp_percent": 16,
+        "exp_index": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      }
+    ]
+  },
+  {
     "numbering": "58",
     "class": "D58_Marika",
     "type": "manual",
