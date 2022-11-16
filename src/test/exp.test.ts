@@ -164,44 +164,44 @@ describe("経験値の処理", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      const state = result.defense
-      // アクセス終了直後（レベルアップ前）
-      expect(state.event.length).toBe(3)
-      let event = state.event[0]
-      expect(event.type).toBe("access")
-      const accessResult = event.data as AccessEventData
-      let afterAccess = getDefense(accessResult.access).formation[0]
-      // リブート
-      event = state.event[1]
-      expect(event.type).toBe("reboot")
-      const links = event.data as LinksResult
-      const linksEXP = links.exp
-      expect(links.denco).toMatchObject({
-        ...reika,
-        link: []  // リンク解除済み
-      })
-      // レベルアップ
-      event = state.event[2]
-      expect(event.type).toBe("levelup")
-      const levelup = event.data as LevelupDenco
-      reika = {
-        ...reika,
-        link: [],
-        currentExp: linksEXP
-      }
-      expect(levelup.before).toMatchObject(reika)
-      expect(afterAccess).toMatchObject(reika)
-      // レベルアップ後の状態
-      let tmp = initUser(context, "someone", [reika])
-      tmp = refreshState(context, tmp)
-      reika = tmp.formation[0]
-      // 最終状態
-      const current = result.defense.formation[0]
-      expect(current.level).toBe(reika.level)
-      expect(current.currentExp).toBe(reika.currentExp)
-      expect(levelup.before.level).toBe(10)
-      expect(current).toMatchObject(levelup.after)
+    assert(result.defense)
+    const state = result.defense
+    // アクセス終了直後（レベルアップ済み）
+    expect(state.event.length).toBe(3)
+    let event = state.event[0]
+    expect(event.type).toBe("access")
+    const accessResult = event.data as AccessEventData
+    let afterAccess = getDefense(accessResult.access).formation[0]
+    // リブート
+    event = state.event[1]
+    expect(event.type).toBe("reboot")
+    const links = event.data as LinksResult
+    const linksEXP = links.exp
+    expect(links.denco).toMatchObject({
+      ...reika,
+      link: []  // リンク解除済み
+    })
+    // レベルアップ
+    event = state.event[2]
+    expect(event.type).toBe("levelup")
+    const levelup = event.data as LevelupDenco
+    reika = {
+      ...reika,
+      link: [],
+      currentExp: linksEXP
     }
+    expect(levelup.before).toMatchObject(reika)
+    // レベルアップ後の状態
+    let tmp = initUser(context, "someone", [reika])
+    tmp = refreshState(context, tmp)
+    reika = tmp.formation[0]
+    expect(afterAccess).toMatchObject(reika)
+    // 最終状態
+    const current = result.defense.formation[0]
+    expect(current.level).toBe(reika.level)
+    expect(current.currentExp).toBe(reika.currentExp)
+    expect(levelup.before.level).toBe(10)
+    expect(current).toMatchObject(levelup.after)
+
   })
 })
