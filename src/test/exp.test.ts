@@ -9,7 +9,7 @@ import { initUser, refreshState } from "../core/user"
 
 describe("経験値の処理", () => {
   beforeAll(init)
-  test("レベルアップ1", () => {
+  test("レベルアップ-基本", () => {
     const context = initContext("test", "test", false)
     const time = moment().valueOf()
     context.clock = time
@@ -55,7 +55,7 @@ describe("経験値の処理", () => {
     expect(data.before).toMatchObject(reika)
     expect(data.after).toMatchObject(current)
   })
-  test("レベルアップ2", () => {
+  test("レベルアップ-スキル状態", () => {
     const context = initContext("test", "test", false)
     const time = moment().valueOf()
     context.clock = time
@@ -105,6 +105,37 @@ describe("経験値の処理", () => {
     expect(data.time).toBe(time.valueOf())
     expect(data.before).toMatchObject(reika)
     expect(data.after).toMatchObject(current)
+  })
+
+  test("レベルアップ-最大レベル", () => {
+    const context = initContext("test", "test", false)
+    const time = moment().valueOf()
+    context.clock = time
+
+    let reika = DencoManager.getDenco(context, "5", 78)
+    expect(reika.level).toBe(78)
+    expect(reika.currentExp).toBe(0)
+    expect(reika.nextExp).toBe(66800)
+    let state = initUser(context, "とあるマスター１", [
+      reika
+    ])
+
+    // 経験値追加
+    reika = state.formation[0]
+    reika.currentExp = 200000
+    state = refreshState(context, state)
+    reika = state.formation[0]
+    expect(reika.level).toBe(80)
+    expect(reika.currentExp).toBe(68000)
+    expect(reika.nextExp).toBe(68000)
+
+    // さらに経験値追加
+    reika.currentExp += 100
+    state = refreshState(context, state)
+    reika = state.formation[0]
+    expect(reika.level).toBe(80)
+    expect(reika.currentExp).toBe(68000)
+    expect(reika.nextExp).toBe(68000)
   })
   test("アクセス-Reboot-レベルアップ", () => {
     const context = initContext("test", "test", false)
