@@ -5,8 +5,8 @@ import { StationLink } from "./station"
 import stationManager from "./stationManager"
 
 interface DencoLevelStatus extends Denco {
-
   readonly level: number
+  readonly maxLevel: boolean
   readonly ap: number
   readonly maxHp: number
   readonly nextExp: number
@@ -34,6 +34,7 @@ class DencoManager {
         throw new SimulatorError(`invalid denco status: AP, HP, EXP size mismatch ${JSON.stringify(e)}`)
       }
       // EXP: level(idx)->level(idx+1)にレベルアップ必要な経験値
+      // 最大レベル時は便宜上、ひとつ前から最大レベルに必要な経験値で固定する
       if (exp[0] !== 0) {
         throw new SimulatorError("EXP array[0] must be 0")
       }
@@ -41,6 +42,7 @@ class DencoManager {
       const status = Array(size).fill(0).map((_, i) => {
         let status: DencoLevelStatus = {
           level: i + 1,
+          maxLevel: (i + 1) === size,
           ap: ap[i],
           maxHp: hp[i],
           nextExp: exp[i],
@@ -70,7 +72,7 @@ class DencoManager {
       stationManager.getRandomLink(context, link) : link
     return {
       ...status,
-      currentExp: 0,
+      currentExp: status.maxLevel ? status.nextExp : 0, // 最大レベル80時は 68000/68000で固定
       currentHp: status.maxHp,
       skill: skill,
       film: {

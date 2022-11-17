@@ -110,7 +110,7 @@ export interface LinksResult {
   /**
    * 経験値合計
    * 
-   * {@link totalScore}を基に計算される  
+   * {@link LinkResult totalScore}を基に計算される  
    * 経験値増加の効果によりスコア値と一致しない場合がある
    */
   readonly exp: number

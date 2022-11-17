@@ -339,7 +339,9 @@ describe("基本的なアクセス処理", () => {
       expect(d.disconnectedLink.which).toBe("defense")
       expect(d.disconnectedLink.time).toBe(result.time)
       //リンク解除済み＆経験値加算前の状態
-      expect(d.disconnectedLink.denco).toMatchDencoState({ ...d, currentExp: 0 })
+      expect(d.disconnectedLink.denco).toMatchDencoState(
+        { ...d, currentExp: 68000 } // 最大レベル80
+      )
     }
     // リンク
     reika = result.offense.formation[0]
@@ -420,7 +422,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.currentHp).toBe(312)
     expect(d.exp.access).toBe(accessScore + 338 + linkSuccessScore)
     expect(d.exp.skill).toBe(0)
-    expect(d.currentExp).toBe(reika.currentExp + accessScore + 338 + linkSuccessScore)
+    expect(d.currentExp).toBe(68000) //　最大レベル
     expect(d.ap).toBe(260)
     expect(d.damage).toBeUndefined()
     // リンク
@@ -469,7 +471,7 @@ describe("基本的なアクセス処理", () => {
       let reikaResult = getTargetDenco(result.offense)
       expect(reikaResult).toMatchObject({
         ...reika,
-        currentExp: reika.currentExp + accessScore + 338 + linkSuccessScore,
+        currentExp: 68000,
         link: [
           {
             ...charlotte.link[0],

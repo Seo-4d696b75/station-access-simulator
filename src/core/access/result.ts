@@ -74,12 +74,13 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   completeDencoEXP(context, result, "offense")
   completeDencoEXP(context, result, "defense")
 
+  // レベルアップ処理
+  checkLevelup(context, result)
+  
   // アクセスイベントを追加
   addAccessEvent(context, config.offense.state, result, "offense")
   addAccessEvent(context, config.defense?.state, result, "defense")
 
-  // レベルアップ処理
-  checkLevelup(context, result)
 
   // アクセス直後のスキル発動イベント
   checkSKillState(context, result)

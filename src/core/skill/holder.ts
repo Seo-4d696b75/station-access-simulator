@@ -38,7 +38,7 @@ export interface Skill extends SkillLogic {
 }
 
 interface SkillHolderBase<T> {
-  type: T
+  readonly type: T
 }
 
 /**
