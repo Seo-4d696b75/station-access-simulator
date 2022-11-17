@@ -231,18 +231,18 @@ export interface AccessState {
   readonly depth: number
 
   /**
-   * `damage_common, damage_special`の段階までにおける被アクセス側の通常ダメージの計算量
+   * `damage_common, damage_special`の段階までにおける被アクセス側の基本ダメージの計算量
    * 
    * `variable + constant`の合計値が計算されたダメージ量として扱われます
    * 
-   * ## 通常ダメージの計算
+   * ## 基本ダメージの計算
    * `damage_common, damage_special`のスキル評価後のタイミングでこのプロパティが
    * `undefined`の場合（まだ計算されていない場合）、次のように計算され値がセットされます  
    * - AP: 攻撃側のAP
    * - ATK,DEF: ダメージ計算時の増減値% {@link attackPercent} {@link defendPercent}  
    * `variable = AP * (100 + ATK - DEF)/100.0 * damageRation, constant = 0`
    * 
-   * ## スキルによる通常ダメージの指定
+   * ## スキルによる基本ダメージの指定
    * `damage_special`の段階において、スキルがこのダメージ計算を代行することができます.  
    * （例）ミオ：ダメージの肩代わり  
    * （例）チコ：相手HPと同量のダメージ量に上書き  
