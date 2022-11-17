@@ -4,7 +4,8 @@ import { DencoState } from "../denco"
 import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "../event"
 import { ReadonlyState } from "../state"
 import { UserState } from "../user"
-import { Skill } from "./holder"
+import { Skill, SkillState } from "./holder"
+import { SkillProperty } from "./property"
 import { SkillActiveTimeout, SkillCooldownTimeout } from "./transition"
 
 /**
@@ -18,9 +19,24 @@ import { SkillActiveTimeout, SkillCooldownTimeout } from "./transition"
 export type ProbabilityPercent = number
 
 /**
- * スキルの発動を評価するときに必要な情報へのアクセス方法を定義
+ * スキルの発動判定・発動処理でスキルの状態・データが必要な場合はここから参照します
  */
-export interface ActiveSkill {
+export type ActiveSkill = SkillState & {
+  /**
+   * スキルレベルや各でんこに依存するデータへアクセスします
+   * 
+   * ### 着用中のフィルム補正があります！
+   * 
+   * ここから読み出す値は次の状態に影響され変化する場合があります
+   * - でんこの保有スキル
+   * - スキルのレベル
+   * - 着用しているフィルムの補正値（number型のみ）
+   */
+  property: SkillProperty
+}
+
+// DencoStateからskillを一旦取り除かないとskill.propertyのdocs参照がごっちゃになる
+export type WithActiveSkill<T extends DencoState> = Omit<T, "skill"> & {
   /**
    * 主体となるでんこの編成内のindex  
    * 0 <= carIndex < formation.length
@@ -28,7 +44,7 @@ export interface ActiveSkill {
   carIndex: number
 
   // skill: SkillHolder だと skill.type === "possess" のチェックが必要で煩雑なのを省略する
-  skill: Skill
+  skill: ActiveSkill
 }
 
 /**
@@ -59,7 +75,7 @@ export interface SkillLogic {
    * - AccessSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  triggerOnAccess?: (context: Context, state: ReadonlyState<AccessState>, step: AccessSkillStep, self: ReadonlyState<AccessDencoState & ActiveSkill>) => void | AccessSkillTriggers
+  triggerOnAccess?: (context: Context, state: ReadonlyState<AccessState>, step: AccessSkillStep, self: ReadonlyState<WithActiveSkill<AccessDencoState>>) => void | AccessSkillTriggers
 
 
   /**
@@ -78,7 +94,7 @@ export interface SkillLogic {
    * - EventSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
    * 
    */
-  triggerOnEvent?: (context: Context, state: ReadonlyState<SkillEventState>, self: ReadonlyState<SkillEventDencoState & ActiveSkill>) => void | EventSkillTrigger
+  triggerOnEvent?: (context: Context, state: ReadonlyState<SkillEventState>, self: ReadonlyState<WithActiveSkill<SkillEventDencoState>>) => void | EventSkillTrigger
 
   /**
    * アクセス処理が完了した直後に呼ばれます
@@ -101,7 +117,7 @@ export interface SkillLogic {
    * @param access **Readonly** 直前のアクセスの状態 
    * @returns 状態を更新する場合は新しい状態を返します
    */
-  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<AccessDencoResult & ActiveSkill>, access: ReadonlyState<AccessResult>) => void | AccessUserResult
+  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<WithActiveSkill<AccessDencoResult>>, access: ReadonlyState<AccessResult>) => void | AccessUserResult
 
   /**
    * スキルを保持するでんこがリブートした直後に呼ばれます
@@ -117,7 +133,7 @@ export interface SkillLogic {
    * ### スキルの影響
    * 未実装
    */
-  onDencoReboot?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  onDencoReboot?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => void | UserState
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`においてアクティブな状態`active`が終了して`cooldown`へ移行する判定の方法を指定する
@@ -129,7 +145,7 @@ export interface SkillLogic {
    * `deactivateAt`を指定しない場合は返値`undefined`と同様に処理する
    * @returns 一定時間の経過で判定する場合はtimeoutを返す
    */
-  deactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => undefined | Omit<SkillActiveTimeout, "activatedAt">
+  deactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => undefined | Omit<SkillActiveTimeout, "activatedAt">
 
   /**
    * スキル状態遷移のタイプ`manual,manual-condition,auto`において`cooldown`が終了して`idle/unable`へ移行する判定の方法を指定する
@@ -139,7 +155,7 @@ export interface SkillLogic {
    * 
    * @returns 返値で指定した時刻以降に`cooldown > unable/idle`へ移行する
    */
-  completeCooldownAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => SkillCooldownTimeout
+  completeCooldownAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => SkillCooldownTimeout
 
   /**
    * スキル状態の遷移タイプ`auto-condition`において`active`状態であるか判定する
@@ -147,7 +163,7 @@ export interface SkillLogic {
    * `auto-condition`タイプでこの関数未定義はエラーとなる
    * @returns trueの場合は`active`状態へ遷移
    */
-  canActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => boolean
+  canActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => boolean
 
   /**
    * スキル状態の遷移タイプ`manual-condition`において`idle <> unable`状態であるか判定する
@@ -155,14 +171,14 @@ export interface SkillLogic {
    * `manual-condition`タイプでこの関数未定義はエラーとなる
    * @returns trueの場合は`idle`状態へ遷移
    */
-  canEnabled?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => boolean
+  canEnabled?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => boolean
 
   /**
    * スキル状態が`active`へ変更された直後の処理をここで行う
    * 
    * スキル状態遷移のタイプ`manual,manual-condition,auto,auto-condition`限定
    */
-  onActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  onActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => void | UserState
 
   /**
    * １時間の時間経過ごとに呼ばれます
@@ -180,7 +196,7 @@ export interface SkillLogic {
    * 現在時刻がスケジュールされた時刻を過ぎていると実際にコールバックされます.  
    * つまりスケジュールされた時刻以降で最初に`refreshState`が呼ばれたタイミングでこの関数が呼ばれます.
    */
-  onHourCycle?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState
+  onHourCycle?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => void | UserState
 
   // TODO コールバックの実装
   // onFormationChanged?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<DencoState & ActiveSkill>) => void | UserState

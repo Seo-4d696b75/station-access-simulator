@@ -2,13 +2,10 @@ import { SimulatorError } from "../context"
 import { ReadonlyState } from "../state"
 import { SkillData } from "./data"
 import { SkillLogic } from "./logic"
-import { SkillProperty } from "./manager"
+import { SkillProperty } from "./property"
 import { SkillTransition } from "./transition"
 
-/**
- * スキルレベルに依存するデータとスキル発動に関するロジックを保有する
- */
-export interface Skill extends SkillLogic {
+export interface SkillState {
   /**
    * スキルレベル 1始まりの整数でカウントする
    */
@@ -24,17 +21,31 @@ export interface Skill extends SkillLogic {
    * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
    */
   transition: SkillTransition
-  /**
-   * スキルレベルや各でんこに依存するデータへのアクセス方法を提供します
-   * @see {@link SkillProperty}
-   */
-  property: SkillProperty
+  
+  // 参照する場所によって読み出す値が違う
+  property: unknown
+
   /**
    * カスタムデータ
    * 
    * スキルの処理に関わる任意のデータを保存できます
    */
   data: SkillData
+}
+
+/**
+ * でんこが保有するスキル
+ */
+export type Skill = SkillState & SkillLogic & {
+  /**
+   * スキルレベルや各でんこに依存するデータへアクセスします
+   * 
+   * ### 注意
+   * ここから読み出す値には着用してるフィルムの補正値が反映されていません  
+   * 
+   * スキルの発動判定・発動時の処理を行うときは必ずコールバックに渡される{@link ActiveSkill}の方から参照してください
+   */
+  property: SkillProperty
 }
 
 interface SkillHolderBase<T> {

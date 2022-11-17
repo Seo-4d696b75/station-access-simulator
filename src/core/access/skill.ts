@@ -1,7 +1,7 @@
 import { Context } from "../context";
 import { Denco } from "../denco";
 import { random } from "../random";
-import { ActiveSkill, isSkillActive, ProbabilityPercent } from "../skill";
+import { isSkillActive, ProbabilityPercent, WithActiveSkill } from "../skill";
 import { copyState, ReadonlyState } from "../state";
 import { AccessDencoState, AccessSide, AccessSideState, AccessSkillStep, AccessState, AccessTriggeredSkill } from "./state";
 import { getDefense } from "./utils";
@@ -135,7 +135,7 @@ export function triggerSkillAt(
   return state
 }
 
-function getTargetRecipes(context: Context, state: AccessState, step: AccessSkillStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, result: void | AccessSkillTriggers): AccessSkillRecipe[] {
+function getTargetRecipes(context: Context, state: AccessState, step: AccessSkillStep, d: ReadonlyState<WithActiveSkill<AccessDencoState>>, result: void | AccessSkillTriggers): AccessSkillRecipe[] {
   if (typeof result === "undefined") return []
   const list = Array.isArray(result) ? result : [result]
   const recipe: AccessSkillRecipe[] = []
@@ -155,7 +155,7 @@ function getTargetRecipes(context: Context, state: AccessState, step: AccessSkil
  * @param d 発動する可能性があるアクティブなスキル
  * @returns 
  */
-function canTriggerSkill(context: Context, state: AccessState, step: AccessSkillStep, d: ReadonlyState<AccessDencoState & ActiveSkill>, trigger: AccessSkillTrigger): AccessSkillRecipe | null {
+function canTriggerSkill(context: Context, state: AccessState, step: AccessSkillStep, d: ReadonlyState<WithActiveSkill<AccessDencoState>>, trigger: AccessSkillTrigger): AccessSkillRecipe | null {
   if (typeof trigger === "function") return trigger
   let percent = Math.min(trigger.probability, 100)
   percent = Math.max(percent, 0)
