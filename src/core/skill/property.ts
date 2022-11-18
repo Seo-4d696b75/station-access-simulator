@@ -83,7 +83,7 @@ export class SkillPropertyReader {
   }
 
   readNumberArray(key: string, defaultValue?: number[]): number[] {
-    return this.readNumberArray(key, defaultValue)
+    return this.base.readNumberArray(key, defaultValue)
       .map(value => this.applyFilm(key, value))
   }
 
