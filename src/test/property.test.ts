@@ -1,6 +1,7 @@
 import { isEqual } from "lodash";
-import { activateSkill, copyState, copyStateTo, DencoManager, getSkill, initContext, initUser, SkillManager } from "..";
+import { activateSkill, copyState, copyStateTo, DencoManager, Film, getSkill, initContext, initUser, SkillManager } from "..";
 import { TypedMap } from "../core/property";
+import { SkillPropertyReader } from "../core/skill/property";
 
 describe("copy, equals, merge of TypedMap", () => {
   test("read", () => {
@@ -35,6 +36,63 @@ describe("copy, equals, merge of TypedMap", () => {
     expect(m3.readNumber("key1")).toBe(1)
     expect(m3.readString("key2")).toBe("string")
     expect(m3.readBoolean("key3")).toBe(true)
+  })
+})
+
+describe("SkillPropertyReader", () => {
+  const p = new Map<string, any>([["key1", 1], ["key2", 2]])
+  const base = new TypedMap(p)
+  const film: Film = {
+    type: "film",
+    theme: "theme",
+    skill: {
+      key1: 1,
+      key3: -2,
+    }
+  }
+  beforeAll(() => {
+    base.putNumber("key1", 10)
+    base.putNumberArray("key3", [1, 2, 3])
+    base.putBoolean("key4", true)
+    base.putString("key5", "string")
+  })
+  test("Film補正あり", () => {
+    const reader = new SkillPropertyReader(base, film)
+    expect(reader.readNumber("key1")).toBe(11)
+    expect(reader.readNumber("key2")).toBe(2)
+    expect(reader.readNumberArray("key3")).toEqual([-1, 0, 1])
+    expect(() => reader.readNumber("key4")).toThrowError()
+    expect(reader.readBoolean("key4")).toBe(true)
+  })
+  test("Film補正なし", () => {
+    const reader = new SkillPropertyReader(base, { type: "none" })
+    expect(reader.readNumber("key1")).toBe(10)
+    expect(reader.readNumber("key2")).toBe(2)
+    expect(reader.readNumberArray("key3")).toEqual([1, 2, 3])
+    expect(() => reader.readNumber("key4")).toThrowError()
+    expect(reader.readBoolean("key4")).toBe(true)
+  })
+  test("copy", () => {
+    const reader1 = new SkillPropertyReader(base, film)
+    const reader2 = copyState(reader1)
+    expect(reader1.film).not.toBe(reader2.film)
+    expect(reader1.film).toEqual(reader2.film)
+    expect(reader1.base).not.toBe(reader2.base)
+    reader2.film!.skill!.key1 = 10
+    expect(reader1.readNumber("key1")).toBe(11)
+    expect(reader2.readNumber("key1")).toBe(20)
+  })
+  test("merge", () => {
+    const reader = new SkillPropertyReader(base, film)
+    const reader1 = copyState(reader)
+    const reader2 = copyState(reader)
+    reader2.film!.skill!.key1 = 10
+    expect(reader1.readNumber("key1")).toBe(11)
+    expect(reader2.readNumber("key1")).toBe(20)
+    copyStateTo(reader2, reader1)
+    expect(reader1.film).not.toBe(reader2.film)
+    expect(reader1.film).toEqual(reader2.film)
+    expect(reader1.readNumber("key1")).toBe(20)
   })
 })
 
