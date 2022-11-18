@@ -1,5 +1,5 @@
 import { Film, FilmHolder } from "../film"
-import { ReadableProperty, TypedMap } from "../property"
+import { ReadableProperty } from "../property"
 
 /**
  * スキルに関する各種データへアクセスするインターフェース  
@@ -59,14 +59,14 @@ export type SkillProperty = ReadableProperty
  * フィルム補正を考慮してスキルデータを読み出す
  */
 export class SkillPropertyReader {
-  constructor(base: TypedMap, film: FilmHolder) {
+  constructor(base: SkillProperty, film: FilmHolder) {
     this.base = base
     if (film.type === "film") {
       this.film = film
     }
   }
 
-  base: TypedMap
+  base: SkillProperty
   film?: Film
 
   readBoolean(key: string, defaultValue?: boolean): boolean {
