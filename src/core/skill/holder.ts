@@ -6,6 +6,10 @@ import { SkillProperty } from "./property"
 import { SkillTransition } from "./transition"
 
 export interface SkillState {
+
+  // SkillHolderとして引数渡す場合に型推論が正しく行えるよう便宜的に追加
+  type: "possess"
+
   /**
    * スキルレベル 1始まりの整数でカウントする
    */
@@ -21,7 +25,7 @@ export interface SkillState {
    * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
    */
   transition: SkillTransition
-  
+
   // 参照する場所によって読み出す値が違う
   property: unknown
 
@@ -48,8 +52,12 @@ export type Skill = SkillState & SkillLogic & {
   property: SkillProperty
 }
 
-interface SkillHolderBase<T> {
-  readonly type: T
+interface SkillNotAcquired {
+  type: "not_acquired"
+}
+
+interface SkillNone {
+  type: "none"
 }
 
 /**
@@ -60,10 +68,7 @@ interface SkillHolderBase<T> {
  * - "not_acquired" : でんこのレベルが低くまだスキルを保有していない
  * - "none" : スキルを保有していない
  */
-export type SkillHolder =
-  SkillHolderBase<"possess"> & Skill |
-  SkillHolderBase<"not_acquired"> |
-  SkillHolderBase<"none">
+export type SkillHolder = Skill | SkillNotAcquired | SkillNone
 
 /**
  * でんこが保持しているスキルを取得します
@@ -71,7 +76,7 @@ export type SkillHolder =
  * @returns 保持しているスキル
  * @throws スキルを保持していない場合
  */
-export function getSkill<S>(denco: { skill: S & SkillHolderBase<"possess"> | SkillHolderBase<"none"> | SkillHolderBase<"not_acquired"> }): S {
+export function getSkill<S extends SkillState | ReadonlyState<SkillState>>(denco: { skill: S | SkillNotAcquired | SkillNone }): S {
   if (denco.skill.type === "possess") {
     return denco.skill
   }
@@ -83,6 +88,6 @@ export function getSkill<S>(denco: { skill: S & SkillHolderBase<"possess"> | Ski
 * @param skill 
 * @returns 
 */
-export function isSkillActive<S extends Skill | ReadonlyState<Skill>>(skill: S & SkillHolderBase<"possess"> | SkillHolderBase<"none"> | SkillHolderBase<"not_acquired">): skill is S & SkillHolderBase<"possess"> {
+export function isSkillActive<S extends SkillState | ReadonlyState<SkillState>>(skill: S | SkillNotAcquired | SkillNone): skill is S {
   return skill.type === "possess" && skill.transition.state === "active"
 }
