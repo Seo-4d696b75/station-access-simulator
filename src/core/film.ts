@@ -51,7 +51,7 @@ export interface Film {
   /**
    * スキル処理で利用される値を増減させます
    */
-  skill: FilmSkillProperty
+  skill?: FilmSkillProperty
 }
 
 /**

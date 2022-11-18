@@ -92,7 +92,7 @@ export class SkillPropertyReader {
   }
 
   applyFilm(key: string, value: number): number {
-    const diff = this.film?.skill[key]
+    const diff = this.film?.skill?.[key]
     if (diff) {
       return value + diff
     } else {
