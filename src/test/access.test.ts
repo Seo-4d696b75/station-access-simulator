@@ -26,6 +26,7 @@ describe("基本的なアクセス処理", () => {
     const onDencoReboot = jest.fn((_, state, self) => undefined)
 
     const skill: Skill = {
+      type: "possess",
       level: 1,
       name: "test-skill",
       transition: {
@@ -48,13 +49,11 @@ describe("基本的なアクセス処理", () => {
       maxHp: 50,
       ap: 10,
       link: StationManager.getRandomLink(context, 1),
-      film: {},
+      film: { type: "none" },
       type: "supporter",
       attr: "flat",
-      skill: {
-        type: "possess",
-        ...skill
-      }
+      skill: skill
+
     }
     let defense = initUser(context, "test-user", [denco])
     let reika = DencoManager.getDenco(context, "5", 50)

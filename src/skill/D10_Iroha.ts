@@ -12,15 +12,7 @@ const skill: SkillLogic = {
     const cnt = self.skill.property.readNumber("links")
     return self.link.length >= cnt
   },
-  deactivateAt: (context, state, self) => {
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000,
-    }
-  },
+  deactivate: "default_timeout",
   onActivated: (context, state, self) => {
     // スキルが有効化した瞬間にスキル発動
     return triggerSkillAtEvent(context, state, self, (state) => {

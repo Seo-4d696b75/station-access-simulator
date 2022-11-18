@@ -111,13 +111,13 @@ describe("型安全なプロパティの読み書き", () => {
       key4: [1, 2, 3],
       key5: ["hoge", "piyo"],
       list: [
-        { skill_level: 1, denco_level: 5, name: "検測開始しま～す♡ Lv.1", active: 1800, wait: 10800, heal: 15, probability: "20%" },
-        { skill_level: 2, denco_level: 15, name: "検測開始しま～す♡ Lv.2", active: 1800, wait: 10800, heal: 25, probability: "25%" },
-        { skill_level: 3, denco_level: 30, name: "検測開始しま～す♡ Lv.3", active: 1800, wait: 10800, heal: 35, probability: "30%" },
-        { skill_level: 4, denco_level: 50, name: "検測開始しま～す♡ Lv.4", active: 1800, wait: 10800, heal: 45, probability: "35%" },
-        { skill_level: 5, denco_level: 60, name: "検測開始しま～す♡ Lv.5", active: 1800, wait: 10800, heal: 55, probability: "40%" },
-        { skill_level: 6, denco_level: 70, name: "検測開始しま～す♡ Lv.6", active: 1800, wait: 10800, heal: 65, probability: "45%" },
-        { skill_level: 7, denco_level: 80, name: "幸せの黄色い検測", active: 1800, wait: 10800, heal: 80, probability: "50%" }
+        { skill_level: 1, denco_level: 5, name: "検測開始しま～す♡ Lv.1", active: 1800, cooldown: 10800, heal: 15, probability: "20%" },
+        { skill_level: 2, denco_level: 15, name: "検測開始しま～す♡ Lv.2", active: 1800, cooldown: 10800, heal: 25, probability: "25%" },
+        { skill_level: 3, denco_level: 30, name: "検測開始しま～す♡ Lv.3", active: 1800, cooldown: 10800, heal: 35, probability: "30%" },
+        { skill_level: 4, denco_level: 50, name: "検測開始しま～す♡ Lv.4", active: 1800, cooldown: 10800, heal: 45, probability: "35%" },
+        { skill_level: 5, denco_level: 60, name: "検測開始しま～す♡ Lv.5", active: 1800, cooldown: 10800, heal: 55, probability: "40%" },
+        { skill_level: 6, denco_level: 70, name: "検測開始しま～す♡ Lv.6", active: 1800, cooldown: 10800, heal: 65, probability: "45%" },
+        { skill_level: 7, denco_level: 80, name: "幸せの黄色い検測", active: 1800, cooldown: 10800, heal: 80, probability: "50%" }
       ]
     },
   ]

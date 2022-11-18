@@ -144,7 +144,7 @@ describe("アサのスキル", () => {
     const spy = jest.spyOn(skill.property, "readNumber").mockImplementation((key, _) => {
       switch (key) {
         case "active": return 0
-        case "wait": return 9000
+        case "cooldown": return 9000
         case "extend": return 620
         default: throw Error()
       }

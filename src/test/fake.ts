@@ -15,7 +15,7 @@ export function getDefPercentDenco(def: number): DencoState {
     nextExp: 100000,
     currentHp: 100,
     maxHp: 100,
-    film: {},
+    film: { type: "none" },
     ap: 100,
     link: [],
     skill: {
@@ -56,7 +56,7 @@ export function getFixedDamageDenco(damage: number): DencoState {
     nextExp: 100000,
     currentHp: 100,
     maxHp: 100,
-    film: {},
+    film: { type: "none" },
     ap: 100,
     link: [],
     skill: {

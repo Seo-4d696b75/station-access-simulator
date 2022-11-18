@@ -17,15 +17,7 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivateAt: (context, state, self) => {
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000
-    }
-  }
+  deactivate: "default_timeout"
 }
 
 export default skill
