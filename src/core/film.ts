@@ -49,6 +49,25 @@ export interface Film {
   expPercent?: number
 
   /**
+   * スキルが`active`状態の時間の増減量 [sec]
+   * 
+   * ### 影響の範囲
+   * 
+   * この値が影響を与えるのは以下の条件をすべて満たす場合のみです
+   * - フィルムを着用したでんこがスキルを保有している
+   * - スキルの状態遷移タイプが`manual, manual-condition, auto`のいずれか
+   * - スキルが`active`な期間が時間で指定される場合
+   * 
+   * 詳しくは{@link SkillLogic deactivate}を参照してください
+   */
+  skillActiveDuration?: number
+
+  /**
+   * スキルが`cooldown`状態の時間の増減量 [sec]
+   */
+  skillCooldownDuration?: number
+
+  /**
    * スキル処理で利用される値を増減させます
    */
   skill?: FilmSkillProperty

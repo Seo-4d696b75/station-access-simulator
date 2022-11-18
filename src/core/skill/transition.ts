@@ -66,6 +66,8 @@ export interface SkillActiveTimeout extends SkillCooldownTimeout {
   activeTimeout: number
 }
 
+export type SkillDeactivateStrategy = "default_timeout" | "self_deactivate"
+
 type ManualSkillTransition =
   SkillTransitionBase<"manual", "idle"> |
   SkillTransitionBase<"manual", "active", SkillActiveTimeout | undefined> |

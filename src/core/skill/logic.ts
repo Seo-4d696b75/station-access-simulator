@@ -6,7 +6,7 @@ import { ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill, SkillState } from "./holder"
 import { SkillProperty } from "./property"
-import { SkillActiveTimeout, SkillCooldownTimeout } from "./transition"
+import { SkillDeactivateStrategy } from "./transition"
 
 /**
 * スキルの発動確率を百分率で表現
@@ -136,26 +136,37 @@ export interface SkillLogic {
   onDencoReboot?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => void | UserState
 
   /**
-   * スキル状態遷移のタイプ`manual,manual-condition,auto`においてアクティブな状態`active`が終了して`cooldown`へ移行する判定の方法を指定する
+   * スキル状態遷移のタイプ`manual,manual-condition,auto`において
+   * アクティブな状態`active`を終了して`cooldown, idle(unable)`へ移行する方法を指定します
    * 
-   * `idle/unable -> active`に状態遷移したタイミングで呼ばれ、返値によって`cooldown`への遷移の基準が変わる  
-   * - undefined: スキル側で適宜状態を変更する
-   * - `SkillActiveTimeout`: 指定した時間経過したら状態を変更する
+   * `idle/unable -> active`に状態遷移したタイミングで参照されます.  
+   * 遷移のタイプ`manual,manual-condition,auto`で `deactivate`が未定義の場合は例外を投げます
    * 
-   * `deactivateAt`を指定しない場合は返値`undefined`と同様に処理する
-   * @returns 一定時間の経過で判定する場合はtimeoutを返す
+   * ### Strategyの種類
+   * 状態遷移の処理方法が変わります
+   * 
+   * - `"default_timeout"`: スキルプロパティから`active,cooldown`状態の時間をそれぞれ読み出します
+   *   - 読み出した時間が経過したら自動で`active => cooldown => idle(unable)`に状態遷移します
+   * - `"self_deactivate"`: スキル自身がスキルを無効化するタイミングを制御します  
+   *   - 関数`deactivateSkill`を必要なタイミングで呼び出す必要があります
+   *   - `cooldown`状態の時間はスキルプロパティから読み出します
+   *     - `deactivateSkill`の呼び出しでスキル状態が`active => cooldown`に遷移したタイミングで読み出します
+   *     - 読み出した時間が経過したら自動で`cooldown => idle(unable)`に状態遷移します
+   * 
+   * ### スキルプロパティからの時間の読み出し
+   * 各keyを指定して関数{@link SkillProperty readNumber}からsec単位で読み出します
+   * - `active`有効状態の時間："active"
+   * - `cooldown`クールダウン状態の時間："cooldown"
+   *  
+   * keyがスキルプロパティに未定義、もしくはデータがnumber型以外の場合は例外を投げます
+   * 
+   * ### フィルム補正
+   * スキルプロパティから読み出す時間の値にはフィルム補正が影響します
+   * 
+   * スキルを保有するでんこが着用中のフィルムに{@link Film skillActiveDuration skillCooldownDuration}
+   * が定義されている場合、スキルプロパティから読み出した各値"active", "cooldown"に補正値が加算されます
    */
-  deactivateAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => undefined | Omit<SkillActiveTimeout, "activatedAt">
-
-  /**
-   * スキル状態遷移のタイプ`manual,manual-condition,auto`において`cooldown`が終了して`idle/unable`へ移行する判定の方法を指定する
-   * 
-   * `deactivateSkill`で`active > cooldown`に状態変化したタイミングで呼ばれる  
-   * ただし、`deactivateAt`で`SkillActiveTimeout`を返した場合はその設定に従うので`completeCooldownAt`は呼ばれない
-   * 
-   * @returns 返値で指定した時刻以降に`cooldown > unable/idle`へ移行する
-   */
-  completeCooldownAt?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => SkillCooldownTimeout
+  deactivate?: SkillDeactivateStrategy
 
   /**
    * スキル状態の遷移タイプ`auto-condition`において`active`状態であるか判定する
