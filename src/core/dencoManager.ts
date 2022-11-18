@@ -75,9 +75,7 @@ class DencoManager {
       currentExp: status.maxLevel ? status.nextExp : 0, // 最大レベル80時は 68000/68000で固定
       currentHp: status.maxHp,
       skill: skill,
-      film: {
-
-      },
+      film: { type: "none" },
       link: linkList,
     }
   }

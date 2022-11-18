@@ -1,4 +1,4 @@
-import { Film } from "./film"
+import { FilmHolder } from "./film"
 import { SkillHolder } from "./skill"
 import { StationLink } from "./station"
 
@@ -39,7 +39,7 @@ export interface DencoState extends Denco {
   ap: number
 
   skill: SkillHolder
-  film: Film
+  film: FilmHolder
 
   link: StationLink[]
 }
