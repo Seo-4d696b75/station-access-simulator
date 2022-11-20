@@ -1,5 +1,6 @@
 import { AccessState, getAccessDenco } from "."
 import { Context } from "../context"
+import { formatPercent } from "../format"
 import { ReadonlyState } from "../state"
 import { updateDencoHP } from "./hp"
 import { calcDamageScoreExp } from "./score"
@@ -82,10 +83,14 @@ export function getBaseDamage(context: Context, state: ReadonlyState<AccessState
 export interface DamageCalcOption {
   /**
    * ATK増減を考慮して計算する default: `true`
+   * 
+   * スキルによるATKの増減・フィルム補正の合計値を利用します
    */
   useATK: boolean
   /**
-   * DEF増減を考慮して計算する default: `false`
+   * DEF増減を考慮して計算する default: `true`
+   * 
+   * スキルによるDEFの増減・フィルム補正の合計値を利用します
    */
   useDEF: boolean
   /**
@@ -147,8 +152,9 @@ export function runAccessDamageCalculation(context: Context, state: AccessState)
     state.damageRatio = 1.0
   }
 
-  // TODO filmによる増減の設定
-  context.log.warn("フィルムによる補正をスキップ")
+  // filmによる増減の設定
+  context.log.log("フィルムによるダメージ計算の補正")
+  applyFilmDamagePercent(context, state)
 
   // ダメージ増減の設定
   context.log.log("スキルを評価：ATK&DEFの増減")
@@ -216,4 +222,17 @@ export function runAccessDamageCalculation(context: Context, state: AccessState)
   context.log.log(`守備の結果 HP: ${defense.hpBefore} > ${defense.hpAfter} reboot:${defense.reboot}`)
 
   return state
+}
+
+function applyFilmDamagePercent(context: Context, state: AccessState) {
+  const offense = getAccessDenco(state, "offense")
+  if (offense.film.type === "film" && offense.film.attackPercent) {
+    state.attackPercent += offense.film.attackPercent
+    context.log.log(`フィルム補正 ${offense.name} ATK${formatPercent(offense.film.attackPercent)}`)
+  }
+  const defense = getAccessDenco(state, "defense")
+  if (defense.film.type === "film" && defense.film.defendPercent) {
+    state.defendPercent += defense.film.defendPercent
+    context.log.log(`フィルム補正 ${defense.name} DEF${formatPercent(defense.film.defendPercent)}`)
+  }
 }

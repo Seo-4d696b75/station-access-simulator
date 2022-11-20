@@ -1,3 +1,4 @@
+import assert from "assert"
 import moment from "moment-timezone"
 import { DencoState, init } from ".."
 import { AccessConfig, getAccessDenco, startAccess } from "../core/access/index"
@@ -252,16 +253,113 @@ describe("基本的なアクセス処理", () => {
     let exp = getAccessDenco(result, "offense").exp
     expect(reikaNow.currentExp).toBe(reika.currentExp + accessScore + 260)
     expect(reikaNow.currentHp).toBe(192)
-    if (result.defense) {
-      let charlotteNow = result.defense.formation[0]
-      expect(charlotteNow.name).toBe("charlotte")
-      expect(charlotteNow.numbering).toBe("6")
-      exp = getAccessDenco(result, "defense").exp
-      expect(charlotteNow.currentExp).toBe(charlotte.currentExp + 0)
-      expect(charlotteNow.currentHp).toBe(64)
-    }
+    assert(result.defense)
+    let charlotteNow = result.defense.formation[0]
+    expect(charlotteNow.name).toBe("charlotte")
+    expect(charlotteNow.numbering).toBe("6")
+    exp = getAccessDenco(result, "defense").exp
+    expect(charlotteNow.currentExp).toBe(charlotte.currentExp + 0)
+    expect(charlotteNow.currentHp).toBe(64)
+
   })
 
+  test("ATK,DEFフィルム補正", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 50)
+    reika.film = {
+      type: "film",
+      theme: "theme",
+      attackPercent: 5,
+      defendPercent: 10,
+    }
+    let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+    charlotte.film = {
+      type: "film",
+      theme: "theme",
+      attackPercent: 15,
+      defendPercent: 20,
+    }
+    const offense = initUser(context, "とあるマスター１", [
+      reika
+    ])
+    const defense = initUser(context, "とあるマスター２", [
+      charlotte
+    ])
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.offense.event.length).toBe(1)
+    // アクセス処理の確認
+    expect(result.pinkMode).toBe(false)
+    expect(result.attackPercent).toBe(5)
+    expect(result.defendPercent).toBe(20)
+    // ダメージ計算確認
+    expect(reika.ap).toBe(200)
+    expect(result.damageBase?.variable).toBe(Math.floor(200 * 0.85 * 1.3))
+    expect(result.damageFixed).toBe(0)
+  })
+  test("基本-経験値フィルム補正あり", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+    reika.film = {
+      type: "film",
+      theme: "theme",
+      expPercent: 10
+    }
+    charlotte.film = {
+      type: "film",
+      theme: "theme",
+      expPercent: 5
+    }
+    const offense = initUser(context, "とあるマスター１", [
+      reika
+    ])
+    const defense = initUser(context, "とあるマスター２", [
+      charlotte
+    ])
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+    }
+    const result = startAccess(context, config)
+    // スコア＆経験値
+    expect(result.offense.score.access).toBe(accessScore + 260)// アクセス＋ダメージ量のスコア
+    expect(result.offense.score.skill).toBe(0)
+    expect(result.offense.score.link).toBe(0)
+    expect(result.offense.displayedScore).toBe(accessScore + 260)
+    expect(result.offense.displayedExp).toBe(Math.floor((accessScore + 260) * 1.1))
+    expect(result.defense?.score.access).toBe(0)
+    expect(result.defense?.score.skill).toBe(0)
+    expect(result.defense?.score.link).toBe(0)
+    expect(result.defense?.displayedScore).toBe(0)
+    expect(result.defense?.displayedExp).toBe(0)
+    // 攻守でんこのアクセス状態
+    let d = getAccessDenco(result, "offense")
+    expect(d.exp.access).toBe(Math.floor((accessScore + 260) * 1.1))
+    expect(d.exp.skill).toBe(0)
+    expect(d.exp.link).toBe(0)
+    d = getAccessDenco(result, "defense")
+    expect(d.exp.access).toBe(0)
+    expect(d.exp.skill).toBe(0)
+    expect(d.exp.link).toBe(0)
+  })
 
   test("守備側あり-フットバースあり", () => {
     const context = initContext("test", "test", false)
@@ -330,33 +428,91 @@ describe("基本的なアクセス処理", () => {
     expect(d.exp.link).toBe(linkScore)
     expect(d.reboot).toBe(false)
     expect(d.disconnectedLink).not.toBeUndefined()
-    if (d.disconnectedLink) {
-      expect(d.disconnectedLink.totalScore).toBe(linkScore) // フットバされたリンク
-      expect(d.disconnectedLink.exp).toBe(linkScore)
-      expect(d.disconnectedLink.link.length).toBe(1)
-      expect(d.disconnectedLink.link[0]).toMatchObject(link)
-      expect(d.disconnectedLink.which).toBe("defense")
-      expect(d.disconnectedLink.time).toBe(result.time)
-      //リンク解除済み＆経験値加算前の状態
-      expect(d.disconnectedLink.denco).toMatchDencoState(
-        { ...d, currentExp: 68000 } // 最大レベル80
-      )
-    }
+    assert(d.disconnectedLink)
+    expect(d.disconnectedLink.totalScore).toBe(linkScore) // フットバされたリンク
+    expect(d.disconnectedLink.exp).toBe(linkScore)
+    expect(d.disconnectedLink.link.length).toBe(1)
+    expect(d.disconnectedLink.link[0]).toMatchObject(link)
+    expect(d.disconnectedLink.which).toBe("defense")
+    expect(d.disconnectedLink.time).toBe(result.time)
+    //リンク解除済み＆経験値加算前の状態
+    expect(d.disconnectedLink.denco).toMatchDencoState(
+      { ...d, currentExp: 68000 } // 最大レベル80
+    )
+
     // リンク
     reika = result.offense.formation[0]
     expect(reika.link.length).toBe(1)
     expect(reika.link[0]).toMatchObject({ ...link, start: now })
     // 最終状態の確認
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      const charlotteResult = getTargetDenco(result.defense)
-      charlotte = defense.formation[0]
-      expect(charlotteResult).toMatchObject({
-        ...charlotte,
-        link: charlotte.link.slice(1),
-        currentExp: charlotte.currentExp + linkScore,
-      })
+    assert(result.defense)
+    const charlotteResult = getTargetDenco(result.defense)
+    charlotte = defense.formation[0]
+    expect(charlotteResult).toMatchObject({
+      ...charlotte,
+      link: charlotte.link.slice(1),
+      currentExp: charlotte.currentExp + linkScore,
+    })
+  })
+  test("フットバース-経験値フィルム補正あり", () => {
+    const context = initContext("test", "test", false)
+    const now = context.currentTime
+    context.clock = now
+
+    let reika = DencoManager.getDenco(context, "5", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+    reika.film = {
+      type: "film",
+      theme: "theme",
+      expPercent: 10
     }
+    charlotte.film = {
+      type: "film",
+      theme: "theme",
+      expPercent: 5
+    }
+    const offense = initUser(context, "とあるマスター１", [
+      reika
+    ])
+    const defense = initUser(context, "とあるマスター２", [
+      charlotte
+    ])
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+      usePink: true,
+    }
+    const result = startAccess(context, config)
+    // スコア＆経験値
+    expect(result.offense.score.access).toBe(accessScore + linkSuccessScore)// アクセス＋リンク成功
+    expect(result.offense.score.skill).toBe(0)
+    expect(result.offense.score.link).toBe(0)
+    expect(result.offense.displayedScore).toBe(accessScore + linkSuccessScore)
+    expect(result.offense.displayedExp).toBe(Math.floor((accessScore + linkSuccessScore) * 1.1))
+    const link = charlotte.link[0]
+    const linkScore = Math.floor((now - link.start) / 100)
+    expect(result.defense?.score.access).toBe(0)
+    expect(result.defense?.score.skill).toBe(0)
+    expect(result.defense?.score.link).toBe(linkScore)
+    expect(result.defense?.displayedScore).toBe(linkScore)
+    expect(result.defense?.displayedExp).toBe(Math.floor(linkScore * 1.05))
+    // 攻守でんこのアクセス状態
+    let d = getAccessDenco(result, "offense")
+    expect(d.exp.access).toBe(Math.floor((accessScore + linkSuccessScore) * 1.1))
+    expect(d.exp.skill).toBe(0)
+    expect(d.exp.link).toBe(0)
+    d = getAccessDenco(result, "defense")
+    expect(d.exp.access).toBe(0)
+    expect(d.exp.skill).toBe(0)
+    expect(d.exp.link).toBe(Math.floor(linkScore * 1.05))
   })
 
   test("守備側あり-スキル発動なし-Rebootあり", () => {
@@ -409,9 +565,10 @@ describe("基本的なアクセス処理", () => {
     expect(result.offense.displayedScore).toBe(accessScore + 338 + linkSuccessScore)
     expect(result.offense.displayedExp).toBe(accessScore + 338 + linkSuccessScore)
     const linkScore = Math.floor((now - link.start) / 100)
-    expect(result.defense?.score.access).toBe(0) // リブートで解除したリンクスコアは含まず
+    expect(result.defense?.score.access).toBe(0)
     expect(result.defense?.score.skill).toBe(0)
-    expect(result.defense?.displayedScore).toBe(linkScore)
+    expect(result.defense?.score.link).toBeGreaterThan(linkScore) // 解除リンク全部
+    expect(result.defense?.displayedScore).toBe(linkScore) // こっちはアクセス駅のリンクのみ
     expect(result.defense?.displayedExp).toBe(linkScore)
     let d = getAccessDenco(result, "offense")
     expect(d.name).toBe("reika")
@@ -458,29 +615,90 @@ describe("基本的なアクセス処理", () => {
     expect(data).toMatchObject(reboot)
     // アクセス後の状態
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      charlotte = defense.formation[0]
-      let charlotteResult = getTargetDenco(result.defense)
-      expect(charlotteResult).toMatchObject({
-        ...charlotte,
-        currentExp: charlotte.currentExp + data.exp, // 解除された全リンクの経験値
-        link: [],
-      })
-      reika = offense.formation[0]
-      let reikaResult = getTargetDenco(result.offense)
-      expect(reikaResult).toMatchObject({
-        ...reika,
-        currentExp: 68000,
-        link: [
-          {
-            ...charlotte.link[0],
-            start: now,
-          }
-        ]
-      })
-    }
+    assert(result.defense)
+    charlotte = defense.formation[0]
+    let charlotteResult = getTargetDenco(result.defense)
+    expect(charlotteResult).toMatchObject({
+      ...charlotte,
+      currentExp: charlotte.currentExp + data.exp, // 解除された全リンクの経験値
+      link: [],
+    })
+    reika = offense.formation[0]
+    let reikaResult = getTargetDenco(result.offense)
+    expect(reikaResult).toMatchObject({
+      ...reika,
+      currentExp: 68000,
+      link: [
+        {
+          ...charlotte.link[0],
+          start: now,
+        }
+      ]
+    })
   })
 
+  test("リブートあり-経験値フィルム補正あり", () => {
+    const context = initContext("test", "test", false)
+    const now = context.currentTime
+    context.clock = now
+
+    let reika = DencoManager.getDenco(context, "5", 80)
+    let charlotte = DencoManager.getDenco(context, "6", 80, 3)
+    reika.film = {
+      type: "film",
+      theme: "theme",
+      expPercent: 10
+    }
+    charlotte.film = {
+      type: "film",
+      theme: "theme",
+      expPercent: 5
+    }
+    const offense = initUser(context, "とあるマスター１", [
+      reika
+    ])
+    const defense = initUser(context, "とあるマスター２", [
+      charlotte
+    ])
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+      usePink: true,
+    }
+    const result = startAccess(context, config)
+    // スコア＆経験値
+    expect(result.damageBase?.variable).toBe(338)
+    expect(result.damageBase?.constant).toBe(0)
+    expect(result.offense.score.access).toBe(accessScore + 338 + linkSuccessScore)// アクセス＋ダメージ量＋リンク成功
+    expect(result.offense.score.skill).toBe(0)
+    expect(result.offense.score.link).toBe(0)
+    expect(result.offense.displayedScore).toBe(accessScore + 338 + linkSuccessScore)
+    expect(result.offense.displayedExp).toBe(Math.floor((accessScore + 338 + linkSuccessScore) * 1.1))
+    const link = charlotte.link[0]
+    const linkScore = Math.floor((now - link.start) / 100)
+    expect(result.defense?.score.access).toBe(0)
+    expect(result.defense?.score.skill).toBe(0)
+    expect(result.defense?.score.link).toBe(getAccessDenco(result, "defense").disconnectedLink!.totalScore)
+    expect(result.defense?.displayedScore).toBe(linkScore) // アクセス駅のリンクのみ
+    expect(result.defense?.displayedExp).toBe(Math.floor(linkScore * 1.05))
+    // 攻守でんこのアクセス状態
+    let d = getAccessDenco(result, "offense")
+    expect(d.exp.access).toBe(Math.floor((accessScore + linkSuccessScore) * 1.1))
+    expect(d.exp.skill).toBe(0)
+    expect(d.exp.link).toBe(0)
+    d = getAccessDenco(result, "defense")
+    expect(d.exp.access).toBe(0)
+    expect(d.exp.skill).toBe(0)
+    expect(d.exp.link).toBe(d.disconnectedLink!.exp)
+    expect(d.disconnectedLink!.exp).toBe(Math.floor(d.disconnectedLink!.totalScore * 1.05))
+  })
 
   test("守備側あり-スキル発動あり-Rebootなし", () => {
     const context = initContext("test", "test", false)
@@ -790,5 +1008,55 @@ describe("基本的なアクセス処理", () => {
     let reikaResult = result.offense.formation[0]
     expect(reikaResult.link.length).toBe(0)
     expect(reikaResult.currentExp).toBe(accessScore + 200 + reboot.exp) // アクセス＋ダメージ＋リンク
+  })
+
+
+  test("ATK,DEFフィルム補正-カウンター攻撃あり", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 50)
+    let sheena = DencoManager.getDenco(context, "7", 50, 3)
+    reika.film = {
+      type: "film",
+      theme: "theme",
+      attackPercent: 5,
+      defendPercent: 10,
+    }
+    sheena.film = {
+      type: "film",
+      theme: "theme",
+      attackPercent: 15,
+      defendPercent: 20,
+    }
+    let offense = initUser(context, "とあるマスター１", [
+      reika
+    ])
+    let defense = initUser(context, "とあるマスター２", [
+      sheena
+    ])
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: sheena.link[0],
+    }
+    context.random.mode = "force"
+    const result = startAccess(context, config)
+    // アクセス処理の確認
+    expect(result.pinkMode).toBe(false)
+    // ダメージ計算確認 最初の攻撃の計算
+    expect(result.attackPercent).toBe(5)
+    expect(result.defendPercent).toBe(20)
+    expect(reika.ap).toBe(200)
+    expect(sheena.ap).toBe(160)
+    expect(result.damageBase?.variable).toBe(Math.floor(200 * 0.85))
+    expect(result.damageFixed).toBe(0)
+    // 最終ダメージ
+    expect(result.defense!.formation[0].damage!.value).toBe(Math.floor(200 * 0.85))
+    expect(result.offense!.formation[0].damage!.value).toBe(Math.floor(160 * 1.05))
   })
 })

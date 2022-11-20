@@ -283,16 +283,24 @@ export interface AccessState {
   /**
    * `damage_common`の段階までに評価されたATK累積値 単位：%
    * 
+   * - ATKを増減するスキル
+   * - AKTのフィルム補正
+   * 
    * ## 利用方法
-   * ATKを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください
+   * ATKを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください  
+   * **値を直接代入すると他スキル・フィルム補正が反映されません！**
    */
   attackPercent: number
 
   /**
    * `damage_common`の段階までに評価されたDEF累積値 単位：%
    * 
+   * - DEFを増減するスキル
+   * - DEFのフィルム補正
+   * 
    * ## 利用方法
-   * DEFを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください
+   * DEFを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください  
+   * **値を直接代入すると他スキル・フィルム補正が反映されません！**
    */
   defendPercent: number
 

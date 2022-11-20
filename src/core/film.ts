@@ -21,7 +21,8 @@ export interface Film {
   /**
    * 与ダメ増減率 [%]
    * 
-   * アクセス時のダメージ計算に使われます 
+   * アクセス時のダメージ計算に使われます. 
+   * 直接アクセスするでんこが着用する場合のみダメージ計算に反映されます
    * {@link AccessState attackPercent}
    */
   attackPercent?: number
@@ -29,7 +30,8 @@ export interface Film {
   /**
    * 被ダメ増減率 [%]
    * 
-   * アクセス時のダメージ計算に使われます 
+   * アクセス時のダメージ計算に使われます. 
+   * 直接アクセスを受けるでんこが着用する場合のみダメージ計算に反映されます
    * {@link AccessState defendPercent}
    */
   defendPercent?: number
