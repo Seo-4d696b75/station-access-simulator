@@ -11,36 +11,53 @@ import { AccessSide, AccessSideState, AccessState } from "./state"
 /**
  * アクセス中に発生したスコア・経験値
  * 
- * この合計値がアクセスによって増加する経験値量になります
+ * この合計値がアクセスによって増加するスコア・経験値量になります
+ * 
+ * ### スコアの計算
+ * スコアは**ユーザー単位で計算されます** {@link AccessSideState score}
+ * 
+ * ### 経験値の計算
+ * **経験値は編成の各でんこ単位で計算されます** {@link AccessDencoState exp}
+ * 
+ * 基本は直接アクセスする・アクセスを受けるでんこのみ経験値を獲得しますが, 
+ * カウンター攻撃やスキルの影響で編成内のでんこに経験値が発生する場合もあります.
  */
 export interface ScoreExpState {
+
+  // TODO ねこぱんの記載
   /**
-   * アクセス中に発生する基本的な経験値
+   * アクセス中に発生する基本的なスコア・経験値
    * 
-   * - アクセス開始時に直接アクセスするでんこに付与する経験値
-   * - アクセス相手に与えたダメージ量に応じて付与する経験値
-   * - リンク成功時に付与する経験値
+   * ### 含まれる値の種類
+   * - アクセス開始時に直接アクセスするでんこに付与するスコア・経験値
+   * - アクセス相手に与えたダメージ量に応じて付与するスコア・経験値
+   * - リンク成功時に付与するスコア・経験値
    * 
-   * **原則として直接アクセスするでんこにのみ発生します**
-   * 
-   * 例外：ダメージ計算を伴うカウンター（シーナなど）ではダメージ量に応じた経験値が入ります
+   * ### 経験値の場合の注意
+   * - 原則として直接アクセスするでんこにのみ発生します
+   *   - 例外：ダメージ計算を伴うカウンター（シーナなど）ではダメージ量に応じた経験値が入ります
+   * - スコアより経験値の方が多い場合があります
+   *   - フィルムの獲得経験値増加の補正
    */
   access: number
   /**
-   * スキルによる付与値
+   * スキルによるスコア・経験値
    * 
-   * 経験値を配布するスキルでは配布対象外となります
+   * **経験値を配布するスキルでは配布対象外となります**
    */
   skill: number
   /**
    * アクセスによって解除されたリンクスコア・経験値
    * 
-   * - リブートした場合は解除されたリンクの経験値合計
-   * - フットバースなどリブートを伴わない場合は解除されたリンクのみの経験値
+   * ### リブートの有無
+   * - リブートした場合は解除されたリンクのスコア・経験値合計
+   * - フットバースなどリブートを伴わない場合は解除されたリンクのみのスコア・経験値
    * 
-   * **原則として直接アクセスを受けるでんこにのみ発生します**
-   * 
-   * 例外：カウンターによりリブートする場合
+   * ### 経験値の場合の注意
+   * - 原則として直接アクセスを受けるでんこにのみ発生します
+   *   - 例外：カウンターによりリブートする場合
+   * - スコアより経験値の方が多い場合があります
+   *   - フィルムの獲得経験値増加の補正
    */
   link: number
 }
@@ -93,21 +110,21 @@ const DEFAULT_SCORE_PREDICATE: ScorePredicate = {
 export function calcAccessScoreExp(context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>): [number, number] {
   const predicate = context.scorePredicate?.calcAccessScore ?? DEFAULT_SCORE_PREDICATE.calcAccessScore
   const score = predicate(context, state, station)
-  return [score, calcScoreToExp(score)]
+  return [score, calcAccessScoreToExp(score, state)]
 }
 
-export function calcDamageScoreExp(context: Context, damage: number): [number, number] {
+export function calcDamageScoreExp(context: Context, state: ReadonlyState<AccessSideState>, damage: number): [number, number] {
   const predicate = context.scorePredicate?.calcDamageScore ?? DEFAULT_SCORE_PREDICATE.calcDamageScore
   // ダメージ量が負数（回復）の場合は一律経験値1を与える
   const score = damage >= 0 ? predicate(context, damage) : 0
-  const exp = damage >= 0 ? calcScoreToExp(score) : 1
+  const exp = damage >= 0 ? calcAccessScoreToExp(score, state) : 1
   return [score, exp]
 }
 
 export function calcLinkScoreExp(context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>): [number, number] {
   const predicate = context.scorePredicate?.calcLinkSuccessScore ?? DEFAULT_SCORE_PREDICATE.calcLinkSuccessScore
   const score = predicate(context, state, access)
-  return [score, calcScoreToExp(score)]
+  return [score, calcAccessScoreToExp(score, state)]
 }
 
 export function calcLinkResult(context: Context, link: StationLink, d: Denco, idx: number): LinkResult {
@@ -161,7 +178,7 @@ export function calcLinksResult(context: Context, links: readonly StationLink[],
   const matchBonus = match.map(link => link.matchBonus).reduce((a, b) => a + b, 0)
   const comboBonus = linkResult.map(link => link.comboBonus).reduce((a, b) => a + b, 0)
   const totalScore = linkScore + matchBonus + comboBonus
-  const exp = calcScoreToExp(totalScore)
+  const exp = calcLinkScoreToExp(totalScore, d)
   const result: LinksResult = {
     time: time,
     denco: copyState(d),
@@ -178,11 +195,30 @@ export function calcLinksResult(context: Context, links: readonly StationLink[],
 }
 
 /**
- * スコア -> 経験値を計算
+ * リンクスコア -> リンク経験値を計算
+ * 
+ * {@link ScoreExpState link}
  * @param score must be >= 0
  * @returns must be >= 0
  */
-export function calcScoreToExp(score: number): number {
-  // TODO 経験値増加の加味
-  return score
+export function calcLinkScoreToExp(score: number, state: ReadonlyState<DencoState>): number {
+  let percent = 100
+  // フィルム補正
+  const film = state.film
+  if (film.type === "film" && film.expPercent) {
+    percent += film.expPercent
+  }
+  return Math.floor(score * percent / 100)
+}
+
+// ScoreExpState.access アクセス開始・ダメージ量・リンク成功
+function calcAccessScoreToExp(score: number, state: ReadonlyState<AccessSideState>): number {
+  let percent = 100
+  // フィルム補正
+  const film = state.formation[state.carIndex].film
+  if (film.type === "film" && film.expPercent) {
+    percent += film.expPercent
+  }
+  // TODO ねこぱん
+  return Math.floor(score * percent / 100)
 }

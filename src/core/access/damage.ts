@@ -195,8 +195,8 @@ export function runAccessDamageCalculation(context: Context, state: AccessState)
     attr: state.damageRatio !== 1.0
   }
   // ダメージ量に応じたスコア＆経験値の追加
-  const [score, exp] = calcDamageScoreExp(context, damage.value)
   const accessDenco = getAccessDenco(state, "offense")
+  const [score, exp] = calcDamageScoreExp(context, state.offense, damage.value)
   accessDenco.exp.access += exp
   state.offense.score.access += score
   context.log.log(`ダメージ量による追加 ${accessDenco.name} score:${score} exp:${exp}`)

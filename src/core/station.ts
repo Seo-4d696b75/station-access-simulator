@@ -107,6 +107,11 @@ export interface LinksResult {
    * 駅とでんこ属性が一致するリンクの数
    */
   readonly matchCnt: number
+
+  // FIXME スコアアップの反映（現状ではリンクスコアアップは対応しない）
+  // スキルによるスコアアップはリンクスコア対象外がほとんど
+  // readonly score: number
+
   /**
    * 経験値合計
    * 
