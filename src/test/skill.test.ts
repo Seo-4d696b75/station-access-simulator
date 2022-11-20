@@ -119,7 +119,21 @@ describe("スキル状態遷移・コールバック", () => {
       expect(() => activateSkill(context, state, 0)).toThrowError("key:cooldown")
 
     })
-    test("activateSkill-deactivate:default_timeout", () => {
+    test("activateSkill-Error(active負数)", () => {
+      const context = initContext("test", "test", false)
+      const denco = init("default_timeout", [["active", -1], ["cooldown", 10]])
+      const state = initUser(context, "test-user", [denco])
+      expect(() => activateSkill(context, state, 0)).toThrowError("スキル時間が負数")
+
+    })
+    test("activateSkill-Error(cooldown負数)", () => {
+      const context = initContext("test", "test", false)
+      const denco = init("default_timeout", [["active", 10], ["cooldown", -2]])
+      const state = initUser(context, "test-user", [denco])
+      expect(() => activateSkill(context, state, 0)).toThrowError("スキル時間が負数")
+
+    })
+    test("activateSkill-default_timeout", () => {
       const context = initContext("test", "test", false)
       const start = context.currentTime
       context.clock = start
@@ -159,6 +173,65 @@ describe("スキル状態遷移・コールバック", () => {
       s = getSkill(state.formation[0])
       expect(s.transition.state).toBe(idleState)
     })
+    test("activateSkill-default_timeout-フィルム補正あり", () => {
+      const context = initContext("test", "test", false)
+      const start = context.currentTime
+      context.clock = start
+
+      let denco = init("default_timeout", [["active", 10], ["cooldown", 10]])
+      denco.film = {
+        type: "film",
+        theme: "theme",
+        skillActiveDuration: 1,
+        skillCooldownDuration: -2
+      }
+      let state = initUser(context, "test-user", [denco])
+      state = activateSkill(context, state, 0)
+      denco = state.formation[0]
+      let s = getSkill(state.formation[0])
+      expect(s.transition.state).toBe("active")
+      expect(s.transition.data).toMatchObject({
+        activatedAt: start,
+        activeTimeout: start + 11000,
+        cooldownTimeout: start + 11000 + 8000,
+      })
+    })
+    test("activateSkill-default_timeout-active:0", () => {
+      const context = initContext("test", "test", false)
+      const start = context.currentTime
+      context.clock = start
+
+      let denco = init("default_timeout", [["active", 0], ["cooldown", 10]])
+      let state = initUser(context, "test-user", [denco])
+      state = activateSkill(context, state, 0)
+      let s = getSkill(state.formation[0])
+      expect(s.transition.state).toBe("cooldown")
+      expect(s.transition.data).toMatchObject({
+        cooldownTimeout: start + 10000,
+      })
+    })
+    test("activateSkill-default_timeout-cooldown:0", () => {
+      const context = initContext("test", "test", false)
+      const start = context.currentTime
+      context.clock = start
+
+      let denco = init("default_timeout", [["active", 10], ["cooldown", 0]])
+      let state = initUser(context, "test-user", [denco])
+      state = activateSkill(context, state, 0)
+      let s = getSkill(state.formation[0])
+      expect(s.transition.state).toBe("active")
+      expect(s.transition.data).toMatchObject({
+        activatedAt: start,
+        activeTimeout: start + 10000,
+        cooldownTimeout: start + 10000
+      })
+
+      context.clock = start + 10000
+      state = refreshState(context, state)
+      s = getSkill(state.formation[0])
+      expect(s.transition.state).toBe(idleState)
+      expect(s.transition.data).toBeUndefined()
+    })
     test("deactivateSkill-ERROR(cooldown未定義)", () => {
 
       const context = initContext("test", "test", false)
@@ -170,6 +243,18 @@ describe("スキル状態遷移・コールバック", () => {
       state = activateSkill(context, state, 0)
 
       expect(() => deactivateSkill(context, state, 0)).toThrowError("key:cooldown")
+    })
+    test("deactivateSkill-ERROR(cooldown負数)", () => {
+
+      const context = initContext("test", "test", false)
+      const now = context.currentTime
+      context.clock = now
+
+      let denco = init("self_deactivate", [["cooldown", -1]])
+      let state = initUser(context, "test-user", [denco])
+      state = activateSkill(context, state, 0)
+
+      expect(() => deactivateSkill(context, state, 0)).toThrowError("スキル時間が負数")
     })
     test("deactivateSkill", () => {
 
@@ -199,6 +284,42 @@ describe("スキル状態遷移・コールバック", () => {
       expect(s.transition.data).toMatchObject({
         cooldownTimeout: now + 10000,
       })
+    })
+    test("deactivateSkill-フィルム補正あり", () => {
+
+      const context = initContext("test", "test", false)
+      const now = context.currentTime
+      context.clock = now
+
+      let denco = init("self_deactivate", [["cooldown", 10]])
+      denco.film = {
+        type: "film",
+        theme: "theme",
+        skillActiveDuration: 1,
+        skillCooldownDuration: -2
+      }
+      let state = initUser(context, "test-user", [denco])
+      state = activateSkill(context, state, 0)
+      state = deactivateSkill(context, state, 0)
+      let s = getSkill(state.formation[0])
+      expect(s.transition.state).toBe("cooldown")
+      expect(s.transition.data).toMatchObject({
+        cooldownTimeout: now + 8000,
+      })
+    })
+    test("deactivateSkill-cooldown:0", () => {
+
+      const context = initContext("test", "test", false)
+      const now = context.currentTime
+      context.clock = now
+
+      let denco = init("self_deactivate", [["cooldown", 0]])
+      let state = initUser(context, "test-user", [denco])
+      state = activateSkill(context, state, 0)
+      state = deactivateSkill(context, state, 0)
+      let s = getSkill(state.formation[0])
+      expect(s.transition.state).toBe(idleState)
+      expect(s.transition.data).toBeUndefined()
     })
   })
 
@@ -242,24 +363,13 @@ describe("スキル状態遷移・コールバック", () => {
       expect(() => initUser(context, "test-user", [denco])).toThrowError("canEnabled が未定義")
     })
 
+    // manualと同じ処理の部分は省略
+
     test("activateSkill-Error(deactivate未定義)", () => {
       const context = initContext("test", "test", false)
       const denco = init(undefined, undefined)
       const state = initUser(context, "test-user", [denco])
       expect(() => activateSkill(context, state, 0)).toThrowError("deactivate: undefined")
-    })
-    test("activateSkill-Error(スキルプロパティにactive未定義)", () => {
-      const context = initContext("test", "test", false)
-      const denco = init("default_timeout", [["cooldown", 10]])
-      const state = initUser(context, "test-user", [denco])
-      expect(() => activateSkill(context, state, 0)).toThrowError("key:active")
-
-    })
-    test("activateSkill-Error(スキルプロパティにcooldown未定義)", () => {
-      const context = initContext("test", "test", false)
-      const denco = init("default_timeout", [["active", 10]])
-      const state = initUser(context, "test-user", [denco])
-      expect(() => activateSkill(context, state, 0)).toThrowError("key:cooldown")
     })
 
     test("activateSkill-deactivate:default_timeout", () => {
@@ -312,18 +422,7 @@ describe("スキル状態遷移・コールバック", () => {
       expect(s.transition.state).toBe("unable")
       expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
     })
-    test("deactivateSkill-ERROR(cooldown未定義)", () => {
 
-      const context = initContext("test", "test", false)
-      const now = context.currentTime
-      context.clock = now
-
-      let denco = init("self_deactivate", undefined)
-      let state = initUser(context, "test-user", [denco])
-      state = activateSkill(context, state, 0)
-
-      expect(() => deactivateSkill(context, state, 0)).toThrowError("key:cooldown")
-    })
     test("deactivateSkill", () => {
 
       const context = initContext("test", "test", false)
@@ -470,7 +569,7 @@ describe("スキル状態遷移・コールバック", () => {
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
     expect(onActivated.mock.calls.length).toBe(0)
-    
+
   })
 
 

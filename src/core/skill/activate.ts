@@ -108,8 +108,23 @@ function getSkillActiveTimeout(context: Context, d: ReadonlyState<DencoState>, s
   switch (strategy) {
     case "default_timeout": {
       const reader = new SkillPropertyReader(skill.property, d.film)
-      const active = reader.readNumber("active")
-      const cooldown = reader.readNumber("cooldown")
+      let active = reader.readNumber("active")
+      context.assert(active >= 0, `スキル時間が負数です active:${active}[sec]`)
+      let cooldown = reader.readNumber("cooldown")
+      context.assert(cooldown >= 0, `スキル時間が負数です cooldown:${cooldown}[sec]`)
+      const film = d.film
+      if (film.type === "film") {
+        if (film.skillActiveDuration) {
+          let next = Math.max(active + film.skillActiveDuration, 0)
+          context.log.log(`スキル時間のフィルム補正 active: ${active} => ${next}[sec]`)
+          active = next
+        }
+        if (film.skillCooldownDuration) {
+          let next = Math.max(cooldown + film.skillCooldownDuration, 0)
+          context.log.log(`スキル時間のフィルム補正 cooldown: ${cooldown} => ${next}[sec]`)
+          cooldown = next
+        }
+      }
       return {
         activatedAt: context.currentTime,
         activeTimeout: context.currentTime + active * 1000,
@@ -172,7 +187,14 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
           context.log.error(`スキル状態の変更方法が不正です denco: ${d.name} deactivate: ${strategy} != 'self_deactivate'`)
         }
         const reader = new SkillPropertyReader(skill.property, d.film)
-        const cooldown = reader.readNumber("cooldown")
+        let cooldown = reader.readNumber("cooldown")
+        context.assert(cooldown >= 0, `スキル時間が負数です cooldown:${cooldown}[sec]`)
+        const film = d.film
+        if (film.type === "film" && film.skillCooldownDuration) {
+          let next = Math.max(cooldown + film.skillCooldownDuration, 0)
+          context.log.log(`スキル時間のフィルム補正 cooldown: ${cooldown} => ${next}[sec]`)
+          cooldown = next
+        }
         const timeout = {
           cooldownTimeout: context.currentTime + cooldown * 1000,
         }
