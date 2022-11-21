@@ -21,7 +21,10 @@ export type ProbabilityPercent = number
 /**
  * スキルの発動判定・発動処理でスキルの状態・データが必要な場合はここから参照します
  */
-export type ActiveSkill = SkillState & {
+export type ActiveSkill = Omit<SkillState, "transition"> & {
+  // SkillLogic自身を参照することは基本ないのでSkillStateのみ
+  // active状態のスキル前提なのでtransitionは除去
+
   /**
    * 
    * ### 着用中のフィルム補正が影響します！
