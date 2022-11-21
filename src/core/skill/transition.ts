@@ -11,7 +11,7 @@
  */
 export type SkillTransitionType =
   "manual" |
-  "manual-condition" |
+  "manual-condition" | // FIXME under score
   "auto" |
   "auto-condition" |
   "always"
@@ -34,7 +34,7 @@ export type SkillTransitionState =
   "cooldown"
 
 interface SkillTransitionBase<Type extends SkillTransitionType, State extends SkillTransitionState, D = undefined> {
-  type: Type,
+  // type: Type,
   state: State,
   data: D,
 }
@@ -91,10 +91,11 @@ type AutoConditionSkillTransition =
 type AlwaysSkillTransition =
   SkillTransitionBase<"always", "active">
 
-export type SkillTransition =
-  SkillTransitionBase<SkillTransitionType, "not_init"> |
-  ManualSkillTransition |
-  ManualConditionSkillTransition |
-  AutoSkillTransition |
-  AutoConditionSkillTransition |
-  AlwaysSkillTransition
+export type SkillTransition<T extends SkillTransitionType> =
+  SkillTransitionBase<T, "not_init"> | (
+    T extends "manual" ? ManualSkillTransition :
+    T extends "manual-condition" ? ManualConditionSkillTransition :
+    T extends "auto" ? AutoSkillTransition :
+    T extends "auto-condition" ? AutoConditionSkillTransition :
+    T extends "always" ? AlwaysSkillTransition : never
+  )
