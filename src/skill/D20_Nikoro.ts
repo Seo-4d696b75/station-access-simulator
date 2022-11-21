@@ -1,6 +1,7 @@
 import { SkillLogic, triggerSkillAfterAccess } from "..";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   onAccessComplete: (context, state, self, access) => {
     const accessExp = self.exp.access // 他スキルによる経験値は対象外
     const linkExp = self.exp.link

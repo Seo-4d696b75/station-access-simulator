@@ -114,19 +114,7 @@ export interface AccessDencoState extends DencoState {
   /**
    * このアクセス時に発生する経験値  
    * 
-   * `access + skill`の合計値が経験値総量
-   * 
-   * - アクセス開始時に付与される経験値
-   * - リンク成功時に付与される経験値
-   * - スキルによる経験値付与
-   * - リブートした場合を除くリンク解除時の経験値付与
-   * 
-   * **アクセスによってリブートしたリンクの経験値は含まない**
-   * 
-   * 通常はアクセス開始時の攻守ふたりのみ経験値が付与されるが、
-   * 反撃・スキルなど編成内他でんこに経験値が付与される場合もある  
-   * そのためスコアと異なり経験値はでんこ毎に計算される
-   * see: {@link AccessState score}
+   * `access + skill + link`の合計値が経験値の総量です
    */
   exp: ScoreExpState
 }
@@ -231,18 +219,18 @@ export interface AccessState {
   readonly depth: number
 
   /**
-   * `damage_common, damage_special`の段階までにおける被アクセス側の通常ダメージの計算量
+   * `damage_common, damage_special`の段階までにおける被アクセス側の基本ダメージの計算量
    * 
    * `variable + constant`の合計値が計算されたダメージ量として扱われます
    * 
-   * ## 通常ダメージの計算
+   * ## 基本ダメージの計算
    * `damage_common, damage_special`のスキル評価後のタイミングでこのプロパティが
    * `undefined`の場合（まだ計算されていない場合）、次のように計算され値がセットされます  
    * - AP: 攻撃側のAP
    * - ATK,DEF: ダメージ計算時の増減値% {@link attackPercent} {@link defendPercent}  
    * `variable = AP * (100 + ATK - DEF)/100.0 * damageRation, constant = 0`
    * 
-   * ## スキルによる通常ダメージの指定
+   * ## スキルによる基本ダメージの指定
    * `damage_special`の段階において、スキルがこのダメージ計算を代行することができます.  
    * （例）ミオ：ダメージの肩代わり  
    * （例）チコ：相手HPと同量のダメージ量に上書き  
@@ -283,16 +271,24 @@ export interface AccessState {
   /**
    * `damage_common`の段階までに評価されたATK累積値 単位：%
    * 
+   * - ATKを増減するスキル
+   * - AKTのフィルム補正
+   * 
    * ## 利用方法
-   * ATKを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください
+   * ATKを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください  
+   * **値を直接代入すると他スキル・フィルム補正が反映されません！**
    */
   attackPercent: number
 
   /**
    * `damage_common`の段階までに評価されたDEF累積値 単位：%
    * 
+   * - DEFを増減するスキル
+   * - DEFのフィルム補正
+   * 
    * ## 利用方法
-   * DEFを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください
+   * DEFを増減させるスキルでは、`damage_common`の段階でこのプロパティに値を加算してください  
+   * **値を直接代入すると他スキル・フィルム補正が反映されません！**
    */
   defendPercent: number
 

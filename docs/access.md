@@ -96,7 +96,7 @@ Overviewで説明した３つのStepを詳説します
 4. ダメージ計算後の処理
 5. アクセス結果の確定
 
-<img src="https://user-images.githubusercontent.com/25225028/201470034-eba71242-0bf6-4322-abca-ac8bb0e265b3.png" width="800">
+<img src="https://user-images.githubusercontent.com/25225028/202895210-55ce0f06-83c8-4f1d-92d0-5c4ba0db577a.png" width="800">
 
 #### ダメージ計算の方法
 ダメージ計算に関わるスキル処理を行いながらダメージを計算し、でんこのHPとリブートの有無を決定します.

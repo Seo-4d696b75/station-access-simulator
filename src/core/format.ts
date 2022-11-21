@@ -9,6 +9,20 @@ import { ReadonlyState } from "./state"
 import { LinksResult, Station, StationLink } from "./station"
 import { UserState } from "./user"
 
+const percentFormatter = new Intl.NumberFormat(
+  "default",
+  {
+    style: "percent",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    signDisplay: "always",
+  }
+)
+
+export function formatPercent(percent: number): string {
+  return percentFormatter.format(percent / 100)
+}
+
 export function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
   if (!user) return
   user.event.forEach(event => {

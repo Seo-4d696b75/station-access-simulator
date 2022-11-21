@@ -1,6 +1,8 @@
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "probability_check") {
       return (state) => {
@@ -19,15 +21,6 @@ const skill: SkillLogic = {
       const boost = self.skill.property.readNumber("boost")
       context.log.log(`テンション上げていこう↑↑ boost:${boost}%`)
       state.probabilityBoostPercent += boost
-    }
-  },
-  deactivateAt(context, state, self) {
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000,
     }
   },
 }

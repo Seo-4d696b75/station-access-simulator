@@ -1,3 +1,4 @@
+import assert from "assert"
 import moment from "moment-timezone"
 import { activateSkill, changeFormation, deactivateSkill, getSkill, init, initContext, initUser, isSkillActive, refreshState } from "../.."
 import DencoManager from "../../core/dencoManager"
@@ -19,7 +20,7 @@ describe("アサのスキル", () => {
     asa = state.formation[0]
     expect(asa.name).toBe("asa")
     let skill = getSkill(asa)
-    expect(skill.transition.type).toBe("manual-condition")
+    expect(skill.transitionType).toBe("manual-condition")
     expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
@@ -66,13 +67,13 @@ describe("アサのスキル", () => {
     asa = state.formation[0]
     skill = getSkill(asa)
     // 即座にcooldown
-    expect(skill.transition.state).toBe("cooldown")
-    expect(skill.transition.type).toBe("manual-condition")
-    expect(skill.transition.data).not.toBeUndefined()
-    if (skill.transition.state === "cooldown" && skill.transition.type === "manual-condition" && skill.transition.data) {
-      let data = skill.transition.data
-      expect(data.cooldownTimeout).toBe(now + SKILL_COOLDOWN_TIME * 1000)
-    }
+    assert(skill.transition.state === "cooldown")
+    assert(skill.transitionType === "manual-condition")
+    assert(skill.transition.data)
+
+    let data = skill.transition.data
+    expect(data.cooldownTimeout).toBe(now + SKILL_COOLDOWN_TIME * 1000)
+
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
     // CoolDown終わり
@@ -103,7 +104,7 @@ describe("アサのスキル", () => {
     // reika 900 + 5400 sec
     skill = getSkill(state.formation[1])
     expect(skill.transition.state).toBe("active")
-    expect(skill.transition.type).toBe("manual")
+    expect(skill.transitionType).toBe("manual")
     expect(skill.transition.data).not.toBeUndefined()
     expect(skill.transition.data).toMatchObject({
       activatedAt: now,
@@ -114,7 +115,7 @@ describe("アサのスキル", () => {
     // fubu 1800 + 7200 sec
     skill = getSkill(state.formation[2])
     expect(skill.transition.state).toBe("active")
-    expect(skill.transition.type).toBe("manual")
+    expect(skill.transitionType).toBe("manual")
     expect(skill.transition.data).not.toBeUndefined()
     expect(skill.transition.data).toMatchObject({
       activatedAt: now,
@@ -144,7 +145,7 @@ describe("アサのスキル", () => {
     const spy = jest.spyOn(skill.property, "readNumber").mockImplementation((key, _) => {
       switch (key) {
         case "active": return 0
-        case "wait": return 9000
+        case "cooldown": return 9000
         case "extend": return 620
         default: throw Error()
       }
@@ -154,7 +155,7 @@ describe("アサのスキル", () => {
     // reika 900 + 5400 sec
     skill = getSkill(state.formation[1])
     expect(skill.transition.state).toBe("active")
-    expect(skill.transition.type).toBe("manual")
+    expect(skill.transitionType).toBe("manual")
     expect(skill.transition.data).not.toBeUndefined()
     expect(skill.transition.data).toMatchObject({
       activatedAt: now,

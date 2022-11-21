@@ -1,3 +1,4 @@
+import assert from "assert"
 import moment from "moment-timezone"
 import { activateSkill, deactivateSkill, getSkill, initContext, initUser, refreshState } from ".."
 import DencoManager from "../core/dencoManager"
@@ -21,20 +22,20 @@ export function testManualSkill(option: ManualSkillTestOption) {
     denco = defense.formation[0]
     expect(denco.name).toBe(option.name)
     let skill = getSkill(denco)
-    expect(skill.transition.type).toBe("manual")
+    expect(skill.transitionType).toBe("manual")
     expect(skill.transition.state).toBe("idle")
     expect(() => deactivateSkill(context, defense, 0)).toThrowError()
     defense = activateSkill(context, defense, 0)
     denco = defense.formation[0]
     skill = getSkill(denco)
-    expect(skill.transition.state).toBe("active")
-    expect(skill.transition.type).toBe("manual")
-    expect(skill.transition.data).not.toBeUndefined()
-    if (skill.transition.state === "active" && skill.transition.type === "manual" && skill.transition.data) {
-      let data = skill.transition.data
-      expect(data.activeTimeout).toBe(now + option.active * 1000)
-      expect(data.cooldownTimeout).toBe(now + option.active * 1000 + option.cooldown * 1000)
-    }
+    assert(skill.transition.state === "active")
+    assert(skill.transitionType === "manual")
+    assert(skill.transition.data)
+
+    let data = skill.transition.data
+    expect(data.activeTimeout).toBe(now + option.active * 1000)
+    expect(data.cooldownTimeout).toBe(now + option.active * 1000 + option.cooldown * 1000)
+
     expect(() => deactivateSkill(context, defense, 0)).toThrowError()
 
     // まだアクティブ
@@ -49,12 +50,12 @@ export function testManualSkill(option: ManualSkillTestOption) {
     defense = refreshState(context, defense)
     denco = defense.formation[0]
     skill = getSkill(denco)
-    expect(skill.transition.state).toBe("cooldown")
-    expect(skill.transition.type).toBe("manual")
-    if (skill.transition.state === "cooldown" && skill.transition.type === "manual") {
-      let timeout = skill.transition.data
-      expect(timeout.cooldownTimeout).toBe(now + (option.active + option.cooldown) * 1000)
-    }
+    assert(skill.transition.state === "cooldown")
+    assert(skill.transitionType === "manual")
+
+    let timeout = skill.transition.data
+    expect(timeout.cooldownTimeout).toBe(now + (option.active + option.cooldown) * 1000)
+
 
     // CoolDown終わり
     context.clock = now + (option.active + option.cooldown) * 1000
@@ -90,7 +91,7 @@ export function testAlwaysSkill(option: AlwaysSkillTestOption) {
       state = refreshState(context, state)
       denco = state.formation[0]
       let skill = getSkill(denco)
-      expect(skill.transition.type).toBe("always")
+      expect(skill.transitionType).toBe("always")
       expect(skill.transition.state).toBe("active")
 
       expect(() => activateSkill(context, state, 0)).toThrowError()

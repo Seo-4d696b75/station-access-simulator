@@ -17,7 +17,7 @@ describe("もえのスキル", () => {
     moe = state.formation[0]
     let skill = getSkill(moe)
     expect(skill.transition.state).toBe("unable")
-    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transitionType).toBe("auto-condition")
     expect(() => activateSkill(context, state, 0)).toThrowError()
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
   })

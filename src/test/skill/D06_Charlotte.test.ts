@@ -22,7 +22,7 @@ describe("シャルのスキル", () => {
     let state = initUser(context, "とあるマスター", [charlotte])
     charlotte = state.formation[0]
     let skill = getSkill(charlotte)
-    expect(skill.transition.type).toBe("manual")
+    expect(skill.transitionType).toBe("manual")
     expect(skill.transition.state).toBe("idle")
     state = activateSkill(context, state, 0)
     charlotte = state.formation[0]

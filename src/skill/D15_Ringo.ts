@@ -2,6 +2,7 @@ import moment from "moment-timezone";
 import { SkillLogic } from "..";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && state.defense) {
       const hour = moment(context.currentTime).hour()

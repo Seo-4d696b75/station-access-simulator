@@ -2,6 +2,7 @@ import { getDefense } from "../core/access/index";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "before_access" && self.who === "offense" && state.defense && !state.pinkMode) {
       const all = [

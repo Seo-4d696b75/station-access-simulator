@@ -2,6 +2,7 @@ import { getAccessDenco } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.which === "defense") {
       const targetIdx = self.carIndex === 0 ? 1 : 0

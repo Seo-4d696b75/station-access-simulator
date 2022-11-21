@@ -2,6 +2,7 @@ import { getBaseDamage } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "defense" && self.hpBefore === self.maxHp) {
       return {

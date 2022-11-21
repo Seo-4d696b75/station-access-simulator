@@ -1,6 +1,8 @@
 import { SkillLogic } from "..";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common"
       && self.who === "offense"
@@ -18,15 +20,6 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivateAt: (context, state, self) => {
-    const now = context.currentTime
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000
-    }
-  }
 }
 
 export default skill

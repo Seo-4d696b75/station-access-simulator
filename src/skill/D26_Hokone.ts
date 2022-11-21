@@ -2,6 +2,8 @@ import { calcAccessDamage, getAccessDenco } from "../core/access/index";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (self.who === "offense" && state.defense) {
       const defense = getAccessDenco(state, "defense")
@@ -25,15 +27,6 @@ const skill: SkillLogic = {
           context.log.log(`今日も愛するうららちゃんをひとりじめするため、野暮な連中をふっ飛ばすわよ! ATK+${atk}%`)
         }
       }
-    }
-  },
-  deactivateAt: (context, state, self) => {
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000,
     }
   },
 }

@@ -98,14 +98,14 @@ function refreshExpLevelOne(context: Context, denco: ReadonlyState<DencoState>):
       if (d.skill.type === "possess"
         && nextSkill.type === "possess"
         && d.skill.level !== nextSkill.level) {
-        d.skill = {
-          ...nextSkill,
-          // 現在のスキル状態 transition.* はそのまま
-          // 有効時間などは前スキルで決定されたデータのまま
-          transition: d.skill.transition,
-          // custom-propertyは変更しない
-          data: d.skill.data
-        }
+        const currentSkill = d.skill
+        assert(currentSkill.transitionType === nextSkill.transitionType)
+        // 現在のスキル状態 transition.* はそのまま
+        // 有効時間などは前スキルで決定されたデータのまま
+        nextSkill.transition = currentSkill.transition
+        // custom-propertyは変更しない
+        nextSkill.data = currentSkill.data
+        d.skill = nextSkill
       }
       if (status.maxLevel) break
     } else {

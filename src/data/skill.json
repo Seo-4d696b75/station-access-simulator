@@ -1,21 +1,5 @@
 [
   {
-    "numbering": "0",
-    "class": "D00_Nozomi",
-    "type": "manual",
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 1,
-        "name": "目指せステーションマスター♪",
-        "ATK": 50,
-        "DEF": 50,
-        "active": 1200,
-        "wait": 1800
-      }
-    ]
-  },
-  {
     "numbering": "1",
     "class": "D01_Seria",
     "type": "manual",
@@ -25,7 +9,7 @@
         "denco_level": 5,
         "name": "検測開始しま～す♡ Lv.1",
         "active": 1800,
-        "wait": 10800,
+        "cooldown": 10800,
         "heal": 15,
         "probability": 20
       },
@@ -34,7 +18,7 @@
         "denco_level": 15,
         "name": "検測開始しま～す♡ Lv.2",
         "active": 1800,
-        "wait": 10800,
+        "cooldown": 10800,
         "heal": 25,
         "probability": 25
       },
@@ -43,7 +27,7 @@
         "denco_level": 30,
         "name": "検測開始しま～す♡ Lv.3",
         "active": 1800,
-        "wait": 10800,
+        "cooldown": 10800,
         "heal": 35,
         "probability": 30
       },
@@ -52,7 +36,7 @@
         "denco_level": 50,
         "name": "検測開始しま～す♡ Lv.4",
         "active": 1800,
-        "wait": 10800,
+        "cooldown": 10800,
         "heal": 45,
         "probability": 35
       },
@@ -61,7 +45,7 @@
         "denco_level": 60,
         "name": "検測開始しま～す♡ Lv.5",
         "active": 1800,
-        "wait": 10800,
+        "cooldown": 10800,
         "heal": 55,
         "probability": 40
       },
@@ -70,7 +54,7 @@
         "denco_level": 70,
         "name": "検測開始しま～す♡ Lv.6",
         "active": 1800,
-        "wait": 10800,
+        "cooldown": 10800,
         "heal": 65,
         "probability": 45
       },
@@ -79,7 +63,7 @@
         "denco_level": 80,
         "name": "幸せの黄色い検測",
         "active": 1800,
-        "wait": 10800,
+        "cooldown": 10800,
         "heal": 80,
         "probability": 50
       }
@@ -251,7 +235,7 @@
         "name": "起動加速度向上 Lv.1",
         "ATK": 10,
         "active": 900,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 2,
@@ -259,7 +243,7 @@
         "name": "起動加速度向上 Lv.2",
         "ATK": 15,
         "active": 900,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 3,
@@ -267,7 +251,7 @@
         "name": "起動加速度向上 Lv.3",
         "ATK": 20,
         "active": 900,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 4,
@@ -275,7 +259,7 @@
         "name": "起動加速度向上 Lv.4",
         "ATK": 25,
         "active": 900,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 5,
@@ -283,7 +267,7 @@
         "name": "起動加速度向上 Lv.5",
         "ATK": 30,
         "active": 900,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 6,
@@ -291,7 +275,7 @@
         "name": "起動加速度向上 Lv.6",
         "ATK": 35,
         "active": 900,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 7,
@@ -299,7 +283,7 @@
         "name": "大起動加速度向上薬注入",
         "ATK": 45,
         "active": 900,
-        "wait": 5400
+        "cooldown": 5400
       }
     ]
   },
@@ -314,7 +298,7 @@
         "name": "きまぐれアクセス Lv.1",
         "timer": 21600,
         "active": 0,
-        "wait": 21600
+        "cooldown": 21600
       },
       {
         "skill_level": 2,
@@ -322,7 +306,7 @@
         "name": "きまぐれアクセス Lv.2",
         "timer": 19800,
         "active": 0,
-        "wait": 19800
+        "cooldown": 19800
       },
       {
         "skill_level": 3,
@@ -330,7 +314,7 @@
         "name": "きまぐれアクセス Lv.3",
         "timer": 16200,
         "active": 0,
-        "wait": 16200
+        "cooldown": 16200
       },
       {
         "skill_level": 4,
@@ -338,7 +322,7 @@
         "name": "きまぐれアクセス Lv.4",
         "timer": 10800,
         "active": 0,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 5,
@@ -346,7 +330,7 @@
         "name": "きまぐれアクセス Lv.5",
         "timer": 9000,
         "active": 0,
-        "wait": 9000
+        "cooldown": 9000
       },
       {
         "skill_level": 6,
@@ -354,7 +338,7 @@
         "name": "きまぐれアクセス Lv.6",
         "timer": 7200,
         "active": 0,
-        "wait": 7200
+        "cooldown": 7200
       },
       {
         "skill_level": 7,
@@ -362,7 +346,7 @@
         "name": "風の吹くまま気の向くまま",
         "timer": 5400,
         "active": 0,
-        "wait": 5400
+        "cooldown": 5400
       }
     ]
   },
@@ -474,7 +458,7 @@
         "denco_level": 5,
         "name": "リプレイスメント Lv.1",
         "active": 0,
-        "wait": 12600,
+        "cooldown": 12600,
         "links": 2
       },
       {
@@ -482,7 +466,7 @@
         "denco_level": 15,
         "name": "リプレイスメント Lv.2",
         "active": 0,
-        "wait": 10800,
+        "cooldown": 10800,
         "links": 2
       },
       {
@@ -490,7 +474,7 @@
         "denco_level": 30,
         "name": "リプレイスメント Lv.3",
         "active": 0,
-        "wait": 9000,
+        "cooldown": 9000,
         "links": 2
       },
       {
@@ -498,7 +482,7 @@
         "denco_level": 50,
         "name": "リプレイスメント Lv.4",
         "active": 0,
-        "wait": 7200,
+        "cooldown": 7200,
         "links": 2
       },
       {
@@ -506,7 +490,7 @@
         "denco_level": 60,
         "name": "リプレイスメント Lv.5",
         "active": 0,
-        "wait": 5400,
+        "cooldown": 5400,
         "links": 2
       },
       {
@@ -514,7 +498,7 @@
         "denco_level": 70,
         "name": "リプレイスメント Lv.6",
         "active": 0,
-        "wait": 3600,
+        "cooldown": 3600,
         "links": 2
       },
       {
@@ -522,7 +506,7 @@
         "denco_level": 80,
         "name": "ディストリビューション",
         "active": 0,
-        "wait": 1800,
+        "cooldown": 1800,
         "links": 2
       }
     ]
@@ -642,7 +626,7 @@
         "denco_level": 5,
         "name": "根性入れてやるかー Lv.1",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "DEF": 4
       },
       {
@@ -650,7 +634,7 @@
         "denco_level": 15,
         "name": "根性入れてやるかー Lv.2",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "DEF": 9
       },
       {
@@ -658,7 +642,7 @@
         "denco_level": 30,
         "name": "根性入れてやるかー Lv.3",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "DEF": 14
       },
       {
@@ -666,7 +650,7 @@
         "denco_level": 50,
         "name": "根性入れてやるかー Lv.4",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "DEF": 19
       },
       {
@@ -674,7 +658,7 @@
         "denco_level": 60,
         "name": "根性入れてやるかー Lv.5",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "DEF": 24
       },
       {
@@ -682,7 +666,7 @@
         "denco_level": 70,
         "name": "根性入れてやるかー Lv.6",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "DEF": 29
       },
       {
@@ -690,7 +674,7 @@
         "denco_level": 80,
         "name": "まだまだこんなもんじゃないゾー",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "DEF": 35
       }
     ]
@@ -748,70 +732,6 @@
         "name": "太陽の輝きはりんごのために",
         "ATK": 38,
         "DEF": -30
-      }
-    ]
-  },
-  {
-    "numbering": "16",
-    "class": "D16_Nyash",
-    "type": "always",
-    "step": {},
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 5,
-        "name": "友だち一杯つくるのニャ Lv.1",
-        "add": 2
-      },
-      {
-        "skill_level": 2,
-        "denco_level": 15,
-        "name": "友だち一杯つくるのニャ Lv.2",
-        "add": 4
-      },
-      {
-        "skill_level": 3,
-        "denco_level": 30,
-        "name": "友だち一杯つくるのニャ Lv.3",
-        "add": 6
-      },
-      {
-        "skill_level": 4,
-        "denco_level": 50,
-        "name": "友だち一杯つくるのニャ Lv.4",
-        "add": 8
-      },
-      {
-        "skill_level": 5,
-        "denco_level": 60,
-        "name": "友だち一杯つくるのニャ Lv.5",
-        "add": 10
-      },
-      {
-        "skill_level": 6,
-        "denco_level": 70,
-        "name": "友だち一杯つくるのニャ Lv.6",
-        "add": 12
-      },
-      {
-        "skill_level": 7,
-        "denco_level": 80,
-        "name": "友愛の轍",
-        "add": 15
-      }
-    ]
-  },
-  {
-    "numbering": "17",
-    "class": "D17_Dachu",
-    "type": "always",
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 10,
-        "name": "どいてもらうでチュー",
-        "probability": 75,
-        "footbath": 1
       }
     ]
   },
@@ -874,7 +794,7 @@
         "denco_level": 5,
         "name": "紫電一閃 Lv.1",
         "active": 900,
-        "wait": 3600,
+        "cooldown": 3600,
         "ATK": 20
       },
       {
@@ -882,7 +802,7 @@
         "denco_level": 15,
         "name": "紫電一閃 Lv.2",
         "active": 900,
-        "wait": 3600,
+        "cooldown": 3600,
         "ATK": 25
       },
       {
@@ -890,7 +810,7 @@
         "denco_level": 30,
         "name": "紫電一閃 Lv.3",
         "active": 900,
-        "wait": 3600,
+        "cooldown": 3600,
         "ATK": 30
       },
       {
@@ -898,7 +818,7 @@
         "denco_level": 50,
         "name": "紫電一閃 Lv.4",
         "active": 900,
-        "wait": 3600,
+        "cooldown": 3600,
         "ATK": 35
       },
       {
@@ -906,7 +826,7 @@
         "denco_level": 60,
         "name": "紫電一閃 Lv.5",
         "active": 900,
-        "wait": 3600,
+        "cooldown": 3600,
         "ATK": 40
       },
       {
@@ -914,7 +834,7 @@
         "denco_level": 70,
         "name": "紫電一閃 Lv.6",
         "active": 900,
-        "wait": 3600,
+        "cooldown": 3600,
         "ATK": 45
       },
       {
@@ -922,7 +842,7 @@
         "denco_level": 80,
         "name": "画竜点睛",
         "active": 900,
-        "wait": 3600,
+        "cooldown": 3600,
         "ATK": 50
       }
     ]
@@ -1071,49 +991,49 @@
         "denco_level": 5,
         "name": "こけおどし Lv.1",
         "active": 600,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 2,
         "denco_level": 15,
         "name": "こけおどし Lv.2",
         "active": 900,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 3,
         "denco_level": 30,
         "name": "こけおどし Lv.3",
         "active": 1200,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 4,
         "denco_level": 50,
         "name": "こけおどし Lv.4",
         "active": 1500,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 5,
         "denco_level": 60,
         "name": "こけおどし Lv.5",
         "active": 1800,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 6,
         "denco_level": 70,
         "name": "こけおどし Lv.6",
         "active": 2100,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 7,
         "denco_level": 80,
         "name": "はったりかましまくり",
         "active": 2400,
-        "wait": 5400
+        "cooldown": 5400
       }
     ]
   },
@@ -1185,7 +1105,7 @@
     "class": "D24_Beatrice",
     "type": "manual",
     "DEF": 75,
-    "wait": 3600,
+    "cooldown": 3600,
     "list": [
       {
         "skill_level": 1,
@@ -1236,7 +1156,7 @@
     "class": "D25_Urara",
     "type": "manual-condition",
     "active": 0,
-    "wait": 7200,
+    "cooldown": 7200,
     "list": [
       {
         "skill_level": 1,
@@ -1287,7 +1207,7 @@
     "class": "D26_Hokone",
     "type": "manual",
     "active": 1200,
-    "wait": 7200,
+    "cooldown": 7200,
     "heal": 40,
     "list": [
       {
@@ -1394,7 +1314,7 @@
         "name": "データアクセラレーター Lv.1",
         "ATK": 55,
         "active": 600,
-        "wait": 7200
+        "cooldown": 7200
       },
       {
         "skill_level": 2,
@@ -1402,7 +1322,7 @@
         "name": "データアクセラレーター Lv.2",
         "ATK": 55,
         "active": 900,
-        "wait": 7200
+        "cooldown": 7200
       },
       {
         "skill_level": 3,
@@ -1410,7 +1330,7 @@
         "name": "データアクセラレーター Lv.3",
         "ATK": 55,
         "active": 1200,
-        "wait": 7200
+        "cooldown": 7200
       },
       {
         "skill_level": 4,
@@ -1418,7 +1338,7 @@
         "name": "データアクセラレーター Lv.4",
         "ATK": 55,
         "active": 1500,
-        "wait": 7200
+        "cooldown": 7200
       },
       {
         "skill_level": 5,
@@ -1426,7 +1346,7 @@
         "name": "データアクセラレーター Lv.5",
         "ATK": 55,
         "active": 1800,
-        "wait": 7200
+        "cooldown": 7200
       },
       {
         "skill_level": 6,
@@ -1434,7 +1354,7 @@
         "name": "データアクセラレーター Lv.6",
         "ATK": 55,
         "active": 2400,
-        "wait": 7200
+        "cooldown": 7200
       },
       {
         "skill_level": 7,
@@ -1442,7 +1362,7 @@
         "name": "データは万代の宝なり ",
         "ATK": 55,
         "active": 3000,
-        "wait": 7200
+        "cooldown": 7200
       }
     ]
   },
@@ -1457,7 +1377,7 @@
         "name": "ラッシュアワー Lv.1",
         "probability": 12,
         "active": 600,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 2,
@@ -1465,7 +1385,7 @@
         "name": "ラッシュアワー Lv.2",
         "probability": 15,
         "active": 600,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 3,
@@ -1473,7 +1393,7 @@
         "name": "ラッシュアワー Lv.3",
         "probability": 18,
         "active": 600,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 4,
@@ -1481,7 +1401,7 @@
         "name": "ラッシュアワー Lv.4",
         "probability": 21,
         "active": 600,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 5,
@@ -1489,7 +1409,7 @@
         "name": "ラッシュアワー Lv.5",
         "probability": 24,
         "active": 900,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 6,
@@ -1497,7 +1417,7 @@
         "name": "ラッシュアワー Lv.6",
         "probability": 27,
         "active": 900,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 7,
@@ -1505,7 +1425,7 @@
         "name": "負けを認めるまでチコは引かない！",
         "probability": 30,
         "active": 900,
-        "wait": 10800
+        "cooldown": 10800
       }
     ]
   },
@@ -1702,49 +1622,49 @@
         "denco_level": 5,
         "name": "天真爛漫 Lv.1",
         "active": 3600,
-        "wait": 3600
+        "cooldown": 3600
       },
       {
         "skill_level": 2,
         "denco_level": 15,
         "name": "天真爛漫 Lv.2",
         "active": 7200,
-        "wait": 3600
+        "cooldown": 3600
       },
       {
         "skill_level": 3,
         "denco_level": 30,
         "name": "天真爛漫 Lv.3",
         "active": 10800,
-        "wait": 3600
+        "cooldown": 3600
       },
       {
         "skill_level": 4,
         "denco_level": 50,
         "name": "天真爛漫 Lv.4",
         "active": 14400,
-        "wait": 3600
+        "cooldown": 3600
       },
       {
         "skill_level": 5,
         "denco_level": 60,
         "name": "天真爛漫 Lv.5",
         "active": 18000,
-        "wait": 3600
+        "cooldown": 3600
       },
       {
         "skill_level": 6,
         "denco_level": 70,
         "name": "天真爛漫 Lv.6",
         "active": 21600,
-        "wait": 3600
+        "cooldown": 3600
       },
       {
         "skill_level": 7,
         "denco_level": 80,
         "name": "ピュリファイヤ",
         "active": 25200,
-        "wait": 3600
+        "cooldown": 3600
       }
     ]
   },
@@ -1759,7 +1679,7 @@
         "name": "テンションAGEAGE↑↑ Lv.1",
         "boost": 8,
         "active": 1800,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 2,
@@ -1767,7 +1687,7 @@
         "name": "テンションAGEAGE↑↑ Lv.2",
         "boost": 12,
         "active": 1800,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 3,
@@ -1775,7 +1695,7 @@
         "name": "テンションAGEAGE↑↑ Lv.3",
         "boost": 16,
         "active": 1800,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 4,
@@ -1783,7 +1703,7 @@
         "name": "テンションAGEAGE↑↑ Lv.4",
         "boost": 20,
         "active": 3600,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 5,
@@ -1791,7 +1711,7 @@
         "name": "テンションAGEAGE↑↑ Lv.5",
         "boost": 24,
         "active": 3600,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 6,
@@ -1799,7 +1719,7 @@
         "name": "テンションAGEAGE↑↑ Lv.6",
         "boost": 28,
         "active": 3600,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 7,
@@ -1807,7 +1727,7 @@
         "name": "イケイケDONDONフィーバー",
         "boost": 32,
         "active": 3600,
-        "wait": 5400
+        "cooldown": 5400
       }
     ]
   },
@@ -1873,7 +1793,7 @@
         "name": "スタンドイン Lv.1",
         "probability": 25,
         "active": 1800,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 2,
@@ -1881,7 +1801,7 @@
         "name": "スタンドイン Lv.2",
         "probability": 30,
         "active": 1800,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 3,
@@ -1889,7 +1809,7 @@
         "name": "スタンドイン Lv.3",
         "probability": 35,
         "active": 1800,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 4,
@@ -1897,7 +1817,7 @@
         "name": "スタンドイン Lv.4",
         "probability": 40,
         "active": 1800,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 5,
@@ -1905,7 +1825,7 @@
         "name": "スタンドイン Lv.5",
         "probability": 45,
         "active": 3600,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 6,
@@ -1913,7 +1833,7 @@
         "name": "スタンドイン Lv.6",
         "probability": 50,
         "active": 3600,
-        "wait": 10800
+        "cooldown": 10800
       },
       {
         "skill_level": 7,
@@ -1921,7 +1841,7 @@
         "name": "鉄の意思",
         "probability": 55,
         "active": 3600,
-        "wait": 10800
+        "cooldown": 10800
       }
     ]
   },
@@ -1991,7 +1911,7 @@
         "denco_level": 5,
         "name": "シスターガード Lv.1",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "HP_TH": 30,
         "heal": 10,
         "probability": 25
@@ -2001,7 +1921,7 @@
         "denco_level": 15,
         "name": "シスターガード Lv.2",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "HP_TH": 30,
         "heal": 15,
         "probability": 25
@@ -2011,7 +1931,7 @@
         "denco_level": 30,
         "name": "シスターガード Lv.3",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "HP_TH": 30,
         "heal": 20,
         "probability": 25
@@ -2021,7 +1941,7 @@
         "denco_level": 50,
         "name": "シスターガード Lv.4",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "HP_TH": 30,
         "heal": 30,
         "probability": 25
@@ -2031,7 +1951,7 @@
         "denco_level": 60,
         "name": "シスターガード Lv.5",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "HP_TH": 30,
         "heal": 40,
         "probability": 35
@@ -2041,7 +1961,7 @@
         "denco_level": 70,
         "name": "シスターガード Lv.6",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "HP_TH": 30,
         "heal": 50,
         "probability": 35
@@ -2051,7 +1971,7 @@
         "denco_level": 80,
         "name": "マイディアシスター",
         "active": 1800,
-        "wait": 7200,
+        "cooldown": 7200,
         "HP_TH": 30,
         "heal": 60,
         "probability": 35
@@ -2166,49 +2086,49 @@
         "denco_level": 5,
         "name": "にちなの祈り Lv.1",
         "active": 1800,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 2,
         "denco_level": 15,
         "name": "にちなの祈り Lv.2",
         "active": 3600,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 3,
         "denco_level": 30,
         "name": "にちなの祈り Lv.3",
         "active": 5400,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 4,
         "denco_level": 50,
         "name": "にちなの祈り Lv.4",
         "active": 7200,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 5,
         "denco_level": 60,
         "name": "にちなの祈り Lv.5",
         "active": 9000,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 6,
         "denco_level": 70,
         "name": "にちなの祈り Lv.6",
         "active": 10800,
-        "wait": 5400
+        "cooldown": 5400
       },
       {
         "skill_level": 7,
         "denco_level": 80,
         "name": "思い出だけは譲れません",
         "active": 12600,
-        "wait": 5400
+        "cooldown": 5400
       }
     ]
   },
@@ -2278,7 +2198,7 @@
         "denco_level": 5,
         "name": "一心精進 Lv.1",
         "active": 0,
-        "wait": 9000,
+        "cooldown": 9000,
         "extend": 5
       },
       {
@@ -2286,7 +2206,7 @@
         "denco_level": 15,
         "name": "一心精進 Lv.2",
         "active": 0,
-        "wait": 9000,
+        "cooldown": 9000,
         "extend": 10
       },
       {
@@ -2294,7 +2214,7 @@
         "denco_level": 30,
         "name": "一心精進 Lv.3",
         "active": 0,
-        "wait": 9000,
+        "cooldown": 9000,
         "extend": 15
       },
       {
@@ -2302,7 +2222,7 @@
         "denco_level": 50,
         "name": "一心精進 Lv.4",
         "active": 0,
-        "wait": 9000,
+        "cooldown": 9000,
         "extend": 20
       },
       {
@@ -2310,7 +2230,7 @@
         "denco_level": 60,
         "name": "一心精進 Lv.5",
         "active": 0,
-        "wait": 9000,
+        "cooldown": 9000,
         "extend": 25
       },
       {
@@ -2318,7 +2238,7 @@
         "denco_level": 70,
         "name": "一心精進 Lv.6",
         "active": 0,
-        "wait": 9000,
+        "cooldown": 9000,
         "extend": 30
       },
       {
@@ -2326,7 +2246,7 @@
         "denco_level": 80,
         "name": "精神一到！",
         "active": 0,
-        "wait": 9000,
+        "cooldown": 9000,
         "extend": 35
       }
     ]
@@ -2394,7 +2314,7 @@
     "class": "D45_Kanon",
     "type": "manual",
     "ATK": 15,
-    "wait": 7200,
+    "cooldown": 7200,
     "list": [
       {
         "skill_level": 1,
@@ -2446,7 +2366,7 @@
     "type": "manual",
     "count_max": 20,
     "count_decrease": 2,
-    "wait": 3600,
+    "cooldown": 3600,
     "list": [
       {
         "skill_level": 1,
@@ -2565,7 +2485,7 @@
         "denco_level": 5,
         "name": "スモールレジスト Lv.1",
         "active": 1800,
-        "wait": 10800,
+        "cooldown": 10800,
         "def_max": 57
       },
       {
@@ -2573,7 +2493,7 @@
         "denco_level": 15,
         "name": "スモールレジスト Lv.2",
         "active": 2700,
-        "wait": 10200,
+        "cooldown": 10200,
         "def_max": 65
       },
       {
@@ -2581,7 +2501,7 @@
         "denco_level": 30,
         "name": "スモールレジスト Lv.3",
         "active": 3600,
-        "wait": 9600,
+        "cooldown": 9600,
         "def_max": 68
       },
       {
@@ -2589,7 +2509,7 @@
         "denco_level": 50,
         "name": "スモールレジスト Lv.4",
         "active": 4500,
-        "wait": 9000,
+        "cooldown": 9000,
         "def_max": 71
       },
       {
@@ -2597,7 +2517,7 @@
         "denco_level": 60,
         "name": "スモールレジスト Lv.5",
         "active": 5400,
-        "wait": 8400,
+        "cooldown": 8400,
         "def_max": 73
       },
       {
@@ -2605,7 +2525,7 @@
         "denco_level": 70,
         "name": "スモールレジスト Lv.6",
         "active": 6300,
-        "wait": 7800,
+        "cooldown": 7800,
         "def_max": 75
       },
       {
@@ -2613,7 +2533,7 @@
         "denco_level": 80,
         "name": "おおきな勇気",
         "active": 7200,
-        "wait": 7200,
+        "cooldown": 7200,
         "def_max": 75
       }
     ]
@@ -2623,7 +2543,7 @@
     "class": "D50_Naho",
     "type": "manual",
     "active": 1800,
-    "wait": 10800,
+    "cooldown": 10800,
     "list": [
       {
         "skill_level": 1,
@@ -2681,7 +2601,7 @@
         "name": "姉御のホンキ Lv.1",
         "ATK": 1.8,
         "DEF": 1.8,
-        "wait": 21600
+        "cooldown": 21600
       },
       {
         "skill_level": 2,
@@ -2689,7 +2609,7 @@
         "name": "姉御のホンキ Lv.2",
         "ATK": 2.0,
         "DEF": 2.0,
-        "wait": 19200
+        "cooldown": 19200
       },
       {
         "skill_level": 3,
@@ -2697,7 +2617,7 @@
         "name": "姉御のホンキ Lv.3",
         "ATK": 2.5,
         "DEF": 2.5,
-        "wait": 16800
+        "cooldown": 16800
       },
       {
         "skill_level": 4,
@@ -2705,7 +2625,7 @@
         "name": "姉御のホンキ Lv.4",
         "ATK": 3.0,
         "DEF": 3.0,
-        "wait": 14400
+        "cooldown": 14400
       },
       {
         "skill_level": 5,
@@ -2713,7 +2633,7 @@
         "name": "姉御のホンキ Lv.5",
         "ATK": 3.5,
         "DEF": 3.5,
-        "wait": 12000
+        "cooldown": 12000
       },
       {
         "skill_level": 6,
@@ -2721,7 +2641,7 @@
         "name": "姉御のホンキ Lv.6",
         "ATK": 4.0,
         "DEF": 4.0,
-        "wait": 9600
+        "cooldown": 9600
       },
       {
         "skill_level": 7,
@@ -2729,7 +2649,7 @@
         "name": "義理人情がモットーです！",
         "ATK": 4.5,
         "DEF": 4.5,
-        "wait": 7200
+        "cooldown": 7200
       }
     ]
   },
@@ -2927,7 +2847,7 @@
     "numbering": "58",
     "class": "D58_Marika",
     "type": "manual",
-    "wait": 7200,
+    "cooldown": 7200,
     "list": [
       {
         "skill_level": 1,
@@ -2984,7 +2904,7 @@
         "name": "うつろうひととせ Lv.1",
         "probability": 30,
         "active": 900,
-        "wait": 14400
+        "cooldown": 14400
       },
       {
         "skill_level": 2,
@@ -2992,7 +2912,7 @@
         "name": "うつろうひととせ Lv.2",
         "probability": 35,
         "active": 900,
-        "wait": 14400
+        "cooldown": 14400
       },
       {
         "skill_level": 3,
@@ -3000,7 +2920,7 @@
         "name": "うつろうひととせ Lv.3",
         "probability": 40,
         "active": 900,
-        "wait": 14400
+        "cooldown": 14400
       },
       {
         "skill_level": 4,
@@ -3008,7 +2928,7 @@
         "name": "うつろうひととせ Lv.4",
         "probability": 55,
         "active": 900,
-        "wait": 14400
+        "cooldown": 14400
       },
       {
         "skill_level": 5,
@@ -3016,7 +2936,7 @@
         "name": "うつろうひととせ Lv.5",
         "probability": 70,
         "active": 1800,
-        "wait": 14400
+        "cooldown": 14400
       },
       {
         "skill_level": 6,
@@ -3024,7 +2944,7 @@
         "name": "うつろうひととせ Lv.6",
         "probability": 85,
         "active": 1800,
-        "wait": 14400
+        "cooldown": 14400
       },
       {
         "skill_level": 7,
@@ -3032,77 +2952,7 @@
         "name": "見果てぬ景色",
         "probability": 100,
         "active": 1800,
-        "wait": 14400
-      }
-    ]
-  },
-  {
-    "numbering": "66",
-    "class": "D66_Minamo",
-    "type": "auto",
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 5,
-        "name": "みんなでショウ・タイム Lv.1",
-        "damage": 30,
-        "links": 2,
-        "active": 1800,
-        "wait": 0
-      },
-      {
-        "skill_level": 2,
-        "denco_level": 15,
-        "name": "みんなでショウ・タイム Lv.2",
-        "damage": 45,
-        "links": 2,
-        "active": 1800,
-        "wait": 0
-      },
-      {
-        "skill_level": 3,
-        "denco_level": 30,
-        "name": "みんなでショウ・タイム Lv.3",
-        "damage": 60,
-        "links": 2,
-        "active": 1800,
-        "wait": 0
-      },
-      {
-        "skill_level": 4,
-        "denco_level": 50,
-        "name": "みんなでショウ・タイム Lv.4",
-        "damage": 75,
-        "links": 2,
-        "active": 1800,
-        "wait": 0
-      },
-      {
-        "skill_level": 5,
-        "denco_level": 60,
-        "name": "みんなでショウ・タイム Lv.5",
-        "damage": 90,
-        "links": 2,
-        "active": 1800,
-        "wait": 0
-      },
-      {
-        "skill_level": 6,
-        "denco_level": 70,
-        "name": "みんなでショウ・タイム Lv.6",
-        "damage": 105,
-        "links": 2,
-        "active": 1800,
-        "wait": 0
-      },
-      {
-        "skill_level": 7,
-        "denco_level": 80,
-        "name": "ランウェイオンザレール",
-        "damage": 120,
-        "links": 2,
-        "active": 1800,
-        "wait": 0
+        "cooldown": 14400
       }
     ]
   },
@@ -3168,7 +3018,7 @@
     "class": "D76_Yunoka",
     "type": "manual",
     "active": 900,
-    "wait": 5400,
+    "cooldown": 5400,
     "list": [
       {
         "skill_level": 1,
@@ -3218,69 +3068,6 @@
         "name": "リラクシングトラベル",
         "ATK": 60,
         "heal": 30
-      }
-    ]
-  },
-  {
-    "numbering": "77",
-    "class": "D77_Reto",
-    "type": "always",
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 5,
-        "name": "ワンダーエスケープ Lv.1",
-        "active": 0,
-        "wait": 0,
-        "probability": 8
-      },
-      {
-        "skill_level": 2,
-        "denco_level": 15,
-        "name": "ワンダーエスケープ Lv.2",
-        "active": 0,
-        "wait": 0,
-        "probability": 10
-      },
-      {
-        "skill_level": 3,
-        "denco_level": 30,
-        "name": "ワンダーエスケープ Lv.3",
-        "active": 0,
-        "wait": 0,
-        "probability": 12
-      },
-      {
-        "skill_level": 4,
-        "denco_level": 50,
-        "name": "ワンダーエスケープ Lv.4",
-        "active": 0,
-        "wait": 0,
-        "probability": 14
-      },
-      {
-        "skill_level": 5,
-        "denco_level": 60,
-        "name": "ワンダーエスケープ Lv.5",
-        "active": 0,
-        "wait": 0,
-        "probability": 16
-      },
-      {
-        "skill_level": 6,
-        "denco_level": 70,
-        "name": "ワンダーエスケープ Lv.6",
-        "active": 0,
-        "wait": 0,
-        "probability": 18
-      },
-      {
-        "skill_level": 7,
-        "denco_level": 80,
-        "name": "逃げ道だって小さな旅",
-        "active": 0,
-        "wait": 0,
-        "probability": 20
       }
     ]
   }

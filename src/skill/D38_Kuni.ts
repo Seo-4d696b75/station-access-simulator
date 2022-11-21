@@ -2,6 +2,8 @@ import { addDamage, counterAttack, getAccessDenco } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     // みことのリブート有無は通常ダメージ計算＋固定ダメージ計算が終わるまで分からない
     if (step === "after_damage"
@@ -38,15 +40,6 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivateAt: (context, state, self) => {
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000,
-    }
-  }
 }
 
 export default skill

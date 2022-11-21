@@ -2,6 +2,7 @@ import { getDefense } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "defense") {
       const isHome = getDefense(state).user.history.isHomeStation(context, state.station)

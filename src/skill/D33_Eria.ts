@@ -3,6 +3,8 @@ import { getAccessDenco } from "../core/access";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (self.who === "defense" && step === "before_access") {
       const offense = getAccessDenco(state, "offense")
@@ -26,15 +28,6 @@ const skill: SkillLogic = {
           context.log.log(`ほこねのいもうとあい？理解くるしむ。だから効かない？ スキルを無効化：${d.name}(${d.numbering})`)
         }
       }
-    }
-  },
-  deactivateAt(context, state, self) {
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000,
     }
   },
 }
