@@ -2,6 +2,7 @@ import { isWeekendOrHoliday } from '../core/date';
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "auto-condition",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "defense") {
       return {

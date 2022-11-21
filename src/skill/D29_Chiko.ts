@@ -1,6 +1,8 @@
 import { getAccessDenco, SkillLogic } from "..";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "offense" && state.defense) {
       return {
@@ -55,7 +57,6 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivate: "default_timeout"
 }
 
 export default skill

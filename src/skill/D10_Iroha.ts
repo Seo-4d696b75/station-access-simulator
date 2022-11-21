@@ -1,6 +1,8 @@
 import { formatLinkTime, SkillLogic, triggerSkillAtEvent } from "..";
 
 const skill: SkillLogic = {
+  transitionType: "manual-condition",
+  deactivate: "default_timeout",
   canEnabled: (context, state, self) => {
     if (state.formation.length < 2) return false
     //　リンク移譲先
@@ -12,7 +14,6 @@ const skill: SkillLogic = {
     const cnt = self.skill.property.readNumber("links")
     return self.link.length >= cnt
   },
-  deactivate: "default_timeout",
   onActivated: (context, state, self) => {
     // スキルが有効化した瞬間にスキル発動
     return triggerSkillAtEvent(context, state, self, (state) => {

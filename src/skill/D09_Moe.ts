@@ -2,6 +2,7 @@ import { triggerSkillAtEvent } from "../core/event";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "auto-condition",
   canActivated: (context, state, self) => {
     const idx = state.formation.findIndex(d => d.currentHp < d.maxHp)
     return idx >= 0

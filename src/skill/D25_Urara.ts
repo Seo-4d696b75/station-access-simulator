@@ -2,6 +2,8 @@ import { EventSkillTrigger, triggerSkillAtEvent } from "../core/event";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual-condition",
+  deactivate: "default_timeout",
   canEnabled: (context, state, self) => {
     // 編成内（自身除く）にスキル状態が cooldownのでんこが１体以上いる
     return state.formation.some(d => {
@@ -30,7 +32,6 @@ const skill: SkillLogic = {
               // transitionタイプによってスキル状態の処理は異なる
               // 未初期化に戻してrefreshStateで初期化することでcooldown状態を強制終了する
               state: "not_init",
-              type: s.transition.type,
               data: undefined
             }
           }
@@ -40,7 +41,6 @@ const skill: SkillLogic = {
     }
     return triggerSkillAtEvent(context, state, self, trigger)
   },
-  deactivate: "default_timeout"
 }
 
 export default skill

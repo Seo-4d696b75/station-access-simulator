@@ -3,6 +3,8 @@ import { assert } from "../core/context";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "after_damage" && self.reboot) {
       const damage = self.damage?.value
@@ -21,7 +23,6 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivate: "default_timeout"
 }
 
 export default skill
