@@ -28,11 +28,11 @@ describe("基本的なアクセス処理", () => {
 
     const skill: Skill = {
       type: "possess",
+      transitionType: "always",
       level: 1,
       name: "test-skill",
       transition: {
         state: "active", // activeでしかコールバックされない！
-        type: "manual",
         data: undefined
       },
       property: new TypedMap(),

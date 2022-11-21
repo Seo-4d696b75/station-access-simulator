@@ -104,7 +104,6 @@ describe("型安全なプロパティの読み書き", () => {
     {
       numbering: "1",
       class: "D01_Seria",
-      type: "manual",
       key1: 100,
       key2: "string",
       key3: true,
