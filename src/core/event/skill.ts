@@ -4,6 +4,7 @@ import { Context, withFixedClock } from "../context"
 import { Denco, DencoState } from "../denco"
 import { random } from "../random"
 import { isSkillActive, ProbabilityPercent, Skill, WithActiveSkill } from "../skill"
+import { withActiveSkill } from "../skill/property"
 import { copyState, ReadonlyState } from "../state"
 import { UserProperty, UserState } from "../user"
 import { refreshUserState } from "../user/refresh"
@@ -113,9 +114,6 @@ export type EventSkillTrigger = {
  */
 export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<WithActiveSkill<AccessDencoResult>>, trigger: EventSkillTrigger): AccessUserResult => withFixedClock(context, () => {
   let next = copyState<AccessUserResult>(state)
-  if (!isSkillActive(self.skill)) {
-    context.log.error(`スキル状態がアクティブでありません ${self.name}`)
-  }
   if (self.skillInvalidated) {
     context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
     return next
@@ -227,8 +225,6 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   const skill = self.skill
   context.log.log(`${self.name} ${skill.name}`)
 
-  // TODO ラッピングによる補正
-
   // 主体となるスキルとは別に事前に発動するスキル
   const others = state.formation.filter(s => {
     return isSkillActive(s.skill) && !s.skillInvalidated && s.carIndex !== self.carIndex
@@ -240,26 +236,22 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${s.name} possess => ${skill.type}`)
     }
-    const active: WithActiveSkill<SkillEventDencoState> = {
-      ...s,
-      skill: skill,
-    }
-    const trigger = skill.triggerOnEvent?.(context, state, active)
+    if (!skill.triggerOnEvent) return
+    const trigger = skill.triggerOnEvent?.(context, state, withActiveSkill(s, skill, s.carIndex))
     const recipe = canTriggerSkill(context, state, trigger)
-    if (recipe) {
-      state = recipe(state) ?? state
-      let e: SkillTriggerEvent = {
-        type: "skill_trigger",
-        data: {
-          time: state.time.valueOf(),
-          carIndex: state.carIndex,
-          denco: copyState<DencoState>(state.formation[idx]),
-          skillName: skill.name,
-          step: "probability_check"
-        },
-      }
-      state.event.push(e)
+    if (!recipe) return
+    state = recipe(state) ?? state
+    let e: SkillTriggerEvent = {
+      type: "skill_trigger",
+      data: {
+        time: state.time.valueOf(),
+        carIndex: state.carIndex,
+        denco: copyState<DencoState>(state.formation[idx]),
+        skillName: skill.name,
+        step: "probability_check"
+      },
     }
+    state.event.push(e)
   })
 
   // 発動確率の確認

@@ -1,8 +1,8 @@
 import moment from "moment-timezone"
 import { Context, TIME_FORMAT } from "../context"
-import { DencoState } from "../denco"
-import { copyState, copyStateTo } from "../state"
+import { copyStateTo } from "../state"
 import { UserState } from "../user"
+import { withActiveSkill } from "./property"
 
 
 /**
@@ -74,16 +74,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         result = true
       }
       if (skill.transition.state === "idle" || skill.transition.state === "unable") {
-        const predicate = skill.canEnabled
-        if (!predicate) {
-          context.log.error("関数#canEnabled が未定義です type:manual-condition")
-        }
-        let self = {
-          ...denco,
-          carIndex: idx,
-          skill: skill,
-        }
-        const enable = predicate(context, state, self)
+        const enable = skill.canEnabled(context, state, withActiveSkill(denco, skill, idx))
         if (enable && skill.transition.state === "unable") {
           context.log.log(`スキル状態の変更：${denco.name} unable -> idle`)
           skill.transition = {
@@ -125,16 +116,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         result = true
       }
       // スキル状態の確認・更新
-      const predicate = skill.canActivated
-      if (!predicate) {
-        context.log.error("関数#canActivated が未定義です type:auto-condition")
-      }
-      let self = {
-        ...denco,
-        carIndex: idx,
-        skill: skill,
-      }
-      const active = predicate(context, state, self)
+      const active = skill.canActivated(context, state, withActiveSkill(denco, skill, idx))
       if (active && skill.transition.state === "unable") {
         context.log.log(`スキル状態の変更：${denco.name} unable -> active`)
         skill.transition = {
@@ -144,15 +126,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         // カスタムデータの初期化
         skill.data.clear()
         result = true
-        const callback = skill.onActivated
-        if (callback) {
-          // 更新したスキル状態をコピー
-          self = {
-            ...copyState<DencoState>(denco),
-            carIndex: idx,
-            skill: skill,
-          }
-          const next = callback(context, state, self)
+        if (skill.onActivated) {
+          const next = skill.onActivated(context, state, withActiveSkill(denco, skill, idx))
           if (next) copyStateTo(next, state)
         }
       } else if (!active && skill.transition.state === "active") {

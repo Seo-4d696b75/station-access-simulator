@@ -3,7 +3,7 @@ import { DencoState } from "../denco"
 import { copyState, ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill } from "./holder"
-import { SkillPropertyReader } from "./property"
+import { SkillPropertyReader, withActiveSkill } from "./property"
 import { refreshSkillState } from "./refresh"
 import { SkillActiveTimeout } from "./transition"
 
@@ -73,11 +73,6 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
 
 function activateSkillAndCallback<T extends "manual" | "manual-condition" | "auto">(context: Context, state: UserState, d: DencoState, skill: Skill<T>, carIndex: number): UserState {
   context.log.log(`スキル状態の変更：${d.name} ${skill.transition.state} -> active`)
-  let self = {
-    ...d,
-    carIndex: carIndex,
-    skill: skill,
-  }
   skill.transition = {
     state: "active",
     data: getSkillActiveTimeout(context, d, skill)
@@ -85,17 +80,8 @@ function activateSkillAndCallback<T extends "manual" | "manual-condition" | "aut
   // カスタムデータの初期化
   skill.data.clear()
   // callback #onActivated
-  const callback = skill.onActivated
-  if (callback) {
-    // 更新したスキル状態をコピー
-
-    // FIXME フィルム補正
-    self = {
-      ...copyState<DencoState>(d),
-      carIndex: carIndex,
-      skill: skill,
-    }
-    state = callback(context, state, self) ?? state
+  if (skill.onActivated) {
+    state = skill.onActivated(context, state, withActiveSkill(d, skill, carIndex)) ?? state
   }
   refreshSkillState(context, state)
   return state

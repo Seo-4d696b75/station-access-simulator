@@ -33,7 +33,7 @@ export type SkillTransitionState =
   "active" |
   "cooldown"
 
-interface SkillTransitionBase<Type extends SkillTransitionType, State extends SkillTransitionState, D = undefined> {
+export interface SkillTransitionBase<Type extends SkillTransitionType, State extends SkillTransitionState, D = undefined> {
   // type: Type,
   state: State,
   data: D,
