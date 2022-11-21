@@ -77,9 +77,9 @@ describe("基本的なアクセス処理", () => {
     let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(onAccessComplete.mock.calls.length).toBe(1)
-    expect(onAccessComplete.mock.calls[0][2]).toMatchObject(d)
+    expect(onAccessComplete.mock.calls[0][2]).toMatchDencoState(d)
     expect(onDencoReboot.mock.calls.length).toBe(1)
-    expect(onDencoReboot.mock.calls[0][2]).toMatchObject(d)
+    expect(onDencoReboot.mock.calls[0][2]).toMatchDencoState(d)
   })
   test("守備側なし", () => {
     const context = initContext("test", "test", false)

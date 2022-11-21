@@ -1,3 +1,4 @@
+import assert from "assert";
 import { isEqual } from "lodash";
 import { activateSkill, copyState, copyStateTo, DencoManager, Film, getSkill, initContext, initUser, SkillManager } from "..";
 import { TypedMap } from "../core/property";
@@ -78,7 +79,10 @@ describe("SkillPropertyReader", () => {
     expect(reader1.film).not.toBe(reader2.film)
     expect(reader1.film).toEqual(reader2.film)
     expect(reader1.base).not.toBe(reader2.base)
-    reader2.film!.skill!.key1 = 10
+    const f = reader2.film
+    assert(f.type === "film")
+    assert(f.skill)
+    f.skill.key1 = 10
     expect(reader1.readNumber("key1")).toBe(11)
     expect(reader2.readNumber("key1")).toBe(20)
   })
@@ -86,7 +90,10 @@ describe("SkillPropertyReader", () => {
     const reader = new SkillPropertyReader(base, film)
     const reader1 = copyState(reader)
     const reader2 = copyState(reader)
-    reader2.film!.skill!.key1 = 10
+    const f = reader2.film
+    assert(f.type === "film")
+    assert(f.skill)
+    f.skill.key1 = 10
     expect(reader1.readNumber("key1")).toBe(11)
     expect(reader2.readNumber("key1")).toBe(20)
     copyStateTo(reader2, reader1)

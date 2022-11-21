@@ -3,7 +3,7 @@ import { DencoState } from "../core/denco"
 import { TypedMap } from "../core/property"
 import { activateSkill, deactivateSkill, getSkill, Skill, SkillDeactivateStrategy } from "../core/skill"
 import { initUser, refreshState } from "../core/user"
-
+import "./matcher"
 
 
 describe("スキル状態遷移・コールバック", () => {
@@ -149,7 +149,7 @@ describe("スキル状態遷移・コールバック", () => {
 
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(denco)
 
       expect(() => deactivateSkill(context, state, 0)).toThrowError("active終了時刻")
 
@@ -269,7 +269,7 @@ describe("スキル状態遷移・コールバック", () => {
 
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(denco)
 
       state = deactivateSkill(context, state, 0)
       s = getSkill(state.formation[0])
@@ -361,7 +361,7 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
       expect(canEnabled.mock.calls[0][1]).toMatchObject(state)
-      expect(canEnabled.mock.calls[0][2]).toMatchObject(d)
+      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
 
       let s = getSkill(state.formation[0])
       expect(s.transition.state).toBe("idle")
@@ -380,7 +380,7 @@ describe("スキル状態遷移・コールバック", () => {
 
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(d)
 
       expect(() => deactivateSkill(context, state, 0)).toThrowError("active終了時刻")
 
@@ -413,7 +413,7 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
       expect(canEnabled.mock.calls[0][1]).toMatchObject(state)
-      expect(canEnabled.mock.calls[0][2]).toMatchObject(d)
+      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
 
       let s = getSkill(state.formation[0])
       expect(s.transition.state).toBe("idle")
@@ -427,7 +427,7 @@ describe("スキル状態遷移・コールバック", () => {
 
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(d)
 
       state = deactivateSkill(context, state, 0)
       s = getSkill(state.formation[0])
@@ -487,13 +487,13 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canActivated.mock.calls.length).toBeGreaterThan(0)
       expect(canActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(canActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(canActivated.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
       expect(s.transition.state).toBe("active")
       expect(s.transition.data).toBeUndefined()
       expect(s.transitionType).toBe("auto-condition")
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(d)
 
       canActivated.mockClear()
       canActivated.mockImplementation((_, state, self) => false)
@@ -503,7 +503,7 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canActivated.mock.calls.length).toBeGreaterThan(0)
       expect(canActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(canActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(canActivated.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "active" } } })
       expect(s.transition.state).toBe("unable")
     })
   })
