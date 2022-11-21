@@ -3,9 +3,12 @@ import { ReadonlyState } from "../state"
 import { SkillData } from "./data"
 import { SkillLogic } from "./logic"
 import { SkillProperty } from "./property"
-import { SkillTransition } from "./transition"
+import { SkillTransition, SkillTransitionType } from "./transition"
 
-export interface SkillState {
+export interface SkillState<T extends SkillTransitionType = SkillTransitionType> {
+
+  // 状態遷移タイプに応じた判別のため便宜上追加
+  transitionType: T
 
   // SkillHolderとして引数渡す場合に型推論が正しく行えるよう便宜的に追加
   type: "possess"
@@ -24,7 +27,7 @@ export interface SkillState {
    * **この状態を直接操作しないでください** {@link activateSkill} {@link deactivateSkill}などの関数を利用してください    
    * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
    */
-  transition: SkillTransition
+  transition: SkillTransition<T>
 
   // 参照する場所によって読み出す値が違う
   property: unknown
@@ -40,17 +43,18 @@ export interface SkillState {
 /**
  * でんこが保有するスキル
  */
-export type Skill = SkillState & SkillLogic & {
-  /**
-   * スキルレベルや各でんこに依存するデータへアクセスします
-   * 
-   * ### 注意
-   * ここから読み出す値には着用してるフィルムの補正値が反映されていません  
-   * 
-   * スキルの発動判定・発動時の処理を行うときは必ずコールバックに渡される{@link ActiveSkill}の方から参照してください
-   */
-  property: SkillProperty
-}
+export type Skill<T extends SkillTransitionType = SkillTransitionType> =
+  T extends SkillTransitionType ? SkillState<T> & SkillLogic<T> & {
+    /**
+     * スキルレベルや各でんこに依存するデータへアクセスします
+     * 
+     * ### 注意
+     * ここから読み出す値には着用してるフィルムの補正値が反映されていません  
+     * 
+     * スキルの発動判定・発動時の処理を行うときは必ずコールバックに渡される{@link ActiveSkill}の方から参照してください
+     */
+    property: SkillProperty
+  } : never
 
 interface SkillNotAcquired {
   type: "not_acquired"
