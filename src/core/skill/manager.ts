@@ -60,8 +60,7 @@ export class SkillManager {
       const logic = await import("../../skill/" + moduleName)
         .then(o => o.default)
         .catch(() => {
-          console.warn("fail to import skill logic", moduleName)
-          return {}
+          throw new SimulatorError(`fail to import skill logic: ${moduleName}`)
         })
       // default property
       const defaultValue = Object.assign({}, e)
