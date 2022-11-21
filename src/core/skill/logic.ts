@@ -23,14 +23,13 @@ export type ProbabilityPercent = number
  */
 export type ActiveSkill = SkillState & {
   /**
-   * スキルレベルや各でんこに依存するデータへアクセスします
    * 
-   * ### 着用中のフィルム補正があります！
+   * ### 着用中のフィルム補正が影響します！
    * 
-   * ここから読み出す値は次の状態に影響され変化する場合があります
-   * - でんこの保有スキル
-   * - スキルのレベル
-   * - 着用しているフィルムの補正値（number型のみ）
+   * 関数`readNumber, readNumberArray`が読み出す値には上記に加え、
+   * 着用中のフィルムの補正値が加算されます.
+   * 
+   * フィルムの補正値は{@link Film skill}を参照します.
    */
   property: SkillProperty
 }
