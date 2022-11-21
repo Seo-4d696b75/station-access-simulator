@@ -43,12 +43,11 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
   }
   let result: boolean = false
   const skill = denco.skill
-  switch (skill.transition.type) {
+  switch (skill.transitionType) {
     case "always": {
       if (skill.transition.state === "not_init") {
         skill.transition = {
           state: "active",
-          type: "always",
           data: undefined,
         }
         result = true
@@ -59,7 +58,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
       if (skill.transition.state === "not_init") {
         skill.transition = {
           state: "idle",
-          type: "manual",
           data: undefined
         }
         result = true
@@ -71,7 +69,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
       if (skill.transition.state === "not_init") {
         skill.transition = {
           state: "unable",
-          type: "manual-condition",
           data: undefined
         }
         result = true
@@ -91,7 +88,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           context.log.log(`スキル状態の変更：${denco.name} unable -> idle`)
           skill.transition = {
             state: "idle",
-            type: "manual-condition",
             data: undefined
           }
           result = true
@@ -99,7 +95,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           context.log.log(`スキル状態の変更：${denco.name} idle -> unable`)
           skill.transition = {
             state: "unable",
-            type: "manual-condition",
             data: undefined
           }
           result = true
@@ -114,7 +109,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
       if (skill.transition.state === "not_init") {
         skill.transition = {
           state: "unable",
-          type: "auto",
           data: undefined
         }
         result = true
@@ -126,7 +120,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
       if (skill.transition.state === "not_init") {
         skill.transition = {
           state: "unable",
-          type: "auto-condition",
           data: undefined
         }
         result = true
@@ -146,7 +139,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         context.log.log(`スキル状態の変更：${denco.name} unable -> active`)
         skill.transition = {
           state: "active",
-          type: "auto-condition",
           data: undefined
         }
         // カスタムデータの初期化
@@ -167,7 +159,6 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)
         skill.transition = {
           state: "unable",
-          type: "auto-condition",
           data: undefined
         }
         result = true
@@ -190,6 +181,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
   const denco = state.formation[idx]
   const skill = denco.skill
   if (skill.type !== "possess") return false
+  if (skill.transitionType !== "manual" && skill.transitionType !== "manual-condition" && skill.transitionType !== "auto") return false
   let result = false
   if (skill.transition.state === "active") {
     const data = skill.transition.data
@@ -197,7 +189,6 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
       context.log.log(`スキル状態の変更：${denco.name} active -> cooldown (timeout:${moment(data.activeTimeout).format(TIME_FORMAT)})`)
       skill.transition = {
         state: "cooldown",
-        type: skill.transition.type,
         data: {
           cooldownTimeout: data.cooldownTimeout
         }
@@ -208,12 +199,11 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
   if (skill.transition.state === "cooldown") {
     const data = skill.transition.data
     if (data.cooldownTimeout <= time) {
-      switch (skill.transition.type) {
+      switch (skill.transitionType) {
         case "manual": {
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> idle (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.transition = {
             state: "idle",
-            type: "manual",
             data: undefined
           }
           result = true
@@ -223,7 +213,6 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.transition = {
             state: "unable",
-            type: "manual-condition",
             data: undefined
           }
           // check unable <=> idle
@@ -234,7 +223,6 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.transition = {
             state: "unable",
-            type: "auto",
             data: undefined
           }
           result = true

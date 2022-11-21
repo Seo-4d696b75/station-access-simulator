@@ -2,7 +2,6 @@ import { SimulatorError } from "../context"
 import { TypedMap } from "../property"
 import { SkillHolder } from "./holder"
 import { SkillLogic } from "./logic"
-import { SkillTransitionType } from "./transition"
 
 
 interface SkillLevelProperty {
@@ -16,7 +15,6 @@ interface SkillDataset {
   numbering: string
   moduleName: string
   skill: SkillLogic
-  transition: SkillTransitionType
   triggerInPink: boolean
   skillProperties: SkillLevelProperty[]
   skillDefaultProperties: Map<string, any>
@@ -35,7 +33,6 @@ export class SkillManager {
       }
       const numbering = e.numbering as string
       const moduleName = e.class as string
-      const type = e.type as SkillTransitionType
       const properties = (e.list as any[]).map(d => {
         let skill = d.skill_level as number
         let denco = d.denco_level as number
@@ -64,11 +61,10 @@ export class SkillManager {
         })
       // default property
       const defaultValue = Object.assign({}, e)
+      // 特別な意味を持つプロパティを除く
       delete defaultValue.numbering
       delete defaultValue.class
-      delete defaultValue.type
       delete defaultValue.list
-      delete defaultValue.step
       let map = new Map<string, any>()
       for (let [key, value] of Object.entries(defaultValue)) {
         map.set(key, value)
@@ -79,7 +75,6 @@ export class SkillManager {
         skill: logic,
         skillProperties: properties,
         skillDefaultProperties: map,
-        transition: type,
         triggerInPink: false,
       }
       this.map.set(numbering, dataset)
@@ -110,7 +105,6 @@ export class SkillManager {
           name: property.name,
           transition: {
             state: "not_init",
-            type: data.transition,
             data: undefined,
           },
           property: new TypedMap(property.property, data.skillDefaultProperties),
