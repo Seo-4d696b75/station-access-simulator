@@ -18,7 +18,7 @@ import { WithActiveSkill } from "./logic"
 export interface SkillProperty extends ReadableProperty {
   /**
    * スキルを保有するでんこが現在着用中のフィルム
- * 
+   * 
    * このフィルム補正を考慮して値を読み出します
    * {@link ReadableProperty}
    */
@@ -30,7 +30,7 @@ export function withActiveSkill<T extends DencoState>(denco: ReadonlyState<T>, s
    ここでの状態のコピーは必須ではないが、
    テストで使うmockの呼び出しが参照でキャプチャーしている
    後続の処理で破壊されるとテストしにくいのでコピーしておく
- */
+   */
   let d = copyState(denco)
   let s = copyState(skill)
   const active = {
@@ -50,7 +50,7 @@ export function withActiveSkill<T extends DencoState>(denco: ReadonlyState<T>, s
 export class SkillPropertyReader {
   constructor(base: ReadableProperty, film: FilmHolder) {
     this.base = base
-      this.film = film
+    this.film = film
   }
 
   base: ReadableProperty
@@ -66,7 +66,7 @@ export class SkillPropertyReader {
   }
 
   readString(key: string, defaultValue?: string): string {
-    return this.readString(key, defaultValue)
+    return this.base.readString(key, defaultValue)
   }
 
   readNumberArray(key: string, defaultValue?: number[]): number[] {
@@ -75,16 +75,16 @@ export class SkillPropertyReader {
   }
 
   readStringArray(key: string, defaultValue?: string[]): string[] {
-    return this.readStringArray(key, defaultValue)
+    return this.base.readStringArray(key, defaultValue)
   }
 
   applyFilm(key: string, value: number): number {
     if (this.film.type === "film") {
-    const diff = this.film?.skill?.[key]
-    if (diff) {
-      return value + diff
+      const diff = this.film?.skill?.[key]
+      if (diff) {
+        return value + diff
       }
     }
-      return value
+    return value
   }
 }
