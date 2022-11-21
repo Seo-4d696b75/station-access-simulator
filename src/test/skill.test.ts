@@ -1,9 +1,9 @@
 import { initContext } from "../core/context"
 import { DencoState } from "../core/denco"
 import { TypedMap } from "../core/property"
-import { activateSkill, deactivateSkill, getSkill, Skill, SkillDeactivateStrategy, SkillTransitionType } from "../core/skill"
+import { activateSkill, deactivateSkill, getSkill, Skill, SkillDeactivateStrategy } from "../core/skill"
 import { initUser, refreshState } from "../core/user"
-
+import "./matcher"
 
 
 describe("スキル状態遷移・コールバック", () => {
@@ -31,11 +31,12 @@ describe("スキル状態遷移・コールバック", () => {
       ...dencoBase,
       skill: {
         type: "possess",
+        transitionType: "manual",
+        deactivate: "self_deactivate",
         level: 1,
         name: "test-skill",
         transition: {
           state: "not_init",
-          type: "manual",
           data: undefined
         },
         property: new TypedMap(),
@@ -43,8 +44,6 @@ describe("スキル状態遷移・コールバック", () => {
       }
     }
     let s = getSkill(denco)
-    s.transition.type = "manual"
-    s.deactivate = "self_deactivate"
     s.data.putBoolean("key1", true)
     s.data.putString("key2", "string")
     s.data.putNumber("key3", 1)
@@ -69,19 +68,19 @@ describe("スキル状態遷移・コールバック", () => {
   - activeとcooldownの間の状態がidle,unableと違う
   - activateSkillをユーザ操作・スキル自身の制御どちらが呼び出すか
   */
-  describe.each<SkillTransitionType>(["auto", "manual"])("%s", (transitionType) => {
+  describe.each<"auto" | "manual">(["auto", "manual"])("%s", (transitionType) => {
 
     const idleState = transitionType === "manual" ? "idle" : "unable"
 
     const onActivated = jest.fn((_, state, self) => state)
-    const init = (deactivate: undefined | SkillDeactivateStrategy, property: undefined | [string, any][]): DencoState => {
+    const init = (deactivate: SkillDeactivateStrategy, property: undefined | [string, any][]): DencoState => {
       const skill: Skill = {
         type: "possess",
+        transitionType: transitionType,
         level: 1,
         name: "test-skill",
         transition: {
           state: "not_init",
-          type: transitionType,
           data: undefined
         },
         property: new TypedMap(new Map(property)),
@@ -99,12 +98,6 @@ describe("スキル状態遷移・コールバック", () => {
       onActivated.mockClear()
     })
 
-    test("activateSkill-Error(deactivate未定義)", () => {
-      const context = initContext("test", "test", false)
-      const denco = init(undefined, undefined)
-      const state = initUser(context, "test-user", [denco])
-      expect(() => activateSkill(context, state, 0)).toThrowError("deactivate: undefined")
-    })
     test("activateSkill-Error(スキルプロパティにactive未定義)", () => {
       const context = initContext("test", "test", false)
       const denco = init("default_timeout", [["cooldown", 10]])
@@ -142,7 +135,7 @@ describe("スキル状態遷移・コールバック", () => {
       let state = initUser(context, "test-user", [denco])
       let s = getSkill(state.formation[0])
       expect(s.transition.state).toBe(idleState)
-      expect(s.transition.type).toBe(transitionType)
+      expect(s.transitionType).toBe(transitionType)
       expect(s.transition.data).toBeUndefined()
       state = activateSkill(context, state, 0)
       denco = state.formation[0]
@@ -156,7 +149,7 @@ describe("スキル状態遷移・コールバック", () => {
 
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(denco)
 
       expect(() => deactivateSkill(context, state, 0)).toThrowError("active終了時刻")
 
@@ -266,7 +259,7 @@ describe("スキル状態遷移・コールバック", () => {
       let state = initUser(context, "test-user", [denco])
       let s = getSkill(state.formation[0])
       expect(s.transition.state).toBe(idleState)
-      expect(s.transition.type).toBe(transitionType)
+      expect(s.transitionType).toBe(transitionType)
       expect(s.transition.data).toBeUndefined()
       state = activateSkill(context, state, 0)
       denco = state.formation[0]
@@ -276,7 +269,7 @@ describe("スキル状態遷移・コールバック", () => {
 
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(denco)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(denco)
 
       state = deactivateSkill(context, state, 0)
       s = getSkill(state.formation[0])
@@ -327,14 +320,14 @@ describe("スキル状態遷移・コールバック", () => {
   describe("manual-condition", () => {
     const canEnabled = jest.fn()
     const onActivated = jest.fn((_, state, self) => state)
-    const init = (deactivate: undefined | SkillDeactivateStrategy, property: undefined | [string, any][]): DencoState => {
+    const init = (deactivate: SkillDeactivateStrategy, property: undefined | [string, any][]): DencoState => {
       const skill: Skill = {
         type: "possess",
+        transitionType: "manual-condition",
         level: 1,
         name: "test-skill",
         transition: {
           state: "not_init",
-          type: "manual-condition",
           data: undefined
         },
         property: new TypedMap(new Map(property)),
@@ -355,22 +348,7 @@ describe("スキル状態遷移・コールバック", () => {
       canEnabled.mockImplementation((_, state, self) => true)
     })
 
-    test("初期化Error-canEnabled未定義", () => {
-      const context = initContext("test", "test", false)
-      const denco = init(undefined, undefined)
-      let s = getSkill(denco)
-      s.canEnabled = undefined
-      expect(() => initUser(context, "test-user", [denco])).toThrowError("canEnabled が未定義")
-    })
-
     // manualと同じ処理の部分は省略
-
-    test("activateSkill-Error(deactivate未定義)", () => {
-      const context = initContext("test", "test", false)
-      const denco = init(undefined, undefined)
-      const state = initUser(context, "test-user", [denco])
-      expect(() => activateSkill(context, state, 0)).toThrowError("deactivate: undefined")
-    })
 
     test("activateSkill-deactivate:default_timeout", () => {
       const context = initContext("test", "test", false)
@@ -383,11 +361,11 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
       expect(canEnabled.mock.calls[0][1]).toMatchObject(state)
-      expect(canEnabled.mock.calls[0][2]).toMatchObject(d)
+      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
 
       let s = getSkill(state.formation[0])
       expect(s.transition.state).toBe("idle")
-      expect(s.transition.type).toBe("manual-condition")
+      expect(s.transitionType).toBe("manual-condition")
       expect(s.transition.data).toBeUndefined()
 
       state = activateSkill(context, state, 0)
@@ -402,7 +380,7 @@ describe("スキル状態遷移・コールバック", () => {
 
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(d)
 
       expect(() => deactivateSkill(context, state, 0)).toThrowError("active終了時刻")
 
@@ -435,11 +413,11 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
       expect(canEnabled.mock.calls[0][1]).toMatchObject(state)
-      expect(canEnabled.mock.calls[0][2]).toMatchObject(d)
+      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
 
       let s = getSkill(state.formation[0])
       expect(s.transition.state).toBe("idle")
-      expect(s.transition.type).toBe("manual-condition")
+      expect(s.transitionType).toBe("manual-condition")
       expect(s.transition.data).toBeUndefined()
       state = activateSkill(context, state, 0)
       d = state.formation[0]
@@ -449,7 +427,7 @@ describe("スキル状態遷移・コールバック", () => {
 
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(d)
 
       state = deactivateSkill(context, state, 0)
       s = getSkill(state.formation[0])
@@ -468,11 +446,11 @@ describe("スキル状態遷移・コールバック", () => {
     const init = (): DencoState => {
       const skill: Skill = {
         type: "possess",
+        transitionType: "auto-condition",
         level: 1,
         name: "test-skill",
         transition: {
           state: "not_init",
-          type: "auto-condition",
           data: undefined
         },
         property: new TypedMap(),
@@ -492,13 +470,6 @@ describe("スキル状態遷移・コールバック", () => {
       canActivated.mockImplementation((_, state, self) => true)
     })
 
-    test("初期化Error-canActivated未定義", () => {
-      const context = initContext("test", "test", false)
-      const denco = init()
-      let s = getSkill(denco)
-      s.canActivated = undefined
-      expect(() => initUser(context, "test-user", [denco])).toThrowError("canActivated が未定義")
-    })
     test("activate/deactivateSkill - Error", () => {
       const context = initContext("test", "test", false)
       const denco = init()
@@ -516,13 +487,13 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canActivated.mock.calls.length).toBeGreaterThan(0)
       expect(canActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(canActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(canActivated.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
       expect(s.transition.state).toBe("active")
       expect(s.transition.data).toBeUndefined()
-      expect(s.transition.type).toBe("auto-condition")
+      expect(s.transitionType).toBe("auto-condition")
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(onActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(onActivated.mock.calls[0][2]).toMatchDencoState(d)
 
       canActivated.mockClear()
       canActivated.mockImplementation((_, state, self) => false)
@@ -532,25 +503,23 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canActivated.mock.calls.length).toBeGreaterThan(0)
       expect(canActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(canActivated.mock.calls[0][2]).toMatchObject(d)
+      expect(canActivated.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "active" } } })
       expect(s.transition.state).toBe("unable")
     })
   })
 
   test("always", () => {
-    const onActivated = jest.fn((_, state, self) => state)
     const skill: Skill = {
       type: "possess",
+      transitionType: "always",
       level: 1,
       name: "test-skill",
       transition: {
         state: "not_init",
-        type: "always",
         data: undefined
       },
       property: new TypedMap(),
       data: new TypedMap(),
-      onActivated: onActivated,
     }
     let d: DencoState = {
       ...dencoBase,
@@ -561,15 +530,12 @@ describe("スキル状態遷移・コールバック", () => {
     d = state.formation[0]
     let s = getSkill(d)
 
-    expect(s.transition.type).toBe("always")
+    expect(s.transitionType).toBe("always")
     expect(s.transition.state).toBe("active")
     expect(s.transition.data).toBeUndefined()
 
     expect(() => activateSkill(context, state, 0)).toThrowError()
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
-
-    expect(onActivated.mock.calls.length).toBe(0)
-
   })
 
 
@@ -583,11 +549,11 @@ describe("スキル状態遷移・コールバック", () => {
     const onHourCycle = jest.fn((_, state, self) => state)
     const skill: Skill = {
       type: "possess",
+      transitionType: "always",
       level: 1,
       name: "test-skill",
       transition: {
         state: "not_init",
-        type: "always",
         data: undefined
       },
       property: new TypedMap(),

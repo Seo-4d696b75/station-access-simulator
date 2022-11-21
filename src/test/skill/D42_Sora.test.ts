@@ -22,7 +22,7 @@ describe("そらのスキル", () => {
     state = refreshState(context, state)
     sora = state.formation[0]
     let skill = getSkill(sora)
-    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transitionType).toBe("auto-condition")
     expect(skill.transition.state).toBe("active")
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
@@ -32,7 +32,7 @@ describe("そらのスキル", () => {
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
-    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transitionType).toBe("auto-condition")
     expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
 
@@ -41,7 +41,7 @@ describe("そらのスキル", () => {
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
-    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transitionType).toBe("auto-condition")
     expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
 
@@ -51,7 +51,7 @@ describe("そらのスキル", () => {
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
-    expect(skill.transition.type).toBe("auto-condition")
+    expect(skill.transitionType).toBe("auto-condition")
     expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
   })

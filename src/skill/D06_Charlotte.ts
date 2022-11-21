@@ -2,6 +2,7 @@ import { accessRandomStation, enqueueSkillEvent } from "../core/event"
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
+  transitionType: "manual",
   deactivate: "default_timeout",
   onActivated: (context, state, self) => {
     const timer = self.skill.property.readNumber("timer")

@@ -3,6 +3,7 @@ import { SkillEventState, triggerSkillAtEvent } from "../core/event";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual-condition",
   canEnabled: (context, state, self) => {
     return state.formation.some(d => {
       //　編成内（自身を除く）にスキル状態がactiveなサポータがひとり以上いる
@@ -47,7 +48,6 @@ const skill: SkillLogic = {
           const nextTimeout = s.transition.data.activatedAt + nextDuration
           s.transition = {
             state: "active",
-            type: s.transition.type,
             data: {
               activatedAt: s.transition.data.activatedAt,
               activeTimeout: nextTimeout,

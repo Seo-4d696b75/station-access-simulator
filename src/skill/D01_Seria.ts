@@ -2,6 +2,8 @@ import { EventSkillTrigger, triggerSkillAfterAccess } from "../core/event"
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   onAccessComplete: (context, state, self) => {
     // アクセス前後で自編成個体のHPが変化して3割以下となった個体が対象
     // アクセス・被アクセス以外の個体もHPが変化するので自編成の全個体を注目
@@ -27,7 +29,6 @@ const skill: SkillLogic = {
       return triggerSkillAfterAccess(context, state, self, trigger)
     }
   },
-  deactivate: "default_timeout"
 }
 
 export default skill

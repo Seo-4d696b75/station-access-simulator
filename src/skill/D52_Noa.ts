@@ -2,6 +2,7 @@ import { DencoType } from "../core/denco";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     // 単独編成では発動しない
     if (step === "damage_common" && self.who === "offense" && state.offense.formation.length > 1) {

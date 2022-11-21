@@ -1,11 +1,13 @@
 import { SimulatorError } from "../context"
+import { MutableProperty, ReadableProperty } from "../property"
 import { ReadonlyState } from "../state"
-import { SkillData } from "./data"
 import { SkillLogic } from "./logic"
-import { SkillProperty } from "./property"
-import { SkillTransition } from "./transition"
+import { SkillTransition, SkillTransitionType } from "./transition"
 
-export interface SkillState {
+export interface SkillState<T extends SkillTransitionType = SkillTransitionType> {
+
+  // 状態遷移タイプに応じた判別のため便宜上追加
+  transitionType: T
 
   // SkillHolderとして引数渡す場合に型推論が正しく行えるよう便宜的に追加
   type: "possess"
@@ -24,33 +26,106 @@ export interface SkillState {
    * **この状態を直接操作しないでください** {@link activateSkill} {@link deactivateSkill}などの関数を利用してください    
    * **Note** `always`など遷移タイプによってはスキル状態が不変な場合もある
    */
-  transition: SkillTransition
+  transition: SkillTransition<T>
 
-  // 参照する場所によって読み出す値が違う
-  property: unknown
+  // 参照する場所によってフィルム補正の有無が異なるので注意
+  /**
+   * スキルに関する各種データ（スキルプロパティ）にアクセスします
+   * 
+   * ### スキルプロパティの定義場所
+   * 
+   * `src/data/skill.json`で定義したデータを読み取ります. 
+   * 読み取る値はスキルレベルに依存して変化する場合があります
+   * 
+   * ### サポートするデータ型  
+   * - number
+   * - string
+   * - boolean
+   * - number[]
+   * - string[]
+   * 
+   * ### 利用例
+   * (例)スキルデータ  
+   * ```json
+   * [
+   *   {
+   *     "numbering":"1",
+   *     "key": "value2",
+   *     "list": [
+   *       {
+   *         "skill_level": 1,
+   *         "denco_level": 5,
+   *         "key": "value1"
+   *       },
+   *       {
+   *         "skill_level": 2,
+   *         "denco_level": 15
+   *       }
+   *     ]
+   *   }
+   * ]
+   * ```
+   * 
+   * 各関数`read**`を呼び出すと、
+   * 
+   * 1. 対応するスキルレベルのJSON Objectを調べて指定した`key`が存在すれば返す  
+   *    （例）"skill_level": 1 の場合は "value1"
+   * 2. スキルデータ直下のJSON Objectを調べて指定した`key`が存在すれば値を返す  
+   *    （例）"skill_level": 2 の場合は "value2"
+   * 3. デフォルト値`defaultValue`を返す
+   * 
+   * **例外の発生**  
+   * - 1.2. において指定した`key`で見つかった値が予期した型と異なる場合
+   * - 指定した`key`に対する値が存在せず、かつデフォルト値も指定が無い場合
+   * 
+   */
+  property: ReadableProperty
 
   /**
-   * カスタムデータ
-   * 
    * スキルの処理に関わる任意のデータを保存できます
+   * 
+   * ## サポートするデータ型  
+   * - number
+   * - string
+   * - boolean
+   * - number[]
+   * - string[]
+   * 
+   * ## 初期化のタイミング
+   * 以下のタイミングでデータは全て削除されます
+   * - でんこ初期化などスキルを初期化したとき
+   * - スキルの状態遷移が`idle`or`unable`から`active`に変化したとき
+   * 
+   * ## 読み込み専用な型
+   * `ReadonlyState<SkillData>`の場合では書き込み関数`put**`は参照できません  
+   * 一旦コピーして変更可能なオブジェクトを取得してから書き込みます
+   * ```
+   * const state: ReadonlyState<UserState>
+   * let d1 = getSkill(state.formation[0]).data // ReadonlyState<SkillData>
+   * d1.putString("key", 0) // Error
+   * 
+   * const next = copyState<UserState>(state)
+   * let d2 = getSkill(next.formation[0]).data // SkillData
+   * d2.putString("key", 0) // OK
+   * ```
    */
-  data: SkillData
+  data: ReadableProperty & MutableProperty
 }
 
 /**
  * でんこが保有するスキル
  */
-export type Skill = SkillState & SkillLogic & {
-  /**
-   * スキルレベルや各でんこに依存するデータへアクセスします
-   * 
-   * ### 注意
-   * ここから読み出す値には着用してるフィルムの補正値が反映されていません  
-   * 
-   * スキルの発動判定・発動時の処理を行うときは必ずコールバックに渡される{@link ActiveSkill}の方から参照してください
-   */
-  property: SkillProperty
-}
+export type Skill<T extends SkillTransitionType = SkillTransitionType> =
+  T extends SkillTransitionType ? SkillState<T> & SkillLogic<T> & {
+    /**
+     * 
+     * ## フィルム補正は反映されません！
+     * ここから読み出す値には着用してるフィルムの補正値が反映されていません  
+     * 
+     * スキルの発動判定・発動時の処理を行うときは必ずコールバックに渡される{@link ActiveSkill}から参照してください
+     */
+    property: ReadableProperty
+  } : never
 
 interface SkillNotAcquired {
   type: "not_acquired"

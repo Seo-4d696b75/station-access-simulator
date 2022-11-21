@@ -19,7 +19,7 @@ describe("うららのスキル", () => {
     let state = initUser(context, "master", [urara])
     urara = state.formation[0]
     let skill = getSkill(urara)
-    expect(skill.transition.type).toBe("manual-condition")
+    expect(skill.transitionType).toBe("manual-condition")
     expect(skill.transition.state).toBe("unable")
     expect(() => activateSkill(context, state, 0)).toThrowError()
 

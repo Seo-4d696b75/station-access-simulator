@@ -1,21 +1,5 @@
 [
   {
-    "numbering": "0",
-    "class": "D00_Nozomi",
-    "type": "manual",
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 1,
-        "name": "目指せステーションマスター♪",
-        "ATK": 50,
-        "DEF": 50,
-        "active": 1200,
-        "cooldown": 1800
-      }
-    ]
-  },
-  {
     "numbering": "1",
     "class": "D01_Seria",
     "type": "manual",
@@ -748,70 +732,6 @@
         "name": "太陽の輝きはりんごのために",
         "ATK": 38,
         "DEF": -30
-      }
-    ]
-  },
-  {
-    "numbering": "16",
-    "class": "D16_Nyash",
-    "type": "always",
-    "step": {},
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 5,
-        "name": "友だち一杯つくるのニャ Lv.1",
-        "add": 2
-      },
-      {
-        "skill_level": 2,
-        "denco_level": 15,
-        "name": "友だち一杯つくるのニャ Lv.2",
-        "add": 4
-      },
-      {
-        "skill_level": 3,
-        "denco_level": 30,
-        "name": "友だち一杯つくるのニャ Lv.3",
-        "add": 6
-      },
-      {
-        "skill_level": 4,
-        "denco_level": 50,
-        "name": "友だち一杯つくるのニャ Lv.4",
-        "add": 8
-      },
-      {
-        "skill_level": 5,
-        "denco_level": 60,
-        "name": "友だち一杯つくるのニャ Lv.5",
-        "add": 10
-      },
-      {
-        "skill_level": 6,
-        "denco_level": 70,
-        "name": "友だち一杯つくるのニャ Lv.6",
-        "add": 12
-      },
-      {
-        "skill_level": 7,
-        "denco_level": 80,
-        "name": "友愛の轍",
-        "add": 15
-      }
-    ]
-  },
-  {
-    "numbering": "17",
-    "class": "D17_Dachu",
-    "type": "always",
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 10,
-        "name": "どいてもらうでチュー",
-        "probability": 75,
-        "footbath": 1
       }
     ]
   },
@@ -3037,76 +2957,6 @@
     ]
   },
   {
-    "numbering": "66",
-    "class": "D66_Minamo",
-    "type": "auto",
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 5,
-        "name": "みんなでショウ・タイム Lv.1",
-        "damage": 30,
-        "links": 2,
-        "active": 1800,
-        "cooldown": 0
-      },
-      {
-        "skill_level": 2,
-        "denco_level": 15,
-        "name": "みんなでショウ・タイム Lv.2",
-        "damage": 45,
-        "links": 2,
-        "active": 1800,
-        "cooldown": 0
-      },
-      {
-        "skill_level": 3,
-        "denco_level": 30,
-        "name": "みんなでショウ・タイム Lv.3",
-        "damage": 60,
-        "links": 2,
-        "active": 1800,
-        "cooldown": 0
-      },
-      {
-        "skill_level": 4,
-        "denco_level": 50,
-        "name": "みんなでショウ・タイム Lv.4",
-        "damage": 75,
-        "links": 2,
-        "active": 1800,
-        "cooldown": 0
-      },
-      {
-        "skill_level": 5,
-        "denco_level": 60,
-        "name": "みんなでショウ・タイム Lv.5",
-        "damage": 90,
-        "links": 2,
-        "active": 1800,
-        "cooldown": 0
-      },
-      {
-        "skill_level": 6,
-        "denco_level": 70,
-        "name": "みんなでショウ・タイム Lv.6",
-        "damage": 105,
-        "links": 2,
-        "active": 1800,
-        "cooldown": 0
-      },
-      {
-        "skill_level": 7,
-        "denco_level": 80,
-        "name": "ランウェイオンザレール",
-        "damage": 120,
-        "links": 2,
-        "active": 1800,
-        "cooldown": 0
-      }
-    ]
-  },
-  {
     "numbering": "69",
     "class": "D69_Miyu",
     "type": "always",
@@ -3218,69 +3068,6 @@
         "name": "リラクシングトラベル",
         "ATK": 60,
         "heal": 30
-      }
-    ]
-  },
-  {
-    "numbering": "77",
-    "class": "D77_Reto",
-    "type": "always",
-    "list": [
-      {
-        "skill_level": 1,
-        "denco_level": 5,
-        "name": "ワンダーエスケープ Lv.1",
-        "active": 0,
-        "cooldown": 0,
-        "probability": 8
-      },
-      {
-        "skill_level": 2,
-        "denco_level": 15,
-        "name": "ワンダーエスケープ Lv.2",
-        "active": 0,
-        "cooldown": 0,
-        "probability": 10
-      },
-      {
-        "skill_level": 3,
-        "denco_level": 30,
-        "name": "ワンダーエスケープ Lv.3",
-        "active": 0,
-        "cooldown": 0,
-        "probability": 12
-      },
-      {
-        "skill_level": 4,
-        "denco_level": 50,
-        "name": "ワンダーエスケープ Lv.4",
-        "active": 0,
-        "cooldown": 0,
-        "probability": 14
-      },
-      {
-        "skill_level": 5,
-        "denco_level": 60,
-        "name": "ワンダーエスケープ Lv.5",
-        "active": 0,
-        "cooldown": 0,
-        "probability": 16
-      },
-      {
-        "skill_level": 6,
-        "denco_level": 70,
-        "name": "ワンダーエスケープ Lv.6",
-        "active": 0,
-        "cooldown": 0,
-        "probability": 18
-      },
-      {
-        "skill_level": 7,
-        "denco_level": 80,
-        "name": "逃げ道だって小さな旅",
-        "active": 0,
-        "cooldown": 0,
-        "probability": 20
       }
     ]
   }

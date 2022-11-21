@@ -1,6 +1,7 @@
 import { AccessConfig } from "."
 import { Context } from "../context"
 import { isSkillActive } from "../skill"
+import { withActiveSkill } from "../skill/property"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, copyStateTo, ReadonlyState } from "../state"
 import { LinksResult, Station } from "../station"
@@ -76,7 +77,7 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
 
   // レベルアップ処理
   checkLevelup(context, result)
-  
+
   // アクセスイベントを追加
   addAccessEvent(context, config.offense.state, result, "offense")
   addAccessEvent(context, config.defense?.state, result, "defense")
@@ -213,11 +214,7 @@ function checkSkillOnReboot(context: Context, state: AccessResult, which: Access
       const d = side.formation[idx]
       const skill = d.skill
       if (skill.type === "possess" && skill.onDencoReboot) {
-        let self = {
-          ...d,
-          skill: skill,
-        }
-        const next = skill.onDencoReboot(context, side, self)
+        const next = skill.onDencoReboot(context, side, withActiveSkill(d, skill, idx))
         if (next) {
           copyStateTo<UserState>(next, side)
         }
@@ -241,11 +238,7 @@ function checkSkillAfterAccess(context: Context, state: AccessResult, which: Acc
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
       if (skill && skill.onAccessComplete) {
-        const self = {
-          ...d,
-          skill: skill,
-        }
-        const next = skill.onAccessComplete(context, formation, self, state)
+        const next = skill.onAccessComplete(context, formation, withActiveSkill(d, skill, idx), state)
         if (next) {
           formation = next
         }

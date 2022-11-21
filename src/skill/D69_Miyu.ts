@@ -1,6 +1,7 @@
 import { getAccessDenco, SkillLogic } from "..";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     // 移動距離1km未満は発動しない?
     const dist = state.offense.user.daily.readDistance(context)

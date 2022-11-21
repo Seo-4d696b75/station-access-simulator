@@ -3,6 +3,8 @@ import { formatLinkTime } from "../core/format";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     // カウンター被弾などアクセス側でも発動可能
     if (step === "after_damage" && self.reboot) {
@@ -34,8 +36,6 @@ const skill: SkillLogic = {
       }
     }
   },
-
-  deactivate: "default_timeout"
 }
 
 export default skill

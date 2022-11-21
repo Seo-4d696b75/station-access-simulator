@@ -1,6 +1,8 @@
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "probability_check") {
       return (state) => {
@@ -21,7 +23,6 @@ const skill: SkillLogic = {
       state.probabilityBoostPercent += boost
     }
   },
-  deactivate: "default_timeout"
 }
 
 export default skill

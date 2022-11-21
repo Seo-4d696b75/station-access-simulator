@@ -2,6 +2,8 @@ import { getDefense } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     // DEFアップ
     if (step === "damage_common" && self.which === "defense") {
@@ -30,7 +32,6 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivate: "default_timeout"
 }
 
 export default skill

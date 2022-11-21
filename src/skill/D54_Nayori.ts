@@ -2,6 +2,7 @@ import { triggerSkillAfterAccess } from "../core/event";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   onAccessComplete: (context, state, self, access) => {
     // 配布対象はアクセスによる経験値・リブートによるリンク経験値
     if (self.who === "offense" || self.reboot) {

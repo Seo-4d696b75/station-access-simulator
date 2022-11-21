@@ -1,5 +1,4 @@
 export * from "./activate";
-export * from "./data";
 export * from "./holder";
 export * from "./logic";
 export * from "./manager";

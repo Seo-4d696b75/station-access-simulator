@@ -2,6 +2,8 @@ import { getDefense } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense" && state.defense) {
       // アクセス数の差
@@ -18,7 +20,6 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivate: "default_timeout"
 }
 
 export const calcATK = (max: number, diff: number): number => {
