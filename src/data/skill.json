@@ -2844,6 +2844,56 @@
     ]
   },
   {
+    "numbering": "55",
+    "class": "D55_Himari",
+    "active": 2700,
+    "cooldown": 14400,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "一体感が大事です！ Lv.1",
+        "DEF": 3.0
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "一体感が大事です！ Lv.2",
+        "DEF": 3.5
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "一体感が大事です！ Lv.3",
+        "DEF": 4.0
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "一体感が大事です！ Lv.4",
+        "DEF": 4.5
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "一体感が大事です！ Lv.5",
+        "DEF": 5.0
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "一体感が大事です！ Lv.6",
+        "DEF": 5.5
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "夕陽に向かってレッツゴー！",
+        "DEF": 6.0
+      }
+    ]
+  },
+  {
     "numbering": "58",
     "class": "D58_Marika",
     "type": "manual",
