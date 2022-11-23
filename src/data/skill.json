@@ -2894,6 +2894,69 @@
     ]
   },
   {
+    "numbering": "57",
+    "class": "D57_Mizuho",
+    "cooldown": 10800,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "風のように水のように Lv.1",
+        "active": 1800,
+        "ATK": 5.0,
+        "DEF": 5.0
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "風のように水のように Lv.2",
+        "active": 1800,
+        "ATK": 7.5,
+        "DEF": 7.5
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "風のように水のように Lv.3",
+        "active": 1800,
+        "ATK": 10.0,
+        "DEF": 10.0
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "風のように水のように Lv.4",
+        "active": 1800,
+        "ATK": 12.5,
+        "DEF": 12.5
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "風のように水のように Lv.5",
+        "active": 2700,
+        "ATK": 15.0,
+        "DEF": 15.0
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "風のように水のように Lv.6",
+        "active": 2700,
+        "ATK": 17.5,
+        "DEF": 17.5
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "幸せを運ぶ風車",
+        "active": 2700,
+        "ATK": 20.0,
+        "DEF": 20.0
+      }
+    ]
+  },
+  {
     "numbering": "58",
     "class": "D58_Marika",
     "cooldown": 7200,
