@@ -1,4 +1,4 @@
-import { DencoType } from "../core/denco";
+import { countDencoType } from "../core/denco";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
@@ -10,12 +10,11 @@ const skill: SkillLogic = {
         probability: self.skill.property.readNumber("probability"),
         recipe: (state) => {
           // 自身を除くタイプの数
-          const types = new Set<DencoType>()
-          state.offense.formation
-            .filter(d => d.numbering !== self.numbering)
-            .forEach(d => types.add(d.type))
+          const cnt = countDencoType(
+            state.offense.formation.filter(d => d.numbering !== self.numbering)
+          )
           const unit = self.skill.property.readNumber("ATK")
-          const atk = unit * types.size
+          const atk = unit * cnt
           state.attackPercent += atk
           context.log.log(`いろんなタイプのでんこといるほうが、感受性が磨かれる気がする DEF:+${atk}`)
         }
