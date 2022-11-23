@@ -12,13 +12,16 @@ const skill: SkillLogic = {
       let target = state.formation[idx]
       // 再配布できる場合
       if (target.currentExp < target.nextExp) {
-        return triggerSkillAfterAccess(context, state, self, (state) => {
-          const percent = self.skill.property.readNumber("EXP")
-          let dst = state.formation[idx] // 編成位置は変わらない前提
-          const value = Math.floor(exp * percent / 100)
-          context.log.log(`経験値の再配布 ${exp} * ${percent}% = ${value}`)
-          dst.currentExp += value // アクセス中と異なる直接加算する
-          // レベルアップの確認等の更新は呼び出し元で行う（はず）
+        return triggerSkillAfterAccess(context, state, self, {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            const percent = self.skill.property.readNumber("EXP")
+            let dst = state.formation[idx] // 編成位置は変わらない前提
+            const value = Math.floor(exp * percent / 100)
+            context.log.log(`経験値の再配布 ${exp} * ${percent}% = ${value}`)
+            dst.currentExp += value // アクセス中と異なる直接加算する
+            // レベルアップの確認等の更新は呼び出し元で行う（はず）
+          }
         })
       }
     }

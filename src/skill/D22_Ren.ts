@@ -11,10 +11,13 @@ const skill: SkillLogic = {
       // TODO 無効化対象のでんこを列挙する 適宜変更が必要
       const target = self.skill.property.readStringArray("invalidated")
       if (target.includes(defense.numbering)) {
-        return (state) => {
-          const defense = getAccessDenco(state, "defense")
-          defense.skillInvalidated = true
-          context.log.log(`ウチのスキルは相手のスキルを無効化するでぇー target:${defense.name}`)
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            const defense = getAccessDenco(state, "defense")
+            defense.skillInvalidated = true
+            context.log.log(`ウチのスキルは相手のスキルを無効化するでぇー target:${defense.name}`)
+          }
         }
       }
     }

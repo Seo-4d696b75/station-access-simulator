@@ -10,12 +10,15 @@ const skill: SkillLogic = {
       const diff = (getDefense(state).user.history.getStationAccessCount(context, state.station))
         - (state.offense.user.history.getStationAccessCount(context, state.station))
       if (diff > 0) {
-        return (state) => {
-          // 最大ATK上昇量
-          const max = self.skill.property.readNumber("ATK")
-          const atk = calcATK(max, diff)
-          context.log.log(`わたしのスキルは相手がデータを蓄積しているほど有利に働きます。ATK+${atk}%`)
-          state.attackPercent += atk
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            // 最大ATK上昇量
+            const max = self.skill.property.readNumber("ATK")
+            const atk = calcATK(max, diff)
+            context.log.log(`わたしのスキルは相手がデータを蓄積しているほど有利に働きます。ATK+${atk}%`)
+            state.attackPercent += atk
+          }
         }
       }
     }

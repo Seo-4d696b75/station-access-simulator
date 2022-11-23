@@ -147,6 +147,7 @@ describe("アサのスキル", () => {
         case "active": return 0
         case "cooldown": return 9000
         case "extend": return 620
+        case "probability": return 100
         default: throw Error()
       }
     })

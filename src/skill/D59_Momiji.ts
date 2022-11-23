@@ -1,22 +1,20 @@
+import { getDefense } from "../core/access";
 import { countDencoType } from "../core/denco";
+import { formatPercent } from "../core/format";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
-    // 単独編成では発動しない
-    if (step === "damage_common" && self.who === "offense" && state.offense.formation.length > 1) {
+    if (step === "damage_common" && self.who === "offense") {
       return {
         probabilityKey: "probability",
         recipe: (state) => {
-          // 自身を除くタイプの数
-          const cnt = countDencoType(
-            state.offense.formation.filter(d => d.numbering !== self.numbering)
-          )
+          const cnt = countDencoType(getDefense(state).formation)
           const unit = self.skill.property.readNumber("ATK")
           const atk = unit * cnt
           state.attackPercent += atk
-          context.log.log(`いろんなタイプのでんこといるほうが、感受性が磨かれる気がする DEF:+${atk}`)
+          context.log.log(`いろんなでんこに会えると、嬉しくなって勢いあまっちゃうんだよ～ ATK${formatPercent(atk)}`)
         }
       }
     }

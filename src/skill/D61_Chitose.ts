@@ -12,7 +12,7 @@ const skill: SkillLogic = {
       })
       if (!anySupporter) return // 無効化の対象が存在しない
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           const all = Array.from(state.offense.formation)
           if (state.defense) {

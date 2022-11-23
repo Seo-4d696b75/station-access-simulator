@@ -8,7 +8,7 @@ const skill: SkillLogic = {
       const damage = base.variable + base.constant
       if (damage >= self.currentHp) {
         return {
-          probability: self.skill.property.readNumber("probability"),
+          probabilityKey: "probability",
           recipe: (state) => {
             // 現在のHP - 1 にダメージ量を固定
             state.damageBase = {

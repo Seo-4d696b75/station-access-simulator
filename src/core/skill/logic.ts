@@ -164,7 +164,8 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
    * 
    * @return スキル発動の判定方法・発動時の処理を返り値で指定できます  
    * - void: スキルは発動しません. 確率計算に依存せず発動しないことが明白な場合に適切です.
-   * - AccessSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
+   * - AccessSkillTriggers: 指定された`probabilityKey`で発動確率[%]をスキルプロパティから読み出して
+   * スキル発動有無を判定し、発動する場合は`recipe`で状態を更新します 
    * 
    */
   triggerOnAccess?: (context: Context, state: ReadonlyState<AccessState>, step: AccessSkillStep, self: ReadonlyState<WithActiveSkill<AccessDencoState>>) => void | AccessSkillTriggers

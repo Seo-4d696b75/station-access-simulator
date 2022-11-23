@@ -17,7 +17,7 @@ const skill: SkillLogic = {
         && d.hpAfter <= d.maxHp * hpTh / 100) {
         return [
           {
-            probability: self.skill.property.readNumber("probability"),
+            probabilityKey: "probability_heal",
             recipe: (state) => {
               // HP回復は確率発動
               const sister = getAccessDenco(state, "defense")
@@ -32,9 +32,12 @@ const skill: SkillLogic = {
               context.log.log(`お姉様は身体が弱い……。HP+${heal}`)
             }
           },
-          (state) => {
-            context.log.log(`お姉様との旅路を邪魔するやつは、たとえマスターでも許さないからな…！！カウンター発動`)
-            return counterAttack(context, state, self)
+          {
+            probabilityKey: "probability_counter",
+            recipe: (state) => {
+              context.log.log(`お姉様との旅路を邪魔するやつは、たとえマスターでも許さないからな…！！カウンター発動`)
+              return counterAttack(context, state, self)
+            }
           }
         ]
       }

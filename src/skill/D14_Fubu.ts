@@ -5,10 +5,13 @@ const skill: SkillLogic = {
   deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.which === "defense") {
-      return (state) => {
-        const def = self.skill.property.readNumber("DEF")
-        state.defendPercent += def
-        context.log.log(`わたしのスキルは編成内のでんこ達の受けるダメージを減らすものだー DEF+${def}%`)
+      return {
+        probabilityKey: "probability",
+        recipe: (state) => {
+          const def = self.skill.property.readNumber("DEF")
+          state.defendPercent += def
+          context.log.log(`わたしのスキルは編成内のでんこ達の受けるダメージを減らすものだー DEF+${def}%`)
+        }
       }
     }
   },

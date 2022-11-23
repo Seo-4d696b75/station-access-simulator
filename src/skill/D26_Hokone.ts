@@ -8,23 +8,29 @@ const skill: SkillLogic = {
     if (self.who === "offense" && state.defense) {
       const defense = getAccessDenco(state, "defense")
       if (step === "damage_special" && defense.numbering === "25") {
-        return (state) => {
-          const heal = self.skill.property.readNumber("heal")
-          const base = calcAccessDamage(context, state)
-          // 通常のATK&DEF増減による計算を考慮する
-          const value = Math.floor(base * heal / 100)
-          // 回復量は負数のダメージ量として処理
-          state.damageBase = {
-            variable: 0, // variable は0以上に計算が入る
-            constant: -value + (state.damageBase?.constant ?? 0)
+        return {
+          probabilityKey: "probability_heal",
+          recipe: (state) => {
+            const heal = self.skill.property.readNumber("heal")
+            const base = calcAccessDamage(context, state)
+            // 通常のATK&DEF増減による計算を考慮する
+            const value = Math.floor(base * heal / 100)
+            // 回復量は負数のダメージ量として処理
+            state.damageBase = {
+              variable: 0, // variable は0以上に計算が入る
+              constant: -value + (state.damageBase?.constant ?? 0)
+            }
+            context.log.log(`うららちゃんは可愛くて思わずいい子いい子しちゃうわぁ～♪ 回復:${value} = base:${base} * ${heal}%`)
           }
-          context.log.log(`うららちゃんは可愛くて思わずいい子いい子しちゃうわぁ～♪ 回復:${value} = base:${base} * ${heal}%`)
         }
       } else if (step === "damage_common" && defense.numbering !== "25") {
-        return (state) => {
-          const atk = self.skill.property.readNumber("ATK")
-          state.attackPercent += atk
-          context.log.log(`今日も愛するうららちゃんをひとりじめするため、野暮な連中をふっ飛ばすわよ! ATK+${atk}%`)
+        return {
+          probabilityKey: "probability_atk",
+          recipe: (state) => {
+            const atk = self.skill.property.readNumber("ATK")
+            state.attackPercent += atk
+            context.log.log(`今日も愛するうららちゃんをひとりじめするため、野暮な連中をふっ飛ばすわよ! ATK+${atk}%`)
+          }
         }
       }
     }

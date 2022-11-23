@@ -1,10 +1,10 @@
 import { SkillTriggerEvent } from "."
 import { AccessDencoResult, AccessUserResult } from "../access"
-import { Context, withFixedClock } from "../context"
+import { assert, Context, withFixedClock } from "../context"
 import { Denco, DencoState } from "../denco"
 import { random } from "../random"
 import { isSkillActive, ProbabilityPercent, Skill, WithActiveSkill } from "../skill"
-import { withActiveSkill } from "../skill/property"
+import { SkillProperty, SkillPropertyReader, withActiveSkill } from "../skill/property"
 import { copyState, ReadonlyState } from "../state"
 import { UserProperty, UserState } from "../user"
 import { refreshUserState } from "../user/refresh"
@@ -85,13 +85,28 @@ export type EventSkillRecipe = (state: SkillEventState) => void | SkillEventStat
 /**
  * スキル発動型イベントにおいてスキル発動の確率計算の方法・発動時の処理を定義します
  * 
- * - 確率計算に依存せず発動することが確定している場合は`EventSkillRecipe`を直接返します
- * - 確率計算に依存して発動する場合は, `probability`:発動の確率, `recipe`:発動した場合の状態の更新方法をそれぞれ指定します
  */
 export type EventSkillTrigger = {
-  probability: ProbabilityPercent
+
+  /** 
+   * スキルプロパティから発動確率[%]を読み出します  
+   * 
+   * ```js
+   * readNumber(probabilityKey, 100)
+   * ```
+   * 
+   * - スキルプロパティに未定義の場合はデフォルト値100[%]を使用します. 
+   * - **フィルム補正が影響します！** `probabilityKey`で定義されたスキル補正により
+   * 読み出す発動確率の値[%]が変化する場合があります.
+   */
+  probabilityKey: string
+  /**
+   * スキルが発動した場合の処理を関数として指定します. 
+   * 
+   * 指定した関数には現在の状態が引数として渡されるので、関数内に状態を更新する処理を定義してください
+   */
   recipe: EventSkillRecipe
-} | EventSkillRecipe
+}
 
 /**
  * アクセス直後のタイミングでスキル発動型のイベントを処理する
@@ -237,8 +252,9 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${s.name} possess => ${skill.type}`)
     }
     if (!skill.triggerOnEvent) return
-    const trigger = skill.triggerOnEvent?.(context, state, withActiveSkill(s, skill, s.carIndex))
-    const recipe = canTriggerSkill(context, state, trigger)
+    const active = withActiveSkill(s, skill, s.carIndex)
+    const trigger = skill.triggerOnEvent?.(context, state, active)
+    const recipe = canTriggerSkill(context, state, trigger, active.skill.property)
     if (!recipe) return
     state = recipe(state) ?? state
     let e: SkillTriggerEvent = {
@@ -254,16 +270,19 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
     state.event.push(e)
   })
 
+  // 最新の状態を参照
+  self = state.formation[state.carIndex]
+  assert(self.skill.type === "possess")
+  // スキル発動本人のスキルプロパティwithフィルム補正
+  const property = new SkillPropertyReader(self.skill.property, self.film)
   // 発動確率の確認
-  const recipe = canTriggerSkill(context, state, trigger)
+  const recipe = canTriggerSkill(context, state, trigger, property)
   if (!recipe) {
     context.log.log("スキル評価イベントの終了（発動なし）")
     // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
     return
   }
 
-  // 最新の状態を参照
-  self = copyState<SkillEventDencoState>(state.formation[state.carIndex])
   state = recipe(state) ?? state
   let triggerEvent: SkillTriggerEvent = {
     type: "skill_trigger",
@@ -280,10 +299,9 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   return state
 }
 
-function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>, trigger: EventSkillTrigger | void): EventSkillRecipe | undefined {
+function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>, trigger: EventSkillTrigger | void, property: SkillProperty): EventSkillRecipe | undefined {
   if (typeof trigger === "undefined") return
-  if (typeof trigger === "function") return trigger
-  let percent = trigger.probability
+  let percent = property.readNumber(trigger.probabilityKey, 100)
   const boost = state.probabilityBoostPercent
   if (percent >= 100) {
     return trigger.recipe

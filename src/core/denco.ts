@@ -43,3 +43,9 @@ export interface DencoState extends Denco {
 
   link: StationLink[]
 }
+
+export function countDencoType(formation: Denco[]): number {
+  const types = new Set<DencoType>()
+  formation.forEach(d => types.add(d.type))
+  return types.size
+}

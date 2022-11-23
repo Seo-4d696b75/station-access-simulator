@@ -1,4 +1,4 @@
-import { EventSkillTrigger, triggerSkillAfterAccess } from "../core/event"
+import { triggerSkillAfterAccess } from "../core/event"
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
@@ -10,12 +10,10 @@ const skill: SkillLogic = {
     const formation = state.formation
     const target = formation.filter(d => d.hpBefore !== d.currentHp && d.currentHp <= d.maxHp * 0.3)
     if (target.length > 0) {
-      const percent = self.skill.property.readNumber("probability")
-      const heal = self.skill.property.readNumber("heal")
-      // lambdaからAccessStateを参照
-      const trigger: EventSkillTrigger = {
-        probability: percent,
+      return triggerSkillAfterAccess(context, state, self, {
+        probabilityKey: "probability",
         recipe: (state) => {
+          const heal = self.skill.property.readNumber("heal")
           context.log.log(`検測開始しま～す HP+${heal}`)
           state.formation.forEach(d => {
             // 編成は変わらない前提
@@ -24,9 +22,8 @@ const skill: SkillLogic = {
               d.currentHp = Math.min(d.maxHp, d.currentHp + heal)
             }
           })
-        },
-      }
-      return triggerSkillAfterAccess(context, state, self, trigger)
+        }
+      })
     }
   },
 }

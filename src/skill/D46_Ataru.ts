@@ -45,13 +45,16 @@ const skill: SkillLogic = {
   },
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense" && state.defense) {
-      return (state) => {
-        const cnt = self.skill.data.readNumber(KEY, 0)
-        const max = self.skill.property.readNumber("count_max")
-        const atkUnit = self.skill.property.readNumber("ATK")
-        const atk = Math.floor(atkUnit * Math.min(cnt, max))
-        state.attackPercent += atk
-        context.log.log(`ボク、攻撃されると悔しくなってパワー上昇するんです。回数：${cnt} ATK+${atk}%`)
+      return {
+        probabilityKey: "probability",
+        recipe: (state) => {
+          const cnt = self.skill.data.readNumber(KEY, 0)
+          const max = self.skill.property.readNumber("count_max")
+          const atkUnit = self.skill.property.readNumber("ATK")
+          const atk = Math.floor(atkUnit * Math.min(cnt, max))
+          state.attackPercent += atk
+          context.log.log(`ボク、攻撃されると悔しくなってパワー上昇するんです。回数：${cnt} ATK+${atk}%`)
+        }
       }
     }
   },
