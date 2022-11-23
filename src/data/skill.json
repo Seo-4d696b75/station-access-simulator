@@ -2845,6 +2845,55 @@
     ]
   },
   {
+    "numbering": "56",
+    "class": "D56_Rara",
+    "DEF_night": -30,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "やる気タイム Lv.1",
+        "DEF_morning": 5
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "やる気タイム Lv.2",
+        "DEF_morning": 10
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "やる気タイム Lv.3",
+        "DEF_morning": 15
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "やる気タイム Lv.4",
+        "DEF_morning": 25
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "やる気タイム Lv.5",
+        "DEF_morning": 35
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "やる気タイム Lv.6",
+        "DEF_morning": 40
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "ウチの本気見せたるわ♪",
+        "DEF_morning": 50
+      }
+    ]
+  },
+  {
     "numbering": "58",
     "class": "D58_Marika",
     "cooldown": 7200,
