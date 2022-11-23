@@ -12,7 +12,7 @@ const skill: SkillLogic = {
       // 肩代わりできるダメージの有無を確認
       if (base.variable > 0) {
         return {
-          probability: self.skill.property.readNumber("probability"),
+          probabilityKey: "probability",
           recipe: (state) => {
             // ATKのみ考慮して基本ダメージを計算
             const base = calcAccessDamage(context, state, {

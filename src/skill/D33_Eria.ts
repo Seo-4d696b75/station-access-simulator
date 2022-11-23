@@ -22,10 +22,13 @@ const skill: SkillLogic = {
           // 30 Reno は夜間のみ対象
           return
         }
-        return (state) => {
-          const d = getAccessDenco(state, "offense")
-          d.skillInvalidated = true
-          context.log.log(`ほこねのいもうとあい？理解くるしむ。だから効かない？ スキルを無効化：${d.name}(${d.numbering})`)
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            const d = getAccessDenco(state, "offense")
+            d.skillInvalidated = true
+            context.log.log(`ほこねのいもうとあい？理解くるしむ。だから効かない？ スキルを無効化：${d.name}(${d.numbering})`)
+          }
         }
       }
     }

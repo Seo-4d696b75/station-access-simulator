@@ -9,10 +9,13 @@ const skill: SkillLogic = {
       const targetIdx = self.carIndex === 0 ? 1 : 0
       const d = getAccessDenco(state, "offense")
       if (d.carIndex === targetIdx) {
-        return (state) => {
-          const atk = self.skill.property.readNumber("ATK")
-          state.attackPercent += atk
-          context.log.log(`マスター、あとちょっとだけ頑張ってリンクしてみよ♪ ATK+${atk}%`)
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            const atk = self.skill.property.readNumber("ATK")
+            state.attackPercent += atk
+            context.log.log(`マスター、あとちょっとだけ頑張ってリンクしてみよ♪ ATK+${atk}%`)
+          }
         }
       }
     }

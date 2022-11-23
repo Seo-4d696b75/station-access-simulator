@@ -10,7 +10,7 @@ const skill: SkillLogic = {
       !self.reboot &&
       !state.linkDisconnected) {
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           context.log.log(`あら、誰か来たみたい♪ カウンター攻撃`)
           return counterAttack(context, state, self)

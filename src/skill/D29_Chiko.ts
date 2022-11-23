@@ -6,7 +6,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "offense" && state.defense) {
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           // 相手のHPと同じダメージ量に固定
           const hp = getAccessDenco(state, "defense").currentHp

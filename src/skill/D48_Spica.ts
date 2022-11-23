@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       const d = getAccessDenco(state, "defense")
       if (d.carIndex === targetIdx) {
         return {
-          probability: self.skill.property.readNumber("probability"),
+          probabilityKey: "probability",
           recipe: (state) => {
             const def = self.skill.property.readNumber("DEF")
             state.defendPercent += def

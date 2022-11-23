@@ -31,8 +31,11 @@ export function getDefPercentDenco(def: number): DencoState {
       },
       triggerOnAccess: (context, state, step, self) => {
         if (step === "damage_common" && self.which === "defense") {
-          return (state) => {
-            state.defendPercent += def
+          return {
+            probabilityKey: "probability",
+            recipe: (state) => {
+              state.defendPercent += def
+            }
           }
         }
       }
@@ -72,8 +75,11 @@ export function getFixedDamageDenco(damage: number): DencoState {
       },
       triggerOnAccess: (context, state, step, self) => {
         if (step === "damage_fixed" && self.which === which) {
-          return (state) => {
-            state.damageFixed += damage
+          return {
+            probabilityKey: "probability",
+            recipe: (state) => {
+              state.damageFixed += damage
+            }
           }
         }
       }

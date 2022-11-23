@@ -7,7 +7,7 @@ const skill: SkillLogic = {
     // 単独編成では発動しない
     if (step === "damage_common" && self.who === "offense" && state.offense.formation.length > 1) {
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           // 自身を除くタイプの数
           const cnt = countDencoType(

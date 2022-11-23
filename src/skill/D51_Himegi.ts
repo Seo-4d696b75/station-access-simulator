@@ -10,11 +10,14 @@ const skill: SkillLogic = {
       // ディフェンダーの数
       const cnt = getDefense(state).formation.filter(d => d.type === "defender").length
       if (cnt > 0) {
-        return (state) => {
-          const unit = self.skill.property.readNumber("DEF")
-          const def = unit * cnt
-          state.defendPercent += def
-          context.log.log(`編成に合わせてみんなを手助けしちゃうよー DEF+${def}%`)
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            const unit = self.skill.property.readNumber("DEF")
+            const def = unit * cnt
+            state.defendPercent += def
+            context.log.log(`編成に合わせてみんなを手助けしちゃうよー DEF+${def}%`)
+          }
         }
       }
     }
@@ -23,11 +26,14 @@ const skill: SkillLogic = {
       // アタッカーの数
       const cnt = state.offense.formation.filter(d => d.type === "attacker").length
       if (cnt > 0) {
-        return (state) => {
-          const unit = self.skill.property.readNumber("ATK")
-          const atk = unit * cnt
-          state.attackPercent += atk
-          context.log.log(`編成に合わせてみんなを手助けしちゃうよー ATK+${atk}%`)
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            const unit = self.skill.property.readNumber("ATK")
+            const atk = unit * cnt
+            state.attackPercent += atk
+            context.log.log(`編成に合わせてみんなを手助けしちゃうよー ATK+${atk}%`)
+          }
         }
       }
     }

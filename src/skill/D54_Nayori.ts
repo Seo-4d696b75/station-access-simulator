@@ -25,17 +25,20 @@ const skill: SkillLogic = {
           context,
           state,
           self,
-          (state) => {
-            const percent = self.skill.property.readNumber("exp_percent")
-            const dstExp = Math.floor(exp * percent / 100)
-            context.log.log(`経験値をみんなに届けるなの exp:${exp} (access:${self.exp.access}, link:${self.exp.link})`)
-            dstIndices
-              .map(idx => state.formation[idx])
-              .filter(d => d.numbering !== self.numbering)
-              .forEach(d => {
-                context.log.log(`経験値の配布 ${d.name} exp:${d.currentExp} => ${d.currentExp + dstExp})`)
-                d.currentExp += dstExp
-              })
+          {
+            probabilityKey: "probability",
+            recipe: (state) => {
+              const percent = self.skill.property.readNumber("exp_percent")
+              const dstExp = Math.floor(exp * percent / 100)
+              context.log.log(`経験値をみんなに届けるなの exp:${exp} (access:${self.exp.access}, link:${self.exp.link})`)
+              dstIndices
+                .map(idx => state.formation[idx])
+                .filter(d => d.numbering !== self.numbering)
+                .forEach(d => {
+                  context.log.log(`経験値の配布 ${d.name} exp:${d.currentExp} => ${d.currentExp + dstExp})`)
+                  d.currentExp += dstExp
+                })
+            }
           }
         )
       }

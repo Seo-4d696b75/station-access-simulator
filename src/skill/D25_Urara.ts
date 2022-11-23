@@ -15,7 +15,7 @@ const skill: SkillLogic = {
   onActivated: (context, state, self) => {
     // スキルが有効化した瞬間にスキル発動
     const trigger: EventSkillTrigger = {
-      probability: self.skill.property.readNumber("probability"),
+      probabilityKey: "probability",
       recipe: (state) => {
         const target = state.formation.filter(d => {
           const s = d.skill

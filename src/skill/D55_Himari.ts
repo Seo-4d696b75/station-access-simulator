@@ -33,12 +33,15 @@ const skill: SkillLogic = {
         .reduce((a, b) => Math.max(a, b))
       // アクセスをうけるでんこ着用フィルムが同種最大数か？
       if (filmThemeMap.get(theme) !== maxCnt) return
-      return (state) => {
-        const unit = self.skill.property.readNumber("DEF")
-        const def = unit * maxCnt
-        state.defendPercent += def
-        context.log.log(`みんなで同じフィルムを着ると、いいことがあるんだよ♪ DEF${formatPercent(def)}`)
-        context.log.log(`  フィルム：${theme}, DEF = ${unit}% * ${maxCnt}`)
+      return {
+        probabilityKey: "probability",
+        recipe: (state) => {
+          const unit = self.skill.property.readNumber("DEF")
+          const def = unit * maxCnt
+          state.defendPercent += def
+          context.log.log(`みんなで同じフィルムを着ると、いいことがあるんだよ♪ DEF${formatPercent(def)}`)
+          context.log.log(`  フィルム：${theme}, DEF = ${unit}% * ${maxCnt}`)
+        }
       }
     }
   }

@@ -12,15 +12,18 @@ const skill: SkillLogic = {
       const d = getAccessDenco(state, self.which)
       // みずほと同種のフィルムを着用している（本人も含む）
       if (getFilmTheme(d.film) === getFilmTheme(self.film)) {
-        return (state) => {
-          if (self.which === "offense") {
-            const atk = self.skill.property.readNumber("ATK")
-            state.attackPercent += atk
-            context.log.log(`同じフィルムを着ているでんこさんは、きっとお仲間だと思うのです…… ATK${formatPercent(atk)}`)
-          } else {
-            const def = self.skill.property.readNumber("DEF")
-            state.defendPercent += def
-            context.log.log(`同じフィルムを着ているでんこさんは、きっとお仲間だと思うのです…… DEF${formatPercent(def)}`)
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            if (self.which === "offense") {
+              const atk = self.skill.property.readNumber("ATK")
+              state.attackPercent += atk
+              context.log.log(`同じフィルムを着ているでんこさんは、きっとお仲間だと思うのです…… ATK${formatPercent(atk)}`)
+            } else {
+              const def = self.skill.property.readNumber("DEF")
+              state.defendPercent += def
+              context.log.log(`同じフィルムを着ているでんこさんは、きっとお仲間だと思うのです…… DEF${formatPercent(def)}`)
+            }
           }
         }
       }
