@@ -2,7 +2,6 @@
   {
     "numbering": "1",
     "class": "D01_Seria",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -72,7 +71,6 @@
   {
     "numbering": "2",
     "class": "D02_Mero",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -121,7 +119,6 @@
   {
     "numbering": "3",
     "class": "D03_Luna",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -177,7 +174,6 @@
   {
     "numbering": "4",
     "class": "D04_Miroku",
-    "type": "always",
     "step": {},
     "list": [
       {
@@ -227,7 +223,6 @@
   {
     "numbering": "5",
     "class": "D05_Reika",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -290,7 +285,6 @@
   {
     "numbering": "6",
     "class": "D06_Charlotte",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -353,7 +347,6 @@
   {
     "numbering": "7",
     "class": "D07_Sheena",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -402,7 +395,6 @@
   {
     "numbering": "9",
     "class": "D09_Moe",
-    "type": "auto-condition",
     "list": [
       {
         "skill_level": 1,
@@ -451,7 +443,6 @@
   {
     "numbering": "10",
     "class": "D10_Iroha",
-    "type": "manual-condition",
     "list": [
       {
         "skill_level": 1,
@@ -514,7 +505,6 @@
   {
     "numbering": "11",
     "class": "D11_Siira",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -570,7 +560,6 @@
   {
     "numbering": "13",
     "class": "D13_Izuna",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -619,7 +608,6 @@
   {
     "numbering": "14",
     "class": "D14_Fubu",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -682,7 +670,6 @@
   {
     "numbering": "15",
     "class": "D15_Ringo",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -738,7 +725,6 @@
   {
     "numbering": "18",
     "class": "D18_Ichiho",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -787,7 +773,6 @@
   {
     "numbering": "19",
     "class": "D19_Imura",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -850,7 +835,6 @@
   {
     "numbering": "20",
     "class": "D20_Nikoro",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -899,7 +883,6 @@
   {
     "numbering": "21",
     "class": "D21_Sigure",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -955,7 +938,6 @@
   {
     "numbering": "22",
     "class": "D22_Ren",
-    "type": "manual",
     "invalidated": [
       "3",
       "7",
@@ -1040,7 +1022,6 @@
   {
     "numbering": "23",
     "class": "D23_Mirai",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -1103,7 +1084,6 @@
   {
     "numbering": "24",
     "class": "D24_Beatrice",
-    "type": "manual",
     "DEF": 75,
     "cooldown": 3600,
     "list": [
@@ -1154,7 +1134,6 @@
   {
     "numbering": "25",
     "class": "D25_Urara",
-    "type": "manual-condition",
     "active": 0,
     "cooldown": 7200,
     "list": [
@@ -1205,7 +1184,6 @@
   {
     "numbering": "26",
     "class": "D26_Hokone",
-    "type": "manual",
     "active": 1200,
     "cooldown": 7200,
     "heal": 40,
@@ -1257,7 +1235,6 @@
   {
     "numbering": "27",
     "class": "D27_Yachiyo",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -1306,7 +1283,6 @@
   {
     "numbering": "28",
     "class": "D28_Riona",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -1369,7 +1345,6 @@
   {
     "numbering": "29",
     "class": "D29_Chiko",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -1432,7 +1407,6 @@
   {
     "numbering": "30",
     "class": "D30_Reno",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -1488,7 +1462,6 @@
   {
     "numbering": "31",
     "class": "D31_Alice",
-    "type": "auto-condition",
     "list": [
       {
         "skill_level": 1,
@@ -1544,7 +1517,6 @@
   {
     "numbering": "32",
     "class": "D32_Kotan",
-    "type": "always",
     "max_station": 50,
     "list": [
       {
@@ -1594,7 +1566,6 @@
   {
     "numbering": "33",
     "class": "D33_Eria",
-    "type": "manual",
     "target": [
       "15",
       "19",
@@ -1671,7 +1642,6 @@
   {
     "numbering": "34",
     "class": "D34_Hiiru",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -1734,7 +1704,6 @@
   {
     "numbering": "35",
     "class": "D35_Iori",
-    "type": "always",
     "station_max": 5,
     "keyword": "本",
     "list": [
@@ -1785,7 +1754,6 @@
   {
     "numbering": "36",
     "class": "D36_Mio",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -1848,7 +1816,6 @@
   {
     "numbering": "37",
     "class": "D37_Mikoto",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -1904,7 +1871,6 @@
   {
     "numbering": "38",
     "class": "D38_Kuni",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -1981,7 +1947,6 @@
   {
     "numbering": "39",
     "class": "D39_Lulu",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -2030,7 +1995,6 @@
   {
     "numbering": "40",
     "class": "D40_Haru",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -2079,7 +2043,6 @@
   {
     "numbering": "41",
     "class": "D41_Nichina",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -2135,7 +2098,6 @@
   {
     "numbering": "42",
     "class": "D42_Sora",
-    "type": "auto-condition",
     "list": [
       {
         "skill_level": 1,
@@ -2191,7 +2153,6 @@
   {
     "numbering": "43",
     "class": "D43_Asa",
-    "type": "manual-condition",
     "list": [
       {
         "skill_level": 1,
@@ -2254,7 +2215,6 @@
   {
     "numbering": "44",
     "class": "D44_Saika",
-    "type": "always",
     "threshold1": 100,
     "threshold2": 360,
     "list": [
@@ -2312,7 +2272,6 @@
   {
     "numbering": "45",
     "class": "D45_Kanon",
-    "type": "manual",
     "ATK": 15,
     "cooldown": 7200,
     "list": [
@@ -2363,7 +2322,6 @@
   {
     "numbering": "46",
     "class": "D46_Ataru",
-    "type": "manual",
     "count_max": 20,
     "count_decrease": 2,
     "cooldown": 3600,
@@ -2422,7 +2380,6 @@
   {
     "numbering": "48",
     "class": "D48_Spica",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -2478,7 +2435,6 @@
   {
     "numbering": "49",
     "class": "D49_Mei",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -2541,7 +2497,6 @@
   {
     "numbering": "50",
     "class": "D50_Naho",
-    "type": "manual",
     "active": 1800,
     "cooldown": 10800,
     "list": [
@@ -2592,7 +2547,6 @@
   {
     "numbering": "51",
     "class": "D51_Himegi",
-    "type": "manual",
     "active": 1800,
     "list": [
       {
@@ -2656,7 +2610,6 @@
   {
     "numbering": "52",
     "class": "D52_Noa",
-    "type": "always",
     "ATK": 10,
     "list": [
       {
@@ -2706,7 +2659,6 @@
   {
     "numbering": "53",
     "class": "D53_Malin",
-    "type": "always",
     "ATK": 10,
     "DEF": 10,
     "list": [
@@ -2757,7 +2709,6 @@
   {
     "numbering": "54",
     "class": "D54_Nayori",
-    "type": "always",
     "list": [
       {
         "skill_level": 1,
@@ -2896,7 +2847,6 @@
   {
     "numbering": "58",
     "class": "D58_Marika",
-    "type": "manual",
     "cooldown": 7200,
     "list": [
       {
@@ -2946,7 +2896,6 @@
   {
     "numbering": "61",
     "class": "D61_Chitose",
-    "type": "manual",
     "list": [
       {
         "skill_level": 1,
@@ -3009,7 +2958,6 @@
   {
     "numbering": "69",
     "class": "D69_Miyu",
-    "type": "always",
     "distMax": 100,
     "list": [
       {
@@ -3066,7 +3014,6 @@
   {
     "numbering": "76",
     "class": "D76_Yunoka",
-    "type": "manual",
     "active": 900,
     "cooldown": 5400,
     "list": [
