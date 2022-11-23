@@ -3006,6 +3006,61 @@
     ]
   },
   {
+    "numbering": "59",
+    "class": "D59_Momiji",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "飛びつき型ディーゼル Lv.1",
+        "ATK": 15,
+        "probability": 30
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "飛びつき型ディーゼル Lv.2",
+        "ATK": 15,
+        "probability": 40
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "飛びつき型ディーゼル Lv.3",
+        "ATK": 15,
+        "probability": 50
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "飛びつき型ディーゼル Lv.4",
+        "ATK": 15,
+        "probability": 55
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "飛びつき型ディーゼル Lv.5",
+        "ATK": 15,
+        "probability": 60
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "飛びつき型ディーゼル Lv.6",
+        "ATK": 20,
+        "probability": 65
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "突撃どっかーん!",
+        "ATK": 20,
+        "probability": 70
+      }
+    ]
+  },
+  {
     "numbering": "61",
     "class": "D61_Chitose",
     "list": [
