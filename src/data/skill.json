@@ -3180,6 +3180,69 @@
     ]
   },
   {
+    "numbering": "63",
+    "class": "D63_Tsumugi",
+    "cooldown": 10800,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "スピニング・レール Lv.1",
+        "ATK": 2.5,
+        "DEF": 2.5,
+        "active": 1800
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "スピニング・レール Lv.2",
+        "ATK": 3.0,
+        "DEF": 3.0,
+        "active": 2100
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "スピニング・レール Lv.3",
+        "ATK": 3.5,
+        "DEF": 3.5,
+        "active": 2400
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "スピニング・レール Lv.4",
+        "ATK": 4.0,
+        "DEF": 4.0,
+        "active": 2700
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "スピニング・レール Lv.5",
+        "ATK": 4.5,
+        "DEF": 4.5,
+        "active": 3000
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "スピニング・レール Lv.6",
+        "ATK": 4.75,
+        "DEF": 4.75,
+        "active": 3300
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "八重の雲まで",
+        "ATK": 5.0,
+        "DEF": 5.0,
+        "active": 3600
+      }
+    ]
+  },
+  {
     "numbering": "69",
     "class": "D69_Miyu",
     "distMax": 100,
