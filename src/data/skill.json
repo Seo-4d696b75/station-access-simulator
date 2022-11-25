@@ -3123,6 +3123,63 @@
     ]
   },
   {
+    "numbering": "62",
+    "class": "D62_Mako",
+    "EXP": 100,
+    "cooldown": 10800,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ご迷惑をおかけします！ Lv.1",
+        "active": 1200,
+        "damage_fixed": 20
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ご迷惑をおかけします！ Lv.2",
+        "active": 1200,
+        "damage_fixed": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ご迷惑をおかけします！ Lv.3",
+        "active": 1200,
+        "damage_fixed": 40
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ご迷惑をおかけします！ Lv.4",
+        "active": 1200,
+        "damage_fixed": 50
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ご迷惑をおかけします！ Lv.5",
+        "active": 1800,
+        "damage_fixed": 65
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ご迷惑をおかけします！ Lv.6",
+        "active": 1800,
+        "damage_fixed": 80
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "菜の花色のまごころ",
+        "active": 1800,
+        "damage_fixed": 100
+      }
+    ]
+  },
+  {
     "numbering": "69",
     "class": "D69_Miyu",
     "distMax": 100,
