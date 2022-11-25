@@ -261,7 +261,7 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
       type: "skill_trigger",
       data: {
         time: state.time.valueOf(),
-        carIndex: state.carIndex,
+        carIndex: idx,
         denco: copyState<DencoState>(state.formation[idx]),
         skillName: skill.name,
         step: "probability_check"
