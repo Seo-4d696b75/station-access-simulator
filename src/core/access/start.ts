@@ -65,8 +65,10 @@ export const startAccess = (context: Context, config: AccessConfig): AccessResul
   const d = getAccessDenco(state, "offense")
   const idx = d.link.findIndex(link => link.name === config.station.name)
   if (idx >= 0) {
-    context.log.warn(`攻撃側(${d.name})のリンクに対象駅(${config.station.name})が含まれています,削除します`)
-    d.link = d.link.splice(idx, 1)
+    context.log.warn(`${d.name}のリンクにアクセス駅(${config.station.name})が既に含まれています`)
+    // TODO 本来ならリンク済みの駅なら特別な対応が必要
+    let s = d.link[idx]
+    s.name = `${s.name}*`
   }
   if (config.defense) {
     state.defense = initAccessDencoState(context, config.defense.state, config.defense.carIndex, "defense")
