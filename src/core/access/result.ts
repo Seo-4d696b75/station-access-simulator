@@ -87,10 +87,12 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
 
   // アクセス直後のスキル発動イベント
   checkSKillState(context, result)
-  checkSkillOnReboot(context, result, "offense")
-  checkSkillOnReboot(context, result, "defense")
-  checkSkillAfterAccess(context, result, "offense")
-  checkSkillAfterAccess(context, result, "defense")
+  callbackReboot(context, result, "offense")
+  callbackReboot(context, result, "defense")
+  callbackLinkDisconnect(context, result, "offense")
+  callbackLinkDisconnect(context, result, "defense")
+  callbackAfterAccess(context, result, "offense")
+  callbackAfterAccess(context, result, "defense")
   checkSKillState(context, result)
 
 
@@ -125,10 +127,15 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
       // リブートにより全リンク解除
       const disconnectedLink = d.link
       d.link = []
-      const linkResult = calcLinksResult(context, disconnectedLink, d, which)
-      d.exp.link = linkResult.exp
-      d.disconnectedLink = linkResult
-      side.score.link = linkResult.totalScore
+      // カウンター攻撃などリンク数0でもリブートする
+      const linkResult = calcLinksResult(context, disconnectedLink, d)
+      if (linkResult.link.length > 0) {
+        // 解除リンク数1以上の場合
+        d.exp.link = linkResult.exp
+        d.disconnectedLink = linkResult
+        side.score.link = linkResult.totalScore
+      }
+      // リンク数0でもリブートイベントは追加する！
       side.event.push({
         type: "reboot",
         data: linkResult,
@@ -148,7 +155,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
       // 対象リンクのみ解除
       const disconnectedLink = d.link[idx]
       d.link.splice(idx, 1)
-      const linkResult = calcLinksResult(context, [disconnectedLink], d, "defense")
+      const linkResult = calcLinksResult(context, [disconnectedLink], d)
       // 特にイベントは発生せず経験値だけ追加
       d.exp.link = linkResult.exp
       d.disconnectedLink = linkResult
@@ -201,7 +208,7 @@ function checkSKillState(context: Context, result: AccessResult) {
   }
 }
 
-function checkSkillOnReboot(context: Context, state: AccessResult, which: AccessSide) {
+function callbackReboot(context: Context, state: AccessResult, which: AccessSide) {
   const side = which === "offense" ? state.offense : state.defense
   if (!side) return
 
@@ -224,7 +231,41 @@ function checkSkillOnReboot(context: Context, state: AccessResult, which: Access
     })
 }
 
-function checkSkillAfterAccess(context: Context, state: AccessResult, which: AccessSide) {
+function callbackLinkDisconnect(context: Context, state: AccessResult, which: AccessSide) {
+  const side = (which === "offense") ? state.offense : state.defense
+  if (!side) return
+
+  // リンク解除のコールバック
+  // 編成内の全でんこにコールバックする!
+  // このコールバック中に新たにリンクが解除される場合は考慮しない
+  const disconnects = side
+    .formation
+    .map(d => d.disconnectedLink)
+    .filter((d): d is LinksResult => !!d && d.link.length > 0)
+  if (disconnects.length === 0) return
+
+  // コールバックで状態が変化する場合があるので最初に対象を検査
+  // 無効化スキルの影響は無視
+  side.formation
+    .filter(d => isSkillActive(d.skill))
+    .map(d => d.carIndex)
+    .forEach(idx => {
+      disconnects.forEach(disconnect => {
+        // スキル発動による状態変更を考慮して評価直前に参照
+        const d = side.formation[idx]
+        const skill = d.skill
+        if (skill.type === "possess" && skill.onLinkDisconnected) {
+          const next = skill.onLinkDisconnected(context, side, withActiveSkill(d, skill, idx), disconnect)
+          if (next) {
+            copyStateTo<UserState>(next, side)
+          }
+        }
+      })
+    })
+
+}
+
+function callbackAfterAccess(context: Context, state: AccessResult, which: AccessSide) {
   const side = (which === "offense") ? state.offense : state.defense
   if (!side) return
   let formation = side

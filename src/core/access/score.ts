@@ -5,7 +5,7 @@ import { Context } from "../context"
 import { Denco, DencoState } from "../denco"
 import { copyState, ReadonlyState } from "../state"
 import { LinkResult, LinksResult, Station, StationLink } from "../station"
-import { AccessSide, AccessSideState, AccessState } from "./state"
+import { AccessSideState, AccessState } from "./state"
 
 
 /**
@@ -170,7 +170,7 @@ const LINK_COMBO_RATIO: readonly number[] = [
  * @param which アクセス時にどちら側か
  * @returns 
  */
-export function calcLinksResult(context: Context, links: readonly StationLink[], d: ReadonlyState<DencoState>, which: AccessSide): LinksResult {
+export function calcLinksResult(context: Context, links: readonly StationLink[], d: ReadonlyState<DencoState>): LinksResult {
   const time = context.currentTime
   const linkResult = links.map((link, idx) => calcLinkResult(context, link, d, idx))
   const linkScore = linkResult.map(link => link.linkScore).reduce((a, b) => a + b, 0)
