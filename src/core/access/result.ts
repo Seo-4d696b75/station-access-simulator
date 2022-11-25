@@ -40,10 +40,12 @@ export interface AccessUserResult extends Omit<AccessSideState, "user">, UserSta
  */
 export interface AccessDencoResult extends AccessDencoState {
   /**
-   * アクセスによってリブートしたリンク
+   * アクセスによって解除されたリンク
    * 
-   * リブート（{@link AccessDencoState reboot} === true）した場合は解除したすべてのリンク結果、  
-   * リブートを伴わないフットバースの場合は解除したひとつのリンク結果
+   * - ダメージを受けてリブートした場合は保持していた全リンク
+   * - フットバーされた場合は単独リンクのみ解除
+   * 
+   * カウンター攻撃を受ける場合など、リンク解除を伴わないリブート時は`undefined`です
    */
   disconnectedLink?: LinksResult
 

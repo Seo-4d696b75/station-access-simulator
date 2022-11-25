@@ -182,7 +182,6 @@ export function calcLinksResult(context: Context, links: readonly StationLink[],
   const result: LinksResult = {
     time: time,
     denco: copyState(d),
-    which: which,
     totalScore: totalScore,
     linkScore: linkScore,
     comboBonus: comboBonus,

@@ -335,11 +335,10 @@ describe("基本的なアクセス処理", () => {
     expect(d.disconnectedLink.exp).toBe(linkScore)
     expect(d.disconnectedLink.link.length).toBe(1)
     expect(d.disconnectedLink.link[0]).toMatchObject(link)
-    expect(d.disconnectedLink.which).toBe("defense")
     expect(d.disconnectedLink.time).toBe(result.time)
     //リンク解除済み＆経験値加算前の状態
     expect(d.disconnectedLink.denco).toMatchDencoState(
-      { ...d, currentExp: 68000 } // 最大レベル80
+      d, { currentExp: 68000 } // 最大レベル80
     )
 
     // リンク
@@ -438,23 +437,26 @@ describe("基本的なアクセス処理", () => {
     expect(d.exp.skill).toBe(0)
     expect(d.reboot).toBe(true)
     expect(d.disconnectedLink).not.toBeUndefined()
-    let reboot = d.disconnectedLink as LinksResult
-    expect(reboot?.link?.length).toBe(3)
-    expect(result.defense?.score.link).toBe(reboot.totalScore)
-    expect(d.exp.link).toBe(reboot.exp)
-    expect(d.currentExp).toBe(charlotte.currentExp + reboot.exp)
+    assert(d.disconnectedLink)
+    expect(d.disconnectedLink.link?.length).toBe(3)
+    expect(d.disconnectedLink.denco).toMatchDencoState(
+      d, { currentExp: charlotte.currentExp } // 経験値追加前
+    )
+    expect(result.defense?.score.link).toBe(d.disconnectedLink.totalScore)
+    expect(d.exp.link).toBe(d.disconnectedLink.exp)
+    expect(d.currentExp).toBe(charlotte.currentExp + d.disconnectedLink.exp)
     // リブート確認
     expect(d.link.length).toBe(0)
     let e = result.defense?.event[1]
     expect(e).not.toBeUndefined()
-    expect(e?.type === "reboot")
-    let data = e?.data as LinksResult
+    assert(e?.type === "reboot")
+    let data = e?.data
     expect(data.denco.name).toBe(charlotte.name)
     // リンク解除済み＆経験値加算前
     expect(data.denco).toMatchDencoState({ ...d, currentExp: 0 })
     expect(data.link.length).toBe(3)
     expect(data.link[0]).toMatchObject(link)
-    expect(data).toMatchObject(reboot)
+    expect(data).toMatchObject(d.disconnectedLink)
     // アクセス後の状態
     expect(result.defense).not.toBeUndefined()
     assert(result.defense)
@@ -776,6 +778,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.disconnectedLink?.link[0]).toMatchObject(reika.link[0])
     expect(d.disconnectedLink?.totalScore).toBe(result.offense?.score?.link)
     expect(d.disconnectedLink?.exp).toBe(d.exp.link)
+    expect(d.disconnectedLink?.denco).toMatchDencoState(d, { currentExp: 0 }) // 経験値は追加前
     let e = result.offense.event[1]
     expect(e.type).toBe("reboot")
     let reboot = e.data as LinksResult
@@ -791,4 +794,65 @@ describe("基本的なアクセス処理", () => {
   })
 
 
+  test("守備側あり-カウンター攻撃あり-Rebootあり-リンクなし", () => {
+    const context = initContext("test", "test", false)
+    let reika = DencoManager.getDenco(context, "5", 50)
+    let sheena = DencoManager.getDenco(context, "7", 80, 3)
+    reika.nextExp = Number.MAX_SAFE_INTEGER
+    sheena.nextExp = Number.MAX_SAFE_INTEGER
+    let offense = initUser(context, "とあるマスター１", [
+      reika
+    ])
+    let defense = initUser(context, "とあるマスター２", [
+      sheena
+    ])
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: sheena.link[0],
+    }
+    context.random.mode = "force"
+    const result = startAccess(context, config)
+    expect(result.offense.event.length).toBe(2)
+    // 相手の確認
+    expect(result.defense).not.toBeUndefined()
+    expect(result.defense?.event.length).toBe(1)
+    // アクセス結果の確認
+    expect(result.linkSuccess).toBe(false)
+    expect(result.linkDisconnected).toBe(false)
+    // アクセス処理の確認
+    expect(result.pinkMode).toBe(false)
+    expect(result.pinkItemSet).toBe(false)
+    expect(result.pinkItemUsed).toBe(false)
+    expect(result.attackPercent).toBe(0)
+    expect(result.defendPercent).toBe(0)
+
+    // カウンター受けてリブート
+    let d = getAccessDenco(result, "offense")
+    expect(d.name).toBe("reika")
+    expect(d.hpBefore).toBe(192)
+    expect(d.hpAfter).toBe(0)
+    expect(d.currentHp).toBe(192)
+    expect(d.damage?.value).toBe(250)
+    expect(d.damage?.attr).toBe(false)
+    expect(d.exp.access).toBe(accessScore + 200)
+    expect(d.exp.skill).toBe(0)
+    expect(d.reboot).toBe(true)
+    // リンク解除はなし
+    expect(d.disconnectedLink).toBeUndefined()
+    // リブートイベントは発生
+    let e = result.offense.event[1]
+    assert(e.type === "reboot")
+    let reboot = e.data
+    expect(reboot.denco.name).toBe("reika")
+    expect(reboot.denco.link.length).toBe(0)
+    expect(reboot.link.length).toBe(0)
+    expect(reboot.denco).toMatchDencoState(d, { currentExp: 0 })
+  })
 })
