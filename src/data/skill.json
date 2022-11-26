@@ -2,6 +2,7 @@
   {
     "numbering": "1",
     "class": "D01_Seria",
+    "heal_th": 30,
     "list": [
       {
         "skill_level": 1,
