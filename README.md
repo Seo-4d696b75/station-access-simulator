@@ -7,15 +7,15 @@
 [![codecov](https://codecov.io/gh/Seo-4d696b75/station-access-simulator/branch/main/graph/badge.svg?token=1JENN8RNOU)](https://codecov.io/gh/Seo-4d696b75/station-access-simulator)
 
 
-スマートフォンゲーム「駅メモ」のアクセスイベントをシミュレーションするJavaScript（TypeScript）ライブラリ🚃
+🚃スマートフォンゲーム「駅メモ」のアクセスイベントをシミュレーションするJavaScript（TypeScript）ライブラリ
 
 # 1. Features
 
-✅ スキル発動のシミュレーション
-✅ ダメージ計算のシミュレーション
-✅ 経験値獲得・レベルアップのシミュレーション
-✅ ゲームタイムライン上のダイアログ表示の再現
-✅ オリジナルでんこ No.1〜No.65 までのスキル実装
+✅ スキル発動のシミュレーション  
+✅ ダメージ計算のシミュレーション  
+✅ 経験値獲得・レベルアップのシミュレーション  
+✅ ゲームタイムライン上のダイアログ表示の再現  
+✅ オリジナルでんこ No.1〜No.65 までのスキル実装  
 
 # 2. Install
 
