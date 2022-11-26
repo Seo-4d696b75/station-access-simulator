@@ -38,7 +38,7 @@ npm install ekimemo-access-simulator
 
 # 3. Example of Usage
 
-もっとも基本的な使用方法です [コードの詳細・解説](./example/basic.md)
+もっとも基本的な使用方法です [コードの詳細・解説](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/example/basic.md)
 ```js
 import { AccessConfig, activateSkill, DencoManager, init, initContext, initUser, printEvents, startAccess } from "ekimemo-access-simulator";
 
@@ -64,18 +64,18 @@ init().then(() => {
 });
 ```
 
-[その他の使用方法に関してはこちらで紹介しています](./example/index.md)
+[その他の使用方法に関してはこちらで紹介しています](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/example/index.md)
 
 # 4. Docs
 
-[実装の詳細をこちらで解説しています](./docs/index.md)
+[実装の詳細をこちらで解説しています](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/docs/index.md)
 
 # 5. What's New?
 [各バージョンの一覧はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
 
 **v0.3.0**
-- [Docsの追加](./docs/index.md)
-- [サンプルコードの追加](./example/index.md)
+- Docsの追加
+- サンプルコードの追加
 - アクセス中のスキル処理`after_damage`の修正
 - カスタムErrorの追加 `SimulationError`
 - フィルムの追加

@@ -34,10 +34,12 @@ init().then(() => {
 
 （注）等幅フォントでないとダイアログ出力のレイアウトが崩れる場合があります
 
-アクセス側
+#### アクセス側
+
 ![image](https://user-images.githubusercontent.com/25225028/201908745-003e248a-84f2-4558-9759-5aba7399e002.png)
 
-アクセス相手側
+#### アクセス相手側
+
 ![image](https://user-images.githubusercontent.com/25225028/201908902-2abecf6e-b885-466c-adcc-8876fa71d9bf.png)
 
 ```txt
