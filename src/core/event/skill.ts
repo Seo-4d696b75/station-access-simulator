@@ -141,7 +141,7 @@ export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<A
         ...copyState<DencoState>(d),
         who: idx === self.carIndex ? "self" : "other",
         carIndex: idx,
-        skillInvalidated: self.skillInvalidated
+        skillInvalidated: d.skillInvalidated
       }
     }),
     carIndex: self.carIndex,
