@@ -348,8 +348,13 @@ function formatAccessLinkTime(station: ReadonlyState<Station>, time: number, sta
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.who === "defense") {
-    const link = d.link.find(link => link.name === station.name)
-    if (link) return formatLinkTime(time, link)
+    if (d.disconnectedLink) {
+      const link = d.disconnectedLink.link.find(link => link.name === station.name)
+      if (link) return formatLinkTime(time, link)
+    } else {
+      const link = d.link.find(link => link.name === station.name)
+      if (link) return formatLinkTime(time, link)
+    }
   }
   return "-"
 }
