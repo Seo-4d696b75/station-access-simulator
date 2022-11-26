@@ -14,15 +14,15 @@
 ✅ ダメージ計算のシミュレーション
 ✅ 経験値獲得・レベルアップのシミュレーション
 ✅ ゲームタイムライン上のダイアログ表示の再現
-✅ オリジナルでんこ No.1〜No.50 までのスキル実装
+✅ オリジナルでんこ No.1〜No.65 までのスキル実装
 
-# 2. How to Use
+# 2. Install
 
 ## CDNでWebブラウザから利用
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.2.0/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.3.0/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -67,22 +67,51 @@ init().then(() => {
 
 # 4. Docs
 
-実装の詳細を解説します
+[実装の詳細をこちらで解説しています](./docs/index.md)
 
-- [アクセス処理の実装](./docs/access.md)
-- [ダメージ計算の実装](./docs/damage.md)
-
-**実際のゲームの動作・実装と異なる可能性があります！**  
-このライブラリの目的はシミュレーションです。ゲームでの動作に可能な限り近づけるよう配慮されていますが、完全な再現はできていません。
-
-実装の参考
-
-- アクセスにおけるスキルの発動順序：[駅メモ！公式ブログ - 駅メモ！のスキルの発動順序について](https://blog.ekimemo.com/post/179166914454/%E9%A7%85%E3%83%A1%E3%83%A2%E3%81%AE%E3%82%B9%E3%82%AD%E3%83%AB%E3%81%AE%E7%99%BA%E5%8B%95%E9%A0%86%E5%BA%8F%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6)
-- 各でんこのスキル動作：[駅メモ！情報Wiki - オリジナルでんこ](https://ek1mem0.wiki.fc2.com/wiki/%E9%A1%94%E7%94%BB%E5%83%8F%E3%83%BB%E3%82%BF%E3%82%A4%E3%83%97%E3%83%BB%E5%B1%9E%E6%80%A7%E3%83%BB%E8%89%B2%E3%83%BB%E3%82%B9%E3%82%AD%E3%83%AB%E5%90%8D%2F%E3%82%AA%E3%83%AA%E3%82%B8%E3%83%8A%E3%83%AB%E3%81%A7%E3%82%93%E3%81%93)
-
-
-# 5. Release Note
+# 5. What's New?
 [各バージョンの一覧はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
+
+**v0.3.0**
+- [Docsの追加](./docs/index.md)
+- [サンプルコードの追加](./example/index.md)
+- アクセス中のスキル処理`after_damage`の修正
+- カスタムErrorの追加 `SimulationError`
+- フィルムの追加
+  - スキルの`active, cooldown`時間にフィルム補正を反映
+  - アクセスのダメージ計算にATK,DEFを増減させるフィルム補正を反映
+  - アクセスの獲得経験値を増加させるフィルム補正の反映
+  - スキル処理におけるプロパティ読み出しにフィルム補正を反映  
+  - スキルの発動確率にフィルム補正を反映
+- スキル処理の型定義`SkillLogic`を刷新
+  - スキル状態の遷移タイプ`always, manual, auto...`に応じて必要なプロパティを型で明示的に定義
+  - `SkillLogic`に状態遷移タイプのプロパティ`transitionType`を追加
+  - スキルの`active,cooldown`時間の指定方法を変更
+  - スキルの発動確率の指定方法を変更
+  - プロパティ`canTriggerPink`削除
+- 編成内のでんこのリンク解除を伝達するコールバック`onLinkDisconnected`の追加
+- スキルの追加
+  - 51 Himegi
+  - 52 Noa
+  - 53 Malin
+  - 54 Nayori
+  - 55 Himari
+  - 56 Rara
+  - 57 Mizuho
+  - 58 Marika
+  - 59 Momiji
+  - 60 Shiori
+  - 62 Mako
+  - 63 Tsumugi
+  - 64 Akehi
+  - 65 Hibiki
+- 不具合の修正
+  - 関数`fixClock`を使用しても時間差のある処理で時刻が正しく記録されない不具合
+  - でんこ最大レベル80のとき経験値を追加した場合の不具合
+  - タイムラインの出力関数`printEvents`で0駅リンクのリブートイベントの表示
+  - アクセスイベントのデータ`AccessEventData`にレベルアップが反映されてない不具合
+  - アクセス以外のスキル発動で発動確率をブーストするひいるのスキルが正しく記録されない不具合
+  - セリアの回復スキルの回復量が固定値で計算されていた不具合
 
 **v0.2.0**
 - スキルの発動条件・発動処理のコールバック定義を変更
@@ -125,7 +154,3 @@ init().then(() => {
   - 48 スピカ
   - 49 メイ
   - 50 なほ
-
-
-**v0.1.6**
-- タイポの修正
