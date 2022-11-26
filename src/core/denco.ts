@@ -20,10 +20,10 @@ export type DencoAttribute =
  * 原則として変化する状態を持たない
  */
 export interface Denco {
-  readonly numbering: string
-  readonly name: string
-  readonly type: DencoType
-  readonly attr: DencoAttribute
+  numbering: string
+  name: string
+  type: DencoType
+  attr: DencoAttribute
 }
 
 /**

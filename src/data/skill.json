@@ -958,6 +958,7 @@
       "50",
       "56",
       "58",
+      "65",
       "67",
       "70",
       "74",
@@ -3296,6 +3297,63 @@
         "name": "キミと走るよ果てしなく",
         "ATK_self": 0.30,
         "ATK_other": 10
+      }
+    ]
+  },
+  {
+    "numbering": "65",
+    "class": "D65_Hibiki",
+    "probability_supporter": 100,
+    "heal_th": 99,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "シンフォニックレイル Lv.1",
+        "heal": 10,
+        "probability_heal": 20
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "シンフォニックレイル Lv.2",
+        "heal": 10,
+        "probability_heal": 25
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "シンフォニックレイル Lv.3",
+        "heal": 10,
+        "probability_heal": 30
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "シンフォニックレイル Lv.4",
+        "heal": 15,
+        "probability_heal": 35
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "シンフォニックレイル Lv.5",
+        "heal": 15,
+        "probability_heal": 40
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "シンフォニックレイル Lv.6",
+        "heal": 15,
+        "probability_heal": 45
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "あなたのためのララバイ",
+        "heal": 20,
+        "probability_heal": 50
       }
     ]
   },
