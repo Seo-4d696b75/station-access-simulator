@@ -3063,6 +3063,61 @@
     ]
   },
   {
+    "numbering": "60",
+    "class": "D60_Shiori",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "たぶん完璧なアドバイス！ Lv.1",
+        "EXP": 250,
+        "probability": 20
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "たぶん完璧なアドバイス！ Lv.2",
+        "EXP": 300,
+        "probability": 25
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "たぶん完璧なアドバイス！ Lv.3",
+        "EXP": 300,
+        "probability": 30
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "たぶん完璧なアドバイス！ Lv.4",
+        "EXP": 350,
+        "probability": 35
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "たぶん完璧なアドバイス！ Lv.5",
+        "EXP": 400,
+        "probability": 40
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "たぶん完璧なアドバイス！ Lv.6",
+        "EXP": 450,
+        "probability": 45
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "転んでもその先へ",
+        "EXP": 500,
+        "probability": 50
+      }
+    ]
+  },
+  {
     "numbering": "61",
     "class": "D61_Chitose",
     "list": [

@@ -3,6 +3,7 @@ import { Context } from "../context"
 import { DencoState } from "../denco"
 import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "../event"
 import { ReadonlyState } from "../state"
+import { LinksResult } from "../station"
 import { UserState } from "../user"
 import { Skill, SkillState } from "./holder"
 import { SkillProperty } from "./property"
@@ -215,18 +216,30 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
   /**
    * スキルを保持するでんこがリブートした直後に呼ばれます
    * 
-   * ### アクセス処理中にダメージが発生して場合
+   * - アクセス処理でダメージを受けてリブート
+   * - アクセス中以外のスキルの効果でリブート（未実装）
    * 
-   *   - 非アクセスでダメージを受ける
-   *   - スキルでカウンターを受ける　（例）シーナ・くに
-   *   - スキルでダメージが発生する （例）まりか
-   * 
-   * アクセスによる影響（HPの変化・経験値の追加・レベルアップなど）を反映した状態が引数に渡されます
-   * 
-   * ### スキルの影響
-   * 未実装
+   * @returns 状態を更新する場合は新しい状態を返します
    */
   onDencoReboot?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>) => void | UserState
+
+  /**
+   * 編成内のでんこのリンクが解除されたとき呼ばれます
+   * 
+   * このスキルを保持するでんこ自身だけでなく、編成内のでんこ全員が対象です
+   * 
+   * - アクセス処理でダメージを受けてリブートし、保持していたリンクすべてが解除された
+   * - フットバースによりリブートせず単独リンクが解除された
+   * - アクセス中以外のスキルの効果でリブート（未実装）
+   * 
+   * **１つ以上のリンクが解除された場合のみ呼ばれます**  
+   * リンク保持なしでカウンター攻撃を受けリブートした場合は解除されるリンクは無いのコールバックされません
+   * 
+   * 
+   * @param disconnect 解除されたリンク・リンクを保持していたでんこの情報 {@link LinksResult link}の長さは必ず１以上です
+   * @returns 状態を更新する場合は新しい状態を返します
+   */
+  onLinkDisconnected?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>, disconnect: LinksResult) => void | UserState
 
   /**
    * １時間の時間経過ごとに呼ばれます
