@@ -1,7 +1,10 @@
 import { AccessState, getAccessDenco } from "."
 import { Context } from "../context"
+import { formatPercent } from "../format"
 import { ReadonlyState } from "../state"
-
+import { updateDencoHP } from "./hp"
+import { calcDamageScoreExp } from "./score"
+import { triggerSkillAt } from "./skill"
 /**
  * アクセス中に各でんこに発生したダメージ
  * 
@@ -80,10 +83,14 @@ export function getBaseDamage(context: Context, state: ReadonlyState<AccessState
 export interface DamageCalcOption {
   /**
    * ATK増減を考慮して計算する default: `true`
+   * 
+   * スキルによるATKの増減・フィルム補正の合計値を利用します
    */
   useATK: boolean
   /**
-   * DEF増減を考慮して計算する default: `false`
+   * DEF増減を考慮して計算する default: `true`
+   * 
+   * スキルによるDEFの増減・フィルム補正の合計値を利用します
    */
   useDEF: boolean
   /**
@@ -125,4 +132,107 @@ export function calcAccessDamage(context: Context, state: ReadonlyState<AccessSt
   const damage = Math.max(1, Math.floor(base * (100 + atk - def) / 100.0 * ratio))
   context.log.log(`基本ダメージを計算 AP:${base} ATK:${atk}% DEF:${def}% DamageBase:${damage} = ${base} * ${100 + atk - def}% * ${ratio}`)
   return damage
+}
+
+
+export function runAccessDamageCalculation(context: Context, state: AccessState): AccessState {
+
+  context.log.log("攻守のダメージ計算を開始")
+
+  // 属性ダメージの補正値
+  const attrOffense = getAccessDenco(state, "offense").attr
+  const attrDefense = getAccessDenco(state, "defense").attr
+  const attr = (attrOffense === "cool" && attrDefense === "heat") ||
+    (attrOffense === "heat" && attrDefense === "eco") ||
+    (attrOffense === "eco" && attrDefense === "cool")
+  if (attr) {
+    state.damageRatio = 1.3
+    context.log.log("攻守の属性によるダメージ補正が適用：1.3")
+  } else {
+    state.damageRatio = 1.0
+  }
+
+  // filmによる増減の設定
+  context.log.log("フィルムによるダメージ計算の補正")
+  applyFilmDamagePercent(context, state)
+
+  // ダメージ増減の設定
+  context.log.log("スキルを評価：ATK&DEFの増減")
+  state = triggerSkillAt(context, state, "damage_common")
+
+  // 特殊なダメージの計算
+  context.log.log("スキルを評価：特殊なダメージ計算")
+  state = triggerSkillAt(context, state, "damage_special")
+
+  // 基本ダメージの計算
+  if (!state.damageBase) {
+    state.damageBase = {
+      variable: calcAccessDamage(context, state),
+      constant: 0
+    }
+  }
+
+  // 固定ダメージの計算
+  context.log.log("スキルを評価：固定ダメージ")
+  state = triggerSkillAt(context, state, "damage_fixed")
+  context.log.log(`固定ダメージの計算：${state.damageFixed}`)
+
+  // 最終ダメージ計算 固定ダメージ等の影響でも負数にはならない
+  const defense = getAccessDenco(state, "defense")
+  const damageBase = state.damageBase
+  if (!damageBase) {
+    context.log.error("基本ダメージの値が見つかりません")
+  }
+  if (damageBase.variable < 0) {
+    context.log.error(`基本ダメージの値は非負である必要があります ${damageBase.variable}`)
+  }
+  if (damageBase.constant < 0) {
+    context.log.log(`基本ダメージ(const.)の値が負数です(回復) ${damageBase.constant}`)
+  }
+  const damage = {
+    // 固定ダメージで負数にはせず0以上に固定 & 確保されたダメージ量を加算
+    value: Math.max(damageBase.variable + state.damageFixed, 0) + damageBase.constant,
+    attr: state.damageRatio !== 1.0
+  }
+  // ダメージ量に応じたスコア＆経験値の追加
+  const accessDenco = getAccessDenco(state, "offense")
+  const [score, exp] = calcDamageScoreExp(context, state.offense, damage.value)
+  accessDenco.exp.access += exp
+  state.offense.score.access += score
+  context.log.log(`ダメージ量による追加 ${accessDenco.name} score:${score} exp:${exp}`)
+  // 反撃など複数回のダメージ計算が発生する場合はそのまま加算
+  const damageSum = addDamage(defense.damage, damage)
+  context.log.log(`ダメージ計算が終了：${damageSum.value}`)
+
+  // 攻守ふたりに関してアクセス結果を仮決定
+  defense.damage = damageSum
+
+  // HPの決定 & HP0 になったらリブート
+  // 基本的には被アクセスのでんこのみで十分だが
+  // スキルの影響で他でんこのHPが変化する場合もあるので全員確認する
+  updateDencoHP(context, state, "offense")
+  updateDencoHP(context, state, "defense")
+
+  // 被アクセス側がリブートしたらリンク解除（ピンク除く）
+  state.linkDisconnected = defense.reboot
+
+  // 被アクセス側がリンク解除、かつアクセス側がリブートしていない
+  state.linkSuccess = state.linkDisconnected
+
+  context.log.log(`守備の結果 HP: ${defense.hpBefore} > ${defense.hpAfter} reboot:${defense.reboot}`)
+
+  return state
+}
+
+function applyFilmDamagePercent(context: Context, state: AccessState) {
+  const offense = getAccessDenco(state, "offense")
+  if (offense.film.type === "film" && offense.film.attackPercent) {
+    state.attackPercent += offense.film.attackPercent
+    context.log.log(`フィルム補正 ${offense.name} ATK${formatPercent(offense.film.attackPercent)}`)
+  }
+  const defense = getAccessDenco(state, "defense")
+  if (defense.film.type === "film" && defense.film.defendPercent) {
+    state.defendPercent += defense.film.defendPercent
+    context.log.log(`フィルム補正 ${defense.name} DEF${formatPercent(defense.film.defendPercent)}`)
+  }
 }

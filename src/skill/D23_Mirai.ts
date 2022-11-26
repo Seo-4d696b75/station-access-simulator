@@ -1,10 +1,11 @@
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense" && state.offense) {
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           const lower = self.skill.property.readNumber("ATK_lower")
           const upper = self.skill.property.readNumber("ATK_upper")

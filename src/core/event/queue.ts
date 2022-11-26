@@ -1,7 +1,8 @@
 import moment from "moment-timezone"
 import { EventSkillTrigger, triggerSkillAtEvent } from "."
 import { Context, TIME_FORMAT } from "../context"
-import { Denco, DencoState } from "../denco"
+import { Denco } from "../denco"
+import { withActiveSkill } from "../skill/property"
 import { copyState, copyStateTo, ReadonlyState } from "../state"
 import { UserState } from "../user"
 
@@ -27,7 +28,6 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
   const now = context.currentTime.valueOf()
   if (now > time) {
     context.log.error(`現在時刻より前の時刻は指定できません time: ${time}, denco: ${JSON.stringify(denco)}`)
-    throw Error()
   }
   const next = copyState<UserState>(state)
   next.queue.push({
@@ -72,13 +72,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
           if (skill.type !== "possess" || skill.transition.state !== "active") continue
           const callback = skill.onHourCycle
           if (!callback) continue
-          let self = {
-            ...copyState<DencoState>(d),
-            carIndex: i,
-            skill: skill,
-            skillPropertyReader: skill.property,
-          }
-          const next = callback(context, state, self)
+          const next = callback(context, state, withActiveSkill(d, skill, i))
           if (next) copyStateTo<UserState>(next, state)
         }
         // 次のイベント追加

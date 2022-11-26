@@ -13,7 +13,7 @@ describe("にちなスキル", () => {
     active: 7200,
     cooldown: 5400,
   })
-  
+
   test("発動あり-守備側(被アクセス)-非先頭", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 10)
@@ -188,7 +188,7 @@ describe("にちなスキル", () => {
     expect(result.defendPercent).toBe(0)
   })
 
-  test("発動あり-攻撃側(アクセス)-カウンター", () => {
+  test("発動あり-攻撃側(アクセス)-シーナのカウンター", () => {
     // カウンターでリブートする場合は単独リンクでも発動あり得る
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 10)
@@ -227,5 +227,47 @@ describe("にちなスキル", () => {
     expect(d.link[0]).toMatchObject(nichina.link[0])
     expect(result.defendPercent).toBe(0)
   })
-  // TODO まりかのカンター
+
+  test("発動あり-攻撃側(アクセス)-まりかのカウンター", () => {
+    // カウンターでリブートする場合は単独リンクでも発動あり得る
+    const context = initContext("test", "test", false)
+    let seria = DencoManager.getDenco(context, "1", 10)
+    let nichina = DencoManager.getDenco(context, "41", 50, 1)
+    nichina.ap = 1000
+    let marika = DencoManager.getDenco(context, "58", 50, 1)
+    let offense = initUser(context, "とあるマスター", [seria, nichina])
+    offense = activateSkill(context, offense, 1)
+    let defense = initUser(context, "とあるマスター２", [marika])
+    defense = activateSkill(context, defense, 0)
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 1
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: marika.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    // カウンター発動
+    let d = getAccessDenco(result, "defense")
+    expect(d.reboot).toBe(true)
+    expect(d.damage?.value).toBe(1000)
+    expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+    // 本人
+    d = result.offense.formation[1]
+    expect(d.reboot).toBe(true)
+    expect(d.damage?.value).toBe(1000)
+    expect(hasSkillTriggered(result.offense, nichina)).toBe(true)
+    expect(d.link.length).toBe(0)
+    // セリアに移譲
+    d = result.offense.formation[0]
+    expect(d.reboot).toBe(false)
+    expect(d.link.length).toBe(1)
+    expect(d.link[0]).toMatchObject(nichina.link[0])
+    expect(result.defendPercent).toBe(0)
+  })
 })

@@ -2,8 +2,9 @@ import { getDefense } from "../core/access/index";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
-    if (step === "before_access" && self.who === "offense" && state.defense) {
+    if (step === "before_access" && self.who === "offense" && state.defense && !state.pinkMode) {
       const all = [
         ...state.offense.formation,
         ...getDefense(state).formation
@@ -13,7 +14,7 @@ const skill: SkillLogic = {
       })
       if (anySupporter) {
         return {
-          probability: self.skill.property.readNumber("probability"),
+          probabilityKey: "probability",
           recipe: (state) => {
             const all = [
               ...state.offense.formation,

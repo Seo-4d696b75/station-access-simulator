@@ -2,6 +2,7 @@ import { counterAttack } from "../core/access/index"
 import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     // リブートしていない、かつリンク保持継続している
     if (step === "after_damage" &&
@@ -9,7 +10,7 @@ const skill: SkillLogic = {
       !self.reboot &&
       !state.linkDisconnected) {
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           context.log.log(`あら、誰か来たみたい♪ カウンター攻撃`)
           return counterAttack(context, state, self)

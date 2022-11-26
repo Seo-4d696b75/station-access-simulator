@@ -1,4 +1,4 @@
-import { Film } from "./film"
+import { FilmHolder } from "./film"
 import { SkillHolder } from "./skill"
 import { StationLink } from "./station"
 
@@ -20,10 +20,10 @@ export type DencoAttribute =
  * 原則として変化する状態を持たない
  */
 export interface Denco {
-  readonly numbering: string
-  readonly name: string
-  readonly type: DencoType
-  readonly attr: DencoAttribute
+  numbering: string
+  name: string
+  type: DencoType
+  attr: DencoAttribute
 }
 
 /**
@@ -39,7 +39,13 @@ export interface DencoState extends Denco {
   ap: number
 
   skill: SkillHolder
-  film: Film
+  film: FilmHolder
 
   link: StationLink[]
+}
+
+export function countDencoType(formation: Denco[]): number {
+  const types = new Set<DencoType>()
+  formation.forEach(d => types.add(d.type))
+  return types.size
 }

@@ -2,10 +2,11 @@ import { getBaseDamage } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "defense" && self.hpBefore === self.maxHp) {
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           const damage = getBaseDamage(context, state)
           // 通常ダメージ(ATK,DEF考慮含む)を0にする

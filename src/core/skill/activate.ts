@@ -1,24 +1,29 @@
-import { Context } from "../context"
+import { Context, withFixedClock } from "../context"
 import { DencoState } from "../denco"
 import { copyState, ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill } from "./holder"
+import { SkillPropertyReader, withActiveSkill } from "./property"
 import { refreshSkillState } from "./refresh"
+import { SkillActiveTimeout } from "./transition"
 
 /**
  * スキル状態を`active`へ遷移させる
  * 
- * 許可される操作は次の場合  
+ * この操作が許可されるスキル状態と遷移タイプは次のとおりです
  * - タイプ`manual`のスキル状態を`idle > active`へ遷移させる
  * - タイプ`manual-condition`のスキル状態を`idle > active`へ遷移させる
  * - タイプ`auto`のスキル状態を`unable > active`へ遷移させる
+ * 
+ * 遷移タイプ`auto`の場合、スキル自身が`unable > active`の遷移を制御するため使用します.
+ * ユーザが直接呼び出す必要はありません. 
+ * 
  * @param current 現在の状態
  * @returns `active`へ遷移した新しい状態
  */
-export function activateSkill(context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
-  context = context.fixClock()
+export const activateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
   return carIndex.reduce((state, idx) => activateSkillOne(context, state, idx), copyState<UserState>(current))
-}
+})
 
 function activateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
   const d = state.formation[carIndex]
@@ -32,25 +37,25 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
     context.log.error(`スキル状態が初期化されていません ${d.name}`)
   }
   const skill = d.skill
-  switch (skill.transition.type) {
+  switch (skill.transitionType) {
     case "manual":
     case "manual-condition": {
       switch (skill.transition.state) {
         case "idle": {
-          return activateSkillAndCallback(context, state, d, d.skill, skill.transition.type, carIndex)
+          return activateSkillAndCallback(context, state, d, skill, carIndex)
         }
         case "active": {
           return state
         }
         default: {
-          context.log.error(`スキル状態をactiveに変更できません(state:${skill.transition.state},transition:${skill.transition.type})`)
+          context.log.error(`スキル状態をactiveに変更できません(state:${skill.transition.state},transition:${skill.transitionType})`)
         }
       }
     }
     case "auto": {
       switch (skill.transition.state) {
         case "unable": {
-          return activateSkillAndCallback(context, state, d, d.skill, "auto", carIndex)
+          return activateSkillAndCallback(context, state, d, skill, carIndex)
         }
         case "active": {
           return state
@@ -61,64 +66,88 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
       }
     }
     default: {
-      context.log.error(`スキル状態をactiveに変更できません type:${skill.transition.type}`)
+      context.log.error(`スキル状態をactiveに変更できません type:${skill.transitionType}`)
     }
   }
 }
 
-function activateSkillAndCallback(context: Context, state: UserState, d: DencoState, skill: Skill & { type: "possess" }, transition: "manual" | "manual-condition" | "auto", carIndex: number): UserState {
+function activateSkillAndCallback<T extends "manual" | "manual-condition" | "auto">(context: Context, state: UserState, d: DencoState, skill: Skill<T>, carIndex: number): UserState {
   context.log.log(`スキル状態の変更：${d.name} ${skill.transition.state} -> active`)
-  let self = {
-    ...d,
-    carIndex: carIndex,
-    skill: skill,
-  }
-  const timeout = skill.deactivateAt?.(context, state, self)
   skill.transition = {
     state: "active",
-    type: transition,
-    data: timeout ? {
-      ...timeout,
-      activatedAt: context.currentTime
-    } : undefined,
+    data: getSkillActiveTimeout(context, d, skill)
   }
   // カスタムデータの初期化
   skill.data.clear()
   // callback #onActivated
-  const callback = skill.onActivated
-  if (callback) {
-    // 更新したスキル状態をコピー
-    self = {
-      ...copyState<DencoState>(d),
-      carIndex: carIndex,
-      skill: skill,
-    }
-    state = callback(context, state, self) ?? state
+  if (skill.onActivated) {
+    state = skill.onActivated(context, state, withActiveSkill(d, skill, carIndex)) ?? state
   }
   refreshSkillState(context, state)
   return state
 }
 
+function getSkillActiveTimeout<T extends "manual" | "manual-condition" | "auto">(context: Context, d: ReadonlyState<DencoState>, skill: ReadonlyState<Skill<T>>): SkillActiveTimeout | undefined {
+  const strategy = skill.deactivate
+  switch (strategy) {
+    case "default_timeout": {
+      const reader = new SkillPropertyReader(skill.property, d.film)
+      let active = reader.readNumber("active")
+      context.assert(active >= 0, `スキル時間が負数です active:${active}[sec]`)
+      let cooldown = reader.readNumber("cooldown")
+      context.assert(cooldown >= 0, `スキル時間が負数です cooldown:${cooldown}[sec]`)
+      const film = d.film
+      if (film.type === "film") {
+        if (film.skillActiveDuration) {
+          let next = Math.max(active + film.skillActiveDuration, 0)
+          context.log.log(`スキル時間のフィルム補正 active: ${active} => ${next}[sec]`)
+          active = next
+        }
+        if (film.skillCooldownDuration) {
+          let next = Math.max(cooldown + film.skillCooldownDuration, 0)
+          context.log.log(`スキル時間のフィルム補正 cooldown: ${cooldown} => ${next}[sec]`)
+          cooldown = next
+        }
+      }
+      return {
+        activatedAt: context.currentTime,
+        activeTimeout: context.currentTime + active * 1000,
+        cooldownTimeout: context.currentTime + (active + cooldown) * 1000,
+      }
+    }
+    case "self_deactivate": {
+      return undefined
+    }
+  }
+}
+
 /**
  * スキル状態を`cooldown`へ遷移させる
  * 
- * 許可される操作は次の場合  
+ * ### 想定される用途
+ * **スキル自身が`active => cooldown`の遷移タイミングを制御するのに使用します**
+ * 
+ * ユーザが直接呼び出す必要はありません. 
+ * 
+ * ### 有効な操作
+ * 
+ * {@link SkillLogic deactivate}において`"self_deactivate"`を指定していること！
+ * それ以外の場合では`active => cooldown`の状態遷移は時間経過で制御されるため、
+ * `deactivateSkill`の呼び出しは例外を投げます
+ * 
+ * この操作が許可されるスキル状態と遷移タイプは次のとおりです
  * - タイプ`manual`のスキル状態を`active > cooldown`へ遷移させる
  * - タイプ`manual-condition`のスキル状態を`active > cooldown`へ遷移させる
  * - タイプ`auto`のスキル状態を`active > cooldown`へ遷移させる
  * 
- * ただし、`Skill#deactivateAt`で`active, cooldown`の終了時刻を指定している場合はその指定に従うので
- * この呼び出しはエラーとなる
- * 
  * @param current 現在の状態
  * @returns `cooldown`へ遷移した新しい状態
  */
-export function deactivateSkill(context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState {
-  context = context.fixClock()
+export const deactivateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
   const state = copyState<UserState>(current)
   carIndex.forEach(idx => deactivateSkillOne(context, state, idx))
   return state
-}
+})
 
 function deactivateSkillOne(context: Context, state: UserState, carIndex: number) {
   const d = state.formation[carIndex]
@@ -129,7 +158,7 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
     context.log.error(`対象のでんこはスキルを保有していません ${d.name}`)
   }
   const skill = d.skill
-  switch (skill.transition.type) {
+  switch (skill.transitionType) {
     case "manual":
     case "manual-condition":
     case "auto": {
@@ -137,18 +166,25 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
         if (skill.transition.data) {
           context.log.error(`スキル状態をcooldownに変更できません, active終了時刻が設定済みです: ${JSON.stringify(skill.transition.data)}`)
         }
-        const callback = skill.completeCooldownAt
-        if (!callback) {
-          context.log.error(`スキル状態をcooldownに変更できません, cooldownの終了時刻を指定する関数 completeCooldownAt が未定義です`)
+        const strategy = skill.deactivate
+        if (strategy !== "self_deactivate") {
+          context.log.error(`スキル状態の変更方法が不正です denco: ${d.name} deactivate: ${strategy} != 'self_deactivate'`)
+        }
+        const reader = new SkillPropertyReader(skill.property, d.film)
+        let cooldown = reader.readNumber("cooldown")
+        context.assert(cooldown >= 0, `スキル時間が負数です cooldown:${cooldown}[sec]`)
+        const film = d.film
+        if (film.type === "film" && film.skillCooldownDuration) {
+          let next = Math.max(cooldown + film.skillCooldownDuration, 0)
+          context.log.log(`スキル時間のフィルム補正 cooldown: ${cooldown} => ${next}[sec]`)
+          cooldown = next
+        }
+        const timeout = {
+          cooldownTimeout: context.currentTime + cooldown * 1000,
         }
         skill.transition = {
           state: "cooldown",
-          type: skill.transition.type,
-          data: callback(context, state, {
-            ...d,
-            carIndex: carIndex,
-            skill: skill,
-          })
+          data: timeout
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
         refreshSkillState(context, state)
@@ -158,7 +194,7 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
       }
     }
     default: {
-      context.log.error(`スキル状態をcooldownに変更できません transition:${skill.transition.type}`)
+      context.log.error(`スキル状態をcooldownに変更できません transition:${skill.transitionType}`)
     }
   }
 }

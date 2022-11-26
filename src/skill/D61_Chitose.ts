@@ -1,8 +1,10 @@
 import { isSkillActive, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
-    if (step === "before_access" && state.defense) {
+    if (step === "before_access" && state.defense && !state.pinkMode) {
       const all = Array.from(state.offense.formation)
       all.push(...state.defense.formation)
       const anySupporter = all.some(d => {
@@ -10,7 +12,7 @@ const skill: SkillLogic = {
       })
       if (!anySupporter) return // 無効化の対象が存在しない
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           const all = Array.from(state.offense.formation)
           if (state.defense) {
@@ -24,15 +26,6 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivateAt: (context, state, self) => {
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000
-    }
-  }
 }
 
 export default skill

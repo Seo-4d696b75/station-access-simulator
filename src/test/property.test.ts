@@ -1,6 +1,8 @@
+import assert from "assert";
 import { isEqual } from "lodash";
-import { activateSkill, copyState, copyStateTo, DencoManager, getSkill, initContext, initUser, SkillManager } from "..";
+import { activateSkill, copyState, copyStateTo, DencoManager, Film, getSkill, initContext, initUser, SkillManager } from "..";
 import { TypedMap } from "../core/property";
+import { SkillPropertyReader } from "../core/skill/property";
 
 describe("copy, equals, merge of TypedMap", () => {
   test("read", () => {
@@ -38,6 +40,69 @@ describe("copy, equals, merge of TypedMap", () => {
   })
 })
 
+describe("SkillPropertyReader", () => {
+  const p = new Map<string, any>([["key1", 1], ["key2", 2]])
+  const base = new TypedMap(p)
+  const film: Film = {
+    type: "film",
+    theme: "theme",
+    skill: {
+      key1: 1,
+      key3: -2,
+    }
+  }
+  beforeAll(() => {
+    base.putNumber("key1", 10)
+    base.putNumberArray("key3", [1, 2, 3])
+    base.putBoolean("key4", true)
+    base.putString("key5", "string")
+  })
+  test("Film補正あり", () => {
+    const reader = new SkillPropertyReader(base, film)
+    expect(reader.readNumber("key1")).toBe(11)
+    expect(reader.readNumber("key2")).toBe(2)
+    expect(reader.readNumberArray("key3")).toEqual([-1, 0, 1])
+    expect(() => reader.readNumber("key4")).toThrowError()
+    expect(reader.readBoolean("key4")).toBe(true)
+  })
+  test("Film補正なし", () => {
+    const reader = new SkillPropertyReader(base, { type: "none" })
+    expect(reader.readNumber("key1")).toBe(10)
+    expect(reader.readNumber("key2")).toBe(2)
+    expect(reader.readNumberArray("key3")).toEqual([1, 2, 3])
+    expect(() => reader.readNumber("key4")).toThrowError()
+    expect(reader.readBoolean("key4")).toBe(true)
+  })
+  test("copy", () => {
+    const reader1 = new SkillPropertyReader(base, film)
+    const reader2 = copyState(reader1)
+    expect(reader1.film).not.toBe(reader2.film)
+    expect(reader1.film).toEqual(reader2.film)
+    expect(reader1.base).not.toBe(reader2.base)
+    const f = reader2.film
+    assert(f.type === "film")
+    assert(f.skill)
+    f.skill.key1 = 10
+    expect(reader1.readNumber("key1")).toBe(11)
+    expect(reader2.readNumber("key1")).toBe(20)
+  })
+  test("merge", () => {
+    const reader = new SkillPropertyReader(base, film)
+    const reader1 = copyState(reader)
+    const reader2 = copyState(reader)
+    const f = reader2.film
+    assert(f.type === "film")
+    assert(f.skill)
+    f.skill.key1 = 10
+    expect(reader1.readNumber("key1")).toBe(11)
+    expect(reader2.readNumber("key1")).toBe(20)
+    copyStateTo(reader2, reader1)
+    expect(reader1.film).not.toBe(reader2.film)
+    expect(reader1.film).toEqual(reader2.film)
+    expect(reader1.readNumber("key1")).toBe(20)
+  })
+})
+
 describe("型安全なプロパティの読み書き", () => {
   const dencos = [
     { numbering: "1", name: "seria", full_name: "黄陽セリア", type: "supporter", attribute: "eco", EXP: [0, 400, 800, 1200, 1600, 2100, 2600, 3200, 3700, 4300, 4900, 5500, 6100, 6800, 7500, 8100, 8800, 9500, 10200, 10900, 11700, 12400, 13200, 13900, 14700, 15500, 16300, 17100, 17900, 18700, 19600, 20400, 21200, 22100, 23000, 23800, 24700, 25600, 26500, 27300, 28300, 29200, 30100, 31000, 32000, 32900, 33800, 34800, 35800, 36700, 37600, 38700, 39600, 40600, 41600, 42600, 43600, 44600, 45600, 46600, 47600, 48700, 49700, 50800, 51700, 52900, 53800, 55000, 56000, 57000, 58100, 59200, 60300, 61400, 62400, 63600, 64600, 65800, 66800, 68000], AP: [50, 53, 57, 60, 64, 67, 71, 74, 77, 81, 84, 87, 91, 94, 97, 100, 103, 107, 110, 112, 115, 118, 121, 123, 126, 129, 131, 133, 136, 138, 140, 142, 144, 145, 147, 149, 150, 151, 153, 154, 155, 156, 157, 157, 158, 159, 159, 159, 159, 160, 163, 166, 170, 173, 176, 180, 183, 186, 190, 193, 196, 200, 203, 206, 210, 213, 216, 220, 223, 226, 230, 233, 236, 240, 243, 246, 250, 253, 256, 260], HP: [72, 75, 78, 82, 85, 89, 92, 96, 99, 102, 106, 109, 113, 116, 120, 123, 126, 130, 133, 137, 140, 144, 147, 150, 154, 157, 161, 164, 168, 171, 174, 178, 181, 185, 188, 192, 195, 198, 202, 205, 209, 212, 216, 219, 222, 226, 229, 233, 236, 240, 243, 247, 250, 254, 258, 261, 265, 268, 272, 276, 279, 283, 286, 290, 294, 297, 301, 304, 308, 312, 315, 319, 322, 326, 330, 333, 337, 340, 344, 348] },
@@ -46,20 +111,19 @@ describe("型安全なプロパティの読み書き", () => {
     {
       numbering: "1",
       class: "D01_Seria",
-      type: "manual",
       key1: 100,
       key2: "string",
       key3: true,
       key4: [1, 2, 3],
       key5: ["hoge", "piyo"],
       list: [
-        { skill_level: 1, denco_level: 5, name: "検測開始しま～す♡ Lv.1", active: 1800, wait: 10800, heal: 15, probability: "20%" },
-        { skill_level: 2, denco_level: 15, name: "検測開始しま～す♡ Lv.2", active: 1800, wait: 10800, heal: 25, probability: "25%" },
-        { skill_level: 3, denco_level: 30, name: "検測開始しま～す♡ Lv.3", active: 1800, wait: 10800, heal: 35, probability: "30%" },
-        { skill_level: 4, denco_level: 50, name: "検測開始しま～す♡ Lv.4", active: 1800, wait: 10800, heal: 45, probability: "35%" },
-        { skill_level: 5, denco_level: 60, name: "検測開始しま～す♡ Lv.5", active: 1800, wait: 10800, heal: 55, probability: "40%" },
-        { skill_level: 6, denco_level: 70, name: "検測開始しま～す♡ Lv.6", active: 1800, wait: 10800, heal: 65, probability: "45%" },
-        { skill_level: 7, denco_level: 80, name: "幸せの黄色い検測", active: 1800, wait: 10800, heal: 80, probability: "50%" }
+        { skill_level: 1, denco_level: 5, name: "検測開始しま～す♡ Lv.1", active: 1800, cooldown: 10800, heal: 15, probability: "20%" },
+        { skill_level: 2, denco_level: 15, name: "検測開始しま～す♡ Lv.2", active: 1800, cooldown: 10800, heal: 25, probability: "25%" },
+        { skill_level: 3, denco_level: 30, name: "検測開始しま～す♡ Lv.3", active: 1800, cooldown: 10800, heal: 35, probability: "30%" },
+        { skill_level: 4, denco_level: 50, name: "検測開始しま～す♡ Lv.4", active: 1800, cooldown: 10800, heal: 45, probability: "35%" },
+        { skill_level: 5, denco_level: 60, name: "検測開始しま～す♡ Lv.5", active: 1800, cooldown: 10800, heal: 55, probability: "40%" },
+        { skill_level: 6, denco_level: 70, name: "検測開始しま～す♡ Lv.6", active: 1800, cooldown: 10800, heal: 65, probability: "45%" },
+        { skill_level: 7, denco_level: 80, name: "幸せの黄色い検測", active: 1800, cooldown: 10800, heal: 80, probability: "50%" }
       ]
     },
   ]

@@ -1,13 +1,14 @@
 import { getBaseDamage, SkillLogic } from "..";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "defense" && self.currentHp > 1) {
       const base = getBaseDamage(context, state)
       const damage = base.variable + base.constant
       if (damage >= self.currentHp) {
         return {
-          probability: self.skill.property.readNumber("probability"),
+          probabilityKey: "probability",
           recipe: (state) => {
             // 現在のHP - 1 にダメージ量を固定
             state.damageBase = {

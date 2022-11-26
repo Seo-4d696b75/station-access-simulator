@@ -1,6 +1,6 @@
-import { AccessSide, AccessState } from ".."
-import { Context } from "../../context"
-import { calcLinkResult, calcScoreToExp } from "../score"
+import { AccessSide, AccessState } from "."
+import { Context } from "../context"
+import { calcLinkResult, calcLinkScoreToExp } from "./score"
 
 /**
  * 表示用の経験値＆スコアの計算（破壊的）
@@ -24,7 +24,7 @@ export function completeDisplayScoreExp(context: Context, state: AccessState, wh
       }
       const result = calcLinkResult(context, d.link[idx], d, 0)
       side.displayedScore += result.totalScore
-      side.displayedExp += calcScoreToExp(result.totalScore)
+      side.displayedExp += calcLinkScoreToExp(result.totalScore, d)
     }
   }
 }

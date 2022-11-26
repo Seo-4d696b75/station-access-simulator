@@ -1,6 +1,6 @@
 import { computeWidth } from "meaw"
 import { AccessDencoState, AccessResult, AccessSide, AccessUserResult, getAccessDenco } from "./access/index"
-import { Context } from "./context"
+import { Context, SimulatorError } from "./context"
 import { formatDuration } from "./date"
 import { DencoAttribute } from "./denco"
 import { EventTriggeredSkill } from "./event"
@@ -8,6 +8,20 @@ import { Event, LevelupDenco } from "./event/type"
 import { ReadonlyState } from "./state"
 import { LinksResult, Station, StationLink } from "./station"
 import { UserState } from "./user"
+
+const percentFormatter = new Intl.NumberFormat(
+  "default",
+  {
+    style: "percent",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    signDisplay: "always",
+  }
+)
+
+export function formatPercent(percent: number): string {
+  return percentFormatter.format(percent / 100)
+}
 
 export function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
   if (!user) return
@@ -111,6 +125,10 @@ export function formatReboot(result: LinksResult, time: number, width: number = 
 
 
 export function formatRebootDetail(result: LinksResult, time: number, width: number = 60): string {
+  if (result.link.length === 0) {
+    // リンク無しの場合は簡易表示のみ
+    return formatReboot(result, time, width)
+  }
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("reboot", "red"), width)
   str += formatLine(`${result.denco.name}がリンクしていた駅のスコアが加算されました`, width)
@@ -418,7 +436,7 @@ function subString(value: string, width: number): string {
       result += "…"
       str = str.substring(1)
     } else {
-      throw Error()
+      throw new SimulatorError()
     }
   }
   result = controls.reduce((a, b) => a + b, result)

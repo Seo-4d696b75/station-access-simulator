@@ -15,24 +15,27 @@ export function getDefPercentDenco(def: number): DencoState {
     nextExp: 100000,
     currentHp: 100,
     maxHp: 100,
-    film: {},
+    film: { type: "none" },
     ap: 100,
     link: [],
     skill: {
       type: "possess",
+      transitionType: "always",
       level: 1,
       name: `test-defense-percent:${def}`,
       property: new TypedMap(),
       data: new TypedMap(),
       transition: {
         state: "active",
-        type: "always",
         data: undefined
       },
       triggerOnAccess: (context, state, step, self) => {
         if (step === "damage_common" && self.which === "defense") {
-          return (state) => {
-            state.defendPercent += def
+          return {
+            probabilityKey: "probability",
+            recipe: (state) => {
+              state.defendPercent += def
+            }
           }
         }
       }
@@ -56,24 +59,27 @@ export function getFixedDamageDenco(damage: number): DencoState {
     nextExp: 100000,
     currentHp: 100,
     maxHp: 100,
-    film: {},
+    film: { type: "none" },
     ap: 100,
     link: [],
     skill: {
       type: "possess",
+      transitionType: "always",
       level: 1,
       name: "test-skill1",
       property: new TypedMap(),
       data: new TypedMap(),
       transition: {
         state: "active",
-        type: "always",
         data: undefined
       },
       triggerOnAccess: (context, state, step, self) => {
         if (step === "damage_fixed" && self.which === which) {
-          return (state) => {
-            state.damageFixed += damage
+          return {
+            probabilityKey: "probability",
+            recipe: (state) => {
+              state.damageFixed += damage
+            }
           }
         }
       }

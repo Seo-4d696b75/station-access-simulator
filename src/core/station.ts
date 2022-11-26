@@ -1,4 +1,3 @@
-import { AccessSide } from "./access";
 import { DencoState } from "./denco";
 import { ReadonlyState } from "./state";
 
@@ -61,19 +60,29 @@ export interface LinkResult extends StationLink {
 }
 
 /**
- * リブートにより手放したリンクすべての結果
+ * 解除したリンクすべての結果
+ * 
+ * 原則としてアクセス処理中に発生したリブートによってリンクが解除されますが、
+ * スキルによるリブート・フットバースによるリブートを伴わないリンク解除もあります
  */
 export interface LinksResult {
   /**
-   * リブートしたタイミング
+   * リンクが解除されたタイミング
    */
   readonly time: number
   /**
-   * リブートしてリンクスコア＆経験値が加算される直前の状態
-   * リブートしたリンクは解除されている
+   * 解除されたリンクのスコア＆経験値が加算される直前の状態
+   * 
+   * 解除対象のリンクは{@link DencoState link}から削除済みです
    */
   readonly denco: ReadonlyState<DencoState>
-  readonly which: AccessSide
+
+  /**
+   * 解除されたリンク
+   * 
+   * **リンク数が0の場合があります** リンクを保持しない状態でカウンター攻撃を受けるなどして
+   * リブートした場合は空配列になります
+   */
   readonly link: readonly ReadonlyState<LinkResult>[]
   /**
    * スコア合計値
@@ -107,10 +116,15 @@ export interface LinksResult {
    * 駅とでんこ属性が一致するリンクの数
    */
   readonly matchCnt: number
+
+  // FIXME スコアアップの反映（現状ではリンクスコアアップは対応しない）
+  // スキルによるスコアアップはリンクスコア対象外がほとんど
+  // readonly score: number
+
   /**
    * 経験値合計
    * 
-   * {@link totalScore}を基に計算される  
+   * {@link LinkResult totalScore}を基に計算される  
    * 経験値増加の効果によりスコア値と一致しない場合がある
    */
   readonly exp: number

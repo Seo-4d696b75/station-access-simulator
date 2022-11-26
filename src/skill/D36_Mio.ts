@@ -1,6 +1,8 @@
 import { calcAccessDamage, getBaseDamage, getDefense, SkillLogic } from "..";
 
 const skill: SkillLogic = {
+  transitionType: "manual",
+  deactivate: "default_timeout",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" &&
       self.which === "defense" &&
@@ -10,7 +12,7 @@ const skill: SkillLogic = {
       // 肩代わりできるダメージの有無を確認
       if (base.variable > 0) {
         return {
-          probability: self.skill.property.readNumber("probability"),
+          probabilityKey: "probability",
           recipe: (state) => {
             // ATKのみ考慮して基本ダメージを計算
             const base = calcAccessDamage(context, state, {
@@ -46,15 +48,6 @@ const skill: SkillLogic = {
       }
     }
   },
-  deactivateAt: (context, state, self) => {
-    const active = self.skill.property.readNumber("active")
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000,
-    }
-  }
 }
 
 export default skill

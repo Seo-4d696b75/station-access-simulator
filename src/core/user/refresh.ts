@@ -1,4 +1,4 @@
-import { Context } from "../context";
+import { assert, Context, withFixedClock } from "../context";
 import { DencoState } from "../denco";
 import DencoManager from "../dencoManager";
 import { LevelupEvent, refreshEventQueue } from "../event";
@@ -28,12 +28,11 @@ export function refreshState(context: Context, state: ReadonlyState<UserState>):
  * @param context 
  * @param state 
  */
-export function refreshUserState(context: Context, state: UserState) {
-  context = context.fixClock()
+export const refreshUserState = (context: Context, state: UserState) => withFixedClock(context, () => {
   refreshSkillState(context, state)
   refreshEventQueue(context, state)
   refreshEXPState(context, state)
-}
+})
 
 /**
  * 現在の状態の経験値の確認してレベルアップ処理を行う(破壊的)
@@ -53,28 +52,33 @@ export function refreshEXPState(context: Context, state: UserState) {
  */
 function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
   const d = state.formation[idx]
-  const levelup = checkLevelup(context, d)
-  if (levelup) {
-    const before = copyState(d)
-    // copy
-    copyStateTo(levelup, d)
-    // 新規にスキル獲得した場合はスキル状態を初期化
-    refreshSkillStateOne(context, state, idx)
-    let event: LevelupEvent = {
-      type: "levelup",
-      data: {
-        time: context.currentTime,
-        after: copyState(d),
-        before: before,
+  const after = refreshExpLevelOne(context, d)
+  if (after) {
+    if (after.level > d.level) {
+      const before = copyState(d)
+      // UserStateのサブクラスも考慮
+      copyStateTo(after, d)
+      // 新規にスキル獲得した場合はスキル状態を初期化
+      refreshSkillStateOne(context, state, idx)
+      let event: LevelupEvent = {
+        type: "levelup",
+        data: {
+          time: context.currentTime,
+          after: copyState(d),
+          before: before,
+        }
       }
+      state.event.push(event)
+      context.log.log(`レベルアップ：${after.name} Lv.${before.level}->Lv.${after.level}`)
+      context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
+    } else {
+      copyStateTo(after, d)
     }
-    state.event.push(event)
-    context.log.log(`レベルアップ：${levelup.name} Lv.${before.level}->Lv.${levelup.level}`)
-    context.log.log(`現在の経験値：${levelup.name} ${levelup.currentExp}/${levelup.nextExp}`)
   }
 }
 
-function checkLevelup(context: Context, denco: ReadonlyState<DencoState>): DencoState | undefined {
+function refreshExpLevelOne(context: Context, denco: ReadonlyState<DencoState>): DencoState | undefined {
+  assert(denco.currentExp >= 0, `現在の経験値が負数です ${denco.name}`)
   if (denco.currentExp < denco.nextExp) return undefined
   let d = copyState<DencoState>(denco)
   let level = d.level
@@ -85,7 +89,7 @@ function checkLevelup(context: Context, denco: ReadonlyState<DencoState>): Denco
       d = {
         ...status,
         currentHp: status.maxHp, // 現在のHPを無視して最大HPに設定
-        currentExp: d.currentExp - d.nextExp,
+        currentExp: status.maxLevel ? status.nextExp : d.currentExp - d.nextExp, // 最大レベル時はnextExpで固定する
         film: d.film,
         link: d.link,
         skill: d.skill,
@@ -94,21 +98,19 @@ function checkLevelup(context: Context, denco: ReadonlyState<DencoState>): Denco
       if (d.skill.type === "possess"
         && nextSkill.type === "possess"
         && d.skill.level !== nextSkill.level) {
-        d.skill = {
-          ...nextSkill,
-          // 現在のスキル状態 transition.* はそのまま
-          // 有効時間などは前スキルで決定されたデータのまま
-          transition: d.skill.transition,
-          // custom-propertyは変更しない
-          data: d.skill.data
-        }
+        const currentSkill = d.skill
+        assert(currentSkill.transitionType === nextSkill.transitionType)
+        // 現在のスキル状態 transition.* はそのまま
+        // 有効時間などは前スキルで決定されたデータのまま
+        nextSkill.transition = currentSkill.transition
+        // custom-propertyは変更しない
+        nextSkill.data = currentSkill.data
+        d.skill = nextSkill
       }
+      if (status.maxLevel) break
     } else {
-      // これ以上のレベルアップはなし
-      d = {
-        ...d,
-        currentExp: d.nextExp
-      }
+      // 既に最大レベル
+      d.currentExp = d.nextExp // 最大レベル時はnextExpで固定する
       break
     }
   }

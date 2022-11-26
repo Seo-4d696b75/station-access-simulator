@@ -277,7 +277,7 @@ describe("ほこねのスキル", () => {
     expect(d.exp.access).toBe(101) // 回復時はダメージ量相当の経験値は1
   })
   test("発動あり-うらら相手-ミオ", () => {
-    // TODO ミオの発動有無の確認
+    // ミオの発動有無の確認
     // 現状の実装だと攻撃側のほこねスキルが先に発動してダメージ量が負数になり、ミオ発動条件を満たさなくなる
     const context = initContext("test", "test", false)
     let hokone = DencoManager.getDenco(context, "26", 50)
@@ -464,7 +464,7 @@ describe("ほこねのスキル", () => {
     const heal = Math.floor(210 * 0.4)
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(-heal)
-    // TODO 固定ダメージ増減の小計が負数の場合の挙動
+    // 固定ダメージ増減の小計が負数の場合の挙動
     // 参考：https://ekimemo.com/news/20200313150000_1
     // 固定ダメージの増減両方が効く
     // 固定ダメージの原則に従えば小計が負数でも回復はしない（下限0がある）

@@ -1,3 +1,4 @@
+import { SimulatorError } from "./context"
 
 /**
  * 名前（アクセス子の名前）と型の一覧
@@ -73,10 +74,10 @@ export class TypedMap {
       value = defaultValue
     }
     if (value === undefined) {
-      throw new Error(`property not found. key:${key}`)
+      throw new SimulatorError(`property not found. key:${key}`)
     }
     if (!typeGuard(value)) {
-      throw new Error(`property type mismatched. key:${key} actual:${value}`)
+      throw new SimulatorError(`property type mismatched. key:${key} actual:${value}`)
     }
     return value
   }
@@ -106,7 +107,7 @@ export class TypedMap {
     if (current !== undefined) {
       // 型チェック
       if (!typeGuard(current)) {
-        throw new Error(`property type mismatched. key:${key} current:${current} value to be written:${value}`)
+        throw new SimulatorError(`property type mismatched. key:${key} current:${current} value to be written:${value}`)
       }
     }
     dst.set(key, value)

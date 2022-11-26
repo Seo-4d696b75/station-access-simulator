@@ -1,5 +1,5 @@
 import { AccessConfig, startAccess } from "../access"
-import { Context } from "../context"
+import { Context, withFixedClock } from "../context"
 import { DencoState } from "../denco"
 import { copyState, ReadonlyState } from "../state"
 import { Station } from "../station"
@@ -11,8 +11,7 @@ import { SkillEventState } from "./skill"
  * @param state 
  * @returns 
  */
-export function accessRandomStation(context: Context, state: ReadonlyState<SkillEventState>): SkillEventState {
-  context = context.fixClock()
+export const accessRandomStation = (context: Context, state: ReadonlyState<SkillEventState>): SkillEventState => withFixedClock(context, () => {
   //TODO ランダム駅の選択
   const station: Station = {
     name: "ランダムな駅",
@@ -59,4 +58,4 @@ export function accessRandomStation(context: Context, state: ReadonlyState<Skill
     ],
     probabilityBoostPercent: state.probabilityBoostPercent,
   }
-}
+})

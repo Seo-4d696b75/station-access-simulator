@@ -1,5 +1,4 @@
-import { isEqual } from "lodash";
-import { SkillHolder } from "..";
+import { cloneDeep, cloneDeepWith, merge } from "lodash";
 import { DencoState } from "../core/denco";
 import { copyState, ReadonlyState } from "../core/state";
 import { StationLink } from "../core/station";
@@ -18,7 +17,9 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
     nextExp: state.nextExp,
     ap: state.ap,
     link: state.link.map(e => copyState<StationLink>(e)),
-    skill: copyState<SkillHolder>(state.skill),
+    skill: cloneDeepWith(state.skill, (value) => {
+      if (value?.constructor?.name === "SkillPropertyReader") return cloneDeep(value.base)
+    }),
     film: {
       ...state.film
     },
@@ -28,19 +29,26 @@ export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
 export function toMatchDencoState(
   received: ReadonlyState<DencoState>,
   expected: ReadonlyState<DencoState>,
+  ...expectedWith: any[]
 ): jest.CustomMatcherResult {
   // DencoStateの型として比較したい場合において
   // DencoStateにはサブクラスが多くあるため
   // 直接比較するとサブクラスのみ定義されたプロパティの不一致で検証が失敗する場合がある
   const copyReceived = copyDencoState(received)
   const copyExpected = copyDencoState(expected)
-  const pass = isEqual(copyReceived, copyExpected)
-  const message = pass ?
-    "definitely matched as DencoState" :
-    "some properties in DencoState not matched"
-  return {
-    pass: pass,
-    message: () => message,
+  // expectedを毎度調整するのは面倒なのでmergeで色々上書きできるようにする
+  merge(copyExpected, ...expectedWith)
+  try {
+    expect(copyReceived).toMatchObject(copyExpected)
+    return {
+      pass: true,
+      message: () => "definitely matched as DencoState",
+    }
+  } catch (e: any) {
+    return {
+      pass: false,
+      message: () => String(e)
+    }
   }
 }
 
@@ -51,15 +59,15 @@ declare global {
        * DencoState型として状態の一致を比較する
        * @param expected 
        */
-      toMatchDencoState(expected: ReadonlyState<DencoState>): R;
+      toMatchDencoState(expected: ReadonlyState<DencoState>, ...expectedWith: any[]): R;
     }
 
     interface Expect {
-      toMatchDencoState: (expected: ReadonlyState<DencoState>) => any;
+      toMatchDencoState: (expected: ReadonlyState<DencoState>, ...expectedWith: any[]) => any;
     }
 
     interface InverseAsymmetricMatchers {
-      toMatchDencoState: (expected: ReadonlyState<DencoState>) => any;
+      toMatchDencoState: (expected: ReadonlyState<DencoState>, ...expectedWith: any[]) => any;
     }
   }
 }

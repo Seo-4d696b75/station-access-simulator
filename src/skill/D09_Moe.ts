@@ -1,14 +1,16 @@
 import { triggerSkillAtEvent } from "../core/event";
-import { isSkillActive, SkillLogic } from "../core/skill";
+import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "auto-condition",
   canActivated: (context, state, self) => {
     const idx = state.formation.findIndex(d => d.currentHp < d.maxHp)
     return idx >= 0
   },
   onHourCycle: (context, state, self) => {
-    if (isSkillActive(self.skill)) {
-      return triggerSkillAtEvent(context, state, self, (state) => {
+    return triggerSkillAtEvent(context, state, self, {
+      probabilityKey: "probability",
+      recipe: (state) => {
         const heal = self.skill.property.readNumber("heal")
         context.log.log(`編成内のみなさまのHPを回復いたしますよ♪ +${heal}%`)
         state.formation.forEach(d => {
@@ -18,8 +20,8 @@ const skill: SkillLogic = {
             d.currentHp = v
           }
         })
-      })
-    }
+      },
+    })
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "ekimemo-access-simulator",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "スマートフォン向け位置ゲーム「駅メモ」におけるアクセスイベントをシミュレーションします.",
   "main": "lib/index.js",
   "type": "commonjs",
@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "test": "jest --silent",
+    "test-coverage": "jest --silent --coverage",
     "dev": "ts-node src/main.ts",
     "watch": "ts-node-dev src/main.ts --respawn",
     "build": "npm run build-cjs && npm run build-umd",

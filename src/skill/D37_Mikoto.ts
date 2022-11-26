@@ -2,13 +2,14 @@ import { getAccessDenco } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common"
       && self.which === "offense"
       && self.who === "other"
       && getAccessDenco(state, "offense").type === "defender") {
       return {
-        probability: self.skill.property.readNumber("probability"),
+        probabilityKey: "probability",
         recipe: (state) => {
           const def = self.skill.property.readNumber("ATK")
           state.attackPercent += def

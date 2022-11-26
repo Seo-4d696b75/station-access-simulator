@@ -1,4 +1,5 @@
 import { AccessSide, AccessSideState, AccessState } from "."
+import { assert } from "../context"
 
 /**
  * アクセスの守備側が存在するか確認する
@@ -21,9 +22,7 @@ export interface AccessStateWithDefense extends AccessState {
  */
 export function getDefense<T>(state: { defense?: T }): T {
   const s = state.defense
-  if (!s) {
-    throw Error("守備側が見つかりません")
-  }
+  assert(s, "守備側が見つかりません")
   return s
 }
 

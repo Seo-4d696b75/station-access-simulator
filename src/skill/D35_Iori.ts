@@ -1,6 +1,7 @@
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "defense") {
       const keyword = self.skill.property.readString("keyword")
@@ -11,10 +12,13 @@ const skill: SkillLogic = {
       })
       const count = Math.min(target.length, max)
       if (count > 0) {
-        return (state) => {
-          const def = count * self.skill.property.readNumber("DEF")
-          state.defendPercent += def
-          context.log.log(`ワタシ、本が好きで、置いてあるところでじっとしちゃうんですよ DEF+${def}%`)
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            const def = count * self.skill.property.readNumber("DEF")
+            state.defendPercent += def
+            context.log.log(`ワタシ、本が好きで、置いてあるところでじっとしちゃうんですよ DEF+${def}%`)
+          }
         }
       }
     }

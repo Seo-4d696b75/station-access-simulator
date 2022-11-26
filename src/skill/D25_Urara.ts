@@ -2,6 +2,8 @@ import { EventSkillTrigger, triggerSkillAtEvent } from "../core/event";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
+  transitionType: "manual-condition",
+  deactivate: "default_timeout",
   canEnabled: (context, state, self) => {
     // 編成内（自身除く）にスキル状態が cooldownのでんこが１体以上いる
     return state.formation.some(d => {
@@ -13,7 +15,7 @@ const skill: SkillLogic = {
   onActivated: (context, state, self) => {
     // スキルが有効化した瞬間にスキル発動
     const trigger: EventSkillTrigger = {
-      probability: self.skill.property.readNumber("probability"),
+      probabilityKey: "probability",
       recipe: (state) => {
         const target = state.formation.filter(d => {
           const s = d.skill
@@ -30,7 +32,6 @@ const skill: SkillLogic = {
               // transitionタイプによってスキル状態の処理は異なる
               // 未初期化に戻してrefreshStateで初期化することでcooldown状態を強制終了する
               state: "not_init",
-              type: s.transition.type,
               data: undefined
             }
           }
@@ -39,15 +40,6 @@ const skill: SkillLogic = {
       }
     }
     return triggerSkillAtEvent(context, state, self, trigger)
-  },
-  deactivateAt: (context, state, self) => {
-    const active = self.skill.property.readNumber("active") // 0ms
-    const wait = self.skill.property.readNumber("wait")
-    const now = context.currentTime
-    return {
-      activeTimeout: now + active * 1000,
-      cooldownTimeout: now + (active + wait) * 1000,
-    }
   },
 }
 
