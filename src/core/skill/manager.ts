@@ -20,7 +20,7 @@ interface SkillDataset {
   skillDefaultProperties: Map<string, any>
 }
 
-export class SkillManager {
+class SkillManager {
 
   map: Map<string, SkillDataset> = new Map()
 
@@ -121,3 +121,7 @@ export class SkillManager {
     }
   }
 }
+
+const manager = new SkillManager()
+
+export default manager
