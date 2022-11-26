@@ -229,14 +229,14 @@ export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: A
   str += formatSpace(formatAccessLinkTime(result.station, time, rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatPt(leftSide?.displayedScore, true), tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.displayedScore, "pt", true), tableLeft, "left")
   str += " score"
-  str += formatSpace(formatPt(rightSide.displayedScore, true), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.displayedScore, "pt", true), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatPt(leftSide?.displayedExp, true), tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.displayedExp, "exp", true), tableLeft, "left")
   str += "  exp "
-  str += formatSpace(formatPt(rightSide.displayedExp, true), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.displayedExp, "exp", true), tableRight, "right") + "┃\n"
 
   if (which === "offense" && result.linkSuccess) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
@@ -324,10 +324,10 @@ function formatDamage(state?: ReadonlyState<AccessDencoState> | null): string {
   }
 }
 
-function formatPt(pt: number | undefined, colored: boolean = false): string {
-  if (!pt && pt !== 0) return ""
-  if (pt === 0) return "0pt"
-  let str = `${pt}pt`
+function formatPt(value: number | undefined, unit: "pt" | "exp" = "pt", colored: boolean = false): string {
+  if (!value && value !== 0) return ""
+  if (value === 0) return "0pt"
+  let str = `${value}${unit}`
   if (!colored) return str
   return color(str, "green")
 }
