@@ -7,6 +7,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "umd"),
     filename: "simulator.min.js",
+    chunkFilename: "[name].min.js",
     library: 'simulator',
     libraryTarget: 'umd',
     globalObject: 'this',

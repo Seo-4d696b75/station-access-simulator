@@ -25,7 +25,11 @@ export class SkillManager {
   map: Map<string, SkillDataset> = new Map()
 
   async load(data?: string) {
-    const list = data ? JSON.parse(data) : await import("../../data/skill.json").then(o => o.default).catch(e => [])
+    const list = data ? JSON.parse(data) : await import(
+      /* webpackMode: "lazy" */
+      /* webpackChunkName: "skill-property" */
+      "../../data/skill.json"
+    ).then(o => o.default).catch(e => [])
     if (!Array.isArray(list)) throw new SimulatorError("fail to load skill property")
     for (let e of list) {
       if (!e.numbering || !e.class || !e.list) {
@@ -54,7 +58,11 @@ export class SkillManager {
         return p
       })
       properties.sort((a, b) => a.skillLevel - b.skillLevel)
-      const logic = await import("../../skill/" + moduleName)
+      const logic = await import(
+        /* webpackMode: "lazy" */
+        /* webpackChunkName: "skill" */
+        "../../skill/" + moduleName
+      )
         .then(o => o.default)
         .catch(() => {
           throw new SimulatorError(`fail to import skill logic: ${moduleName}`)

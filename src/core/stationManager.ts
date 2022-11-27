@@ -7,7 +7,11 @@ class StationManager {
 
   async load(stationData?: string, lineData?: string) {
     const lines = lineData ? JSON.parse(lineData) :
-      await import("../data/line.json").then(r => r.default).catch(e => [])
+      await import(
+        /* webpackMode: "lazy" */
+        /* webpackChunkName: "line" */
+        "../data/line.json"
+      ).then(r => r.default).catch(e => [])
     if (!Array.isArray(lines)) {
       throw new SimulatorError("line data root not array")
     }
@@ -20,7 +24,11 @@ class StationManager {
       lineMap.set(code, line)
     })
     const stations = stationData ? JSON.parse(stationData) :
-      await import("../data/station.json").then(r => r.default).catch(e => [])
+      await import(
+        /* webpackMode: "lazy" */
+        /* webpackChunkName: "station" */
+        "../data/station.json"
+      ).then(r => r.default).catch(e => [])
     if (!Array.isArray(stations)) {
       throw new SimulatorError("station data root not array")
     }
