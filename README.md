@@ -17,7 +17,7 @@
 ✅ オリジナルでんこ No.1〜No.65 までのスキル実装  
 ✅ タイムライン上の表示をコンソール出力で再現  
 
-![image](https://user-images.githubusercontent.com/25225028/201908745-003e248a-84f2-4558-9759-5aba7399e002.png)
+![image](https://user-images.githubusercontent.com/25225028/204131714-46bc4e25-f29a-4367-a2bc-00f2297452d4.png)
 
 
 # 2. Install

@@ -36,11 +36,11 @@ init().then(() => {
 
 #### アクセス側
 
-![image](https://user-images.githubusercontent.com/25225028/201908745-003e248a-84f2-4558-9759-5aba7399e002.png)
+![image](https://user-images.githubusercontent.com/25225028/204131714-46bc4e25-f29a-4367-a2bc-00f2297452d4.png)
 
 #### アクセス相手側
 
-![image](https://user-images.githubusercontent.com/25225028/201908902-2abecf6e-b885-466c-adcc-8876fa71d9bf.png)
+![image](https://user-images.githubusercontent.com/25225028/204131736-09f31b9b-691a-42a4-a67e-4e8752c0a647.png)
 
 ```txt
 ライブラリを初期化しました
