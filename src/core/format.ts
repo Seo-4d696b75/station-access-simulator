@@ -23,84 +23,89 @@ export function formatPercent(percent: number): string {
   return percentFormatter.format(percent / 100)
 }
 
-export function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = false) {
+export function printEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = true, colored: boolean = true) {
   if (!user) return
   user.event.forEach(event => {
-    console.log(formatEvent(context, event, detail))
+    console.log(formatEvent(context, event, detail, colored))
   })
 }
 
-export function formatEvent(context: Context, event: Event, detail: boolean = false): string {
+export function formatEvents(context: Context, user: ReadonlyState<UserState> | undefined, detail: boolean = true, colored: boolean = true): string {
+  if (!user) return ""
+  return user.event.map(e => formatEvent(context, e, detail, colored)).join("\n")
+}
+
+export function formatEvent(context: Context, event: Event, detail: boolean = true, colored: boolean = true): string {
   const time = context.currentTime.valueOf()
   switch (event.type) {
     case "access":
-      return detail ? formatAccessDetail(event.data.access, event.data.which, time) : formatAccessEvent(event.data.access, event.data.which, time)
+      return detail ? formatAccessDetail(event.data.access, event.data.which, time, colored) : formatAccessEvent(event.data.access, event.data.which, time, colored)
     case "reboot":
-      return detail ? formatRebootDetail(event.data, time) : formatReboot(event.data, time)
+      return detail ? formatRebootDetail(event.data, time, colored) : formatReboot(event.data, time, colored)
     case "skill_trigger":
-      return formatSkillTriggerEvent(event.data, time)
+      return formatSkillTriggerEvent(event.data, time, colored)
     case "levelup":
-      return detail ? formatLevelupDetail(event.data, time) : formatLevelup(event.data, time)
+      return detail ? formatLevelupDetail(event.data, time, colored) : formatLevelup(event.data, time, colored)
   }
 }
 
-export function formatLevelupDetail(event: LevelupDenco, time: number, width: number = 60): string {
+function formatLevelupDetail(event: LevelupDenco, time: number, colored: boolean, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
-  str += formatLine(color("level up!", "yellow"), width)
+  str += formatLine(color("level up!", "yellow", colored), width)
   str += formatLine(`${event.after.name}がレベルアップ！`, width, "left")
   str += formatLine(`Lv: ${event.before.level} >> ${event.after.level}`, width, "left")
   str += formatLine(`HP: ${event.before.maxHp} >> ${event.after.maxHp}`, width, "left")
   str += formatLine(`AP: ${event.before.ap} >> ${event.after.ap}`, width, "left")
   if (event.before.skill.type !== "possess" && event.after.skill.type === "possess") {
     str += formatLine("スキルを獲得！", width, "left")
-    str += formatLine(color(event.after.skill.name, "blue"), width, "left")
+    str += formatLine(color(event.after.skill.name, "blue", colored), width, "left")
   }
   if (event.before.skill.type === "possess" && event.after.skill.type === "possess" && event.before.skill.level !== event.after.skill.level) {
     str += formatLine("スキルがパワーアップ！", width, "left")
-    str += formatLine(color(event.before.skill.name, "white"), width, "left")
-    str += formatLine(color(`>> ${event.after.skill.name}`, "blue"), width, "left")
+    str += formatLine(color(event.before.skill.name, "white", colored), width, "left")
+    str += formatLine(color(`>> ${event.after.skill.name}`, "blue", colored), width, "left")
   }
-  str += formatLine(color(formatPastTime(time, event.time), "yellow"), width)
+  str += formatLine(color(formatPastTime(time, event.time), "yellow", colored), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
-export function formatLevelup(event: LevelupDenco, time: number, width: number = 40): string {
+function formatLevelup(event: LevelupDenco, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
-  str += formatLine(color("level up!", "yellow"), width)
+  str += formatLine(color("level up!", "yellow", colored), width)
   str += formatLine(event.after.name, width)
   str += formatLine(`Lv.${event.after.level}`, width)
   str += formatLine(`${event.after.name}がレベルアップ！`, width)
   str += formatLine(`Lv: ${event.before.level} >> ${event.after.level}`, width)
   if (event.before.skill.type !== "possess" && event.after.skill.type === "possess") {
-    str += formatLine(color("スキルを獲得した！", "blue"), width)
+    str += formatLine(color("スキルを獲得した！", "blue", colored), width)
   }
   if (event.before.skill.type === "possess" && event.after.skill.type === "possess" && event.before.skill.level !== event.after.skill.level) {
-    str += formatLine(color("スキルがパワーアップした！", "blue"), width)
+    str += formatLine(color("スキルがパワーアップした！", "blue", colored), width)
   }
-  str += formatLine(color(formatPastTime(time, event.time), "yellow"), width)
+  str += formatLine(color(formatPastTime(time, event.time), "yellow", colored), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
-export function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, width: number = 40): string {
+function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
-  str += formatLine(color("skill", "blue"), width)
+  str += formatLine(color("skill", "blue", colored), width)
   str += formatLine(event.denco.name, width)
   str += formatLine(`Lv.${event.denco.level}`, width)
   str += formatLine(`「${event.skillName}」`, width)
   str += formatLine(`${event.denco.name}のスキルが発動！`, width)
-  str += formatLine(color(formatPastTime(time, event.time), "blue"), width)
+  str += formatLine(color(formatPastTime(time, event.time), "blue", colored), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
-export function formatReboot(result: LinksResult, time: number, width: number = 40): string {
+function formatReboot(result: LinksResult, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
-  str += formatLine(color("reboot", "red"), width)
+  str += formatLine(color("reboot", "red", colored), width)
   str += formatLine(result.denco.name, width)
   str += formatLine(`Lv.${result.denco.level}`, width)
   str += formatLine(`${result.denco.name}のバッテリーが切れました`, width)
@@ -117,43 +122,43 @@ export function formatReboot(result: LinksResult, time: number, width: number = 
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   }
   str += formatLine(`${result.denco.name}再起動します…`, width)
-  str += formatLine(color(formatPastTime(time, result.time), "red"), width)
+  str += formatLine(color(formatPastTime(time, result.time), "red", colored), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
 
-export function formatRebootDetail(result: LinksResult, time: number, width: number = 60): string {
+function formatRebootDetail(result: LinksResult, time: number, colored: boolean, width: number = 60): string {
   if (result.link.length === 0) {
     // リンク無しの場合は簡易表示のみ
-    return formatReboot(result, time, width)
+    return formatReboot(result, time, colored, width)
   }
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
-  str += formatLine(color("reboot", "red"), width)
+  str += formatLine(color("reboot", "red", colored), width)
   str += formatLine(`${result.denco.name}がリンクしていた駅のスコアが加算されました`, width)
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   result.link.forEach(link => {
-    str += "┃" + color(formatSpace(link.name, width - 10, "left"), "green")
+    str += "┃" + color(formatSpace(link.name, width - 10, "left"), "green", colored)
     str += link.matchBonus ? formatAttr(result.denco.attr, 8) : " ".repeat(8)
     str += "┃\n"
     let duration = formatLinkTime(time, link)
-    let pt = formatSpace(formatPt(link.totalScore), width - 2 - len(duration), "right")
-    str += "┃" + color(duration + pt, "green") + "┃\n"
+    let pt = formatSpace(formatPt(link.totalScore, colored), width - 2 - len(duration), "right")
+    str += "┃" + color(duration + pt, "green", colored) + "┃\n"
     str += "┠" + "─".repeat(width - 2) + "┨\n"
   })
-  str += "┃" + color("total score" + formatSpace(formatPt(result.totalScore), width - 13, "right"), "green") + "┃\n"
-  str += "┃" + "link score" + formatSpace(`${result.link.length}駅 ` + formatPt(result.linkScore), width - 12, "right") + "┃\n"
-  str += "┃" + "combo bonus" + formatSpace(formatPt(result.comboBonus), width - 13, "right") + "┃\n"
-  str += "┃" + "match bonus" + formatSpace(`${result.matchCnt}駅 ` + formatPt(result.matchBonus), width - 13, "right") + "┃\n"
-  str += "┃" + color(formatSpace(result.denco.name + "'s exp " + formatPt(result.totalScore), width - 2, "right"), "green") + "┃\n"
-  str += formatLine(color(formatPastTime(time, result.time), "red"), width)
+  str += "┃" + color("total score" + formatSpace(formatPt(result.totalScore, colored), width - 13, "right"), "green", colored) + "┃\n"
+  str += "┃" + "link score" + formatSpace(`${result.link.length}駅 ` + formatPt(result.linkScore, false), width - 12, "right") + "┃\n"
+  str += "┃" + "combo bonus" + formatSpace(formatPt(result.comboBonus, false), width - 13, "right") + "┃\n"
+  str += "┃" + "match bonus" + formatSpace(`${result.matchCnt}駅 ` + formatPt(result.matchBonus, false), width - 13, "right") + "┃\n"
+  str += "┃" + color(formatSpace(result.denco.name + "'s exp " + formatPt(result.totalScore, false), width - 2, "right"), "green", colored) + "┃\n"
+  str += formatLine(color(formatPastTime(time, result.time), "red", colored), width)
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
-export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, width: number = 60): string {
+function formatAccessDetail(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, colored: boolean, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -164,7 +169,7 @@ export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: A
     title += "/disconnect"
   }
   var titleColor = which === "offense" ? "green" : "red" as ConsoleColor
-  str += formatLine(color(title, titleColor), width)
+  str += formatLine(color(title, titleColor, colored), width)
   str += formatLine(result.station.name, width)
   str += formatLine(result.station.nameKana, width)
 
@@ -183,17 +188,17 @@ export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: A
   str += "┃" + formatSpace(left ? left.name : "不在", iconWidth)
   const arrowColor = result.pinkMode ? "magenta" : "green"
   if (which === "offense") {
-    str += color("╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐", arrowColor)
+    str += color("╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐", arrowColor, colored)
   } else {
-    str += color("┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲", arrowColor)
+    str += color("┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲", arrowColor, colored)
   }
   str += formatSpace(right.name, iconWidth) + "┃\n"
 
   str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", iconWidth)
   if (which === "offense") {
-    str += color("╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘", arrowColor)
+    str += color("╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘", arrowColor, colored)
   } else {
-    str += color("└" + "─".repeat(width - 4 - iconWidth * 2) + "╱", arrowColor)
+    str += color("└" + "─".repeat(width - 4 - iconWidth * 2) + "╱", arrowColor, colored)
   }
   str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
 
@@ -214,14 +219,14 @@ export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: A
   str += formatSpace(formatSkills(rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatDamage(left), tableLeft, "left")
+  str += "┃" + formatSpace(formatDamage(left, colored), tableLeft, "left")
   str += "damage"
-  str += formatSpace(formatDamage(right), tableRight, "right") + "┃\n"
+  str += formatSpace(formatDamage(right, colored), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatHP(leftSide), tableLeft, "left")
+  str += "┃" + formatSpace(formatHP(leftSide, colored), tableLeft, "left")
   str += "  hp  "
-  str += formatSpace(formatHP(rightSide), tableRight, "right") + "┃\n"
+  str += formatSpace(formatHP(rightSide, colored), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   str += "┃" + formatSpace(formatAccessLinkTime(result.station, time, leftSide), tableLeft, "left")
@@ -229,24 +234,24 @@ export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: A
   str += formatSpace(formatAccessLinkTime(result.station, time, rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatPt(leftSide?.displayedScore, "pt", true), tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.displayedScore, colored, "pt"), tableLeft, "left")
   str += " score"
-  str += formatSpace(formatPt(rightSide.displayedScore, "pt", true), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.displayedScore, colored, "pt"), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatPt(leftSide?.displayedExp, "exp", true), tableLeft, "left")
+  str += "┃" + formatSpace(formatPt(leftSide?.displayedExp, colored, "exp"), tableLeft, "left")
   str += "  exp "
-  str += formatSpace(formatPt(rightSide.displayedExp, "exp", true), tableRight, "right") + "┃\n"
+  str += formatSpace(formatPt(rightSide.displayedExp, colored, "exp"), tableRight, "right") + "┃\n"
 
   if (which === "offense" && result.linkSuccess) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
-    str += formatLine(color(`${right.name}がリンクを開始`, "green"), width)
+    str += formatLine(color(`${right.name}がリンクを開始`, "green", colored), width)
   } else if (which === "defense" && result.linkDisconnected) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
-    str += formatLine(color(`${right.name}のリンクが解除`, "red"), width)
+    str += formatLine(color(`${right.name}のリンクが解除`, "red", colored), width)
   } else if (which === "defense" && !result.linkDisconnected) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
-    str += formatLine(color("リンク継続中", "green"), width)
+    str += formatLine(color("リンク継続中", "green", colored), width)
   }
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
@@ -254,7 +259,7 @@ export function formatAccessDetail(result: ReadonlyState<AccessResult>, which: A
 
 }
 
-export function formatAccessEvent(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, width: number = 50): string {
+function formatAccessEvent(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, colored: boolean, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -265,7 +270,7 @@ export function formatAccessEvent(result: ReadonlyState<AccessResult>, which: Ac
     title += "/disconnect"
   }
   var titleColor = which === "offense" ? "green" : "red" as ConsoleColor
-  str += formatLine(color(title, titleColor), width)
+  str += formatLine(color(title, titleColor, colored), width)
   str += formatLine(result.station.name, width)
   str += formatLine(result.station.nameKana, width)
 
@@ -280,17 +285,17 @@ export function formatAccessEvent(result: ReadonlyState<AccessResult>, which: Ac
   str += "┃" + formatSpace(left ? left.name : "不在", iconWidth)
   const arrowColor = result.pinkMode ? "magenta" : "green"
   if (which === "offense") {
-    str += color("╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐", arrowColor)
+    str += color("╱" + "─".repeat(width - 4 - iconWidth * 2) + "┐", arrowColor, colored)
   } else {
-    str += color("┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲", arrowColor)
+    str += color("┌" + "─".repeat(width - 4 - iconWidth * 2) + "╲", arrowColor, colored)
   }
   str += formatSpace(right.name, iconWidth) + "┃\n"
 
   str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", iconWidth)
   if (which === "offense") {
-    str += color("╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘", arrowColor)
+    str += color("╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘", arrowColor, colored)
   } else {
-    str += color("└" + "─".repeat(width - 4 - iconWidth * 2) + "╱", arrowColor)
+    str += color("└" + "─".repeat(width - 4 - iconWidth * 2) + "╱", arrowColor, colored)
   }
   str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
 
@@ -300,36 +305,35 @@ export function formatAccessEvent(result: ReadonlyState<AccessResult>, which: Ac
 
   if (which === "offense" && result.linkSuccess) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
-    str += formatLine(color(`${right.name}がリンクを開始`, "green"), width)
+    str += formatLine(color(`${right.name}がリンクを開始`, "green", colored), width)
   } else if (which === "defense" && result.linkDisconnected) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
-    str += formatLine(color(`${right.name}のリンクが解除`, "red"), width)
+    str += formatLine(color(`${right.name}のリンクが解除`, "red", colored), width)
   } else if (which === "defense" && !result.linkDisconnected) {
     str += "┠" + "─".repeat(width - 2) + "┨\n"
-    str += formatLine(color("リンク継続中", "green"), width)
+    str += formatLine(color("リンク継続中", "green", colored), width)
   }
 
   str = str + "┗" + "━".repeat(width - 2) + "┛"
   return str
 }
 
-function formatDamage(state?: ReadonlyState<AccessDencoState> | null): string {
+function formatDamage(state: ReadonlyState<AccessDencoState> | null, colored: boolean): string {
   if (!state) return ""
   const d = state.damage
   if (!d) return "-"
   if (d.value >= 0) {
-    return color(d.value.toString(), "red")
+    return color(d.value.toString(), "red", colored)
   } else {
-    return color((-d.value).toString(), "green")
+    return color((-d.value).toString(), "green", colored)
   }
 }
 
-function formatPt(value: number | undefined, unit: "pt" | "exp" = "pt", colored: boolean = false): string {
+function formatPt(value: number | undefined, colored: boolean, unit: "pt" | "exp" = "pt"): string {
   if (!value && value !== 0) return ""
   if (value === 0) return "0pt"
   let str = `${value}${unit}`
-  if (!colored) return str
-  return color(str, "green")
+  return color(str, "green", colored)
 }
 
 /**
@@ -366,14 +370,14 @@ function formatSkills(state?: ReadonlyState<AccessUserResult> | null): string {
   return skills.map(s => s.name).join(",")
 }
 
-function formatHP(state?: ReadonlyState<AccessUserResult> | null) {
+function formatHP(state: ReadonlyState<AccessUserResult> | undefined, colored: boolean) {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.damage === undefined) {
     return `${d.hpAfter}/${d.maxHp}`
   } else {
     let c = d.damage.value >= 0 ? "red" : "green" as ConsoleColor
-    return `${d.hpBefore}>>${color(d.hpAfter.toString(), c)}/${d.maxHp}`
+    return `${d.hpBefore}>>${color(d.hpAfter.toString(), c, colored)}/${d.maxHp}`
   }
 }
 
@@ -496,6 +500,7 @@ const COLOR_CONTROLS = {
 
 type ConsoleColor = keyof (typeof COLOR_CONTROLS)
 
-function color(value: string, color: ConsoleColor): string {
+function color(value: string, color: ConsoleColor, enabled: boolean): string {
+  if (!enabled) return value
   return `${COLOR_CONTROLS[color]}${value}\u001b[00m`
 }
