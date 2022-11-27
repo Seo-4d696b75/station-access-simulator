@@ -1,5 +1,5 @@
-import { isHoliday } from '@holiday-jp/holiday_jp';
 import moment from 'moment-timezone';
+import { isHoliday } from './holiday';
 
 /**
  * 今日が週末または祝日か判定する
@@ -13,7 +13,7 @@ import moment from 'moment-timezone';
 export function isWeekendOrHoliday(time: number): boolean {
   const weekday = moment(time).day()
   if (weekday === 0 || weekday === 6) return true
-  return isHoliday(new Date(time))
+  return isHoliday(time)
 }
 
 /**
