@@ -119,6 +119,8 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
   const formation = tmp.formation.map((e, idx) => {
     const s: AccessDencoState = {
       ...e,
+      levelBefore: e.level,
+      maxHpBefore: e.maxHp,
       hpBefore: e.currentHp,
       hpAfter: e.currentHp,
       which: which,

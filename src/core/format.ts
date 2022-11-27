@@ -194,13 +194,13 @@ function formatAccessDetail(result: ReadonlyState<AccessResult>, which: AccessSi
   }
   str += formatSpace(right.name, iconWidth) + "┃\n"
 
-  str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", iconWidth)
+  str += "┃" + formatSpace(left ? `Lv.${left.levelBefore}` : "", iconWidth)
   if (which === "offense") {
     str += color("╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘", arrowColor, colored)
   } else {
     str += color("└" + "─".repeat(width - 4 - iconWidth * 2) + "╱", arrowColor, colored)
   }
-  str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
+  str += formatSpace(`Lv.${right.levelBefore}`, iconWidth) + "┃\n"
 
   str += "┃" + (left ? formatAttr(left.attr, iconWidth) : " ".repeat(iconWidth))
   str += formatSpace(formatPastTime(time, result.time), width - iconWidth * 2 - 2)
@@ -291,13 +291,13 @@ function formatAccessEvent(result: ReadonlyState<AccessResult>, which: AccessSid
   }
   str += formatSpace(right.name, iconWidth) + "┃\n"
 
-  str += "┃" + formatSpace(left ? `Lv.${left.level}` : "", iconWidth)
+  str += "┃" + formatSpace(left ? `Lv.${left.levelBefore}` : "", iconWidth)
   if (which === "offense") {
     str += color("╲" + "─".repeat(width - 4 - iconWidth * 2) + "┘", arrowColor, colored)
   } else {
     str += color("└" + "─".repeat(width - 4 - iconWidth * 2) + "╱", arrowColor, colored)
   }
-  str += formatSpace(`Lv.${right.level}`, iconWidth) + "┃\n"
+  str += formatSpace(`Lv.${right.levelBefore}`, iconWidth) + "┃\n"
 
   str += "┃" + formatSpace(left ? `${left.name}のマスター` : "", iconWidth)
   str += formatSpace(formatPastTime(time, result.time), width - iconWidth * 2 - 2)
@@ -374,10 +374,10 @@ function formatHP(state: ReadonlyState<AccessUserResult> | undefined, colored: b
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.damage === undefined) {
-    return `${d.hpAfter}/${d.maxHp}`
+    return `${d.hpAfter}/${d.maxHpBefore}`
   } else {
     let c = d.damage.value >= 0 ? "red" : "green" as ConsoleColor
-    return `${d.hpBefore}>>${color(d.hpAfter.toString(), c, colored)}/${d.maxHp}`
+    return `${d.hpBefore}>>${color(d.hpAfter.toString(), c, colored)}/${d.maxHpBefore}`
   }
 }
 
