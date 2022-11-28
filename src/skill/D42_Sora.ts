@@ -18,7 +18,7 @@ const skill: SkillLogic = {
   },
   canActivated: (context, state, self) => {
     if (isWeekendOrHoliday(context.currentTime)) return false
-    const hour = dayjs(context.currentTime).hour()
+    const hour = dayjs.tz(context.currentTime).hour()
     return 10 <= hour && hour < 17
   },
 }

@@ -5,7 +5,7 @@ const skill: SkillLogic = {
   transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && state.defense) {
-      const hour = dayjs(context.currentTime).hour()
+      const hour = dayjs.tz(context.currentTime).hour()
       if ((hour < 6 || hour >= 18) && self.who === "defense") {
         return {
           probabilityKey: "probability_def",

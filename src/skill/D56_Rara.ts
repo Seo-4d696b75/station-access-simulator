@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       return {
         probabilityKey: "probability",
         recipe: (state) => {
-          const hour = dayjs(context.currentTime).hour()
+          const hour = dayjs.tz(context.currentTime).hour()
           if (hour < 6 || hour >= 18) {
             const def = self.skill.property.readNumber("DEF_night")
             state.defendPercent += def

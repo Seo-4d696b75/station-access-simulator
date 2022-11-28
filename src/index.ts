@@ -1,7 +1,6 @@
 // 外部公開用のエントリーポイント
 
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
 import DencoManager from "./core/dencoManager";
 import { load as loadHolidayModule } from "./core/holiday";
 import SkillManager from "./core/skill";
@@ -10,7 +9,6 @@ import StationManager from "./core/stationManager";
 // タイムゾーン指定
 export const SIMULATOR_TIME_ZONE = "Asia/Tokyo"
 
-dayjs.extend(timezone)
 dayjs.tz.setDefault(SIMULATOR_TIME_ZONE)
 
 /**
@@ -64,4 +62,5 @@ export * from "./core/state";
 export * from "./core/station";
 export { default as StationManager } from "./core/stationManager";
 export * from "./core/user";
+export { dayjs };
 

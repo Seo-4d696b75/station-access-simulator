@@ -5,7 +5,7 @@ const skill: SkillLogic = {
   transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common") {
-      const hour = dayjs(context.currentTime).hour()
+      const hour = dayjs.tz(context.currentTime).hour()
       const night = hour < 6 || hour >= 18
       if (night && self.who === "offense") {
         return {

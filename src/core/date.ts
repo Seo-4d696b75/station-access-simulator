@@ -1,9 +1,16 @@
 import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { isHoliday } from './holiday';
 
 export const TIME_FORMAT = "HH:mm:ss.SSS"
 export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
 
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+// 毎回extendするの面倒なのでここからexportして使う
+// export default dayjs
 
 /**
  * 今日が週末または祝日か判定する
@@ -15,7 +22,7 @@ export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
  * @return 土日または日本の祝日の場合は`true`
  */
 export function isWeekendOrHoliday(time: number): boolean {
-  const weekday = dayjs(time).day()
+  const weekday = dayjs.tz(time).day()
   if (weekday === 0 || weekday === 6) return true
   return isHoliday(time)
 }

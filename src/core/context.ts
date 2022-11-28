@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 import seedrandom from "seedrandom";
 import { ScorePredicate } from "..";
 import { DATE_TIME_FORMAT } from "./date";
@@ -32,13 +32,27 @@ export class Context {
    * - "now": `dayjs()`で参照（デフォルト値）
    * - number: 指定した時刻で処理(unix time [ms])
    * 
-   * 処理中の各時刻はUnix Time(ms)として記録し、
-   * 時刻や日付などを処理する場合のタイムゾーンは次のように固定している 
-   * 変更が必要な場合は同様に再定義すること
+   * ### タイムゾーンの扱い
+   * 処理中の各時刻はUnix Time(ms)として記録されるためタイムゾーンの概念はありません
+   * 
+   * 一方で時間帯に依存したスキルの処理などタイムゾーンに影響される場合では
+   * 次のように処理します
+   * ```js
+   * import dayjs from 'dayjs';
+   * 
+   * const unixTime: number
+   * const timeTz = dayjs.tz(unixTime)
+   * const hour = timeTz.hour() // 1日のうち今何時か？（0-23）
+   * ```
+   * 
+   * ライブラリではデフォルトのタイムゾーンは次のように初期化して使います  
+   * 変更が必要な場合は同様に再定義してください
    * ```
    * import dayjs from 'dayjs';
    * import timezone from 'dayjs/plugin/timezone';
+   * import utc from 'dayjs/plugin/utc';
    * 
+   * dayjs.extend(utc)
    * dayjs.extend(timezone)
    * dayjs.tz.setDefault("Asia/Tokyo")
    * ```
@@ -160,7 +174,7 @@ export class Logger {
     var str = ""
     str += "========================\n"
     str += `type: ${this.type}\n`
-    str += `time: ${this.time.format(DATE_TIME_FORMAT)}\n`
+    str += `time: ${this.time.tz().format(DATE_TIME_FORMAT)}\n`
     str += "------------------------\n"
     this.logs.forEach(log => {
       str += `[${log.tag}] ${log.message}\n`

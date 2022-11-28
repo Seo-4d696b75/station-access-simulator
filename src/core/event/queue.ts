@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import dayjs from "dayjs"
 import { EventSkillTrigger, triggerSkillAtEvent } from "."
 import { Context } from "../context"
 import { TIME_FORMAT } from "../date"
@@ -58,7 +58,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     if (time < entry.time) break
     state.queue.splice(0, 1)
     // start event
-    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${dayjs(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
+    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${dayjs.tz(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
         const next = triggerSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
@@ -77,10 +77,10 @@ export function refreshEventQueue(context: Context, state: UserState) {
           if (next) copyStateTo<UserState>(next, state)
         }
         // 次のイベント追加
-        const date = dayjs(entry.time).add(1, "h")
+        const date = dayjs.tz(entry.time).add(1, "h").valueOf()
         state.queue.push({
           type: "hour_cycle",
-          time: date.valueOf(),
+          time: date,
           data: undefined
         })
         state.queue.sort((a, b) => a.time - b.time)
