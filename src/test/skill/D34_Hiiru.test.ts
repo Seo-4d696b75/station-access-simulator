@@ -1,6 +1,6 @@
 import { activateSkill, getDefense, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 describe("ひいるのスキル", () => {
   beforeAll(init)

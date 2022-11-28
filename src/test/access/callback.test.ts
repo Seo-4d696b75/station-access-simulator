@@ -6,7 +6,7 @@ import { TypedMap } from "../../core/property"
 import { Skill } from "../../core/skill"
 import StationManager from "../../core/stationManager"
 import { initUser } from "../../core/user"
-import "../matcher"
+import "../tool/matcher"
 
 
 describe("アクセス処理中のSkillコールバック", () => {

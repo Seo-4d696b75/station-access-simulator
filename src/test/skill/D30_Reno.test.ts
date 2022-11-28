@@ -2,7 +2,7 @@ import dayjs from "dayjs"
 import { init, initContext, initUser } from "../.."
 import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
-import { testAlwaysSkill } from "../skillState"
+import { testAlwaysSkill } from "../tool/skillState"
 
 describe("レーノのスキル", () => {
   beforeAll(init)

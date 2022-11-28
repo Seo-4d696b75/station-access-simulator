@@ -3,7 +3,7 @@ import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import { activateSkill, getSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 describe("ベアトリスのスキル", () => {
   beforeAll(init)

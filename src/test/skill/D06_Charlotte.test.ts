@@ -8,7 +8,7 @@ import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill } from "../../core/skill"
 import { copyState } from "../../core/state"
 import { initUser, refreshState } from "../../core/user"
-import "../matcher"
+import "../tool/matcher"
 
 describe("シャルのスキル", () => {
   beforeAll(init)

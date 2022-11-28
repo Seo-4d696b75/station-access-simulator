@@ -1,7 +1,7 @@
 import dayjs from "dayjs"
 import { activateSkill, DencoState, getAccessDenco, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 const targetList = ["15", "19", "26", "28", "30", "32", "42", "44", "46", "53", "59", "64", "66", "68", "72", "75", "76", "78", "80"]
 

@@ -2,7 +2,7 @@ import { activateSkill, init, initContext, initUser, isSkillActive } from "../..
 import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
 import { calcATK } from "../../skill/D28_Riona"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 describe("リオナのスキル", () => {
   beforeAll(init)

@@ -1,5 +1,5 @@
 import { AccessConfig, DencoManager, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess, StationManager } from "../.."
-import { testAlwaysSkill } from "../skillState"
+import { testAlwaysSkill } from "../tool/skillState"
 
 
 // デフォルトの経験値計算式を使用する

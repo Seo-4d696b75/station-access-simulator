@@ -3,7 +3,7 @@ import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/acces
 import { initContext } from "../../core/context"
 import { activateSkill, getSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { testAlwaysSkill } from "../skillState"
+import { testAlwaysSkill } from "../tool/skillState"
 
 describe("しぐれのスキル", () => {
   beforeAll(init)

@@ -3,7 +3,7 @@ import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/acces
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 describe("まりかのスキル", () => {
   beforeAll(init)

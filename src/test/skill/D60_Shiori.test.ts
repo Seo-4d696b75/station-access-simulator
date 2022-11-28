@@ -4,8 +4,8 @@ import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
-import "../matcher"
-import { testAlwaysSkill } from "../skillState"
+import "../tool/matcher"
+import { testAlwaysSkill } from "../tool/skillState"
 
 describe("しおりのスキル", () => {
   beforeAll(init)

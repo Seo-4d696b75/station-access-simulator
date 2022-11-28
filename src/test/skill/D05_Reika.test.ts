@@ -4,7 +4,7 @@ import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, isSkillActive } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 describe("レイカのスキル", () => {
   beforeAll(init)

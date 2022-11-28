@@ -1,6 +1,6 @@
 import { AccessConfig, DencoManager, EventTriggeredSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, LevelupDenco, LinksResult, startAccess } from "../.."
-import "../matcher"
-import { testAlwaysSkill } from "../skillState"
+import "../tool/matcher"
+import { testAlwaysSkill } from "../tool/skillState"
 
 // デフォルトの経験値計算式を使用する
 const accessScore = 100

@@ -3,8 +3,8 @@ import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/acces
 import { initContext } from "../../core/context"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { getFixedDamageDenco } from "../fake"
-import { testManualSkill } from "../skillState"
+import { getFixedDamageDenco } from "../tool/fake"
+import { testManualSkill } from "../tool/skillState"
 
 describe("ほこねのスキル", () => {
   beforeAll(init)

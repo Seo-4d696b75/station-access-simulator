@@ -2,7 +2,7 @@ import { minBy } from "lodash"
 import { activateSkill, init, initContext, initUser } from "../.."
 import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 describe("にちなスキル", () => {
   beforeAll(init)

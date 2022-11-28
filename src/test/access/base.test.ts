@@ -8,7 +8,7 @@ import { activateSkill } from "../../core/skill"
 import { LinksResult } from "../../core/station"
 import StationManager from "../../core/stationManager"
 import { getTargetDenco, initUser } from "../../core/user"
-import "../matcher"
+import "../tool/matcher"
 
 // デフォルトの計算式を使用する
 const accessScore = 100

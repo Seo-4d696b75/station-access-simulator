@@ -5,7 +5,7 @@ import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser, UserState } from "../../core/user"
 import { refreshEXPState } from "../../core/user/refresh"
-import { testAlwaysSkill } from "../skillState"
+import { testAlwaysSkill } from "../tool/skillState"
 
 const DEFAULT_EXP = 100
 const DEFAULT_LINK_EXP_UNIT = 1 / 100

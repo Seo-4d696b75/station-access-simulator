@@ -4,7 +4,7 @@ import { AccessConfig, getAccessDenco, startAccess } from "../../core/access/ind
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
-import "../matcher"
+import "../tool/matcher"
 
 // デフォルトの計算式を使用する
 const accessScore = 100
