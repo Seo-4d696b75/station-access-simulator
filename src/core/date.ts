@@ -1,13 +1,8 @@
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
 import { isHoliday } from './holiday';
 
 export const TIME_FORMAT = "HH:mm:ss.SSS"
 export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
 
 // 毎回extendするの面倒なのでここからexportして使う
 // export default dayjs
