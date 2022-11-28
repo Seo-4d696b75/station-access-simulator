@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { DencoManager, init } from "../.."
 import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
@@ -174,7 +174,7 @@ describe("ちとせのスキル", () => {
   })
   test("発動なし-サポーター以外", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)

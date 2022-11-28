@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { activateSkill, deactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, isSkillActive, refreshState, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import StationManager from "../../core/stationManager"
@@ -18,7 +18,7 @@ describe("そらのスキル", () => {
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
     // 平日昼間
-    context.clock = moment('2022-11-02T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-02T12:00:00+0900').valueOf()
     state = refreshState(context, state)
     sora = state.formation[0]
     let skill = getSkill(sora)
@@ -28,7 +28,7 @@ describe("そらのスキル", () => {
 
 
     // 平日夜間
-    context.clock = moment('2022-11-02T18:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-02T18:00:00+0900').valueOf()
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
@@ -37,7 +37,7 @@ describe("そらのスキル", () => {
     expect(() => activateSkill(context, state, 0)).toThrowError()
 
     // 土曜昼間
-    context.clock = moment('2022-11-05T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-05T12:00:00+0900').valueOf()
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
@@ -47,7 +47,7 @@ describe("そらのスキル", () => {
 
 
     // 祝日昼間（文化の日）
-    context.clock = moment('2022-11-03T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-03T12:00:00+0900').valueOf()
     state = refreshState(context, state)
     sora = state.formation[0]
     skill = getSkill(sora)
@@ -58,7 +58,7 @@ describe("そらのスキル", () => {
 
   test("発動あり-攻撃側(アクセス)", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-11-02T10:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-02T10:00:00+0900').valueOf()
     context.random.mode = "force"
     let seria = DencoManager.getDenco(context, "1", 50)
     let sora = DencoManager.getDenco(context, "42", 50)
@@ -83,7 +83,7 @@ describe("そらのスキル", () => {
   })
   test("発動なし-攻撃側(編成内)", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-11-02T10:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-02T10:00:00+0900').valueOf()
     context.random.mode = "force"
     let seria = DencoManager.getDenco(context, "1", 50)
     let sora = DencoManager.getDenco(context, "42", 50)
@@ -108,7 +108,7 @@ describe("そらのスキル", () => {
   })
   test("発動なし-攻撃側(アクセス)-確率", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-11-02T10:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-02T10:00:00+0900').valueOf()
     context.random.mode = "ignore"
     let seria = DencoManager.getDenco(context, "1", 50)
     let sora = DencoManager.getDenco(context, "42", 50)
@@ -133,7 +133,7 @@ describe("そらのスキル", () => {
   })
   test("発動なし-攻撃側(アクセス)-時間外", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-11-02T17:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-02T17:00:00+0900').valueOf()
     context.random.mode = "force"
     let seria = DencoManager.getDenco(context, "1", 50)
     let sora = DencoManager.getDenco(context, "42", 50)
@@ -160,7 +160,7 @@ describe("そらのスキル", () => {
   test("発動あり-攻撃側(アクセス)-確率ブースト", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
-    context.clock = moment('2022-11-02T16:59:59+0900').valueOf()
+    context.clock = dayjs('2022-11-02T16:59:59+0900').valueOf()
     let hiiru = DencoManager.getDenco(context, "34", 50)
     let sora = DencoManager.getDenco(context, "42", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
@@ -189,7 +189,7 @@ describe("そらのスキル", () => {
   test("発動なし-攻撃側(編成内)", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
-    context.clock = moment('2022-11-02T16:59:59+0900').valueOf()
+    context.clock = dayjs('2022-11-02T16:59:59+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50)
     let sora = DencoManager.getDenco(context, "42", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
@@ -215,7 +215,7 @@ describe("そらのスキル", () => {
   test("発動なし-守備側(被アクセス)", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
-    context.clock = moment('2022-11-02T16:59:59+0900').valueOf()
+    context.clock = dayjs('2022-11-02T16:59:59+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50)
     let sora = DencoManager.getDenco(context, "42", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
@@ -240,7 +240,7 @@ describe("そらのスキル", () => {
   })
   test("発動なし-攻撃側(アクセス)-相手無し", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-11-02T10:00:00+0900').valueOf()
+    context.clock = dayjs('2022-11-02T10:00:00+0900').valueOf()
     context.random.mode = "force"
     let seria = DencoManager.getDenco(context, "1", 50)
     let sora = DencoManager.getDenco(context, "42", 50)

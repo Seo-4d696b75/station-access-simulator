@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { init } from "../.."
 import { getAccessDenco, getDefense, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
@@ -13,8 +13,8 @@ describe("ルナのスキル", () => {
     number: "3",
     name: "luna",
     time: [
-      moment('2022-01-01T12:00:00+0900').valueOf(),
-      moment('2022-01-01T23:00:00+0900').valueOf()
+      dayjs('2022-01-01T12:00:00+0900').valueOf(),
+      dayjs('2022-01-01T23:00:00+0900').valueOf()
     ]
   })
 
@@ -76,7 +76,7 @@ describe("ルナのスキル", () => {
   })
   test("発動あり-夜", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [luna])
@@ -110,7 +110,7 @@ describe("ルナのスキル", () => {
   })
   test("発動あり-昼", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [luna])

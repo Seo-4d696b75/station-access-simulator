@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
@@ -66,7 +66,7 @@ describe("みろくのスキル", () => {
   })
   test("発動なし-攻撃側編成内", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -113,7 +113,7 @@ describe("みろくのスキル", () => {
   test("発動あり-Rebootなし", () => {
     // 発動の通常
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 80, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -148,7 +148,7 @@ describe("みろくのスキル", () => {
   })
   test("発動あり-ひいる", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 80, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -176,7 +176,7 @@ describe("みろくのスキル", () => {
   })
   test("発動あり-Rebootあり", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     context.random.mode = "force"
     let luna = DencoManager.getDenco(context, "3", 80, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
@@ -212,7 +212,7 @@ describe("みろくのスキル", () => {
   test("発動あり-サポータAKT上昇", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 80, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -252,7 +252,7 @@ describe("みろくのスキル", () => {
   test("発動なし-１回で相手をリブート", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50)

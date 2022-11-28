@@ -1,5 +1,5 @@
 import assert from "assert"
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { activateSkill, deactivateSkill, getSkill, initContext, initUser, refreshState } from ".."
 import DencoManager from "../core/dencoManager"
 
@@ -17,7 +17,7 @@ export function testManualSkill(option: ManualSkillTestOption) {
     let denco = DencoManager.getDenco(context, option.number, option?.level ?? 50)
     expect(denco.skill.type).toBe("possess")
     let defense = initUser(context, "とあるマスター", [denco])
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     denco = defense.formation[0]
     expect(denco.name).toBe(option.name)
@@ -81,7 +81,7 @@ export function testAlwaysSkill(option: AlwaysSkillTestOption) {
     expect(denco.name).toBe(option.name)
     let state = initUser(context, "とあるマスター", [denco])
 
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     const params = option?.time ?? [
       now,
       now + 600 * 1000,

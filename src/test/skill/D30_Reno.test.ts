@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { init, initContext, initUser } from "../.."
 import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
@@ -14,7 +14,7 @@ describe("レーノのスキル", () => {
 
   test("発動なし-攻撃側(アクセス)-昼", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50)
     let reno = DencoManager.getDenco(context, "30", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
@@ -39,7 +39,7 @@ describe("レーノのスキル", () => {
 
   test("発動なし-攻撃側(編成内)-夜", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T00:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T00:00:00+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50, 1)
     let reno = DencoManager.getDenco(context, "30", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50)
@@ -64,7 +64,7 @@ describe("レーノのスキル", () => {
 
   test("発動あり-攻撃側(アクセス)-夜", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T00:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T00:00:00+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50)
     let reno = DencoManager.getDenco(context, "30", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
@@ -89,7 +89,7 @@ describe("レーノのスキル", () => {
 
   test("発動なし-守備側(被アクセス)-夜", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T00:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T00:00:00+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50)
     let reno = DencoManager.getDenco(context, "30", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
@@ -114,7 +114,7 @@ describe("レーノのスキル", () => {
 
   test("発動なし-守備側(編成内)-昼", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50, 1)
     let reno = DencoManager.getDenco(context, "30", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50)
@@ -139,7 +139,7 @@ describe("レーノのスキル", () => {
 
   test("発動あり-守備側(被アクセス)-昼", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50)
     let reno = DencoManager.getDenco(context, "30", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
