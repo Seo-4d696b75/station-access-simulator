@@ -142,7 +142,7 @@ function formatRebootDetail(result: LinksResult, time: number, colored: boolean,
     str += "┃" + color(formatSpace(link.name, width - 10, "left"), "green", colored)
     str += link.matchBonus ? formatAttr(result.denco.attr, 8) : " ".repeat(8)
     str += "┃\n"
-    let duration = formatLinkTime(time, link)
+    let duration = formatDuration(link.duration)
     let pt = formatSpace(formatPt(link.totalScore, colored), width - 2 - len(duration), "right")
     str += "┃" + color(duration + pt, "green", colored) + "┃\n"
     str += "┠" + "─".repeat(width - 2) + "┨\n"
@@ -229,9 +229,9 @@ function formatAccessDetail(result: ReadonlyState<AccessResult>, which: AccessSi
   str += formatSpace(formatHP(rightSide, colored), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatAccessLinkTime(result.station, time, leftSide), tableLeft, "left")
+  str += "┃" + formatSpace(formatAccessLinkTime(result.station, result.time, leftSide), tableLeft, "left")
   str += " link "
-  str += formatSpace(formatAccessLinkTime(result.station, time, rightSide), tableRight, "right") + "┃\n"
+  str += formatSpace(formatAccessLinkTime(result.station, result.time, rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   str += "┃" + formatSpace(formatPt(leftSide?.displayedScore, colored, "pt"), tableLeft, "left")
@@ -338,7 +338,10 @@ function formatPt(value: number | undefined, colored: boolean, unit: "pt" | "exp
 
 /**
  * リンク時間を文字列にフォーマットする
- * @param time 現在時刻 [ms]
+ * 
+ * **継続中のリンクを対象としています**  
+ * 解除されたリンクの時間は{@link LinksResult duration}を参照します
+ * @param time リンク時間を参照する時刻[ms]
  * @param link 対象のリンク
  * @returns リンクが`null`の場合は空文字
  */
@@ -348,16 +351,16 @@ export function formatLinkTime(time: number, link?: ReadonlyState<StationLink> |
   return formatDuration(duration)
 }
 
-function formatAccessLinkTime(station: ReadonlyState<Station>, time: number, state?: ReadonlyState<AccessUserResult> | null): string {
+function formatAccessLinkTime(station: ReadonlyState<Station>, accessTime: number, state?: ReadonlyState<AccessUserResult> | null): string {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.who === "defense") {
     if (d.disconnectedLink) {
       const link = d.disconnectedLink.link.find(link => link.name === station.name)
-      if (link) return formatLinkTime(time, link)
+      if (link) return formatDuration(link.duration)
     } else {
       const link = d.link.find(link => link.name === station.name)
-      if (link) return formatLinkTime(time, link)
+      if (link) return formatLinkTime(accessTime, link)
     }
   }
   return "-"
