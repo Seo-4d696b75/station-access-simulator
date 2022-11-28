@@ -39,9 +39,9 @@
     "@holiday-jp/holiday_jp": "^2.4.0",
     "@types/lodash": "^4.14.190",
     "@types/seedrandom": "^3.0.1",
+    "dayjs": "^1.11.6",
     "lodash": "^4.17.21",
     "meaw": "^6.0.0",
-    "moment-timezone": "^0.5.34",
     "seedrandom": "^3.0.5"
   }
 }

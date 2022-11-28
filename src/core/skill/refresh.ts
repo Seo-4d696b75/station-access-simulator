@@ -1,5 +1,6 @@
-import moment from "moment-timezone"
-import { Context, TIME_FORMAT } from "../context"
+import dayjs from 'dayjs'
+import { Context } from "../context"
+import { TIME_FORMAT } from "../date"
 import { copyStateTo } from "../state"
 import { UserState } from "../user"
 import { withActiveSkill } from "./property"
@@ -161,7 +162,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
   if (skill.transition.state === "active") {
     const data = skill.transition.data
     if (data && data.activeTimeout <= time) {
-      context.log.log(`スキル状態の変更：${denco.name} active -> cooldown (timeout:${moment(data.activeTimeout).format(TIME_FORMAT)})`)
+      context.log.log(`スキル状態の変更：${denco.name} active -> cooldown (timeout:${dayjs(data.activeTimeout).format(TIME_FORMAT)})`)
       skill.transition = {
         state: "cooldown",
         data: {
@@ -176,7 +177,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
     if (data.cooldownTimeout <= time) {
       switch (skill.transitionType) {
         case "manual": {
-          context.log.log(`スキル状態の変更：${denco.name} cooldown -> idle (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
+          context.log.log(`スキル状態の変更：${denco.name} cooldown -> idle (timeout:${dayjs(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.transition = {
             state: "idle",
             data: undefined
@@ -185,7 +186,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
           break
         }
         case "manual-condition": {
-          context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
+          context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${dayjs(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.transition = {
             state: "unable",
             data: undefined
@@ -195,7 +196,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
           break
         }
         case "auto": {
-          context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${moment(data.cooldownTimeout).format(TIME_FORMAT)})`)
+          context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${dayjs(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.transition = {
             state: "unable",
             data: undefined

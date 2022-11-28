@@ -1,5 +1,5 @@
 import assert from "assert"
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { init } from "../.."
 import { AccessConfig, getAccessDenco, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
@@ -204,7 +204,7 @@ describe("基本的なアクセス処理", () => {
 
   test("守備側あり-フットバースあり", () => {
     const context = initContext("test", "test", false)
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     let reika = DencoManager.getDenco(context, "5", 50)
     let charlotte = DencoManager.getDenco(context, "6", 80, 3)
@@ -297,7 +297,7 @@ describe("基本的なアクセス処理", () => {
   })
   test("守備側あり-スキル発動なし-Rebootあり", () => {
     const context = initContext("test", "test", false)
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     let reika = DencoManager.getDenco(context, "5", 80)
     let charlotte = DencoManager.getDenco(context, "6", 50, 3)

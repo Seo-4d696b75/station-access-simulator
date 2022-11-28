@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { activateSkill, getSkill, init, initContext, initUser, refreshState } from "../.."
 import DencoManager from "../../core/dencoManager"
 
@@ -10,7 +10,7 @@ describe("いろはスキル", () => {
     let iroha = DencoManager.getDenco(context, "10", 50)
     expect(iroha.name).toBe("iroha")
     expect(iroha.skill.type).toBe("possess")
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     let state = initUser(context, "master", [iroha])
 
@@ -56,7 +56,7 @@ describe("いろはスキル", () => {
 
   test("スキル発動-先頭", () => {
     const context = initContext("test", "test", false)
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     let iroha = DencoManager.getDenco(context, "10", 50, 2)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -98,7 +98,7 @@ describe("いろはスキル", () => {
 
   test("スキル発動-先頭以外", () => {
     const context = initContext("test", "test", false)
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     let iroha = DencoManager.getDenco(context, "10", 50, 3)
     let reika = DencoManager.getDenco(context, "5", 50)

@@ -1,5 +1,13 @@
-import moment from 'moment-timezone';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
 import { isHoliday } from './holiday';
+
+export const TIME_FORMAT = "HH:mm:ss.SSS"
+export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
+
+// タイムゾーン指定
+dayjs.extend(timezone)
+dayjs.tz.setDefault("Asia/Tokyo")
 
 /**
  * 今日が週末または祝日か判定する
@@ -11,7 +19,7 @@ import { isHoliday } from './holiday';
  * @return 土日または日本の祝日の場合は`true`
  */
 export function isWeekendOrHoliday(time: number): boolean {
-  const weekday = moment(time).day()
+  const weekday = dayjs(time).day()
   if (weekday === 0 || weekday === 6) return true
   return isHoliday(time)
 }

@@ -1,5 +1,5 @@
 import assert from "assert"
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { activateSkill, changeFormation, deactivateSkill, getSkill, init, initContext, initUser, isSkillActive, refreshState } from "../.."
 import DencoManager from "../../core/dencoManager"
 
@@ -15,7 +15,7 @@ describe("アサのスキル", () => {
     let asa = DencoManager.getDenco(context, "43", 50)
     expect(asa.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [asa])
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     asa = state.formation[0]
     expect(asa.name).toBe("asa")
@@ -90,7 +90,7 @@ describe("アサのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let fubu = DencoManager.getDenco(context, "14", 50)
     let state = initUser(context, "とあるマスター", [asa, reika, fubu])
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     let skill = getSkill(state.formation[0])
     expect(skill.transition.state).toBe("unable")
@@ -132,7 +132,7 @@ describe("アサのスキル", () => {
     let asa = DencoManager.getDenco(context, "43", 50)
     let reika = DencoManager.getDenco(context, "5", 50)
     let state = initUser(context, "とあるマスター", [asa, reika])
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     let skill = getSkill(state.formation[0])
     expect(skill.transition.state).toBe("unable")

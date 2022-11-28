@@ -1,5 +1,5 @@
+import dayjs from "dayjs"
 import { readFile } from "fs/promises"
-import moment from "moment-timezone"
 import { AccessConfig, AccessResult, activateSkill, Context, DencoManager, formatEvents, init, initContext, initUser, refreshState, startAccess, UserState } from "../.."
 
 describe("format", () => {
@@ -110,7 +110,7 @@ describe("format", () => {
     const context = initContext("this is test", "random seed", false)
 
     // 昼の時間帯に指定
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     context.setClock('2022-01-01T12:00:00+0900') // どっちでもOK
 
     let reika = DencoManager.getDenco(context, "5", 80)
@@ -131,7 +131,7 @@ describe("format", () => {
     const context = initContext("this is test", "random seed", false)
 
     // 時刻を指定
-    context.clock = moment('2022-01-01T12:30:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:30:00+0900').valueOf()
 
     let reika = DencoManager.getDenco(context, "5", 80)
     // レイカのHPを最大HP未満に設定
@@ -140,7 +140,7 @@ describe("format", () => {
     let master = initUser(context, "master1", [reika, moe])
 
     // 発動時刻を指定
-    context.clock = moment('2022-01-01T13:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T13:00:00+0900').valueOf()
     master = refreshState(context, master)
     await compareStateOutput(context, master, "06")
   })
@@ -148,7 +148,7 @@ describe("format", () => {
     const context = initContext("this is test", "random seed", false)
 
     // 時刻を指定
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     context.setClock('2022-01-01T12:00:00+0900')
 
     let charlotte = DencoManager.getDenco(context, "6", 80)
@@ -158,7 +158,7 @@ describe("format", () => {
     master = activateSkill(context, master, 0)
 
     // 90分後
-    context.clock = moment('2022-01-01T13:30:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T13:30:00+0900').valueOf()
     master = refreshState(context, master)
     await compareStateOutput(context, master, "07")
   })
