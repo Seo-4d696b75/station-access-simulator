@@ -1,5 +1,5 @@
-import { DencoState } from "../core/denco";
-import { TypedMap } from "../core/property";
+import { DencoState } from "../../core/denco";
+import { TypedMap } from "../../core/property";
 
 /**
  * 任意のDEF増加スキルのでんこ

@@ -1,7 +1,7 @@
 import { cloneDeep, cloneDeepWith, merge } from "lodash";
-import { DencoState } from "../core/denco";
-import { copyState, ReadonlyState } from "../core/state";
-import { StationLink } from "../core/station";
+import { DencoState } from "../../core/denco";
+import { copyState, ReadonlyState } from "../../core/state";
+import { StationLink } from "../../core/station";
 
 // DencoStateにはサブクラスが多くあるため、DencoStateに定義されたプロパティだけコピーする関数
 export function copyDencoState(state: ReadonlyState<DencoState>): DencoState {
