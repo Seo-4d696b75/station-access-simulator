@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { init } from "../.."
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
@@ -23,14 +23,14 @@ describe("もえのスキル", () => {
   })
   test("スキル発動-1", () => {
     const context = initContext("test", "test", false)
-    const now = moment("2020-01-01T12:50:00.000").valueOf()
+    const now = dayjs("2020-01-01T12:50:00.000").valueOf()
     context.clock = now
     let moe = DencoManager.getDenco(context, "9", 50)
     let charlotte = DencoManager.getDenco(context, "6", 80)
     let state = initUser(context, "とあるマスター", [moe, charlotte])
     expect(state.queue.length).toBe(1)
     expect(state.queue[0].type).toBe("hour_cycle")
-    expect(state.queue[0].time).toBe(moment("2020-01-01T13:00:00.000").valueOf())
+    expect(state.queue[0].time).toBe(dayjs("2020-01-01T13:00:00.000").valueOf())
     moe = state.formation[0]
     let skill = getSkill(moe)
     expect(skill.transition.state).toBe("unable")
@@ -40,7 +40,7 @@ describe("もえのスキル", () => {
     expect(state.event.length).toBe(0)
     expect(state.queue.length).toBe(1)
     expect(state.queue[0].type).toBe("hour_cycle")
-    expect(state.queue[0].time).toBe(moment("2020-01-01T14:00:00.000").valueOf())
+    expect(state.queue[0].time).toBe(dayjs("2020-01-01T14:00:00.000").valueOf())
     charlotte = state.formation[1]
     charlotte.currentHp = Math.floor(charlotte.maxHp * 0.9)
     state = refreshState(context, state)
@@ -54,7 +54,7 @@ describe("もえのスキル", () => {
     let event = state.event[0]
     expect(event.type).toBe("skill_trigger")
     if (event.type === "skill_trigger") {
-      expect(event.data.time).toBe(moment("2020-01-01T14:00:00.000").valueOf())
+      expect(event.data.time).toBe(dayjs("2020-01-01T14:00:00.000").valueOf())
       expect(event.data.step).toBe("self")
       expect(event.data.denco.name).toBe("moe")
     }
@@ -65,11 +65,11 @@ describe("もえのスキル", () => {
     expect(skill.transition.state).toBe("unable")
     expect(state.queue.length).toBe(1)
     expect(state.queue[0].type).toBe("hour_cycle")
-    expect(state.queue[0].time).toBe(moment("2020-01-01T15:00:00.000").valueOf())
+    expect(state.queue[0].time).toBe(dayjs("2020-01-01T15:00:00.000").valueOf())
   })
   test("スキル発動-2", () => {
     const context = initContext("test", "test", false)
-    const now = moment("2020-01-01T12:50:00.000").valueOf()
+    const now = dayjs("2020-01-01T12:50:00.000").valueOf()
     context.clock = now
     let moe = DencoManager.getDenco(context, "9", 80)
     let charlotte = DencoManager.getDenco(context, "6", 80)
@@ -77,7 +77,7 @@ describe("もえのスキル", () => {
     let state = initUser(context, "とあるマスター", [moe, charlotte, sheena])
     expect(state.queue.length).toBe(1)
     expect(state.queue[0].type).toBe("hour_cycle")
-    expect(state.queue[0].time).toBe(moment("2020-01-01T13:00:00.000").valueOf())
+    expect(state.queue[0].time).toBe(dayjs("2020-01-01T13:00:00.000").valueOf())
     moe = state.formation[0]
     let skill = getSkill(moe)
     expect(skill.transition.state).toBe("unable")
@@ -109,7 +109,7 @@ describe("もえのスキル", () => {
     let event = state.event[0]
     expect(event.type).toBe("skill_trigger")
     if (event.type === "skill_trigger") {
-      expect(event.data.time).toBe(moment("2020-01-01T13:00:00.000").valueOf())
+      expect(event.data.time).toBe(dayjs("2020-01-01T13:00:00.000").valueOf())
       expect(event.data.step).toBe("self")
       expect(event.data.denco.name).toBe("moe")
     }

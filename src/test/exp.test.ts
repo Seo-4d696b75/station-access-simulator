@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { activateSkill, assert, getSkill, init } from ".."
 import { AccessConfig, getDefense, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
@@ -11,7 +11,7 @@ describe("経験値の処理", () => {
   beforeAll(init)
   test("レベルアップ-基本", () => {
     const context = initContext("test", "test", false)
-    const time = moment().valueOf()
+    const time = dayjs().valueOf()
     context.clock = time
 
     let reika = DencoManager.getDenco(context, "5", 5)
@@ -57,7 +57,7 @@ describe("経験値の処理", () => {
   })
   test("レベルアップ-スキル状態", () => {
     const context = initContext("test", "test", false)
-    const time = moment().valueOf()
+    const time = dayjs().valueOf()
     context.clock = time
     let reika = DencoManager.getDenco(context, "5", 10)
     expect(reika.level).toBe(10)
@@ -109,7 +109,7 @@ describe("経験値の処理", () => {
 
   test("レベルアップ-最大レベル", () => {
     const context = initContext("test", "test", false)
-    const time = moment().valueOf()
+    const time = dayjs().valueOf()
     context.clock = time
 
     let reika = DencoManager.getDenco(context, "5", 78)

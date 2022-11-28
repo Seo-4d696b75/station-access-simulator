@@ -1,4 +1,4 @@
-import moment from "moment-timezone";
+import dayjs from "dayjs";
 import { isWeekendOrHoliday } from "../core/date";
 import { SkillLogic } from "../core/skill";
 
@@ -18,7 +18,7 @@ const skill: SkillLogic = {
   },
   canActivated: (context, state, self) => {
     if (isWeekendOrHoliday(context.currentTime)) return false
-    const hour = moment(context.currentTime).hour()
+    const hour = dayjs(context.currentTime).hour()
     return 10 <= hour && hour < 17
   },
 }

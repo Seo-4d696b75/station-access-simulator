@@ -8,14 +8,14 @@
 デフォルトでは`Context.clock: "now" | number`は`"now"`で実行時の現在時刻が参照されますが、UNIXタイム(ms)を指定して特定時刻でシミュレーションを実行できます.
 
 ```js
-import moment from "moment-timezone";
+import dayjs from "dayjs";
 import { DencoManager, init, initContext, initUser, printEvents, startAccess } from "ekimemo-access-simulator";
 
 init().then(() => {
   const context = initContext("this is test", "random seed", true);
 
   // 昼の時間帯に指定
-  context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+  context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
   context.setClock('2022-01-01T12:00:00+0900') // どっちでもOK
 
   let reika = DencoManager.getDenco(context, "5", 80);
@@ -130,14 +130,14 @@ init().then(() => {
 **重要** スケジュールされただけでは処理は実行されません. スケジュールされた時刻以降の値を指定した`Context`オブジェクトを引数に`refreshState`関数を呼び出す必要があります. 
 
 ```js
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { DencoManager, init, initContext, initUser, printEvents, refreshState } from "ekimemo-access-simulator";
 
 init().then(() => {
   const context = initContext("this is test", "random seed", true)
 
   // 時刻を指定
-  context.clock = moment('2022-01-01T12:30:00+0900').valueOf()
+  context.clock = dayjs('2022-01-01T12:30:00+0900').valueOf()
 
   let reika = DencoManager.getDenco(context, "5", 80)
   // レイカのHPを最大HP未満に設定
@@ -146,7 +146,7 @@ init().then(() => {
   let master = initUser(context, "master1", [reika, moe])
 
   // 発動時刻を指定
-  context.clock = moment('2022-01-01T13:00:00+0900').valueOf()
+  context.clock = dayjs('2022-01-01T13:00:00+0900').valueOf()
   master = refreshState(context, master)
 
   printEvents(context, master, true)
@@ -178,14 +178,14 @@ HPの回復 reika 10 > 88
 シャルロッテのスキルは有効化したタイミングから一定時間後に効果が発動します. この例では90分後にスキルが発動してランダムな駅にアクセスします.
 
 ```js
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { activateSkill, DencoManager, init, initContext, initUser, printEvents, refreshState } from "ekimemo-access-simulator"
 
 init().then(() => {
   const context = initContext("this is test", "random seed", true)
 
   // 時刻を指定
-  context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+  context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
   context.setClock('2022-01-01T12:00:00+0900')
 
   let charlotte = DencoManager.getDenco(context, "6", 80)
@@ -195,7 +195,7 @@ init().then(() => {
   master = activateSkill(context, master, 0)
 
   // 90分後
-  context.clock = moment('2022-01-01T13:30:00+0900').valueOf()
+  context.clock = dayjs('2022-01-01T13:30:00+0900').valueOf()
   master = refreshState(context, master)
 
   printEvents(context, master, true)

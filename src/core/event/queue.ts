@@ -1,6 +1,7 @@
-import moment from "moment-timezone"
+import dayjs from 'dayjs'
 import { EventSkillTrigger, triggerSkillAtEvent } from "."
-import { Context, TIME_FORMAT } from "../context"
+import { Context } from "../context"
+import { TIME_FORMAT } from "../date"
 import { Denco } from "../denco"
 import { withActiveSkill } from "../skill/property"
 import { copyState, copyStateTo, ReadonlyState } from "../state"
@@ -57,7 +58,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     if (time < entry.time) break
     state.queue.splice(0, 1)
     // start event
-    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${moment(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
+    context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${dayjs(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
         const next = triggerSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
@@ -76,7 +77,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
           if (next) copyStateTo<UserState>(next, state)
         }
         // 次のイベント追加
-        const date = moment(entry.time).add(1, "h")
+        const date = dayjs(entry.time).add(1, "h")
         state.queue.push({
           type: "hour_cycle",
           time: date.valueOf(),

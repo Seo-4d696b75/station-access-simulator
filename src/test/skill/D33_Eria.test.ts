@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { activateSkill, DencoState, getAccessDenco, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import { testManualSkill } from "../skillState"
@@ -21,11 +21,11 @@ describe("エリアのスキル", () => {
     // TODO 時間帯に依存するスキルの場合はここで処理を追加
     // TODO 保守面倒！どうする？
     if (number === "15") {
-      context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+      context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     } else if (number === "30") {
-      context.clock = moment('2022-01-01T20:00:00+0900').valueOf()
+      context.clock = dayjs('2022-01-01T20:00:00+0900').valueOf()
     } else if (number === "42") {
-      context.clock = moment('2022-11-02T12:00:00+0900').valueOf()
+      context.clock = dayjs('2022-11-02T12:00:00+0900').valueOf()
     }
     let seria = DencoManager.getDenco(context, "1", 50)
     let eria = DencoManager.getDenco(context, "33", 50, 1)
@@ -125,7 +125,7 @@ describe("エリアのスキル", () => {
   })
   test("発動なし-守備側(被アクセス)-レーの相手-昼間", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50)
     let eria = DencoManager.getDenco(context, "33", 50, 1)
     let reno = DencoManager.getDenco(context, "30", 50)

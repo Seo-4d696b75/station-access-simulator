@@ -1,5 +1,6 @@
 // 外部公開用のエントリーポイント
 import DencoManager from "./core/dencoManager"
+import { load as loadHolidayModule } from "./core/holiday"
 import SkillManager from "./core/skill"
 import StationManager from "./core/stationManager"
 
@@ -17,7 +18,8 @@ export async function init() {
   const job = Promise.all([
     SkillManager.load(),
     DencoManager.load(),
-    StationManager.load()
+    StationManager.load(),
+    loadHolidayModule(),
   ]).then(() => {
     console.log("ライブラリを初期化しました")
   })

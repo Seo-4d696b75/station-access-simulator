@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { DencoManager, init } from "../.."
 import { initContext } from "../../core/context"
 import { activateSkill, getSkill } from "../../core/skill"
@@ -12,7 +12,7 @@ describe("うららのスキル", () => {
     let urara = DencoManager.getDenco(context, "25", 50)
     expect(urara.name).toBe("urara")
     expect(urara.skill.type).toBe("possess")
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
 
     // 編成内ほか無し
@@ -88,7 +88,7 @@ describe("うららのスキル", () => {
     let state = initUser(context, "master", [urara, reika])
 
     // レイカスキルをcooldownに変更
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     state = activateSkill(context, state, 1)
     context.clock = now + 900 * 1000
@@ -108,7 +108,7 @@ describe("うららのスキル", () => {
     let state = initUser(context, "master", [urara, hiiru, reika])
 
     // レイカスキルをcooldownに変更
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     state = activateSkill(context, state, 2)
     context.clock = now + 900 * 1000
@@ -151,7 +151,7 @@ describe("うららのスキル", () => {
     let state = initUser(context, "master", [urara, hiiru, reika])
 
     // レイカスキルをcooldownに変更
-    const now = moment().valueOf()
+    const now = dayjs().valueOf()
     context.clock = now
     state = activateSkill(context, state, 2)
     context.clock = now + 900 * 1000

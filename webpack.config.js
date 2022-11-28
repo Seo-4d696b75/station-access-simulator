@@ -7,6 +7,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "umd"),
     filename: "simulator.min.js",
+    chunkFilename: "[name].min.js",
     library: 'simulator',
     libraryTarget: 'umd',
     globalObject: 'this',
@@ -15,7 +16,12 @@ module.exports = {
     rules: [
       {
         test: /\.ts$/,
-        use: ['ts-loader'],
+        use: {
+          loader: 'ts-loader',
+          options: {
+            configFile: 'tsconfig.webpack.json'
+          }
+        },
         exclude: /node_modules/
       }
     ]
