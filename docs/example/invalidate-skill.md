@@ -45,7 +45,8 @@ init().then(() => {
 
 #### Console Output
 
-![image](https://user-images.githubusercontent.com/25225028/201904259-77f45cf5-a205-43ec-ace8-0719cf5fc471.png)
+![image](https://user-images.githubusercontent.com/25225028/204132241-bb7db12b-c699-424f-b9c6-747b4a2fd78e.png)
+
 
 <details>
 <summary>ログ詳細</summary>
@@ -59,7 +60,7 @@ init().then(() => {
 ランダムに駅を選出：池袋,西日暮里,高輪ゲートウェイ
 編成を変更します [] -> [siira,chitose]
 スキル状態の変更：chitose idle -> active
-アクセス処理の開始 2022-11-15 19:47:28.418
+アクセス処理の開始 2022-11-27 20:09:25.853
 攻撃：ren
 アクティブなスキル(攻撃側): ren,reika
 守備：siira
@@ -75,7 +76,7 @@ init().then(() => {
 スキルを評価：アクセス開始
 攻守のダメージ計算を開始
 攻守の属性によるダメージ補正が適用：1.3
-フィルムによる補正をスキップ
+フィルムによるダメージ計算の補正
 スキルを評価：ATK&DEFの増減
 スキルを評価：特殊なダメージ計算
 基本ダメージを計算 AP:325 ATK:0% DEF:0% DamageBase:422 = 325 * 100% * 1.3
@@ -95,9 +96,9 @@ HP確定 siira 384 > 0 reboot:true
 守備側のリンク解除：true
 リンク成功による追加 ren score:100 exp:100
 アクセス処理の終了
-経験値追加 ren 0(current) + 622 -> 622
+経験値追加 ren 68000(current) + 622 -> 68622
 経験値詳細 access:622 skill:0 link:0
-経験値追加 siira 0(current) + 45288 -> 45288
+経験値追加 siira 68000(current) + 45288 -> 113288
 経験値詳細 access:0 skill:0 link:45288
 ```
 </details>
@@ -138,7 +139,9 @@ init().then(() => {
 ```
 
 ### Console Output
-![image](https://user-images.githubusercontent.com/25225028/201907967-2f859bc8-415e-4cf1-b3df-69a295364303.png)
+
+![image](https://user-images.githubusercontent.com/25225028/204132447-29d7a58f-4254-4c8b-ae50-76063363323f.png)
+
 
 <details>
 <summary>ログ詳細</summary>
@@ -146,18 +149,18 @@ init().then(() => {
 
 ```txt
 ライブラリを初期化しました
-編成を変更します [] -> [reika,chitose]
+編成を変更します [] -> [miroku,chitose]
 スキル状態の変更：chitose idle -> active
 ランダムに駅を選出：池袋,西日暮里,高輪ゲートウェイ
 編成を変更します [] -> [siira,seria]
 スキル状態の変更：seria idle -> active
-アクセス処理の開始 2022-11-15 20:24:14.384
-攻撃：reika
-アクティブなスキル(攻撃側): chitose
+アクセス処理の開始 2022-11-27 20:18:11.030
+攻撃：miroku
+アクティブなスキル(攻撃側): miroku,chitose
 守備：siira
 アクティブなスキル(守備側): siira,seria
 スキルを評価：フットバースの確認
-アクセスによる追加 reika score:100 exp:100
+アクセスによる追加 miroku score:100 exp:100
 スキルを評価：確率ブーストの確認
 スキルを評価：アクセス開始前
 スキルが発動(攻撃側) name:chitose(61) skill:見果てぬ景色
@@ -165,32 +168,56 @@ init().then(() => {
 スキルを評価：アクセス開始
 攻守のダメージ計算を開始
 攻守の属性によるダメージ補正が適用：1.3
-フィルムによる補正をスキップ
+フィルムによるダメージ計算の補正
 スキルを評価：ATK&DEFの増減
 確率計算は無視されます mode: force
 スキルが発動できます siira 確率:30%
-スキルが発動(守備側) name:siira(11) skill:ペインガード Lv.5
-わ、わたしのスキルでアクセスされた時にダメージを軽減できます DEF+35%
+スキルが発動(守備側) name:siira(11) skill:ジョイフルガード
+わ、わたしのスキルでアクセスされた時にダメージを軽減できます DEF+50%
 スキルを評価：特殊なダメージ計算
-基本ダメージを計算 AP:260 ATK:0% DEF:35% DamageBase:219 = 260 * 65% * 1.3
+基本ダメージを計算 AP:263 ATK:0% DEF:50% DamageBase:170 = 263 * 50% * 1.3
 スキルを評価：固定ダメージ
 固定ダメージの計算：0
-ダメージ量による追加 reika score:219 exp:219
-ダメージ計算が終了：219
-守備の結果 HP: 296 > 77 reboot:false
+ダメージ量による追加 miroku score:170 exp:170
+ダメージ計算が終了：170
+守備の結果 HP: 384 > 214 reboot:false
 アクセス結果を仮決定
 攻撃側のリンク成果：false
 守備側のリンク解除：false
 スキルを評価：ダメージ計算完了後
+確率計算は無視されます mode: force
+スキルが発動できます miroku 確率:4.5%
+スキルが発動(攻撃側) name:miroku(4) skill:ダブルアクセス Lv.6
+気合入れて頑張っていこー♪
+アクセス処理を再度実行 #1
+攻守のダメージ計算を開始
+攻守の属性によるダメージ補正が適用：1.3
+フィルムによるダメージ計算の補正
+スキルを評価：ATK&DEFの増減
+確率計算は無視されます mode: force
+スキルが発動できます siira 確率:30%
+スキルが発動(守備側) name:siira(11) skill:ジョイフルガード
+わ、わたしのスキルでアクセスされた時にダメージを軽減できます DEF+50%
+スキルを評価：特殊なダメージ計算
+基本ダメージを計算 AP:263 ATK:0% DEF:50% DamageBase:170 = 263 * 50% * 1.3
+スキルを評価：固定ダメージ
+固定ダメージの計算：0
+ダメージ量による追加 miroku score:170 exp:170
+ダメージ計算が終了：340
+守備の結果 HP: 384 > 44 reboot:false
+アクセス処理を終了 #1
+スキルの評価中にHPが変化したでんこがいます
+denco:siira HP:214 => 44
+スキルを再度評価：ダメージ計算完了後
 最終的なアクセス結果を決定
-HP確定 reika 312 > 312 reboot:false
-HP確定 siira 296 > 77 reboot:false
+HP確定 miroku 316 > 316 reboot:false
+HP確定 siira 384 > 44 reboot:false
 攻撃側のリンク成果：false
 守備側のリンク解除：false
 アクセス処理の終了
-経験値追加 reika 0(current) + 319 -> 319
-経験値詳細 access:319 skill:0 link:0
-経験値追加 siira 0(current) + 0 -> 0
+経験値追加 miroku 0(current) + 440 -> 440
+経験値詳細 access:440 skill:0 link:0
+経験値追加 siira 68000(current) + 0 -> 68000
 経験値詳細 access:0 skill:0 link:0
 スキルが直前のアクセスで無効化されています seria
 ```

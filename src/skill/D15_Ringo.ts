@@ -1,11 +1,11 @@
-import moment from "moment-timezone";
-import { SkillLogic } from "..";
+import dayjs from "dayjs"
+import { SkillLogic } from ".."
 
 const skill: SkillLogic = {
   transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && state.defense) {
-      const hour = moment(context.currentTime).hour()
+      const hour = dayjs.tz(context.currentTime).hour()
       if ((hour < 6 || hour >= 18) && self.who === "defense") {
         return {
           probabilityKey: "probability_def",

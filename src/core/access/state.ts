@@ -66,6 +66,16 @@ export interface AccessDencoState extends DencoState {
   readonly carIndex: number
 
   /**
+   * アクセス開始時のレベル
+   */
+  readonly levelBefore: number
+
+  /**
+   * アクセス開始時の最大HP
+   */
+  readonly maxHpBefore: number
+
+  /**
    * アクセス開始時のHP
    */
   readonly hpBefore: number

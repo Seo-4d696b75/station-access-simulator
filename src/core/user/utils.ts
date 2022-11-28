@@ -1,4 +1,4 @@
-import moment from "moment-timezone";
+import dayjs from "dayjs";
 import { Context } from "../context";
 import { DencoState } from "../denco";
 import { copyState, ReadonlyState } from "../state";
@@ -12,7 +12,7 @@ export function getTargetDenco<T>(state: { formation: readonly T[], carIndex: nu
 
 export function initUser(context: Context, userName: string, formation?: ReadonlyState<DencoState[]>, property?: Partial<UserProperty>): UserState {
   if (!formation) formation = []
-  const date = moment(context.currentTime)
+  const date = dayjs.tz(context.currentTime)
     .millisecond(0)
     .second(0)
     .minute(0)

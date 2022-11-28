@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
@@ -14,7 +14,7 @@ describe("ありすのスキル", () => {
     expect(alice.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [alice])
     // スポーツの日
-    context.clock = moment('2022-10-10T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-10T12:00:00+0900').valueOf()
     state = refreshState(context, state)
     alice = state.formation[0]
     let skill = getSkill(alice)
@@ -25,7 +25,7 @@ describe("ありすのスキル", () => {
     expect(() => deactivateSkill(context, state, 0)).toThrowError()
 
     // 翌日は休みじゃないぞ
-    context.clock = moment('2022-10-11T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-11T12:00:00+0900').valueOf()
     state = refreshState(context, state)
     alice = state.formation[0]
     skill = getSkill(alice)
@@ -34,7 +34,7 @@ describe("ありすのスキル", () => {
   })
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-10-10T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-10T12:00:00+0900').valueOf()
     let alice = DencoManager.getDenco(context, "31", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [alice])
@@ -62,7 +62,7 @@ describe("ありすのスキル", () => {
   })
   test("発動なし-攻撃側", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-10-10T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-10T12:00:00+0900').valueOf()
     let alice = DencoManager.getDenco(context, "31", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [reika])
@@ -86,7 +86,7 @@ describe("ありすのスキル", () => {
 
   test("発動なし-守備側(編成内)", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-10-10T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-10T12:00:00+0900').valueOf()
     let seria = DencoManager.getDenco(context, "1", 50, 1)
     let alice = DencoManager.getDenco(context, "31", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50)
@@ -112,7 +112,7 @@ describe("ありすのスキル", () => {
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
     // 月曜日だけど祝日
-    context.clock = moment('2022-10-10T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-10T12:00:00+0900').valueOf()
     context.random.mode = "ignore"
     let alice = DencoManager.getDenco(context, "31", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
@@ -138,7 +138,7 @@ describe("ありすのスキル", () => {
   test("発動あり-祝日(土日曜以外)", () => {
     const context = initContext("test", "test", false)
     // 月曜日だけど祝日
-    context.clock = moment('2022-10-10T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-10T12:00:00+0900').valueOf()
     context.random.mode = "force"
     let alice = DencoManager.getDenco(context, "31", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
@@ -163,7 +163,7 @@ describe("ありすのスキル", () => {
   test("発動あり-土日(祝日以外)", () => {
     const context = initContext("test", "test", false)
     // 日曜日
-    context.clock = moment('2022-10-09T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-09T12:00:00+0900').valueOf()
     context.random.mode = "force"
     let alice = DencoManager.getDenco(context, "31", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
@@ -188,7 +188,7 @@ describe("ありすのスキル", () => {
   test("発動あり-土日(祝日以外)-確率補正あり", () => {
     const context = initContext("test", "test", false)
     // 日曜日
-    context.clock = moment('2022-10-09T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-10-09T12:00:00+0900').valueOf()
     context.random.mode = "force"
     let alice = DencoManager.getDenco(context, "31", 50, 1)
     let hiiru = DencoManager.getDenco(context, "34", 50)

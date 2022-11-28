@@ -21,7 +21,8 @@ type AccessSkillStep =
   "after_damage"
 ```
 
-下にアクセス処理概要のフローチャートを示します
+下にアクセス処理概要のフローチャートを示します  
+
 <img src="https://user-images.githubusercontent.com/25225028/201469982-9e5ffe91-23a3-47e2-9435-dede0f8d828d.png" width="300">
 
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script language="javascript" type="text/javascript"
+    src="umd/simulator.min.js"></script>
+</head>
+
+<body>
+  <div id="title">see DevTools console</div>
+  <script>
+    simulator.init().then(() => {
+      console.log("init")
+
+      const context = simulator.initContext("import-test", "seed", true)
+      let reika = simulator.DencoManager.getDenco(context, "5", 80)
+      let charlotte = simulator.DencoManager.getDenco(context, "6", 50, 3)
+      let offense = simulator.initUser(context, "master1", [reika])
+      let defense = simulator.initUser(context, "user2", [charlotte])
+      offense = simulator.activateSkill(context, offense, 0)
+      let config = {
+        offense: {
+          carIndex: 0,
+          state: offense,
+        },
+        defense: {
+          carIndex: 0,
+          state: defense,
+        },
+        station: charlotte.link[0]
+      }
+      const result = simulator.startAccess(context, config)
+      console.log("攻撃側のタイムライン")
+      simulator.printEvents(context, result.offense, true)
+      console.log("守備側のタイムライン")
+      simulator.printEvents(context, result.defense, true)
+    })
+  </script>
+</body>
+
+</html>

@@ -1,7 +1,19 @@
 // 外部公開用のエントリーポイント
-import DencoManager from "./core/dencoManager"
-import SkillManager from "./core/skill"
-import StationManager from "./core/stationManager"
+
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import DencoManager from "./core/dencoManager";
+import { load as loadHolidayModule } from "./core/holiday";
+import SkillManager from "./core/skill";
+import StationManager from "./core/stationManager";
+
+// タイムゾーン指定
+export const SIMULATOR_TIME_ZONE = "Asia/Tokyo"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.tz.setDefault(SIMULATOR_TIME_ZONE)
 
 /**
  * ライブラリを初期化する
@@ -17,7 +29,8 @@ export async function init() {
   const job = Promise.all([
     SkillManager.load(),
     DencoManager.load(),
-    StationManager.load()
+    StationManager.load(),
+    loadHolidayModule(),
   ]).then(() => {
     console.log("ライブラリを初期化しました")
   })
@@ -38,19 +51,20 @@ export function clear() {
 }
 
 // src/core/access/*
-export * from "./core/access/index"
-export * from "./core/context"
-export * from "./core/date"
-export * from "./core/denco"
-export { default as DencoManager } from "./core/dencoManager"
-export * from "./core/event/index"
-export * from "./core/film"
-export * from "./core/format"
-export * from "./core/random"
-export * from "./core/skill"
-export { default as SkillManager } from "./core/skill"
-export * from "./core/state"
-export * from "./core/station"
-export { default as StationManager } from "./core/stationManager"
-export * from "./core/user"
+export * from "./core/access/index";
+export * from "./core/context";
+export * from "./core/date";
+export * from "./core/denco";
+export { default as DencoManager } from "./core/dencoManager";
+export * from "./core/event/index";
+export * from "./core/film";
+export * from "./core/format";
+export * from "./core/random";
+export * from "./core/skill";
+export { default as SkillManager } from "./core/skill";
+export * from "./core/state";
+export * from "./core/station";
+export { default as StationManager } from "./core/stationManager";
+export * from "./core/user";
+export { dayjs };
 

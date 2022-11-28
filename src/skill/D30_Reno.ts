@@ -1,11 +1,11 @@
-import moment from "moment-timezone";
+import dayjs from "dayjs";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "always",
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common") {
-      const hour = moment(context.currentTime).hour()
+      const hour = dayjs.tz(context.currentTime).hour()
       const night = hour < 6 || hour >= 18
       if (night && self.who === "offense") {
         return {

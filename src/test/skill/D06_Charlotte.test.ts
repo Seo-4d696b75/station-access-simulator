@@ -1,5 +1,5 @@
 import assert from "assert"
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { init } from "../.."
 import { getAccessDenco } from "../../core/access/index"
 import { initContext } from "../../core/context"
@@ -15,7 +15,7 @@ describe("シャルのスキル", () => {
 
   test("スキル発動", () => {
     const context = initContext("test", "test", false)
-    const now = moment("2020-01-01T12:50:00.000").valueOf()
+    const now = dayjs("2020-01-01T12:50:00.000").valueOf()
     context.clock = now
     let charlotte = DencoManager.getDenco(context, "6", 80)
     expect(charlotte.skill.type).toBe("possess")

@@ -17,7 +17,11 @@ class DencoManager {
   data: Map<string, DencoLevelStatus[]> = new Map()
 
   async load(data?: string) {
-    const list = data ? JSON.parse(data) : await import("../data/base.json").then(o => o.default).catch(e => [])
+    const list = data ? JSON.parse(data) : await import(
+      /* webpackMode: "lazy" */
+      /* webpackChunkName: "denco" */
+      "../data/base.json"
+    ).then(o => o.default).catch(e => [])
     if (!Array.isArray(list)) throw new SimulatorError("fail to load denco base data")
     for (let e of list) {
       if (!e.numbering || !e.type || !e.name || !e.full_name || !e.attribute) {

@@ -20,13 +20,22 @@ interface SkillDataset {
   skillDefaultProperties: Map<string, any>
 }
 
-export class SkillManager {
+class SkillManager {
 
   map: Map<string, SkillDataset> = new Map()
 
   async load(data?: string) {
-    const list = data ? JSON.parse(data) : await import("../../data/skill.json").then(o => o.default).catch(e => [])
+    const list = data ? JSON.parse(data) : await import(
+      /* webpackMode: "lazy" */
+      /* webpackChunkName: "skill-property" */
+      "../../data/skill.json"
+    ).then(o => o.default).catch(e => [])
     if (!Array.isArray(list)) throw new SimulatorError("fail to load skill property")
+    const skillLogicLoader = (await import(
+      /* webpackMode: "lazy" */
+      /* webpackChunkName: "skill" */
+      "../../skill/loader"
+    )).default
     for (let e of list) {
       if (!e.numbering || !e.class || !e.list) {
         throw new SimulatorError(`invalid skill lacking some property ${JSON.stringify(e)}`)
@@ -54,11 +63,7 @@ export class SkillManager {
         return p
       })
       properties.sort((a, b) => a.skillLevel - b.skillLevel)
-      const logic = await import("../../skill/" + moduleName)
-        .then(o => o.default)
-        .catch(() => {
-          throw new SimulatorError(`fail to import skill logic: ${moduleName}`)
-        })
+      const logic = await skillLogicLoader(moduleName)
       // default property
       const defaultValue = Object.assign({}, e)
       // 特別な意味を持つプロパティを除く
@@ -121,3 +126,7 @@ export class SkillManager {
     }
   }
 }
+
+const manager = new SkillManager()
+
+export default manager

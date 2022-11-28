@@ -1,4 +1,4 @@
-import { initContext } from "../core/context"
+import { initContext } from ".."
 import { DencoState } from "../core/denco"
 import { TypedMap } from "../core/property"
 import { activateSkill, deactivateSkill, getSkill, Skill, SkillDeactivateStrategy } from "../core/skill"

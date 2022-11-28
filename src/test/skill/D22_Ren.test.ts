@@ -1,4 +1,4 @@
-import moment from "moment-timezone"
+import dayjs from "dayjs"
 import { DencoManager, init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
@@ -18,7 +18,7 @@ describe("レンのスキル", () => {
 
   test("発動なし-非アクティブ", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let ren = DencoManager.getDenco(context, "22", 50, 1)
     let defense = initUser(context, "とあるマスター", [luna])
@@ -44,7 +44,7 @@ describe("レンのスキル", () => {
   })
   test("発動あり", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let ren = DencoManager.getDenco(context, "22", 50, 1)
     let defense = initUser(context, "とあるマスター", [luna])
@@ -71,7 +71,7 @@ describe("レンのスキル", () => {
   })
   test("発動あり-マイナス効果も無効化", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T12:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let ren = DencoManager.getDenco(context, "22", 50, 1)
     let defense = initUser(context, "とあるマスター", [luna])
@@ -125,7 +125,7 @@ describe("レンのスキル", () => {
   })
   test("発動なし-相手編成内", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let ren = DencoManager.getDenco(context, "22", 50, 1)
@@ -154,7 +154,7 @@ describe("レンのスキル", () => {
   })
   test("発動なし-攻撃編成内", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let fubu = DencoManager.getDenco(context, "14", 50, 1)
     let ren = DencoManager.getDenco(context, "22", 50, 1)
@@ -182,7 +182,7 @@ describe("レンのスキル", () => {
   })
   test("発動なし-被アクセス", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let ren = DencoManager.getDenco(context, "22", 50, 1)
     let defense = initUser(context, "とあるマスター", [ren])
@@ -208,7 +208,7 @@ describe("レンのスキル", () => {
   })
   test("発動なし-フットバース", () => {
     const context = initContext("test", "test", false)
-    context.clock = moment('2022-01-01T23:00:00+0900').valueOf()
+    context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
     let luna = DencoManager.getDenco(context, "3", 50, 1)
     let ren = DencoManager.getDenco(context, "22", 50, 1)
     let defense = initUser(context, "とあるマスター", [luna])
