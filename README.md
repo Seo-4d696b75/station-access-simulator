@@ -37,11 +37,13 @@
 npm install ekimemo-access-simulator
 ```
 
-利用例：[[CodeSandbox] TypeScript + Node.js](https://codesandbox.io/s/yi-memo-akusesusimiyureta-cor73?file=/src/index.ts)
+利用例１：[CodeSandbox - Webブラウザで簡単に試せます](https://codesandbox.io/s/yi-memo-akusesusimiyureta-cor73?file=/src/index.ts) 
+利用例２：[/example サンプルプロジェクト - 実際にローカルで実行できます](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/example/README.md)
 
 # 3. Example of Usage
 
-もっとも基本的な使用方法です [コードの詳細・解説](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/example/basic.md)
+もっとも基本的な使用方法です  
+[/example にあるサンプルプロジェクトで試す](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/example/README.md)
 ```js
 import { AccessConfig, activateSkill, DencoManager, init, initContext, initUser, printEvents, startAccess } from "ekimemo-access-simulator";
 
@@ -67,11 +69,9 @@ init().then(() => {
 });
 ```
 
-[その他の使用方法に関してはこちらで紹介しています](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/example/index.md)
-
 # 4. Docs
 
-[実装の詳細をこちらで解説しています](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/docs/index.md)
+[様々な使用例の紹介・実装の詳細な説明はこちら](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/docs/index.md)
 
 # 5. What's New?
 [各バージョンの一覧はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  

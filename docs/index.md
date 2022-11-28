@@ -1,6 +1,16 @@
 # Welcome to Docs!
 
-ライブラリの実装の詳細を解説します
+## 使用方法の紹介
+様々なタイプのスキルと共に紹介します
+
+- [基本的なアクセス（アクセス処理の開始方法）](./example/basic.md)
+- [無効化スキル（無効化スキルの影響範囲）](./example/invalidate-skill.md)
+- アクセス以外のタイミングで発動するスキル
+  - [アクセス直後に発動するスキル](./example/skill-after-access.md)
+  - [特定時刻に発動するスキル（時刻の扱い方）](./example/skill-time.md)
+- [追加のダメージ計算（追加のアクセス・カウンター攻撃）](./example/additional-damage.md)
+
+## ライブラリの実装の詳細
 
 - [アクセス処理の実装](./access.md)
 - [ダメージ計算の実装](./damage.md)

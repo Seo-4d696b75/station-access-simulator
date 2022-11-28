@@ -1,9 +1,8 @@
-ライブラリの基本的な使用方法です
+# 基本的な使用方法
 
 
 ## All Code
 
-コピペで動作するコードです
 ```js
 import { AccessConfig, activateSkill, DencoManager, init, initContext, initUser, printEvents, startAccess } from "ekimemo-access-simulator";
 
@@ -30,9 +29,6 @@ init().then(() => {
 ```
 
 ## Console Output
-標準出力にログが表示されます
-
-（注）等幅フォントでないとダイアログ出力のレイアウトが崩れる場合があります
 
 #### アクセス側
 
@@ -41,6 +37,11 @@ init().then(() => {
 #### アクセス相手側
 
 ![image](https://user-images.githubusercontent.com/25225028/204131736-09f31b9b-691a-42a4-a67e-4e8752c0a647.png)
+
+
+
+<details>
+<summary>ログ詳細</summary>
 
 ```txt
 ライブラリを初期化しました
@@ -89,6 +90,7 @@ HP確定 charlotte 228 > 0 reboot:true
 レベルアップ：charlotte Lv.50->Lv.51
 現在の経験値：charlotte 7688/38700
 ```
+</details>
 
 ## Explanation
 
