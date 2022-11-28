@@ -26,7 +26,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@0.3.0/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@^0.3.1/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -76,6 +76,15 @@ init().then(() => {
 # 5. What's New?
 [各バージョンの一覧はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
 
+**v0.3.1**
+- サンプルプロジェクトの追加
+- UMDファイルの分割(Code Splitting)
+- 時刻を扱うライブラリの変更 moment.js => [Day.js](https://day.js.org/en/)
+- コンソール出力`format`のテスト追加
+- コンソール出力での表示の不具合を修正
+  - リンク解除されたアクセスでリンク時間が表示されない不具合
+  - アクセスでレベルアップ後の最大HP,レベルで表示される不具合
+
 **v0.3.0**
 - Docsの追加
 - サンプルコードの追加
@@ -116,45 +125,3 @@ init().then(() => {
   - アクセスイベントのデータ`AccessEventData`にレベルアップが反映されてない不具合
   - アクセス以外のスキル発動で発動確率をブーストするひいるのスキルが正しく記録されない不具合
   - セリアの回復スキルの回復量が固定値で計算されていた不具合
-
-**v0.2.0**
-- スキルの発動条件・発動処理のコールバック定義を変更
-  - アクセス時の発動条件・発動処理を同一のコールバックに統一  
-    `canEvaluate, evaluate` => `triggerOnAccess`  
-    関数の返り値で発動確率・発動時の処理を同時に指定できます
-  - 命名の変更  
-    `evaluateOnEvent` => `triggerOnEvent`
-- 週末・祝日の判定処理を追加
-- ユーザの情報へのアクセスを追加
-  - ユーザの駅アクセス情報の定義 `StationStatistics`
-  - 当日の移動・アクセス情報の定義 `DailyStatistics`
-  - 読み出し方法の追加 `UserPropertyReader`
-- スキル状態に発動時刻の記録を追加（アサのスキルが利用）
-- スキル状態にカスタムデータ（任意のデータ）を定義可能に  
-  - 型安全な読み書き `boolean, number, string, number[], string[]`
-  - 状態の複製機能
-  - あたるのスキルで利用
-- スキルのコールバック関数`onDencoReboot`の実装
-- 不具合の修正
-  - いろはのスキルの自身より高レベルのでんこにリンクを渡せてしまう
-  - レベルアップでスキル状態がリセットされてしまう
-- スキルの追加
-  - 27 やちよ
-  - 28 リオナ
-  - 30 レーノ
-  - 31 ありす
-  - 32 コタン
-  - 33 エリア
-  - 35 いおり
-  - 37 みこと
-  - 38 くに
-  - 39 るる
-  - 41 にちな
-  - 42 そら
-  - 43 アサ
-  - 44 さいか
-  - 45 カノン
-  - 46 あたる
-  - 48 スピカ
-  - 49 メイ
-  - 50 なほ
