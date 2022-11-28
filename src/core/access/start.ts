@@ -1,6 +1,7 @@
-import moment from "moment-timezone"
+import dayjs from 'dayjs'
 import { AccessDencoState, AccessResult, AccessSide, AccessSideState, AccessState, getAccessDenco, getDefense, hasActiveSkill, hasDefense } from "."
 import { Context, withFixedClock } from "../context"
+import { TIME_FORMAT } from '../date'
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, ReadonlyState } from "../state"
 import { Station } from "../station"
@@ -42,7 +43,7 @@ export interface AccessConfig {
 }
 
 export const startAccess = (context: Context, config: AccessConfig): AccessResult => withFixedClock(context, (time) => {
-  context.log.log(`アクセス処理の開始 ${moment(time).format("YYYY-MM-DD HH:mm:ss.SSS")}`)
+  context.log.log(`アクセス処理の開始 ${dayjs(time).format(TIME_FORMAT)}`)
 
   var state: AccessState = {
     time: time.valueOf(),

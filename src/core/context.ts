@@ -1,13 +1,8 @@
-import moment, { Moment } from "moment-timezone"
-import seedrandom from "seedrandom"
-import { ScorePredicate } from ".."
-import { Random, RandomMode } from "./random"
-
-// タイムゾーン指定
-moment.tz.setDefault("Asia/Tokyo")
-
-export const TIME_FORMAT = "HH:mm:ss.SSS"
-export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
+import dayjs from 'dayjs';
+import seedrandom from "seedrandom";
+import { ScorePredicate } from "..";
+import { DATE_TIME_FORMAT } from "./date";
+import { Random, RandomMode } from "./random";
 
 /**
  * 実行される各種処理に紐づけられる
@@ -34,15 +29,18 @@ export class Context {
   /**
    * 処理中の現在時刻の取得方法
    * 
-   * - "now": `moment()`で参照（デフォルト値）
+   * - "now": `dayjs()`で参照（デフォルト値）
    * - number: 指定した時刻で処理(unix time [ms])
    * 
    * 処理中の各時刻はUnix Time(ms)として記録し、
    * 時刻や日付などを処理する場合のタイムゾーンは次のように固定している 
    * 変更が必要な場合は同様に再定義すること
    * ```
-   * import moment from "moment-timezone"
-   * moment.tz.setDefault("Asia/Tokyo")
+   * import dayjs from 'dayjs';
+   * import timezone from 'dayjs/plugin/timezone';
+   * 
+   * dayjs.extend(timezone)
+   * dayjs.tz.setDefault("Asia/Tokyo")
    * ```
    */
   clock: "now" | number
@@ -56,21 +54,21 @@ export class Context {
    * 時刻を固定する
    * 
    * `clock`に直接値を代入する場合と同じ効果を持ちますが、様々な時間表現を受け取ることができます
-   * @param time momentで解釈できる時刻の表現
+   * @param time dayjsで解釈できる時刻の表現
    */
-  setClock(time: number | string | Date | Moment) {
-    this.clock = moment(time).valueOf()
+  setClock(time: number | string | Date | dayjs.Dayjs) {
+    this.clock = dayjs(time).valueOf()
   }
 
   /**
    * 現在時刻を取得する
    * 
-   * clockの値に従って`moment()`もしくは固定された時刻を参照する
+   * clockの値に従って`dayjs()`もしくは固定された時刻を参照する
    * 
    * @returns unix time [ms]
    */
   get currentTime(): number {
-    return this.clock === "now" ? moment().valueOf() : this.clock
+    return this.clock === "now" ? dayjs().valueOf() : this.clock
   }
 
   assert(value: unknown, message?: string | Error): asserts value {
@@ -149,12 +147,12 @@ export class Logger {
 
   constructor(type: string, writeConsole: boolean = true) {
     this.type = type
-    this.time = moment()
+    this.time = dayjs()
     this.writeConsole = writeConsole
   }
 
   type: string
-  time: Moment
+  time: dayjs.Dayjs
   logs: Log[] = []
   writeConsole: boolean
 

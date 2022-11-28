@@ -1,4 +1,4 @@
-import moment from "moment-timezone";
+import dayjs from "dayjs";
 import { getAccessDenco } from "../core/access";
 import { isSkillActive, SkillLogic } from "../core/skill";
 
@@ -13,7 +13,7 @@ const skill: SkillLogic = {
       // TODO 対象でんこをnumberingで列挙　適宜更新が必要
       if (isSkillActive(offense.skill) && !offense.skillInvalidated && target.includes(offense.numbering)) {
         // 一部の対象は時間帯も判定が必要
-        const hour = moment(context.currentTime).hour()
+        const hour = dayjs(context.currentTime).hour()
         if (offense.numbering === "15" && (hour < 6 || hour >= 18)) {
           // 15 Ringo は昼間のみ対象
           return
