@@ -37,7 +37,8 @@
 npm install ekimemo-access-simulator
 ```
 
-利用例１：[CodeSandbox - Webブラウザで簡単に試せます](https://codesandbox.io/s/yi-memo-akusesusimiyureta-cor73?file=/src/index.ts) 
+利用例１：[CodeSandbox - Webブラウザで簡単に試せます](https://codesandbox.io/s/yi-memo-akusesusimiyureta-cor73?file=/src/index.ts)  
+
 利用例２：[/example サンプルプロジェクト - 実際にローカルで実行できます](https://github.com/Seo-4d696b75/station-access-simulator/blob/main/example/README.md)
 
 # 3. Example of Usage
