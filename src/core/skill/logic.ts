@@ -239,7 +239,8 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
    * @param disconnect 解除されたリンク・リンクを保持していたでんこの情報 {@link LinksResult link}の長さは必ず１以上です
    * @returns 状態を更新する場合は新しい状態を返します
    */
-  onLinkDisconnected?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>, disconnect: LinksResult) => void | UserState
+  onLinkDisconnected?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>, disconnect: ReadonlyState<LinksResult>) => void | UserState
+
 
   /**
    * １時間の時間経過ごとに呼ばれます
