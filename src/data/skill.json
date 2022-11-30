@@ -3465,6 +3465,59 @@
     ]
   },
   {
+    "numbering": "67",
+    "class": "D67_Maze",
+    "station_count_self": 70,
+    "station_count_other": 26,
+    "probability_self": 90,
+    "probability_other": 100,
+    "damage_fixed_other": -20,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ロング・ジャーニー Lv.1",
+        "damage_fixed_self": -0.8
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ロング・ジャーニー Lv.2",
+        "damage_fixed_self": -1.0
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ロング・ジャーニー Lv.3",
+        "damage_fixed_self": -1.2
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ロング・ジャーニー Lv.4",
+        "damage_fixed_self": -1.4
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ロング・ジャーニー Lv.5",
+        "damage_fixed_self": -1.6
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ロング・ジャーニー Lv.6",
+        "damage_fixed_self": -1.8
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "南風吹かば",
+        "damage_fixed_self": -2.0
+      }
+    ]
+  },
+  {
     "numbering": "69",
     "class": "D69_Miyu",
     "distMax": 100,
