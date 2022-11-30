@@ -247,9 +247,9 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
   if (disconnects.length === 0) return
 
   // コールバックで状態が変化する場合があるので最初に対象を検査
-  // 無効化スキルの影響は無視
+  // 保有スキルすべてにコールバック
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess")
     .map(d => d.carIndex)
     .forEach(idx => {
       disconnects.forEach(disconnect => {
