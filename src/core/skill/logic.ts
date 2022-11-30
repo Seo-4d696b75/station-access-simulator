@@ -3,7 +3,7 @@ import { Context } from "../context"
 import { DencoState } from "../denco"
 import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "../event"
 import { ReadonlyState } from "../state"
-import { LinksResult } from "../station"
+import { LinksResult, StationLinkStart } from "../station"
 import { UserState } from "../user"
 import { Skill, SkillState } from "./holder"
 import { SkillProperty } from "./property"
@@ -200,10 +200,14 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
    * このコールバックで処理します.
    * 関数`triggerSkillAfterAccess`を利用して更新した新しい状態をこの関数から返します
    * 
-   * ### 他コールバックの順序
-   * アクセス処理が終了すると、
-   * - `onDencoReboot` : このスキルを保持するでんこがリブートした場合のみ
-   * - `onAccessComplete` : この関数
+   * 
+   * ### コールバックの順序
+   * アクセス処理後に呼ばれる可能性のあるコールバックと呼び出す順序
+   * 
+   * 1. {@link onDencoReboot} 自身がリブートした場合
+   * 2. {@link onLinkDisconnected} 編成内の誰かのリンクが解除された場合
+   * 3. {@link onLinkStarted} 編成内の誰かがリンクを開始
+   * 4. `onAccessComplete` このコールバック
    * 
    * @param context
    * @param state **Readonly** 現在の状態
@@ -218,6 +222,14 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
    * 
    * - アクセス処理でダメージを受けてリブート
    * - アクセス中以外のスキルの効果でリブート（未実装）
+   * 
+   * ### コールバックの順序
+   * アクセス処理後に呼ばれる可能性のあるコールバックと呼び出す順序
+   * 
+   * 1. `onDencoReboot` このコールバック
+   * 2. {@link onLinkDisconnected} 編成内の誰かのリンクが解除された場合
+   * 3. {@link onLinkStarted} 編成内の誰かがリンクを開始
+   * 4. {@link onAccessComplete} アクセス処理の完了後
    * 
    * @returns 状態を更新する場合は新しい状態を返します
    */
@@ -236,11 +248,37 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
    * リンク保持なしでカウンター攻撃を受けリブートした場合は解除されるリンクは無いのコールバックされません
    * 
    * 
+   * ### コールバックの順序
+   * アクセス処理後に呼ばれる可能性のあるコールバックと呼び出す順序
+   * 
+   * 1. {@link onDencoReboot} 自身がリブートした場合
+   * 2. `onLinkDisconnected` このコールバック
+   * 3. {@link onLinkStarted} 編成内の誰かがリンクを開始
+   * 4. {@link onAccessComplete} アクセス処理の完了後
+   * 
    * @param disconnect 解除されたリンク・リンクを保持していたでんこの情報 {@link LinksResult link}の長さは必ず１以上です
    * @returns 状態を更新する場合は新しい状態を返します
    */
   onLinkDisconnected?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>, disconnect: ReadonlyState<LinksResult>) => void | UserState
 
+  /**
+   * 編成内のでんこが新たにリンクを開始したとき呼ばれます
+   * 
+   * このスキルを保持するでんこ自身だけでなく、編成内のでんこ全員が対象です. 
+   * 原則としてアクセスによりリンク成功したタイミングです
+   * 
+   * ### コールバックの順序
+   * アクセス処理後に呼ばれる可能性のあるコールバックと呼び出す順序
+   * 
+   * 1. {@link onDencoReboot} 自身がリブートした場合
+   * 2. {@link onLinkDisconnected} 編成内の誰かのリンクが解除された場合
+   * 3. `onLinkStarted` このコールバック
+   * 4. {@link onAccessComplete} アクセス処理の完了後
+   * 
+   * @param link 新たに開始したリンク
+   * @returns 状態を更新する場合は新しい状態を返します
+   */
+  onLinkStarted?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithActiveSkill<DencoState>>, link: ReadonlyState<StationLinkStart>) => void | UserState
 
   /**
    * １時間の時間経過ごとに呼ばれます

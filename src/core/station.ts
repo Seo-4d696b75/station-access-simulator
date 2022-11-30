@@ -22,6 +22,10 @@ export interface StationLink extends Station {
   start: number
 }
 
+export interface StationLinkStart extends StationLink {
+  denco: DencoState
+}
+
 export interface LinkResult extends StationLink {
   /**
    * 該当リンクが解除されてこのリンクスコアが計算された時刻（unix time [ms]）

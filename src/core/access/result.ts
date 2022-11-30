@@ -1,5 +1,6 @@
 import { AccessConfig } from "."
-import { Context } from "../context"
+import { assert, Context } from "../context"
+import { DencoState } from "../denco"
 import { isSkillActive } from "../skill"
 import { withActiveSkill } from "../skill/property"
 import { refreshSkillState } from "../skill/refresh"
@@ -91,6 +92,7 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   callbackReboot(context, result, "defense")
   callbackLinkDisconnect(context, result, "offense")
   callbackLinkDisconnect(context, result, "defense")
+  callbackLinkStarted(context, result)
   callbackAfterAccess(context, result, "offense")
   callbackAfterAccess(context, result, "defense")
   checkSKillState(context, result)
@@ -263,6 +265,41 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
       })
     })
 
+}
+
+function callbackLinkStarted(context: Context, state: AccessResult) {
+  // 原則としてアクセスする側のみ
+  const side = state.offense
+
+  // リンク開始のコールバック
+  if (!state.linkSuccess) return
+  // 編成内の全でんこにコールバックする!
+  // このコールバック中に新たにリンクが開始される場合は考慮しない
+  const d = side.formation[side.carIndex]
+  const link = d.link.find(l => l.name === state.station.name)
+  assert(link, `獲得したリンクが見つかりません: ${state.station.name}`)
+
+  const start = {
+    ...copyState(link),
+    denco: copyState<DencoState>(d),
+  }
+
+  // コールバックで状態が変化する場合があるので最初に対象を検査
+  // 無効化スキルの影響は無視
+  side.formation
+    .filter(d => isSkillActive(d.skill))
+    .map(d => d.carIndex)
+    .forEach(idx => {
+      // スキル発動による状態変更を考慮して評価直前に参照
+      const d = side.formation[idx]
+      const skill = d.skill
+      if (skill.type === "possess" && skill.onLinkStarted) {
+        const next = skill.onLinkStarted(context, side, withActiveSkill(d, skill, idx), start)
+        if (next) {
+          copyStateTo<UserState>(next, side)
+        }
+      }
+    })
 }
 
 function callbackAfterAccess(context: Context, state: AccessResult, which: AccessSide) {
