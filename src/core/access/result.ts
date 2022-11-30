@@ -2,7 +2,7 @@ import { AccessConfig } from "."
 import { assert, Context } from "../context"
 import { DencoState } from "../denco"
 import { isSkillActive } from "../skill"
-import { withActiveSkill } from "../skill/property"
+import { withSkill } from "../skill/property"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, copyStateTo, ReadonlyState } from "../state"
 import { LinksResult, Station } from "../station"
@@ -225,7 +225,7 @@ function callbackReboot(context: Context, state: AccessResult, which: AccessSide
       const d = side.formation[idx]
       const skill = d.skill
       if (skill.type === "possess" && skill.onDencoReboot) {
-        const next = skill.onDencoReboot(context, side, withActiveSkill(d, skill, idx))
+        const next = skill.onDencoReboot(context, side, withSkill(d, skill, idx))
         if (next) {
           copyStateTo<UserState>(next, side)
         }
@@ -257,7 +257,7 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
         const d = side.formation[idx]
         const skill = d.skill
         if (skill.type === "possess" && skill.onLinkDisconnected) {
-          const next = skill.onLinkDisconnected(context, side, withActiveSkill(d, skill, idx), disconnect)
+          const next = skill.onLinkDisconnected(context, side, withSkill(d, skill, idx), disconnect)
           if (next) {
             copyStateTo<UserState>(next, side)
           }
@@ -294,7 +294,7 @@ function callbackLinkStarted(context: Context, state: AccessResult) {
       const d = side.formation[idx]
       const skill = d.skill
       if (skill.type === "possess" && skill.onLinkStarted) {
-        const next = skill.onLinkStarted(context, side, withActiveSkill(d, skill, idx), start)
+        const next = skill.onLinkStarted(context, side, withSkill(d, skill, idx), start)
         if (next) {
           copyStateTo<UserState>(next, side)
         }
@@ -318,7 +318,7 @@ function callbackAfterAccess(context: Context, state: AccessResult, which: Acces
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
       if (skill && skill.onAccessComplete) {
-        const next = skill.onAccessComplete(context, formation, withActiveSkill(d, skill, idx), state)
+        const next = skill.onAccessComplete(context, formation, withSkill(d, skill, idx), state)
         if (next) {
           formation = next
         }

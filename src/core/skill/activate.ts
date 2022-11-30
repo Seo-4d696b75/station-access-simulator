@@ -3,7 +3,7 @@ import { DencoState } from "../denco"
 import { copyState, ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill } from "./holder"
-import { SkillPropertyReader, withActiveSkill } from "./property"
+import { SkillPropertyReader, withSkill } from "./property"
 import { refreshSkillState } from "./refresh"
 import { SkillActiveTimeout } from "./transition"
 
@@ -81,7 +81,7 @@ function activateSkillAndCallback<T extends "manual" | "manual-condition" | "aut
   skill.data.clear()
   // callback #onActivated
   if (skill.onActivated) {
-    state = skill.onActivated(context, state, withActiveSkill(d, skill, carIndex)) ?? state
+    state = skill.onActivated(context, state, withSkill(d, skill, carIndex)) ?? state
   }
   refreshSkillState(context, state)
   return state

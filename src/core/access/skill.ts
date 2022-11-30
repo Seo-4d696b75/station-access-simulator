@@ -2,7 +2,7 @@ import { Context } from "../context";
 import { Denco } from "../denco";
 import { random } from "../random";
 import { isSkillActive } from "../skill";
-import { SkillProperty, withActiveSkill } from "../skill/property";
+import { SkillProperty, withSkill } from "../skill/property";
 import { copyState, ReadonlyState } from "../state";
 import { AccessDencoState, AccessSide, AccessSideState, AccessSkillStep, AccessState, AccessTriggeredSkill } from "./state";
 import { getDefense } from "./utils";
@@ -129,7 +129,7 @@ export function triggerSkillAt(
     }
     if (skill.triggerOnAccess) {
       // 状態に依存するスキル発動有無の判定は毎度行う
-      const active = withActiveSkill(d, skill, idx)
+      const active = withSkill(d, skill, idx)
       const result = skill.triggerOnAccess(context, state, step, active)
       const recipes = getTargetRecipes(context, state, step, d, result, active.skill.property)
       recipes.forEach(recipe => {

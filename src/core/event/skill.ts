@@ -3,8 +3,8 @@ import { AccessDencoResult, AccessUserResult } from "../access"
 import { assert, Context, withFixedClock } from "../context"
 import { Denco, DencoState } from "../denco"
 import { random } from "../random"
-import { isSkillActive, ProbabilityPercent, Skill, WithActiveSkill } from "../skill"
-import { SkillProperty, SkillPropertyReader, withActiveSkill } from "../skill/property"
+import { isSkillActive, ProbabilityPercent, Skill, WithSkill } from "../skill"
+import { SkillProperty, SkillPropertyReader, withSkill } from "../skill/property"
 import { copyState, ReadonlyState } from "../state"
 import { UserProperty, UserState } from "../user"
 import { refreshUserState } from "../user/refresh"
@@ -252,7 +252,7 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${s.name} possess => ${skill.type}`)
     }
     if (!skill.triggerOnEvent) return
-    const active = withActiveSkill(s, skill, s.carIndex)
+    const active = withSkill(s, skill, s.carIndex)
     const trigger = skill.triggerOnEvent?.(context, state, active)
     const recipe = canTriggerSkill(context, state, trigger, active.skill.property)
     if (!recipe) return

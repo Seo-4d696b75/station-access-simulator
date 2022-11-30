@@ -3,7 +3,7 @@ import { Context } from "../context"
 import { TIME_FORMAT } from "../date"
 import { copyStateTo } from "../state"
 import { UserState } from "../user"
-import { withActiveSkill } from "./property"
+import { withSkill } from "./property"
 
 
 /**
@@ -75,7 +75,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         result = true
       }
       if (skill.transition.state === "idle" || skill.transition.state === "unable") {
-        const enable = skill.canEnabled(context, state, withActiveSkill(denco, skill, idx))
+        const enable = skill.canEnabled(context, state, withSkill(denco, skill, idx))
         if (enable && skill.transition.state === "unable") {
           context.log.log(`スキル状態の変更：${denco.name} unable -> idle`)
           skill.transition = {
@@ -117,7 +117,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         result = true
       }
       // スキル状態の確認・更新
-      const active = skill.canActivated(context, state, withActiveSkill(denco, skill, idx))
+      const active = skill.canActivated(context, state, withSkill(denco, skill, idx))
       if (active && skill.transition.state === "unable") {
         context.log.log(`スキル状態の変更：${denco.name} unable -> active`)
         skill.transition = {
@@ -128,7 +128,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         skill.data.clear()
         result = true
         if (skill.onActivated) {
-          const next = skill.onActivated(context, state, withActiveSkill(denco, skill, idx))
+          const next = skill.onActivated(context, state, withSkill(denco, skill, idx))
           if (next) copyStateTo(next, state)
         }
       } else if (!active && skill.transition.state === "active") {
