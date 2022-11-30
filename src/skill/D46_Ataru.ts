@@ -10,6 +10,7 @@ const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
   onAccessComplete: (context, state, self, access) => {
+    if(!self.skill.active) return
     // 基本的にダメージはアクセスでしか発生しない
     // リブート時は逆にカウント減少
     if (self.hpAfter < self.hpBefore && !self.reboot) {
@@ -30,6 +31,7 @@ const skill: SkillLogic = {
     }
   },
   onDencoReboot(context, state, self) {
+    if(!self.skill.active) return
     const current = self.skill.data.readNumber(KEY, 0)
     const decrease = self.skill.property.readNumber("count_decrease")
     const value = Math.max(current - decrease, 0)

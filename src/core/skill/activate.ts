@@ -3,7 +3,7 @@ import { DencoState } from "../denco"
 import { copyState, ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill } from "./holder"
-import { SkillPropertyReader, withActiveSkill } from "./property"
+import { SkillPropertyReader, withSkill } from "./property"
 import { refreshSkillState } from "./refresh"
 import { SkillActiveTimeout } from "./transition"
 
@@ -79,9 +79,21 @@ function activateSkillAndCallback<T extends "manual" | "manual-condition" | "aut
   }
   // カスタムデータの初期化
   skill.data.clear()
+  // autoタイプの場合のみイベント追加
+  if (skill.transitionType === "auto") {
+    state.event.push({
+      type: "skill_activated",
+      data: {
+        time: context.currentTime,
+        carIndex: carIndex,
+        denco: copyState<DencoState>(d),
+        skillName: skill.name,
+      }
+    })
+  }
   // callback #onActivated
   if (skill.onActivated) {
-    state = skill.onActivated(context, state, withActiveSkill(d, skill, carIndex)) ?? state
+    state = skill.onActivated(context, state, withSkill(d, skill, carIndex)) ?? state
   }
   refreshSkillState(context, state)
   return state

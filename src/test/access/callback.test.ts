@@ -1,9 +1,9 @@
-import { Context, DencoState, init } from "../.."
+import { Context, DencoState, init, StationLink, StationLinkStart } from "../.."
 import { AccessConfig, getAccessDenco, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { TypedMap } from "../../core/property"
-import { Skill } from "../../core/skill"
+import { activateSkill, Skill } from "../../core/skill"
 import StationManager from "../../core/stationManager"
 import { initUser } from "../../core/user"
 import "../tool/matcher"
@@ -329,6 +329,192 @@ describe("アクセス処理中のSkillコールバック", () => {
       expect(d2.disconnectedLink).toBeUndefined()
       expect(onLinkDisconnected1.mock.calls.length).toBe(0)
       expect(onLinkDisconnected2.mock.calls.length).toBe(0)
+    })
+  })
+
+  describe("onLinkStarted", () => {
+    test("リンク成功", () => {
+      const context = initContext("test", "test", false)
+      const onLinkStarted1 = jest.fn((_, state, self, link) => undefined)
+      const onLinkStarted2 = jest.fn((_, state, self, link) => undefined)
+
+      const skill1 = initSkill()
+      skill1.onLinkStarted = onLinkStarted1
+      let denco1 = initDenco(context, skill1, 0)
+      denco1.ap = 1000
+
+      const skill2 = initSkill()
+      skill2.onLinkStarted = onLinkStarted2
+      let denco2 = initDenco(context, skill2, 0)
+
+      let offense = initUser(context, "test-user", [denco1, denco2])
+      let reika = DencoManager.getDenco(context, "5", 50, 1)
+      let defense = initUser(context, "test-user2", [reika])
+      const config: AccessConfig = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: reika.link[0],
+      }
+      const result = startAccess(context, config)
+      // verify
+      const link: StationLink = {
+        ...reika.link[0],
+        start: result.time,
+      }
+      expect(result.linkSuccess).toBe(true)
+      expect(result.linkDisconnected).toBe(true)
+      let d1 = result.offense.formation[0]
+      let d2 = result.offense.formation[1]
+      expect(d1.link.length).toBe(1)
+      expect(d1.link[0]).toMatchObject(link)
+      expect(d2.link.length).toBe(0)
+      const start: StationLinkStart = {
+        ...link,
+        denco: d1,
+      }
+      expect(onLinkStarted1.mock.calls.length).toBe(1)
+      expect(onLinkStarted1.mock.calls[0][2]).toMatchDencoState(d1)
+      expect(onLinkStarted1.mock.calls[0][3]).toMatchObject(start)
+      expect(onLinkStarted2.mock.calls.length).toBe(1)
+      expect(onLinkStarted2.mock.calls[0][2]).toMatchDencoState(d2)
+      expect(onLinkStarted2.mock.calls[0][3]).toMatchObject(start)
+    })
+    test("リンク失敗", () => {
+      const context = initContext("test", "test", false)
+      const onLinkStarted1 = jest.fn((_, state, self, link) => undefined)
+      const onLinkStarted2 = jest.fn((_, state, self, link) => undefined)
+
+      const skill1 = initSkill()
+      skill1.onLinkStarted = onLinkStarted1
+      let denco1 = initDenco(context, skill1, 0)
+      denco1.ap = 10
+
+      const skill2 = initSkill()
+      skill2.onLinkStarted = onLinkStarted2
+      let denco2 = initDenco(context, skill2, 0)
+
+      let offense = initUser(context, "test-user", [denco1, denco2])
+      let reika = DencoManager.getDenco(context, "5", 50, 1)
+      let defense = initUser(context, "test-user2", [reika])
+      const config: AccessConfig = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: reika.link[0],
+      }
+      const result = startAccess(context, config)
+      expect(result.linkSuccess).toBe(false)
+      expect(result.linkDisconnected).toBe(false)
+      let d1 = result.offense.formation[0]
+      let d2 = result.offense.formation[1]
+      expect(d1.link.length).toBe(0)
+      expect(d2.link.length).toBe(0)
+      expect(onLinkStarted1.mock.calls.length).toBe(0)
+      expect(onLinkStarted2.mock.calls.length).toBe(0)
+    })
+    test("リンク成功-フットバース", () => {
+      const context = initContext("test", "test", false)
+      const onLinkStarted1 = jest.fn((_, state, self, link) => undefined)
+      const onLinkStarted2 = jest.fn((_, state, self, link) => undefined)
+
+      const skill1 = initSkill()
+      skill1.onLinkStarted = onLinkStarted1
+      let denco1 = initDenco(context, skill1, 0)
+      denco1.ap = 1000
+
+      const skill2 = initSkill()
+      skill2.onLinkStarted = onLinkStarted2
+      let denco2 = initDenco(context, skill2, 0)
+
+      let offense = initUser(context, "test-user", [denco1, denco2])
+      let reika = DencoManager.getDenco(context, "5", 50, 1)
+      let defense = initUser(context, "test-user2", [reika])
+      const config: AccessConfig = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: reika.link[0],
+        usePink: true,
+      }
+      const result = startAccess(context, config)
+      // verify
+      const link: StationLink = {
+        ...reika.link[0],
+        start: result.time,
+      }
+      expect(result.linkSuccess).toBe(true)
+      expect(result.linkDisconnected).toBe(true)
+      let d1 = result.offense.formation[0]
+      let d2 = result.offense.formation[1]
+      expect(d1.link.length).toBe(1)
+      expect(d1.link[0]).toMatchObject(link)
+      expect(d2.link.length).toBe(0)
+      const start: StationLinkStart = {
+        ...link,
+        denco: d1,
+      }
+      expect(onLinkStarted1.mock.calls.length).toBe(1)
+      expect(onLinkStarted1.mock.calls[0][2]).toMatchDencoState(d1)
+      expect(onLinkStarted1.mock.calls[0][3]).toMatchObject(start)
+      expect(onLinkStarted2.mock.calls.length).toBe(1)
+      expect(onLinkStarted2.mock.calls[0][2]).toMatchDencoState(d2)
+      expect(onLinkStarted2.mock.calls[0][3]).toMatchObject(start)
+    })
+    test("カウンターでリブート", () => {
+      const context = initContext("test", "test", false)
+      const onLinkStarted1 = jest.fn((_, state, self, link) => undefined)
+      const onLinkStarted2 = jest.fn((_, state, self, link) => undefined)
+
+      const skill1 = initSkill()
+      skill1.onLinkStarted = onLinkStarted1
+      let denco1 = initDenco(context, skill1, 0)
+      denco1.ap = 1000
+
+      const skill2 = initSkill()
+      skill2.onLinkStarted = onLinkStarted2
+      let denco2 = initDenco(context, skill2, 0)
+
+      let offense = initUser(context, "test-user", [denco1, denco2])
+      let marika = DencoManager.getDenco(context, "58", 50, 1)
+      let defense = initUser(context, "test-user2", [marika])
+      defense = activateSkill(context, defense, 0)
+      const config: AccessConfig = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: marika.link[0],
+      }
+      const result = startAccess(context, config)
+      expect(result.linkSuccess).toBe(false)
+      expect(result.linkDisconnected).toBe(true)
+      let d1 = result.offense.formation[0]
+      let d2 = result.offense.formation[1]
+      expect(d1.reboot).toBe(true)
+      expect(d1.link.length).toBe(0)
+      expect(d2.link.length).toBe(0)
+      expect(onLinkStarted1.mock.calls.length).toBe(0)
+      expect(onLinkStarted2.mock.calls.length).toBe(0)
     })
   })
 })

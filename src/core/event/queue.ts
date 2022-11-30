@@ -3,7 +3,7 @@ import { EventSkillTrigger, triggerSkillAtEvent } from "."
 import { Context } from "../context"
 import { TIME_FORMAT } from "../date"
 import { Denco } from "../denco"
-import { withActiveSkill } from "../skill/property"
+import { withSkill } from "../skill/property"
 import { copyState, copyStateTo, ReadonlyState } from "../state"
 import { UserState } from "../user"
 
@@ -73,7 +73,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
           if (skill.type !== "possess" || skill.transition.state !== "active") continue
           const callback = skill.onHourCycle
           if (!callback) continue
-          const next = callback(context, state, withActiveSkill(d, skill, i))
+          const next = callback(context, state, withSkill(d, skill, i))
           if (next) copyStateTo<UserState>(next, state)
         }
         // 次のイベント追加

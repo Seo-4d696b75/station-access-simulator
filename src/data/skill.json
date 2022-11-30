@@ -3413,6 +3413,58 @@
     ]
   },
   {
+    "numbering": "66",
+    "class": "D66_Minamo",
+    "active": 1800,
+    "cooldown": 0,
+    "probability": 100,
+    "link_count": 2,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "みんなでショウ・タイム Lv.1",
+        "damage_fixed": 30
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "みんなでショウ・タイム Lv.2",
+        "damage_fixed": 45
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "みんなでショウ・タイム Lv.3",
+        "damage_fixed": 60
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "みんなでショウ・タイム Lv.4",
+        "damage_fixed": 75
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "みんなでショウ・タイム Lv.5",
+        "damage_fixed": 90
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "みんなでショウ・タイム Lv.6",
+        "damage_fixed": 105
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "ランウェイオンザレール",
+        "damage_fixed": 120
+      }
+    ]
+  },
+  {
     "numbering": "69",
     "class": "D69_Miyu",
     "distMax": 100,

@@ -1,7 +1,7 @@
 import { AccessConfig } from "."
-import { Context } from "../context"
-import { isSkillActive } from "../skill"
-import { withActiveSkill } from "../skill/property"
+import { assert, Context } from "../context"
+import { DencoState } from "../denco"
+import { withSkill } from "../skill/property"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, copyStateTo, ReadonlyState } from "../state"
 import { LinksResult, Station } from "../station"
@@ -91,6 +91,7 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   callbackReboot(context, result, "defense")
   callbackLinkDisconnect(context, result, "offense")
   callbackLinkDisconnect(context, result, "defense")
+  callbackLinkStarted(context, result)
   callbackAfterAccess(context, result, "offense")
   callbackAfterAccess(context, result, "defense")
   checkSKillState(context, result)
@@ -214,16 +215,16 @@ function callbackReboot(context: Context, state: AccessResult, which: AccessSide
 
   // リブートのコールバック
   // コールバックで状態が変化する場合があるので最初に対象を検査
-  // 無効化スキルの影響は無視
+  // 保有スキルすべてにコールバック
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess")
     .filter(d => d.reboot)
     .map(d => d.carIndex)
     .forEach(idx => {
       const d = side.formation[idx]
       const skill = d.skill
       if (skill.type === "possess" && skill.onDencoReboot) {
-        const next = skill.onDencoReboot(context, side, withActiveSkill(d, skill, idx))
+        const next = skill.onDencoReboot(context, side, withSkill(d, skill, idx))
         if (next) {
           copyStateTo<UserState>(next, side)
         }
@@ -245,9 +246,9 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
   if (disconnects.length === 0) return
 
   // コールバックで状態が変化する場合があるので最初に対象を検査
-  // 無効化スキルの影響は無視
+  // 保有スキルすべてにコールバック
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess")
     .map(d => d.carIndex)
     .forEach(idx => {
       disconnects.forEach(disconnect => {
@@ -255,7 +256,7 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
         const d = side.formation[idx]
         const skill = d.skill
         if (skill.type === "possess" && skill.onLinkDisconnected) {
-          const next = skill.onLinkDisconnected(context, side, withActiveSkill(d, skill, idx), disconnect)
+          const next = skill.onLinkDisconnected(context, side, withSkill(d, skill, idx), disconnect)
           if (next) {
             copyStateTo<UserState>(next, side)
           }
@@ -265,13 +266,47 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
 
 }
 
+function callbackLinkStarted(context: Context, state: AccessResult) {
+  // 原則としてアクセスする側のみ
+  const side = state.offense
+
+  // リンク開始のコールバック
+  if (!state.linkSuccess) return
+  // 編成内の全でんこにコールバックする!
+  // このコールバック中に新たにリンクが開始される場合は考慮しない
+  const d = side.formation[side.carIndex]
+  const link = d.link.find(l => l.name === state.station.name)
+  assert(link, `獲得したリンクが見つかりません: ${state.station.name}`)
+
+  const start = {
+    ...copyState(link),
+    denco: copyState<DencoState>(d),
+  }
+
+  // コールバックで状態が変化する場合があるので最初に対象を検査
+  // 保有スキルすべてにコールバック
+  side.formation
+    .filter(d => d.skill.type === "possess")
+    .map(d => d.carIndex)
+    .forEach(idx => {
+      // スキル発動による状態変更を考慮して評価直前に参照
+      const d = side.formation[idx]
+      const skill = d.skill
+      if (skill.type === "possess" && skill.onLinkStarted) {
+        const next = skill.onLinkStarted(context, side, withSkill(d, skill, idx), start)
+        if (next) {
+          copyStateTo<UserState>(next, side)
+        }
+      }
+    })
+}
+
 function callbackAfterAccess(context: Context, state: AccessResult, which: AccessSide) {
   const side = (which === "offense") ? state.offense : state.defense
   if (!side) return
   let formation = side
-  // 無効化スキルの影響は無視
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess") // 保有スキルすべてにコールバック
     .map(d => d.carIndex)
     .forEach(idx => {
       // スキル発動による状態変更を考慮して評価直前にコピー
@@ -281,7 +316,7 @@ function callbackAfterAccess(context: Context, state: AccessResult, which: Acces
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
       if (skill && skill.onAccessComplete) {
-        const next = skill.onAccessComplete(context, formation, withActiveSkill(d, skill, idx), state)
+        const next = skill.onAccessComplete(context, formation, withSkill(d, skill, idx), state)
         if (next) {
           formation = next
         }
