@@ -1,7 +1,6 @@
 import { AccessConfig } from "."
 import { assert, Context } from "../context"
 import { DencoState } from "../denco"
-import { isSkillActive } from "../skill"
 import { withSkill } from "../skill/property"
 import { refreshSkillState } from "../skill/refresh"
 import { copyState, copyStateTo, ReadonlyState } from "../state"
@@ -285,9 +284,9 @@ function callbackLinkStarted(context: Context, state: AccessResult) {
   }
 
   // コールバックで状態が変化する場合があるので最初に対象を検査
-  // 無効化スキルの影響は無視
+  // 保有スキルすべてにコールバック
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess")
     .map(d => d.carIndex)
     .forEach(idx => {
       // スキル発動による状態変更を考慮して評価直前に参照
