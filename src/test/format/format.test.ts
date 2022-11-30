@@ -206,4 +206,25 @@ describe("format", () => {
     const result = startAccess(context, config)
     await compareAccessOutput(context, result, "09")
   })
+  test("10 autoタイプのスキルが有効化", async () => {
+    const context = initContext("this is test", "random seed", false)
+    let seria = DencoManager.getDenco(context, "1", 50, 2)
+    let minamo = DencoManager.getDenco(context, "66", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 10, 1)
+    let offense = initUser(context, "とあるマスター", [minamo, seria])
+    let defense = initUser(context, "とあるマスター２", [charlotte])
+    let config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+    }
+    const result = startAccess(context, config)
+    await compareAccessOutput(context, result, "10")
+  })
 })
