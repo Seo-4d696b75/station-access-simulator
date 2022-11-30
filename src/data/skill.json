@@ -3518,6 +3518,64 @@
     ]
   },
   {
+    "numbering": "68",
+    "class": "D68_Mitsuru",
+    "active": 1800,
+    "cooldown": 7200,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ノヴァストライク Lv.1",
+        "ATK": 10,
+        "ATK_additional": 15
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ノヴァストライク Lv.2",
+        "ATK": 12,
+        "ATK_additional": 21
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ノヴァストライク Lv.3",
+        "ATK": 14,
+        "ATK_additional": 27
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ノヴァストライク Lv.4",
+        "ATK": 16,
+        "ATK_additional": 33
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ノヴァストライク Lv.5",
+        "ATK": 18,
+        "ATK_additional": 40
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ノヴァストライク Lv.6",
+        "ATK": 20,
+        "ATK_additional": 47
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "耀光よ七天を満たせ",
+        "ATK": 22,
+        "ATK_additional": 55
+      }
+    ]
+  },
+  {
     "numbering": "69",
     "class": "D69_Miyu",
     "distMax": 100,
