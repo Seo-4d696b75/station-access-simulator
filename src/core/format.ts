@@ -42,6 +42,9 @@ export function formatEvent(context: Context, event: Event, detail: boolean = tr
       return detail ? formatAccessDetail(event.data.access, event.data.which, time, colored) : formatAccessEvent(event.data.access, event.data.which, time, colored)
     case "reboot":
       return detail ? formatRebootDetail(event.data, time, colored) : formatReboot(event.data, time, colored)
+    case "skill_activated":
+      // 実際にはスキルが発動したわけでは無いが「スキルが発動」と表示される
+      return formatSkillTriggerEvent({ ...event.data, step: "self" }, time, colored)
     case "skill_trigger":
       return formatSkillTriggerEvent(event.data, time, colored)
     case "levelup":

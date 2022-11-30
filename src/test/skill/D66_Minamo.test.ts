@@ -1,9 +1,11 @@
+import assert from "assert"
 import { init } from "../.."
 import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import { Context, initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { getSkill, isSkillActive } from "../../core/skill"
 import { initUser, refreshState, UserState } from "../../core/user"
+import "../tool/matcher"
 
 describe("みなものスキル", () => {
   beforeAll(init)
@@ -262,6 +264,14 @@ describe("みなものスキル", () => {
       activeTimeout: start + 1800 * 1000,
       cooldownTimeout: start + 1800 * 1000, // cooldown時間は0
     })
+    // スキル発動の表示あり
+    expect(state.event.length).toBe(2)
+    expect(state.event[0].type).toBe("access")
+    let e = state.event[1]
+    assert(e.type === "skill_activated")
+    expect(e.data.time).toBe(start)
+    expect(e.data.denco).toMatchDencoState(d)
+    expect(e.data.skillName).toBe("みんなでショウ・タイム Lv.4")
 
     context.clock = start + 1800 * 1000
     state = refreshState(context, state)

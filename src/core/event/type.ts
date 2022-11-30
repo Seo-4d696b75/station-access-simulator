@@ -7,6 +7,7 @@ import { LinksResult } from "../station"
 export type EventType =
   "access" |
   "reboot" |
+  "skill_activated" |
   "skill_trigger" |
   "levelup"
 
@@ -43,8 +44,26 @@ export interface AccessEventData {
   readonly which: AccessSide
 }
 
+/**
+ * 状態遷移タイプが`auto`のスキルが有効化されたイベント
+ * 
+ * 他の遷移タイプと異なり、ユーザ操作とは別に自動的にスキルが有効化されます
+ */
+export interface SkillActivatedEventData {
+  readonly time: number
+  readonly carIndex: number
+  /**
+   * 有効化されたスキルを保有する本人の状態
+   * 
+   * スキル状態が`active`に遷移した直後の状態
+   */
+  readonly denco: ReadonlyState<DencoState>
+  readonly skillName: string
+}
+
 export type AccessEvent = EventBase<"access", AccessEventData>
 export type RebootEvent = EventBase<"reboot", LinksResult>
+export type SkillActivatedEvent = EventBase<"skill_activated", SkillActivatedEventData>
 export type SkillTriggerEvent = EventBase<"skill_trigger", EventTriggeredSkill>
 export type LevelupEvent = EventBase<"levelup", LevelupDenco>
 
@@ -54,5 +73,6 @@ export type LevelupEvent = EventBase<"levelup", LevelupDenco>
 export type Event =
   AccessEvent |
   RebootEvent |
+  SkillActivatedEvent |
   SkillTriggerEvent |
   LevelupEvent
