@@ -31,6 +31,7 @@ const skill: SkillLogic = {
     }
   },
   onDencoReboot(context, state, self) {
+    if(!self.skill.active) return
     const current = self.skill.data.readNumber(KEY, 0)
     const decrease = self.skill.property.readNumber("count_decrease")
     const value = Math.max(current - decrease, 0)

@@ -216,9 +216,9 @@ function callbackReboot(context: Context, state: AccessResult, which: AccessSide
 
   // リブートのコールバック
   // コールバックで状態が変化する場合があるので最初に対象を検査
-  // 無効化スキルの影響は無視
+  // 保有スキルすべてにコールバック
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess")
     .filter(d => d.reboot)
     .map(d => d.carIndex)
     .forEach(idx => {
