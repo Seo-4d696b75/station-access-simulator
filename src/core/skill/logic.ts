@@ -21,15 +21,15 @@ export type ProbabilityPercent = number
 
 // DencoStateからskillを一旦取り除かないとskill.propertyのdocs参照がごっちゃになる
 export type WithSkill<T extends DencoState> = Omit<T, "skill"> & {
-/**
+  /**
    * 主体となるでんこの編成内のindex  
    * 0 <= carIndex < formation.length
- */
+   */
   carIndex: number
 
   // skill: SkillHolder だと skill.type === "possess" のチェックが必要で煩雑なのを省略する
   skill: SkillState & {
-  // SkillLogic自身を参照することは基本ないのでSkillStateのみ
+    // SkillLogic自身を参照することは基本ないのでSkillStateのみ
 
     /**
      * このスキルがactiveかどうか
@@ -38,23 +38,21 @@ export type WithSkill<T extends DencoState> = Omit<T, "skill"> & {
      */
     active: boolean
 
-  /**
-   * 
-   * ### 着用中のフィルム補正が影響します！
-   * 
-   * 関数`readNumber, readNumberArray`が読み出す値には上記に加え、
-   * 着用中のフィルムの補正値が加算されます.
-   * 
-   * フィルムの補正値は{@link Film skill}を参照します.
-   */
-  property: SkillProperty
-}
+    /**
+     * 
+     * ### 着用中のフィルム補正が影響します！
+     * 
+     * 関数`readNumber, readNumberArray`が読み出す値には上記に加え、
+     * 着用中のフィルムの補正値が加算されます.
+     * 
+     * フィルムの補正値は{@link Film skill}を参照します.
+     */
+    property: SkillProperty
+  }
 }
 
 /**
  * スキルレベルに依存しないスキルの発動等に関わるロジックを各種コールバック関数として定義します
- * 
- * すべてのコールバックは対象のタイミングにおいて**スキル自身がactiveな場合のみ**呼ばれます
  * 
  * ## スキルレベルに依存するデータ
  * スキルレベルに依存するデータは各コールバック関数の引数に渡される{@link Skill property}オブジェクトから参照できます  
@@ -134,7 +132,10 @@ interface ActivatableSkillLogic<T extends "manual" | "manual-condition" | "auto"
   /**
    * スキル状態が`active`へ変更された直後の処理をここで行う
    * 
-   * スキル状態遷移のタイプ`manual,manual-condition,auto,auto-condition`限定
+   * スキル状態遷移のタイプ`manual,manual-condition,auto,auto-condition`限定  
+   * 
+   * @param self **Readonly** このスキルを保持するでんこ自身の現在の状態 スキルの状態は`active`です（`self.skill.active === true`）
+   * @return 状態を更新する場合は新しい状態を返します
    */
   onActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => void | UserState
 
@@ -155,7 +156,9 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
   /**
    * アクセス時の各段階においてスキル発動の判定とスキル発動処理を定義します
    * 
-   * 他の無効化スキルの影響を受けている場合は呼ばれません
+   * ### アクセス処理でコールバックされる条件
+   * - このスキルの状態が`active`である
+   * - 他の無効化スキルの影響を受けていない
    * 
    * @param context 同一のアクセス処理中は同一のオブジェクトが使用されます
    * @param state アクセス全般の状態  
@@ -178,6 +181,10 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
    * 
    * **注意** 現状ではひいるの確率補正のみ
    * 
+   * ### イベント処理でコールバックされる条件
+   * - このスキルの状態が`active`である
+   * - 他の無効化スキルの影響を受けていない（直前のアクセス処理の影響を受ける場合のみ）
+   * 
    * @param context 同一のイベント処理中は同一のオブジェクトが使用されます
    * @param state スキル発動型のイベント全般の状態  
    * **Readonly** この関数呼び出しの段階ではスキル発動が確定していないため状態は更新できません. スキルを発動の判定・状態の更新方法は関数の返り値で指定できます.
@@ -194,8 +201,10 @@ interface BaseSkillLogic<T extends SkillTransitionType> {
   /**
    * アクセス処理が完了した直後に呼ばれます
    * 
-   * **直前のアクセス処理で無効化スキルの影響を受けている場合があります**
-   * 他のスキルにより無効化されていてもこの関数は呼ばれます（単にactive状態なら呼ばれます）
+   * - **直前のアクセス処理で無効化スキルの影響を受けている場合があります**  
+   *   他のスキルにより無効化されていてもこの関数は呼ばれます
+   * - **スキル状態に関わらずコールバックされます**  
+   *   現在のスキル状態が`active`かどうかは`self.skill.active`を参照してください
    * 
    * ### アクセス直後のスキル発動
    * このコールバックで処理します.

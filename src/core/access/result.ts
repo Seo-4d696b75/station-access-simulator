@@ -306,9 +306,8 @@ function callbackAfterAccess(context: Context, state: AccessResult, which: Acces
   const side = (which === "offense") ? state.offense : state.defense
   if (!side) return
   let formation = side
-  // 無効化スキルの影響は無視
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess") // 保有スキルすべてにコールバック
     .map(d => d.carIndex)
     .forEach(idx => {
       // スキル発動による状態変更を考慮して評価直前にコピー

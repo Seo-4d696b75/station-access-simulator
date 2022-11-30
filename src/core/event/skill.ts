@@ -127,7 +127,10 @@ export type EventSkillTrigger = {
  * @param trigger スキル発動の確率計算の方法・発動時の処理方法
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<WithActiveSkill<AccessDencoResult>>, trigger: EventSkillTrigger): AccessUserResult => withFixedClock(context, () => {
+export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<WithSkill<AccessDencoResult>>, trigger: EventSkillTrigger): AccessUserResult => withFixedClock(context, () => {
+  if (!self.skill.active) {
+    context.log.error(`スキルの状態がactiveではありません ${self.name}`)
+  }
   let next = copyState<AccessUserResult>(state)
   if (self.skillInvalidated) {
     context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
