@@ -3744,6 +3744,56 @@
     ]
   },
   {
+    "numbering": "72",
+    "class": "D72_Nagisa",
+    "probability": 100,
+    "max_count": 14,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "クールダイブ Lv.1",
+        "max_damage": 120
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "クールダイブ Lv.2",
+        "max_damage": 150
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "クールダイブ Lv.3",
+        "max_damage": 180
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "クールダイブ Lv.4",
+        "max_damage": 210
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "クールダイブ Lv.5",
+        "max_damage": 240
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "クールダイブ Lv.6",
+        "max_damage": 270
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "波間の想い",
+        "max_damage": 300
+      }
+    ]
+  },
+  {
     "numbering": "76",
     "class": "D76_Yunoka",
     "active": 900,
