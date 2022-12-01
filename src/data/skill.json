@@ -3632,6 +3632,63 @@
     ]
   },
   {
+    "numbering": "70",
+    "class": "D70_Miyabi",
+    "cooldown": 3600,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "クールダウン・プリーズ Lv.1",
+        "active": 3600,
+        "DEF": 24
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "クールダウン・プリーズ Lv.2",
+        "active": 3600,
+        "DEF": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "クールダウン・プリーズ Lv.3",
+        "active": 3600,
+        "DEF": 36
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "クールダウン・プリーズ Lv.4",
+        "active": 7200,
+        "DEF": 42
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "クールダウン・プリーズ Lv.5",
+        "active": 7200,
+        "DEF": 48
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "クールダウン・プリーズ Lv.6",
+        "active": 7200,
+        "DEF": 54
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "優雅に清楚に涼やかに",
+        "active": 7200,
+        "DEF": 60
+      }
+    ]
+  },
+  {
     "numbering": "76",
     "class": "D76_Yunoka",
     "active": 900,
