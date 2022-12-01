@@ -3689,6 +3689,61 @@
     ]
   },
   {
+    "numbering": "71",
+    "class": "D71_Ruri",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "こつこつワーキング Lv.1",
+        "ATK": 8,
+        "probability": 60
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "こつこつワーキング Lv.2",
+        "ATK": 10,
+        "probability": 65
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "こつこつワーキング Lv.3",
+        "ATK": 12,
+        "probability": 70
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "こつこつワーキング Lv.4",
+        "ATK": 14,
+        "probability": 75
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "こつこつワーキング Lv.5",
+        "ATK": 16,
+        "probability": 80
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "こつこつワーキング Lv.6",
+        "ATK": 18,
+        "probability": 85
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "ビューティフル・デイズ",
+        "ATK": 20,
+        "probability": 90
+      }
+    ]
+  },
+  {
     "numbering": "76",
     "class": "D76_Yunoka",
     "active": 900,

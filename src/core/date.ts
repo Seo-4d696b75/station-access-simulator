@@ -4,9 +4,6 @@ import { isHoliday } from './holiday';
 export const TIME_FORMAT = "HH:mm:ss.SSS"
 export const DATE_TIME_FORMAT = "YYYY-MM-DD'T'HH:mm:ss.SSS"
 
-// 毎回extendするの面倒なのでここからexportして使う
-// export default dayjs
-
 /**
  * 今日が週末または祝日か判定する
  * 
