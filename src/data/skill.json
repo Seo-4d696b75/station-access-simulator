@@ -3899,6 +3899,64 @@
     ]
   },
   {
+    "numbering": "75",
+    "class": "D75_Nina",
+    "active": 2700,
+    "cooldown": 9000,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ねっけつレッスン Lv.1",
+        "ATK": 15,
+        "EXP": 270
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ねっけつレッスン Lv.2",
+        "ATK": 20,
+        "EXP": 300
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ねっけつレッスン Lv.3",
+        "ATK": 25,
+        "EXP": 330
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ねっけつレッスン Lv.4",
+        "ATK": 30,
+        "EXP": 360
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ねっけつレッスン Lv.5",
+        "ATK": 35,
+        "EXP": 390
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ねっけつレッスン Lv.6",
+        "ATK": 40,
+        "EXP": 420
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "学問とは未知への旅路である",
+        "ATK": 45,
+        "EXP": 450
+      }
+    ]
+  },
+  {
     "numbering": "76",
     "class": "D76_Yunoka",
     "active": 900,
