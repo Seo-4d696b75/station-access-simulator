@@ -3845,6 +3845,60 @@
     ]
   },
   {
+    "numbering": "74",
+    "class": "D74_Koyoi",
+    "active": 5400,
+    "cooldown": 7200,
+    "probability": 100,
+    "count_self_max": 5,
+    "count_other": 4,
+    "DEF_other": 10,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "なきむしシンパサイザー Lv.1",
+        "DEF_self_max": 22
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "なきむしシンパサイザー Lv.2",
+        "DEF_self_max": 25
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "なきむしシンパサイザー Lv.3",
+        "DEF_self_max": 28
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "なきむしシンパサイザー Lv.4",
+        "DEF_self_max": 31
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "なきむしシンパサイザー Lv.5",
+        "DEF_self_max": 34
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "なきむしシンパサイザー Lv.6",
+        "DEF_self_max": 37
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "今宵、みんなでワルツを",
+        "DEF_self_max": 40
+      }
+    ]
+  },
+  {
     "numbering": "76",
     "class": "D76_Yunoka",
     "active": 900,

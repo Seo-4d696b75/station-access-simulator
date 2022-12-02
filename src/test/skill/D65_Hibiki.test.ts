@@ -44,6 +44,9 @@ describe("あけひのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
+      expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
+      expect(hasSkillTriggered(result.defense, mio)).toBe(false)
+      expect(hasSkillTriggered(result.offense, reika)).toBe(true)
       // サポーターの無効化
       assert(result.defense)
       let d = result.defense.formation[1]
@@ -112,6 +115,8 @@ describe("あけひのスキル", () => {
       expect(result.defense).not.toBeUndefined()
       expect(hasSkillTriggered(result.offense, ren)).toBe(true)
       expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
+      expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
+      expect(hasSkillTriggered(result.defense, mio)).toBe(false)
       // スキル無効化は互いに影響しない！！
       // 相手ディフェンダー無効化
       assert(result.defense)
@@ -123,6 +128,47 @@ describe("あけひのスキル", () => {
       d = result.defense.formation[2]
       expect(d.skillInvalidated).toBe(true)
       expect(result.defendPercent).toBe(0)
+    })
+
+    test("発動あり-守備側(被アクセス)-サポーター以外", () => {
+      const context = initContext("test", "test", false)
+      let seria = DencoManager.getDenco(context, "1", 50)
+      let mero = DencoManager.getDenco(context, "2", 50)
+      let charlotte = DencoManager.getDenco(context, "6", 50)
+      let moe = DencoManager.getDenco(context, "9", 50)
+      let koyoi = DencoManager.getDenco(context, "74", 50)
+      let hibiki = DencoManager.getDenco(context, "65", 50, 1)
+      let reika = DencoManager.getDenco(context, "5", 50)
+      let defense = initUser(context, "とあるマスター", [hibiki, koyoi, seria, mero, moe])
+      defense = activateSkill(context, defense, 1, 2)
+      let offense = initUser(context, "とあるマスター２", [charlotte, reika])
+      offense = activateSkill(context, offense, 1)
+      const config = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: hibiki.link[0],
+      }
+      const result = startAccess(context, config)
+      expect(result.defense).not.toBeUndefined()
+      expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
+      expect(hasSkillTriggered(result.defense, koyoi)).toBe(true)
+      // サポーターの無効化
+      assert(result.defense)
+      let d = result.defense.formation[1]
+      expect(d.skillInvalidated).toBe(false) // コヨイ対象外
+      d = result.defense.formation[2]
+      expect(d.skillInvalidated).toBe(true)
+      expect(result.defendPercent).toBe(10)
+      // 相手編成のサポーターは無効化対象外
+      d = result.offense.formation[1]
+      expect(d.skillInvalidated).toBe(false)
+      expect(result.attackPercent).toBeGreaterThan(0)
     })
   })
 
@@ -194,11 +240,14 @@ describe("あけひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      // ひいるはサポーターなので無効化される！
+      // アクセス中のスキル発動（サポータ無効化）は100%なのでひいる関係ない
       expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
+      expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
       // HP回復
       assert(result.defense)
       expect(result.defense.event.length).toBe(2)
+      // ひいるはサポーターなので直前のアクセスで無効化される！
+      // ひびきの発動確率ブーストしない
       let e = result.defense.event[1]
       assert(e.type === "skill_trigger")
       let d = result.defense.formation[0]
