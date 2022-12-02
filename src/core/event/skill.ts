@@ -160,6 +160,9 @@ export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<A
         // 編成内位置は不変と仮定
         let access = state.formation[idx]
         return {
+          // FIXME スキル発動でrandomAccessすると
+          // 変数dにはAccessDencoStateの情報が全部コピーされている
+          // すると最初のアクセスの情報accessを上書きしてしまう
           ...access,           // アクセス中の詳細など
           ...copyState<DencoState>(d), // でんこ最新状態(順番注意)
         }

@@ -3961,6 +3961,8 @@
     "class": "D76_Yunoka",
     "active": 900,
     "cooldown": 5400,
+    "probability_atk": 100,
+    "probability_heal": 100,
     "list": [
       {
         "skill_level": 1,
@@ -4010,6 +4012,54 @@
         "name": "リラクシングトラベル",
         "ATK": 60,
         "heal": 30
+      }
+    ]
+  },
+  {
+    "numbering": "77",
+    "class": "D77_Reto",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ワンダーエスケープ Lv.1",
+        "probability": 8
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ワンダーエスケープ Lv.2",
+        "probability": 10
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ワンダーエスケープ Lv.3",
+        "probability": 12
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ワンダーエスケープ Lv.4",
+        "probability": 14
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ワンダーエスケープ Lv.5",
+        "probability": 16
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ワンダーエスケープ Lv.6",
+        "probability": 18
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "逃げ道だって小さな旅",
+        "probability": 20
       }
     ]
   }
