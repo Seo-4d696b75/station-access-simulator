@@ -3794,6 +3794,57 @@
     ]
   },
   {
+    "numbering": "73",
+    "class": "D73_Yamato",
+    "active": 3600,
+    "cooldown": 7200,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "フェイバリットカラーズ Lv.1",
+        "damage_fixed": -55
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "フェイバリットカラーズ Lv.2",
+        "damage_fixed": -60
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "フェイバリットカラーズ Lv.3",
+        "damage_fixed": -65
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "フェイバリットカラーズ Lv.4",
+        "damage_fixed": -70
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "フェイバリットカラーズ Lv.5",
+        "damage_fixed": -80
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "フェイバリットカラーズ Lv.6",
+        "damage_fixed": -90
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "いろどりトランジット",
+        "damage_fixed": -100
+      }
+    ]
+  },
+  {
     "numbering": "76",
     "class": "D76_Yunoka",
     "active": 900,
