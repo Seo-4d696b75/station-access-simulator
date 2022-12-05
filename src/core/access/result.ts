@@ -187,7 +187,7 @@ function addAccessEvent(context: Context, origin: ReadonlyState<UserState> | und
       // このアクセスイベントを追加
       type: "access",
       data: {
-        access: copyState(result),
+        ...copyState(result),
         which: which
       }
     },

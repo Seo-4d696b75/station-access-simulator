@@ -1,5 +1,5 @@
 import { EventTriggeredSkill } from "."
-import { AccessResult, AccessSide } from "../access"
+import { AccessResult, AccessSide, AccessUserResult } from "../access"
 import { DencoState } from "../denco"
 import { ReadonlyState } from "../state"
 import { LinksResult } from "../station"
@@ -25,23 +25,25 @@ export interface LevelupDenco {
   readonly before: ReadonlyState<DencoState>
 }
 
+export type AccessEventUser = Omit<AccessUserResult, "event" | "queue">
+
 /**
  * アクセスのイベント情報
+ * 
+ * 各でんこの状態はアクセス処理終了直後の状態であり、 
+ * - アクセスによるリンクの解除は反映済
+ * - 解除されたリンクスコア・経験値は追加済み
+ * - 追加された経験値によるレベルアップ済み
  */
-export interface AccessEventData {
-  /**
-   * アクセスの詳細
-   * 
-   * 各でんこの状態はアクセス処理終了直後の状態であり、 
-   * - アクセスによるリンクの解除は反映済
-   * - 解除されたリンクスコア・経験値は追加済み
-   * - 追加された経験値によるレベルアップ済み
-   */
-  readonly access: ReadonlyState<AccessResult>
+export interface AccessEventData extends ReadonlyState<Omit<AccessResult, "offense" | "defense">> {
+  
   /**
    * アクセスの攻撃側・守備側のどちら側か
    */
   readonly which: AccessSide
+
+  readonly offense: ReadonlyState<AccessEventUser>
+  readonly defense?: ReadonlyState<AccessEventUser>
 }
 
 /**
