@@ -1,10 +1,11 @@
 import dayjs from "dayjs"
 import { EventSkillTrigger, triggerSkillAtEvent } from "."
 import { Context } from "../context"
+import { mergeUserState } from "../copy"
 import { TIME_FORMAT } from "../date"
 import { Denco } from "../denco"
 import { withSkill } from "../skill/property"
-import { copyState, copyStateTo, ReadonlyState } from "../state"
+import { copyState, ReadonlyState } from "../state"
 import { UserState } from "../user"
 
 /**
@@ -62,7 +63,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     switch (entry.type) {
       case "skill": {
         const next = triggerSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
-        copyStateTo<UserState>(next, state)
+        mergeUserState(state, next)
         break
       }
       case "hour_cycle": {
@@ -74,7 +75,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
           const callback = skill.onHourCycle
           if (!callback) continue
           const next = callback(context, state, withSkill(d, skill, i))
-          if (next) copyStateTo<UserState>(next, state)
+          if (next) mergeUserState(state, next)
         }
         // 次のイベント追加
         const date = dayjs.tz(entry.time).add(1, "h").valueOf()

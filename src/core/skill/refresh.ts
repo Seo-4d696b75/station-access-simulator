@@ -1,7 +1,7 @@
 import dayjs from "dayjs"
 import { Context } from "../context"
+import { mergeUserState } from "../copy"
 import { TIME_FORMAT } from "../date"
-import { copyStateTo } from "../state"
 import { UserState } from "../user"
 import { withSkill } from "./property"
 
@@ -129,7 +129,7 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         result = true
         if (skill.onActivated) {
           const next = skill.onActivated(context, state, withSkill(denco, skill, idx))
-          if (next) copyStateTo(next, state)
+          if (next) mergeUserState(state, next)
         }
       } else if (!active && skill.transition.state === "active") {
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)

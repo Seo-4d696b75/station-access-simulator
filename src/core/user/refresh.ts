@@ -1,10 +1,11 @@
 import { assert, Context, withFixedClock } from "../context";
+import { mergeDencoState } from "../copy";
 import { DencoState } from "../denco";
 import DencoManager from "../dencoManager";
 import { LevelupEvent, refreshEventQueue } from "../event";
 import SkillManager from "../skill";
 import { refreshSkillState, refreshSkillStateOne } from "../skill/refresh";
-import { copyState, copyStateTo, ReadonlyState } from "../state";
+import { copyState, ReadonlyState } from "../state";
 import { UserState } from "./state";
 
 /**
@@ -57,7 +58,7 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
     if (after.level > d.level) {
       const before = copyState(d)
       // UserStateのサブクラスも考慮
-      copyStateTo(after, d)
+      mergeDencoState(d, after)
       // 新規にスキル獲得した場合はスキル状態を初期化
       refreshSkillStateOne(context, state, idx)
       let event: LevelupEvent = {
@@ -72,7 +73,7 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
       context.log.log(`レベルアップ：${after.name} Lv.${before.level}->Lv.${after.level}`)
       context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
     } else {
-      copyStateTo(after, d)
+      mergeDencoState(d, after)
     }
   }
 }

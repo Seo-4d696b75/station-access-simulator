@@ -1,9 +1,10 @@
 import { AccessConfig } from "."
 import { assert, Context } from "../context"
+import { mergeUserState } from "../copy"
 import { DencoState } from "../denco"
 import { withSkill } from "../skill/property"
 import { refreshSkillState } from "../skill/refresh"
-import { copyState, copyStateTo, ReadonlyState } from "../state"
+import { copyState, ReadonlyState } from "../state"
 import { LinksResult, Station } from "../station"
 import { UserState } from "../user"
 import { refreshEXPState } from "../user/refresh"
@@ -225,9 +226,7 @@ function callbackReboot(context: Context, state: AccessResult, which: AccessSide
       const skill = d.skill
       if (skill.type === "possess" && skill.onDencoReboot) {
         const next = skill.onDencoReboot(context, side, withSkill(d, skill, idx))
-        if (next) {
-          copyStateTo<UserState>(next, side)
-        }
+        if (next) mergeUserState(side, next)
       }
     })
 }
@@ -257,9 +256,7 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
         const skill = d.skill
         if (skill.type === "possess" && skill.onLinkDisconnected) {
           const next = skill.onLinkDisconnected(context, side, withSkill(d, skill, idx), disconnect)
-          if (next) {
-            copyStateTo<UserState>(next, side)
-          }
+          if (next) mergeUserState(side, next)
         }
       })
     })
@@ -294,9 +291,7 @@ function callbackLinkStarted(context: Context, state: AccessResult) {
       const skill = d.skill
       if (skill.type === "possess" && skill.onLinkStarted) {
         const next = skill.onLinkStarted(context, side, withSkill(d, skill, idx), start)
-        if (next) {
-          copyStateTo<UserState>(next, side)
-        }
+        if (next) mergeUserState(side, next)
       }
     })
 }
