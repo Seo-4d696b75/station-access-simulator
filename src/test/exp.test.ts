@@ -3,8 +3,6 @@ import { activateSkill, assert, getSkill, init } from ".."
 import { AccessConfig, getDefense, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
-import { AccessEventData, LevelupDenco } from "../core/event"
-import { LinksResult } from "../core/station"
 import { initUser, refreshState } from "../core/user"
 
 describe("経験値の処理", () => {
@@ -49,11 +47,10 @@ describe("経験値の処理", () => {
     // イベント発生
     expect(state.event.length).toBe(1)
     const event = state.event[0]
-    expect(event.type).toBe("levelup")
-    const data = event.data as LevelupDenco
-    expect(data.time).toBe(time)
-    expect(data.before).toMatchObject(reika)
-    expect(data.after).toMatchObject(current)
+    assert(event.type === "levelup")
+    expect(event.data.time).toBe(time)
+    expect(event.data.before).toMatchObject(reika)
+    expect(event.data.after).toMatchObject(current)
   })
   test("レベルアップ-スキル状態", () => {
     const context = initContext("test", "test", false)
@@ -100,11 +97,10 @@ describe("経験値の処理", () => {
     // イベント発生
     expect(state.event.length).toBe(1)
     const event = state.event[0]
-    expect(event.type).toBe("levelup")
-    const data = event.data as LevelupDenco
-    expect(data.time).toBe(time.valueOf())
-    expect(data.before).toMatchObject(reika)
-    expect(data.after).toMatchObject(current)
+    assert(event.type === "levelup")
+    expect(event.data.time).toBe(time.valueOf())
+    expect(event.data.before).toMatchObject(reika)
+    expect(event.data.after).toMatchObject(current)
   })
 
   test("レベルアップ-最大レベル", () => {
@@ -169,22 +165,20 @@ describe("経験値の処理", () => {
     // アクセス終了直後（レベルアップ済み）
     expect(state.event.length).toBe(3)
     let event = state.event[0]
-    expect(event.type).toBe("access")
-    const accessResult = event.data as AccessEventData
-    let afterAccess = getDefense(accessResult.access).formation[0]
+    assert(event.type === "access")
+    let afterAccess = getDefense(event.data).formation[0]
     // リブート
     event = state.event[1]
-    expect(event.type).toBe("reboot")
-    const links = event.data as LinksResult
-    const linksEXP = links.exp
-    expect(links.denco).toMatchObject({
+    assert(event.type === "reboot")
+    const linksEXP = event.data.exp
+    expect(event.data.denco).toMatchObject({
       ...reika,
       link: []  // リンク解除済み
     })
     // レベルアップ
     event = state.event[2]
-    expect(event.type).toBe("levelup")
-    const levelup = event.data as LevelupDenco
+    assert(event.type === "levelup")
+    const levelup = event.data
     reika = {
       ...reika,
       link: [],

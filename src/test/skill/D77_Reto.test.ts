@@ -58,7 +58,7 @@ describe("リトのスキル", () => {
     expect(e.data.denco).toMatchDencoState({ ...d, link: [], currentExp: 0 }) // リンク解除
     e = result.defense.event[2]
     assert(e.type === "access")
-    expect(e.data.access.time).toBe(start)
+    expect(e.data.time).toBe(start)
     expect(e.data.which).toBe("offense")
     e = result.defense.event[3]
     assert(e.type === "skill_trigger")
@@ -118,7 +118,7 @@ describe("リトのスキル", () => {
     expect(e.data.denco).toMatchDencoState(d1)
     e = result.defense.event[3]
     assert(e.type === "access")
-    expect(e.data.access.time).toBe(start)
+    expect(e.data.time).toBe(start)
     expect(e.data.which).toBe("offense")
     e = result.defense.event[4]
     assert(e.type === "skill_trigger")

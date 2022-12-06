@@ -58,8 +58,8 @@ describe("シャルのスキル", () => {
     let event = state.event[0]
     expect(event.type).toBe("access")
     assert(event.type === "access")
-    expect(event.data.access.time).toBe(context.currentTime)
-    charlotte = copyState<DencoState>(getAccessDenco(event.data.access, "offense"))
+    expect(event.data.time).toBe(context.currentTime)
+    charlotte = copyState<DencoState>(getAccessDenco(event.data, "offense"))
     expect(charlotte.name).toBe("charlotte")
 
     event = state.event[1]
