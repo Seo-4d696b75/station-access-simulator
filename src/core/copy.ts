@@ -8,7 +8,7 @@ import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition,
 import { SkillPropertyReader } from "./skill/property"
 import { ReadonlyState } from "./state"
 import { Line, LinkResult, LinksResult, Station, StationLink } from "./station"
-import { arraySchema, createCopyFunc, createMergeFunc, customSchema, defineCopyFunc, extendSchema, functionSchema, objectSchema, primitiveSchema } from "./typedCopy"
+import { arraySchema, createCopyFunc, createMergeFunc, customSchema, extendSchema, functionSchema, objectSchema, primitiveSchema } from "./typedCopy"
 import { DailyStatistics, EventQueueEntry, StationStatistics, UserProperty, UserPropertyReader, UserState } from "./user"
 
 // line & station
@@ -28,15 +28,11 @@ const stationLinkSchema = extendSchema<Station, StationLink>(stationSchema, {
   start: primitiveSchema,
 })
 
-export const {
-  copy: copyStation,
-  merge: mergeStation
-} = defineCopyFunc(stationSchema)
+export const copyStation = createCopyFunc(stationSchema)
+export const mergeStation = createMergeFunc(stationSchema)
 
-export const {
-  copy: copyStationLink,
-  merge: mergeStationLink,
-} = defineCopyFunc(stationLinkSchema)
+export const copyStationLink = createCopyFunc(stationLinkSchema)
+export const mergeStationLink = createMergeFunc(stationLinkSchema)
 
 // film
 
@@ -54,10 +50,8 @@ const filmSchema = objectSchema<FilmHolder>({
   )
 })
 
-export const {
-  copy: copyFilm,
-  merge: mergeFilm,
-} = defineCopyFunc(filmSchema)
+export const copyFilm = createCopyFunc(filmSchema)
+export const mergeFilm = createMergeFunc(filmSchema)
 
 // property
 
@@ -131,13 +125,8 @@ const skillSchema = objectSchema<SkillHolder>({
   onHourCycle: functionSchema,
 })
 
-export const {
-  copy: copySkill,
-  merge: mergeSkill,
-} = defineCopyFunc(skillSchema) as {
-  copy: (src: ReadonlyState<SkillHolder>) => SkillHolder
-  merge: (dst: SkillHolder, src: ReadonlyState<SkillHolder>) => void
-}
+export const copySkill: (src: ReadonlyState<SkillHolder>) => SkillHolder = createCopyFunc(skillSchema)
+export const mergeSkill: (dst: SkillHolder, src: ReadonlyState<SkillHolder>) => void = createMergeFunc(skillSchema)
 
 // denco
 
@@ -148,10 +137,8 @@ const dencoSchema = objectSchema<Denco>({
   attr: primitiveSchema,
 })
 
-export const {
-  copy: copyDenco,
-  merge: mergeDenco,
-} = defineCopyFunc(dencoSchema)
+export const copyDenco = createCopyFunc(dencoSchema)
+export const mergeDenco = createMergeFunc(dencoSchema)
 
 const dencoStateSchema = extendSchema<Denco, DencoState>(dencoSchema, {
   level: primitiveSchema,
@@ -266,13 +253,8 @@ const accessStateSchema = objectSchema<AccessState>({
   pinkItemUsed: primitiveSchema,
 })
 
-export const {
-  copy: copyAccessState,
-  merge: mergeAccessState,
-} = defineCopyFunc(accessStateSchema) as {
-  copy: (src: ReadonlyState<AccessState>) => AccessState
-  merge: (dst: AccessState, src: ReadonlyState<AccessState>) => void
-}
+export const copyAccessState = createCopyFunc(accessStateSchema)
+export const mergeAccessState = createMergeFunc(accessStateSchema)
 
 // station link result
 
@@ -477,7 +459,7 @@ export function mergeEventQueueEntry(dst: EventQueueEntry, src: ReadonlyState<Ev
 const userStateSchema = objectSchema<UserState>({
   user: userPropertySchema,
   formation: arraySchema(dencoStateSchema),
-  event: arraySchema(customSchema(copyEvent, mergeEvent)), 
+  event: arraySchema(customSchema(copyEvent, mergeEvent)),
   queue: arraySchema(customSchema(copyEventQueueEntry, mergeEventQueueEntry)),
 })
 
@@ -496,7 +478,7 @@ const accessUserResultSchema = objectSchema<AccessUserResult>({
   score: scoreExpStateSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
-  event: arraySchema(customSchema(copyEvent, mergeEvent)), 
+  event: arraySchema(customSchema(copyEvent, mergeEvent)),
   queue: arraySchema(customSchema(copyEventQueueEntry, mergeEventQueueEntry)),
 })
 
