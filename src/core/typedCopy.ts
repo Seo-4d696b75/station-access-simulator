@@ -1,4 +1,3 @@
-import { SimulatorError } from "./context"
 import { ReadonlyState } from "./state"
 
 type BaseTypeSchema<T extends string> = {
@@ -91,7 +90,12 @@ function copyCustom<T>(schema: CustomSchema<T>, value: any): any {
 }
 
 function merge<T>(schema: SchemaOf<T>, dst: any, src: any): any {
-  if (src === undefined || src === null) return src
+  if (src === undefined || src === null) {
+    return src
+  }
+  if (dst === undefined || dst === null) {
+    return copy(schema, src)
+  }
   switch (schema.type) {
     case "primitive":
       return src
@@ -107,11 +111,20 @@ function merge<T>(schema: SchemaOf<T>, dst: any, src: any): any {
 }
 
 function mergeArray<T>(schema: SchemaOf<T>, dst: T[], src: ReadonlyState<T>[]): T[] {
-  if (src.length !== dst.length) throw new SimulatorError("can not merge array with different length")
-  return dst.map((d, i) => {
-    const s = src[i]
-    return merge(schema, d, s)
-  })
+  for (let i = 0; i < src.length; i++) {
+    if (i < dst.length) {
+      // merge item
+      merge(schema, dst[i], src[i])
+    } else {
+      // copy src to dst
+      dst.push(copy(schema, src[i]))
+    }
+  }
+  if (dst.length > src.length) {
+    // delete from dst
+    dst.splice(src.length, dst.length - src.length)
+  }
+  return dst
 }
 
 function mergeObject<T>(schema: ObjectSchema<T>, dst: T, src: T): T {
