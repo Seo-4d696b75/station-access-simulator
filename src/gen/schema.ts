@@ -1,42 +1,36 @@
-import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, AccessState, AccessTriggeredSkill, AccessUserResult, DamageCalcState, DamageState, ScoreExpState } from "./access"
-import { assert, SimulatorError } from "./context"
-import { Denco, DencoState } from "./denco"
-import { AccessEventData, AccessEventUser, Event, EventSkillTrigger, EventTriggeredSkill, LevelupDenco, SkillActivatedEventData, SkillEventReservation } from "./event"
-import { FilmHolder } from "./film"
-import { MutableProperty, ReadableProperty, TypedMap } from "./property"
-import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition, SkillTransitionType } from "./skill"
-import { SkillPropertyReader } from "./skill/property"
-import { ReadonlyState } from "./state"
-import { Line, LinkResult, LinksResult, Station, StationLink } from "./station"
-import { arraySchema, createCopyFunc, createMergeFunc, customSchema, extendSchema, functionSchema, objectSchema, primitiveSchema } from "./typedCopy"
-import { DailyStatistics, EventQueueEntry, StationStatistics, UserProperty, UserPropertyReader, UserState } from "./user"
+import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, AccessState, AccessTriggeredSkill, AccessUserResult, DamageCalcState, DamageState, ScoreExpState } from "../core/access"
+import { assert, SimulatorError } from "../core/context"
+import { Denco, DencoState } from "../core/denco"
+import { AccessEventData, AccessEventUser, Event, EventSkillTrigger, EventTriggeredSkill, LevelupDenco, SkillActivatedEventData, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
+import { FilmHolder } from "../core/film"
+import { MutableProperty, ReadableProperty, TypedMap } from "../core/property"
+import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition, SkillTransitionType } from "../core/skill"
+import { SkillPropertyReader } from "../core/skill/property"
+import { ReadonlyState } from "../core/state"
+import { Line, LinkResult, LinksResult, Station, StationLink } from "../core/station"
+import { DailyStatistics, EventQueueEntry, StationStatistics, UserProperty, UserPropertyReader, UserState } from "../core/user"
+import { arraySchema, createCopyFunc, createMergeFunc, customSchema, extendSchema, functionSchema, objectSchema, primitiveSchema } from "./helper"
 
 // line & station
 
-const lineSchema = objectSchema<Line>({
+export const lineSchema = objectSchema<Line>({
   name: primitiveSchema
 })
 
-const stationSchema = objectSchema<Station>({
+export const stationSchema = objectSchema<Station>({
   name: primitiveSchema,
   nameKana: primitiveSchema,
   attr: primitiveSchema,
   lines: arraySchema(lineSchema),
 })
 
-const stationLinkSchema = extendSchema<Station, StationLink>(stationSchema, {
+export const stationLinkSchema = extendSchema<Station, StationLink>(stationSchema, {
   start: primitiveSchema,
 })
 
-export const copyStation = createCopyFunc(stationSchema)
-export const mergeStation = createMergeFunc(stationSchema)
-
-export const copyStationLink = createCopyFunc(stationLinkSchema)
-export const mergeStationLink = createMergeFunc(stationLinkSchema)
-
 // film
 
-const filmSchema = objectSchema<FilmHolder>({
+export const filmHolderSchema = objectSchema<FilmHolder>({
   type: primitiveSchema,
   theme: primitiveSchema,
   attackPercent: primitiveSchema,
@@ -50,12 +44,12 @@ const filmSchema = objectSchema<FilmHolder>({
   )
 })
 
-export const copyFilm = createCopyFunc(filmSchema)
-export const mergeFilm = createMergeFunc(filmSchema)
-
 // property
 
-export function copyProperty<T extends ReadableProperty | MutableProperty>(src: ReadonlyState<T>): T {
+const copyFilm = createCopyFunc(filmHolderSchema)
+const mergeFilm = createMergeFunc(filmHolderSchema)
+
+function copyProperty<T extends ReadableProperty | MutableProperty>(src: ReadonlyState<T>): T {
   if (src?.constructor?.name === "SkillPropertyReader") {
     const reader = src as SkillPropertyReader
     return new SkillPropertyReader(
@@ -70,7 +64,19 @@ export function copyProperty<T extends ReadableProperty | MutableProperty>(src: 
   throw new SimulatorError("can not copy unknown implementation")
 }
 
-export function mergeProperty<T extends ReadableProperty | MutableProperty>(dst: T, src: ReadonlyState<T>) {
+function normalizeProperty<T extends ReadableProperty | MutableProperty>(src: ReadonlyState<T>): T {
+  if (src?.constructor?.name === "SkillPropertyReader") {
+    const reader = src as SkillPropertyReader
+    return copyProperty(reader.base) as any
+  }
+  if (src?.constructor?.name === "TypedMap") {
+    const map = src as TypedMap
+    return map.clone() as any
+  }
+  throw new SimulatorError("can not copy unknown implementation")
+}
+
+function mergeProperty<T extends ReadableProperty | MutableProperty>(dst: T, src: ReadonlyState<T>) {
   if (src?.constructor?.name === "SkillPropertyReader"
     && dst?.constructor?.name === "SkillPropertyReader") {
     const srcReader = src as SkillPropertyReader
@@ -104,15 +110,15 @@ const skillTransitionSchema = objectSchema<SkillTransition<SkillTransitionType>>
   }),
 })
 
-const skillSchema = objectSchema<SkillHolder>({
+export const skillHolderSchema = objectSchema<SkillHolder>({
   transitionType: primitiveSchema,
   deactivate: primitiveSchema,
   type: primitiveSchema,
   level: primitiveSchema,
   name: primitiveSchema,
   transition: skillTransitionSchema,
-  property: customSchema(copyProperty, mergeProperty),
-  data: customSchema(copyProperty, mergeProperty),
+  property: customSchema(copyProperty, mergeProperty, normalizeProperty),
+  data: customSchema(copyProperty, mergeProperty, normalizeProperty),
   canEnabled: functionSchema,
   canActivated: functionSchema,
   onActivated: functionSchema,
@@ -125,36 +131,26 @@ const skillSchema = objectSchema<SkillHolder>({
   onHourCycle: functionSchema,
 })
 
-export const copySkill: (src: ReadonlyState<SkillHolder>) => SkillHolder = createCopyFunc(skillSchema)
-export const mergeSkill: (dst: SkillHolder, src: ReadonlyState<SkillHolder>) => void = createMergeFunc(skillSchema)
-
 // denco
 
-const dencoSchema = objectSchema<Denco>({
+export const dencoSchema = objectSchema<Denco>({
   numbering: primitiveSchema,
   name: primitiveSchema,
   type: primitiveSchema,
   attr: primitiveSchema,
 })
 
-export const copyDenco = createCopyFunc(dencoSchema)
-export const mergeDenco = createMergeFunc(dencoSchema)
-
-const dencoStateSchema = extendSchema<Denco, DencoState>(dencoSchema, {
+export const dencoStateSchema = extendSchema<Denco, DencoState>(dencoSchema, {
   level: primitiveSchema,
   nextExp: primitiveSchema,
   currentExp: primitiveSchema,
   maxHp: primitiveSchema,
   currentHp: primitiveSchema,
   ap: primitiveSchema,
-  skill: skillSchema,
-  film: filmSchema,
+  skill: skillHolderSchema,
+  film: filmHolderSchema,
   link: arraySchema(stationLinkSchema),
 })
-
-export const copyDencoState: (src: ReadonlyState<DencoState>) => DencoState = createCopyFunc(dencoStateSchema)
-export const mergeDencoState: (dst: DencoState, src: ReadonlyState<DencoState>) => void = createMergeFunc(dencoStateSchema)
-
 
 // user property
 
@@ -170,7 +166,7 @@ const userPropertyReaderSchema = objectSchema<UserPropertyReader>({
   })
 })
 
-const userPropertySchema = objectSchema<UserProperty>({
+export const userPropertySchema = objectSchema<UserProperty>({
   name: primitiveSchema,
   daily: objectSchema<DailyStatistics>({
     distance: primitiveSchema,
@@ -200,7 +196,7 @@ const scoreExpStateSchema = objectSchema<ScoreExpState>({
   link: primitiveSchema,
 })
 
-const accessDencoStateSchema = extendSchema<DencoState, AccessDencoState>(dencoStateSchema, {
+export const accessDencoStateSchema = extendSchema<DencoState, AccessDencoState>(dencoStateSchema, {
   which: primitiveSchema,
   who: primitiveSchema,
   carIndex: primitiveSchema,
@@ -214,16 +210,11 @@ const accessDencoStateSchema = extendSchema<DencoState, AccessDencoState>(dencoS
   exp: scoreExpStateSchema,
 })
 
-
-export const copyAccessDencoState: (src: ReadonlyState<AccessDencoState>) => AccessDencoState = createCopyFunc(accessDencoStateSchema)
-export const mergeAccessDencoState: (dst: AccessDencoState, src: ReadonlyState<AccessDencoState>) => void = createMergeFunc(accessDencoStateSchema)
-
-
 const accessTriggerSkillSchema = extendSchema<Denco, AccessTriggeredSkill>(dencoSchema, {
   step: primitiveSchema
 })
 
-const accessSideStateSchema = objectSchema<AccessSideState>({
+export const accessSideStateSchema = objectSchema<AccessSideState>({
   user: userPropertyReaderSchema,
   formation: arraySchema(accessDencoStateSchema),
   carIndex: primitiveSchema,
@@ -235,7 +226,8 @@ const accessSideStateSchema = objectSchema<AccessSideState>({
   displayedExp: primitiveSchema,
 })
 
-const accessStateSchema = objectSchema<AccessState>({
+
+export const accessStateSchema = objectSchema<AccessState>({
   time: primitiveSchema,
   station: stationSchema,
   offense: accessSideStateSchema,
@@ -253,12 +245,9 @@ const accessStateSchema = objectSchema<AccessState>({
   pinkItemUsed: primitiveSchema,
 })
 
-export const copyAccessState = createCopyFunc(accessStateSchema)
-export const mergeAccessState = createMergeFunc(accessStateSchema)
-
 // station link result
 
-const linkResultSchema = extendSchema<StationLink, LinkResult>(stationLinkSchema, {
+export const linkResultSchema = extendSchema<StationLink, LinkResult>(stationLinkSchema, {
   end: primitiveSchema,
   duration: primitiveSchema,
   linkScore: primitiveSchema,
@@ -268,7 +257,7 @@ const linkResultSchema = extendSchema<StationLink, LinkResult>(stationLinkSchema
   totalScore: primitiveSchema,
 })
 
-const linksResultSchema = objectSchema<LinksResult>({
+export const linksResultSchema = objectSchema<LinksResult>({
   time: primitiveSchema,
   denco: dencoStateSchema,
   link: arraySchema(linkResultSchema),
@@ -285,7 +274,7 @@ const mergeLinksResult = createMergeFunc(linksResultSchema)
 
 // event
 
-const accessDencoResultSchema = extendSchema<AccessDencoState, AccessDencoResult>(accessDencoStateSchema, {
+export const accessDencoResultSchema = extendSchema<AccessDencoState, AccessDencoResult>(accessDencoStateSchema, {
   disconnectedLink: linksResultSchema,
 })
 
@@ -301,7 +290,7 @@ const accessEventUserSchema = objectSchema<AccessEventUser>({
   displayedExp: primitiveSchema,
 })
 
-const accessEventDataSchema = objectSchema<AccessEventData>({
+export const accessEventDataSchema = objectSchema<AccessEventData>({
   which: primitiveSchema,
   time: primitiveSchema,
   station: stationSchema,
@@ -353,7 +342,7 @@ const levelupDencoSchema = objectSchema<LevelupDenco>({
 const copyLevelupDenco = createCopyFunc(levelupDencoSchema)
 const mergeLevelupDenco = createMergeFunc(levelupDencoSchema)
 
-export function copyEvent(e: ReadonlyState<Event>): Event {
+function copyEvent(e: ReadonlyState<Event>): Event {
   switch (e.type) {
     case "access":
       return {
@@ -383,7 +372,7 @@ export function copyEvent(e: ReadonlyState<Event>): Event {
   }
 }
 
-export function mergeEvent(dst: Event, src: ReadonlyState<Event>) {
+function mergeEvent(dst: Event, src: ReadonlyState<Event>) {
   assert(dst.type === src.type)
   switch (dst.type) {
     case "access":
@@ -409,6 +398,8 @@ export function mergeEvent(dst: Event, src: ReadonlyState<Event>) {
   }
 }
 
+export const eventSchema = customSchema(copyEvent, mergeEvent)
+
 // event queue
 
 const eventSkillTriggerSchema = objectSchema<EventSkillTrigger>({
@@ -424,7 +415,7 @@ const skillEventReservationSchema = objectSchema<SkillEventReservation>({
 const copySkillEventReservation = createCopyFunc(skillEventReservationSchema)
 const mergeSkillEventReservation = createMergeFunc(skillEventReservationSchema)
 
-export function copyEventQueueEntry(e: ReadonlyState<EventQueueEntry>): EventQueueEntry {
+function copyEventQueueEntry(e: ReadonlyState<EventQueueEntry>): EventQueueEntry {
   switch (e.type) {
     case "skill":
       return {
@@ -441,7 +432,7 @@ export function copyEventQueueEntry(e: ReadonlyState<EventQueueEntry>): EventQue
   }
 }
 
-export function mergeEventQueueEntry(dst: EventQueueEntry, src: ReadonlyState<EventQueueEntry>) {
+function mergeEventQueueEntry(dst: EventQueueEntry, src: ReadonlyState<EventQueueEntry>) {
   assert(dst.type === src.type)
   dst.time = src.time
   switch (dst.type) {
@@ -454,21 +445,20 @@ export function mergeEventQueueEntry(dst: EventQueueEntry, src: ReadonlyState<Ev
   }
 }
 
+export const eventQueueEntrySchema = customSchema(copyEventQueueEntry, mergeEventQueueEntry)
+
 // user state
 
-const userStateSchema = objectSchema<UserState>({
+export const userStateSchema = objectSchema<UserState>({
   user: userPropertySchema,
   formation: arraySchema(dencoStateSchema),
-  event: arraySchema(customSchema(copyEvent, mergeEvent)),
-  queue: arraySchema(customSchema(copyEventQueueEntry, mergeEventQueueEntry)),
+  event: arraySchema(eventSchema),
+  queue: arraySchema(eventQueueEntrySchema),
 })
-
-export const copyUserState = createCopyFunc(userStateSchema)
-export const mergeUserState = createMergeFunc(userStateSchema)
 
 // access result
 
-const accessUserResultSchema = objectSchema<AccessUserResult>({
+export const accessUserResultSchema = objectSchema<AccessUserResult>({
   user: userPropertySchema,
   formation: arraySchema(accessDencoResultSchema),
   carIndex: primitiveSchema,
@@ -482,7 +472,7 @@ const accessUserResultSchema = objectSchema<AccessUserResult>({
   queue: arraySchema(customSchema(copyEventQueueEntry, mergeEventQueueEntry)),
 })
 
-const accessResultSchema = objectSchema<AccessResult>({
+export const accessResultSchema = objectSchema<AccessResult>({
   time: primitiveSchema,
   station: stationSchema,
   offense: accessUserResultSchema,
@@ -500,5 +490,19 @@ const accessResultSchema = objectSchema<AccessResult>({
   pinkItemUsed: primitiveSchema,
 })
 
-export const copyAccessResult = createCopyFunc(accessResultSchema)
-export const mergeAccessResult = createMergeFunc(accessResultSchema)
+// skill event
+
+export const skillEventDencoStateSchema = extendSchema<DencoState, SkillEventDencoState>(dencoStateSchema, {
+  who: primitiveSchema,
+  carIndex: primitiveSchema,
+  skillInvalidated: primitiveSchema,
+})
+
+export const skillEventStateSchema = objectSchema<SkillEventState>({
+  time: primitiveSchema,
+  user: userPropertySchema,
+  formation: arraySchema(skillEventDencoStateSchema),
+  event: arraySchema(eventSchema),
+  probabilityBoostPercent: primitiveSchema,
+  carIndex: primitiveSchema,
+})

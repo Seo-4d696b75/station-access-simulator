@@ -1,4 +1,5 @@
-import { ReadonlyState } from "./state"
+import { merge as mergeAny } from "lodash"
+import { ReadonlyState } from "../core/state"
 
 type BaseTypeSchema<T extends string> = {
   type: T
@@ -24,6 +25,7 @@ type CustomSchema<T = any> = {
   type: "custom"
   copy: (src: T) => T
   merge: (dst: T, src: T) => void
+  normalize?: (src: T) => T
 }
 
 
@@ -38,18 +40,39 @@ export interface TypedCopyFunc<T> {
   merge: (dst: T, src: ReadonlyState<T>) => void
 }
 
-export function createCopyFunc<T>(schema: ObjectSchema<T>): (src: ReadonlyState<T>) => T {
-  return (src) => copy(schema as SchemaOf<T>, src)
+export function createCopyFunc<T>(schema: SchemaOf<T>): (src: ReadonlyState<T>) => T {
+  return (src) => copy(schema, src)
 }
 
-export function createMergeFunc<T>(schema: ObjectSchema<T>): (dst: T, src: ReadonlyState<T>) => void {
-  return (dst, src) => merge(schema as SchemaOf<T>, dst, src)
+export function createMergeFunc<T>(schema: SchemaOf<T>): (dst: T, src: ReadonlyState<T>) => void {
+  return (dst, src) => merge(schema, dst, src)
 }
 
-export function defineCopyFunc<T>(schema: ObjectSchema<T>): TypedCopyFunc<T> {
-  return {
-    copy: (src) => copy(schema as SchemaOf<T>, src),
-    merge: (dst, src) => merge(schema as SchemaOf<T>, dst, src)
+export function createMatcher<T>(
+  schema: SchemaOf<T>,
+): (
+  received: T,
+  expected: T,
+  ...mergeWithExpected: any[]
+) => jest.CustomMatcherResult {
+  const normalizeFunc = (src: any): any => normalize(schema, src)
+  return (received, expected, ...mergeWithExpected) => {
+    // Tの型として比較したい場合において、Tのサブタイプのオブジェクトを
+    // 直接比較するとサブタイプのみ定義されたプロパティの不一致で検証が失敗する場合がある
+    const copyReceived = normalizeFunc(received)
+    const copyExpected = mergeAny(normalizeFunc(expected), ...mergeWithExpected)
+    try {
+      expect(copyReceived).toMatchObject(copyExpected)
+      return {
+        pass: true,
+        message: () => "definitely matched as DencoState",
+      }
+    } catch (e: any) {
+      return {
+        pass: false,
+        message: () => String(e)
+      }
+    }
   }
 }
 
@@ -61,16 +84,16 @@ function copy<T>(schema: SchemaOf<T>, src: ReadonlyState<T>): T {
     case "array":
       return copyArray(schema.element, src as any) as any
     case "object":
-      return copyObject(schema, src as any) as T
+      return copyObject(schema, src as any)
     case "function":
       return src as T
     case "custom":
-      return copyCustom(schema, src)
+      return schema.copy(src)
   }
 }
 
 function copyArray<T>(schema: SchemaOf<T>, array: ReadonlyState<T>[]): T[] {
-  return array.map(d => copy(schema, d as any))
+  return array.map(d => copy(schema, d)) as any
 }
 
 function copyObject<T>(schema: ObjectSchema<T>, obj: T): T {
@@ -83,10 +106,6 @@ function copyObject<T>(schema: ObjectSchema<T>, obj: T): T {
     }
   })
   return dst
-}
-
-function copyCustom<T>(schema: CustomSchema<T>, value: any): any {
-  return schema.copy(value)
 }
 
 function merge<T>(schema: SchemaOf<T>, dst: any, src: any): any {
@@ -157,6 +176,38 @@ function mergeCustom<T>(schema: CustomSchema<T>, dst: any, src: any): any {
   return dst
 }
 
+function normalize<T>(schema: SchemaOf<T>, src: any): T {
+  if (src === undefined || src === null) return src as T
+  switch (schema.type) {
+    case "primitive":
+      return src as T
+    case "array":
+      return normalizeArray(schema.element, src as any) as any
+    case "object":
+      return normalizeObject(schema, src as any)
+    case "function":
+      return src as T
+    case "custom":
+      return (schema.normalize ? schema.normalize : schema.copy)(src)
+  }
+}
+
+function normalizeArray<T>(schema: SchemaOf<T>, array: ReadonlyState<T>[]): T[] {
+  return array.map(d => normalize(schema, d)) as any
+}
+
+function normalizeObject<T>(schema: ObjectSchema<T>, obj: T): T {
+  const dst: any = {}
+  const keys = Object.getOwnPropertyNames(obj)
+  Object.entries(schema.fields).forEach(pair => {
+    const [key, s] = pair
+    if (keys.includes(key)) {
+      dst[key] = normalize(s as any, obj[key as keyof T] as any)
+    }
+  })
+  return dst
+}
+
 export const primitiveSchema: PrimitiveSchema = {
   type: "primitive",
 } as const
@@ -179,11 +230,23 @@ export function arraySchema<T>(element: SchemaOf<T>): ArraySchema<T> {
   }
 }
 
-export function customSchema<T>(copy: (src: T) => T, merge: (dst: T, src: T) => void): CustomSchema<T> {
+/**
+ * 
+ * @param copy deep copyの方法
+ * @param merge dstにsrcをコピーする方法
+ * @param normalize jestのcustom matcherで比較するとき前処理で変換する方法
+ * @returns 
+ */
+export function customSchema<T>(
+  copy: (src: T) => T,
+  merge: (dst: T, src: T) => void,
+  normalize?: (src: T) => T,
+): CustomSchema<T> {
   return {
     type: "custom",
     copy: copy,
-    merge: merge
+    merge: merge,
+    normalize: normalize
   }
 }
 
