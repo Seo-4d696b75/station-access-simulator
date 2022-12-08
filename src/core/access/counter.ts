@@ -1,7 +1,8 @@
 import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "."
+import { copy } from "../../"
 import { Context } from "../context"
 import { Denco } from "../denco"
-import { copyState, ReadonlyState } from "../state"
+import { ReadonlyState } from "../state"
 import { runAccessDamageCalculation } from "./damage"
 import { hasDefense } from "./utils"
 
@@ -17,7 +18,7 @@ import { hasDefense } from "./utils"
  * @returns カウンター攻撃終了後の状態 元のアクセス結果とカウンター攻撃の結果を合算した新しい状態
  */
 export function counterAttack(context: Context, current: ReadonlyState<AccessState>, denco: Denco): AccessState {
-  const state = copyState<AccessState>(current)
+  const state = copy.AccessState(current)
   // 面倒なので反撃は1回まで
   if (state.depth > 0) {
     context.log.warn("反撃は１回までだよ")

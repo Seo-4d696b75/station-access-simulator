@@ -1,11 +1,11 @@
+import { copy, merge } from "../../";
 import { assert, Context, withFixedClock } from "../context";
-import { mergeDencoState } from "../copy";
 import { DencoState } from "../denco";
 import DencoManager from "../dencoManager";
 import { LevelupEvent, refreshEventQueue } from "../event";
 import SkillManager from "../skill";
 import { refreshSkillState, refreshSkillStateOne } from "../skill/refresh";
-import { copyState, ReadonlyState } from "../state";
+import { ReadonlyState } from "../state";
 import { UserState } from "./state";
 
 /**
@@ -19,7 +19,7 @@ import { UserState } from "./state";
  * @returns 新しい状態 現在の状態をコピーしてから更新します
  */
 export function refreshState(context: Context, state: ReadonlyState<UserState>): UserState {
-  const next = copyState<UserState>(state)
+  const next = copy.UserState(state)
   refreshUserState(context, next)
   return next
 }
@@ -56,16 +56,16 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
   const after = refreshExpLevelOne(context, d)
   if (after) {
     if (after.level > d.level) {
-      const before = copyState(d)
+      const before = copy.DencoState(d)
       // UserStateのサブクラスも考慮
-      mergeDencoState(d, after)
+      merge.DencoState(d, after)
       // 新規にスキル獲得した場合はスキル状態を初期化
       refreshSkillStateOne(context, state, idx)
       let event: LevelupEvent = {
         type: "levelup",
         data: {
           time: context.currentTime,
-          after: copyState(d),
+          after: copy.DencoState(d),
           before: before,
         }
       }
@@ -73,7 +73,7 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
       context.log.log(`レベルアップ：${after.name} Lv.${before.level}->Lv.${after.level}`)
       context.log.log(`現在の経験値：${after.name} ${after.currentExp}/${after.nextExp}`)
     } else {
-      mergeDencoState(d, after)
+      merge.DencoState(d, after)
     }
   }
 }
@@ -81,7 +81,7 @@ function refreshEXPStateOne(context: Context, state: UserState, idx: number) {
 function refreshExpLevelOne(context: Context, denco: ReadonlyState<DencoState>): DencoState | undefined {
   assert(denco.currentExp >= 0, `現在の経験値が負数です ${denco.name}`)
   if (denco.currentExp < denco.nextExp) return undefined
-  let d = copyState<DencoState>(denco)
+  let d = copy.DencoState(denco)
   let level = d.level
   while (d.currentExp >= d.nextExp) {
     let status = DencoManager.getDencoStatus(d.numbering, level + 1)

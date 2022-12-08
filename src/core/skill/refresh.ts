@@ -1,6 +1,6 @@
 import dayjs from "dayjs"
+import { copy, merge } from "../../"
 import { Context } from "../context"
-import { mergeUserState } from "../copy"
 import { TIME_FORMAT } from "../date"
 import { UserState } from "../user"
 import { withSkill } from "./property"
@@ -75,7 +75,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         result = true
       }
       if (skill.transition.state === "idle" || skill.transition.state === "unable") {
-        const enable = skill.canEnabled(context, state, withSkill(denco, skill, idx))
+        const active = withSkill(copy.DencoState(denco), skill, idx)
+        const enable = skill.canEnabled(context, state, active)
         if (enable && skill.transition.state === "unable") {
           context.log.log(`スキル状態の変更：${denco.name} unable -> idle`)
           skill.transition = {
@@ -117,7 +118,8 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         result = true
       }
       // スキル状態の確認・更新
-      const active = skill.canActivated(context, state, withSkill(denco, skill, idx))
+      const self = withSkill(copy.DencoState(denco), skill, idx)
+      const active = skill.canActivated(context, state, self)
       if (active && skill.transition.state === "unable") {
         context.log.log(`スキル状態の変更：${denco.name} unable -> active`)
         skill.transition = {
@@ -128,8 +130,9 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         skill.data.clear()
         result = true
         if (skill.onActivated) {
-          const next = skill.onActivated(context, state, withSkill(denco, skill, idx))
-          if (next) mergeUserState(state, next)
+          const self = withSkill(copy.DencoState(denco), skill, idx)
+          const next = skill.onActivated(context, state, self)
+          if (next) merge.UserState(state, next)
         }
       } else if (!active && skill.transition.state === "active") {
         context.log.log(`スキル状態の変更：${denco.name} active -> unable`)

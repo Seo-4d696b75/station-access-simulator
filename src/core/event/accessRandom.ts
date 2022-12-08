@@ -1,7 +1,7 @@
+import { copy } from "../../"
 import { AccessConfig, startAccess } from "../access"
-import { Context, withFixedClock } from "../context"
-import { DencoState } from "../denco"
-import { copyState, ReadonlyState } from "../state"
+import { assert, Context, withFixedClock } from "../context"
+import { ReadonlyState } from "../state"
 import { Station } from "../station"
 import { SkillEventState } from "./skill"
 
@@ -27,7 +27,7 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
     offense: {
       state: {
         user: state.user,
-        formation: state.formation.map(d => copyState<DencoState>(d)),
+        formation: state.formation.map(d => copy.DencoState(d)),
         event: [],
         queue: [],
       },
@@ -39,13 +39,26 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
   if (result.offense.event.length !== 1) {
     context.log.error(`イベント数が想定外 event:${JSON.stringify(result.offense.event)}`)
   }
+  // アクセスイベントのみ選択
+  assert(
+    result.offense.event.length > 0 &&
+    result.offense.event[0].type === "access",
+    "access event not found at event[0]"
+  )
+  const accessEvent = result.offense.event[0]
+  // queueは空のはず
+  assert(
+    result.offense.queue.length === 0,
+    "unexpected queue entry added while random access"
+  )
   return {
     time: state.time,
     user: state.user,
     formation: result.offense.formation.map((d, idx) => {
+      // 編成位置は不変と仮定
       let current = state.formation[idx]
       return {
-        ...copyState<DencoState>(d),
+        ...copy.DencoState(d),
         who: current.who,
         carIndex: current.carIndex,
         skillInvalidated: current.skillInvalidated,
@@ -53,8 +66,8 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
     }),
     carIndex: state.carIndex,
     event: [
-      ...state.event,
-      result.offense.event[0],
+      ...state.event.map(e => copy.Event(e)),
+      accessEvent,
     ],
     probabilityBoostPercent: state.probabilityBoostPercent,
   }

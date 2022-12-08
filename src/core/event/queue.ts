@@ -1,7 +1,7 @@
 import dayjs from "dayjs"
 import { EventSkillTrigger, triggerSkillAtEvent } from "."
+import { copy, merge } from "../../"
 import { Context } from "../context"
-import { mergeUserState } from "../copy"
 import { TIME_FORMAT } from "../date"
 import { Denco } from "../denco"
 import { withSkill } from "../skill/property"
@@ -31,7 +31,7 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
   if (now > time) {
     context.log.error(`現在時刻より前の時刻は指定できません time: ${time}, denco: ${JSON.stringify(denco)}`)
   }
-  const next = copyState<UserState>(state)
+  const next = copy.UserState(state)
   next.queue.push({
     type: "skill",
     time: time,
@@ -63,7 +63,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     switch (entry.type) {
       case "skill": {
         const next = triggerSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
-        mergeUserState(state, next)
+        merge.UserState(state, next)
         break
       }
       case "hour_cycle": {
@@ -74,8 +74,9 @@ export function refreshEventQueue(context: Context, state: UserState) {
           if (skill.type !== "possess" || skill.transition.state !== "active") continue
           const callback = skill.onHourCycle
           if (!callback) continue
-          const next = callback(context, state, withSkill(d, skill, i))
-          if (next) mergeUserState(state, next)
+          const active = withSkill(copy.DencoState(d), skill, i)
+          const next = callback(context, state, active)
+          if (next) merge.UserState(state, next)
         }
         // 次のイベント追加
         const date = dayjs.tz(entry.time).add(1, "h").valueOf()

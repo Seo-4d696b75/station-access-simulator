@@ -1,9 +1,10 @@
 /**
  * スコアと経験値の計算方法
  */
+import { copy } from "../../"
 import { Context } from "../context"
 import { Denco, DencoState } from "../denco"
-import { copyState, ReadonlyState } from "../state"
+import { ReadonlyState } from "../state"
 import { LinkResult, LinksResult, Station, StationLink } from "../station"
 import { AccessSideState, AccessState } from "./state"
 
@@ -181,7 +182,7 @@ export function calcLinksResult(context: Context, links: readonly StationLink[],
   const exp = calcLinkScoreToExp(totalScore, d)
   const result: LinksResult = {
     time: time,
-    denco: copyState(d),
+    denco: copy.DencoState(d),
     totalScore: totalScore,
     linkScore: linkScore,
     comboBonus: comboBonus,

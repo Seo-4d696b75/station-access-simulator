@@ -1,11 +1,10 @@
 import { AccessConfig } from "."
+import { copy, merge } from "../../"
 import { assert, Context } from "../context"
-import { mergeUserState } from "../copy"
-import { DencoState } from "../denco"
 import { withSkill } from "../skill/property"
 import { refreshSkillState } from "../skill/refresh"
-import { copyState, ReadonlyState } from "../state"
-import { LinksResult, Station } from "../station"
+import { ReadonlyState } from "../state"
+import { LinksResult } from "../station"
 import { UserState } from "../user"
 import { refreshEXPState } from "../user/refresh"
 import { calcLinksResult } from "./score"
@@ -65,7 +64,7 @@ export interface AccessDencoResult extends AccessDencoState {
  */
 export function completeAccess(context: Context, config: AccessConfig, access: ReadonlyState<AccessState>): AccessResult {
   let result: AccessResult = {
-    ...copyState<AccessState>(access),
+    ...copy.AccessState(access),
     offense: initUserResult(context, config.offense.state, access, "offense"),
     defense: config.defense ? initUserResult(context, config.defense.state, access, "defense") : undefined,
   }
@@ -109,8 +108,8 @@ function initUserResult(context: Context, state: ReadonlyState<UserState>, acces
     context.log.error(`アクセス結果の初期化に失敗`)
   }
 
-  const after = copyState<AccessSideState>(side)
-  const before = copyState<UserState>(state)
+  const after = copy.AccessSideState(side)
+  const before = copy.UserState(state)
 
   return {
     ...after,
@@ -145,7 +144,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
     } else if (d.who === "offense" && state.linkSuccess) {
       // 攻撃側のリンク成功
       d.link.push({
-        ...copyState<Station>(state.station),
+        ...copy.Station(state.station),
         start: context.currentTime,
       })
     } else if (d.who === "defense" && state.linkDisconnected) {
@@ -183,14 +182,14 @@ function addAccessEvent(context: Context, origin: ReadonlyState<UserState> | und
   const side = (which === "offense") ? result.offense : result.defense
   if (!side || !origin) return
   side.event = [
-    ...origin.event,
+    ...origin.event.map(e => copy.Event(e)),
     {
       // このアクセスイベントを追加
       type: "access",
-      data: {
-        ...copyState(result),
+      data: copy.AccessEventData({
+        ...result,
         which: which
-      }
+      })
     },
     ...side.event
   ]
@@ -225,8 +224,9 @@ function callbackReboot(context: Context, state: AccessResult, which: AccessSide
       const d = side.formation[idx]
       const skill = d.skill
       if (skill.type === "possess" && skill.onDencoReboot) {
-        const next = skill.onDencoReboot(context, side, withSkill(d, skill, idx))
-        if (next) mergeUserState(side, next)
+        const active = withSkill(copy.AccessDencoResult(d), skill, idx)
+        const next = skill.onDencoReboot(context, side, active)
+        if (next) merge.UserState(side, next)
       }
     })
 }
@@ -255,8 +255,9 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
         const d = side.formation[idx]
         const skill = d.skill
         if (skill.type === "possess" && skill.onLinkDisconnected) {
-          const next = skill.onLinkDisconnected(context, side, withSkill(d, skill, idx), disconnect)
-          if (next) mergeUserState(side, next)
+          const active = withSkill(copy.DencoState(d), skill, idx)
+          const next = skill.onLinkDisconnected(context, side, active, disconnect)
+          if (next) merge.UserState(side, next)
         }
       })
     })
@@ -276,8 +277,8 @@ function callbackLinkStarted(context: Context, state: AccessResult) {
   assert(link, `獲得したリンクが見つかりません: ${state.station.name}`)
 
   const start = {
-    ...copyState(link),
-    denco: copyState<DencoState>(d),
+    ...copy.StationLink(link),
+    denco: copy.DencoState(d),
   }
 
   // コールバックで状態が変化する場合があるので最初に対象を検査
@@ -290,8 +291,9 @@ function callbackLinkStarted(context: Context, state: AccessResult) {
       const d = side.formation[idx]
       const skill = d.skill
       if (skill.type === "possess" && skill.onLinkStarted) {
-        const next = skill.onLinkStarted(context, side, withSkill(d, skill, idx), start)
-        if (next) mergeUserState(side, next)
+        const active = withSkill(copy.DencoState(d), skill, idx)
+        const next = skill.onLinkStarted(context, side, active, start)
+        if (next) merge.UserState(side, next)
       }
     })
 }
@@ -305,13 +307,14 @@ function callbackAfterAccess(context: Context, state: AccessResult, which: Acces
     .map(d => d.carIndex)
     .forEach(idx => {
       // スキル発動による状態変更を考慮して評価直前にコピー
-      const d = copyState(formation.formation[idx])
+      const d = copy.AccessDencoResult(formation.formation[idx])
       const skill = d.skill
       if (skill.type !== "possess") {
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
       if (skill && skill.onAccessComplete) {
-        const next = skill.onAccessComplete(context, formation, withSkill(d, skill, idx), state)
+        const active = withSkill(d, skill, idx)
+        const next = skill.onAccessComplete(context, formation, active, state)
         if (next) {
           formation = next
         }

@@ -1,9 +1,10 @@
+import { copy } from "../../";
 import { Context } from "../context";
 import { Denco } from "../denco";
 import { random } from "../random";
 import { isSkillActive } from "../skill";
 import { SkillProperty, withSkill } from "../skill/property";
-import { copyState, ReadonlyState } from "../state";
+import { ReadonlyState } from "../state";
 import { AccessDencoState, AccessSide, AccessSideState, AccessSkillStep, AccessState, AccessTriggeredSkill } from "./state";
 import { getDefense } from "./utils";
 
@@ -111,7 +112,7 @@ export function triggerSkillAt(
   step: AccessSkillStep,
   target?: readonly SkillTriggerQueueEntry[],
 ): AccessState {
-  let state = copyState<AccessState>(current)
+  let state = copy.AccessState(current)
   // ただしアクティブなスキルの確認は初めに一括で行う（同じステップで発動するスキル無効化は互いに影響しない）
   //  const offenseActive = filterActiveSkill(state.offense.formation)
   //const defense = state.defense
@@ -122,7 +123,7 @@ export function triggerSkillAt(
     const side = (entry.which === "offense") ? state.offense : getDefense(state)
     const sideName = (entry.which === "offense") ? "攻撃側" : "守備側"
     // 他スキルの発動で状態が変化する場合があるので毎度参照してからコピーする
-    const d = copyState<AccessDencoState>(side.formation[idx])
+    const d = copy.AccessDencoState(side.formation[idx])
     const skill = d.skill
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
