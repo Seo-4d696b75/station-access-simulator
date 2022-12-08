@@ -5,7 +5,7 @@ import { Denco, DencoState } from "../denco"
 import { random } from "../random"
 import { isSkillActive, ProbabilityPercent, Skill, WithSkill } from "../skill"
 import { SkillProperty, SkillPropertyReader, withSkill } from "../skill/property"
-import { copyState, ReadonlyState } from "../state"
+import { ReadonlyState } from "../state"
 import { UserProperty, UserState } from "../user"
 import { refreshUserState } from "../user/refresh"
 import { Event } from "./"
@@ -14,16 +14,16 @@ import { Event } from "./"
  * スキル発動型のイベントの詳細
  */
 export interface EventTriggeredSkill {
-  readonly time: number
-  readonly carIndex: number
+  time: number
+  carIndex: number
   /**
    * 発動したスキルを保有する本人の状態
    * 
    * スキルが発動して状態が更新された直後の状態
    */
-  readonly denco: ReadonlyState<DencoState>
-  readonly skillName: string
-  readonly step: EventSkillStep
+  denco: DencoState
+  skillName: string
+  step: EventSkillStep
 }
 
 /**

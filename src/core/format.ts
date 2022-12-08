@@ -35,7 +35,7 @@ export function formatEvents(context: Context, user: ReadonlyState<UserState> | 
   return user.event.map(e => formatEvent(context, e, detail, colored)).join("\n")
 }
 
-export function formatEvent(context: Context, event: Event, detail: boolean = true, colored: boolean = true): string {
+export function formatEvent(context: Context, event: ReadonlyState<Event>, detail: boolean = true, colored: boolean = true): string {
   const time = context.currentTime.valueOf()
   switch (event.type) {
     case "access":
@@ -52,7 +52,7 @@ export function formatEvent(context: Context, event: Event, detail: boolean = tr
   }
 }
 
-function formatLevelupDetail(event: LevelupDenco, time: number, colored: boolean, width: number = 60): string {
+function formatLevelupDetail(event: ReadonlyState<LevelupDenco>, time: number, colored: boolean, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("level up!", "yellow", colored), width)
   str += formatLine(`${event.after.name}がレベルアップ！`, width, "left")
@@ -74,7 +74,7 @@ function formatLevelupDetail(event: LevelupDenco, time: number, colored: boolean
   return str
 }
 
-function formatLevelup(event: LevelupDenco, time: number, colored: boolean, width: number = 40): string {
+function formatLevelup(event: ReadonlyState<LevelupDenco>, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("level up!", "yellow", colored), width)
   str += formatLine(event.after.name, width)
@@ -93,7 +93,7 @@ function formatLevelup(event: LevelupDenco, time: number, colored: boolean, widt
   return str
 }
 
-function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, colored: boolean, width: number = 40): string {
+function formatSkillTriggerEvent(event: ReadonlyState<EventTriggeredSkill>, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("skill", "blue", colored), width)
   str += formatLine(event.denco.name, width)
@@ -106,7 +106,7 @@ function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, color
   return str
 }
 
-function formatReboot(result: LinksResult, time: number, colored: boolean, width: number = 40): string {
+function formatReboot(result: ReadonlyState<LinksResult>, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("reboot", "red", colored), width)
   str += formatLine(result.denco.name, width)
@@ -132,7 +132,7 @@ function formatReboot(result: LinksResult, time: number, colored: boolean, width
 }
 
 
-function formatRebootDetail(result: LinksResult, time: number, colored: boolean, width: number = 60): string {
+function formatRebootDetail(result: ReadonlyState<LinksResult>, time: number, colored: boolean, width: number = 60): string {
   if (result.link.length === 0) {
     // リンク無しの場合は簡易表示のみ
     return formatReboot(result, time, colored, width)
@@ -161,7 +161,7 @@ function formatRebootDetail(result: LinksResult, time: number, colored: boolean,
   return str
 }
 
-function formatAccessDetail(result: AccessEventData, which: AccessSide, time: number, colored: boolean, width: number = 60): string {
+function formatAccessDetail(result: ReadonlyState<AccessEventData>, which: AccessSide, time: number, colored: boolean, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -262,7 +262,7 @@ function formatAccessDetail(result: AccessEventData, which: AccessSide, time: nu
 
 }
 
-function formatAccessEvent(result: AccessEventData, which: AccessSide, time: number, colored: boolean, width: number = 50): string {
+function formatAccessEvent(result: ReadonlyState<AccessEventData>, which: AccessSide, time: number, colored: boolean, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示

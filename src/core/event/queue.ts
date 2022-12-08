@@ -5,15 +5,15 @@ import { mergeUserState } from "../copy"
 import { TIME_FORMAT } from "../date"
 import { Denco } from "../denco"
 import { withSkill } from "../skill/property"
-import { copyState, ReadonlyState } from "../state"
+import { ReadonlyState } from "../state"
 import { UserState } from "../user"
 
 /**
  * 指定した時刻にトリガーされるスキル発動型イベント
  */
 export interface SkillEventReservation {
-  readonly denco: Denco
-  readonly trigger: EventSkillTrigger
+  denco: Denco
+  trigger: EventSkillTrigger
 }
 
 /**

@@ -1,7 +1,6 @@
 import { EventTriggeredSkill } from "."
 import { AccessResult, AccessSide, AccessUserResult } from "../access"
 import { DencoState } from "../denco"
-import { ReadonlyState } from "../state"
 import { LinksResult } from "../station"
 
 export type EventType =
@@ -12,17 +11,17 @@ export type EventType =
   "levelup"
 
 interface EventBase<T, V = undefined> {
-  readonly type: T,
-  readonly data: V
+  type: T,
+  data: V
 }
 
 /**
  * レベルアップのイベント情報
  */
 export interface LevelupDenco {
-  readonly time: number
-  readonly after: ReadonlyState<DencoState>
-  readonly before: ReadonlyState<DencoState>
+  time: number
+  after: DencoState
+  before: DencoState
 }
 
 export type AccessEventUser = Omit<AccessUserResult, "event" | "queue">
@@ -35,15 +34,15 @@ export type AccessEventUser = Omit<AccessUserResult, "event" | "queue">
  * - 解除されたリンクスコア・経験値は追加済み
  * - 追加された経験値によるレベルアップ済み
  */
-export interface AccessEventData extends ReadonlyState<Omit<AccessResult, "offense" | "defense">> {
-  
+export interface AccessEventData extends Omit<AccessResult, "offense" | "defense"> {
+
   /**
    * アクセスの攻撃側・守備側のどちら側か
    */
-  readonly which: AccessSide
+  which: AccessSide
 
-  readonly offense: ReadonlyState<AccessEventUser>
-  readonly defense?: ReadonlyState<AccessEventUser>
+  offense: AccessEventUser
+  defense?: AccessEventUser
 }
 
 /**
@@ -52,15 +51,15 @@ export interface AccessEventData extends ReadonlyState<Omit<AccessResult, "offen
  * 他の遷移タイプと異なり、ユーザ操作とは別に自動的にスキルが有効化されます
  */
 export interface SkillActivatedEventData {
-  readonly time: number
-  readonly carIndex: number
+  time: number
+  carIndex: number
   /**
    * 有効化されたスキルを保有する本人の状態
    * 
    * スキル状態が`active`に遷移した直後の状態
    */
-  readonly denco: ReadonlyState<DencoState>
-  readonly skillName: string
+  denco: DencoState
+  skillName: string
 }
 
 export type AccessEvent = EventBase<"access", AccessEventData>
