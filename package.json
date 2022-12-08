@@ -14,7 +14,7 @@
     "test-coverage": "jest --silent --coverage",
     "dev": "ts-node src/main.ts",
     "watch": "ts-node-dev src/main.ts --respawn",
-    "build": "npm run build-cjs && npm run build-umd",
+    "build": "rm -r lib umd && npm run build-cjs && npm run build-umd && rm lib/gen/*.d.ts",
     "build-cjs": "tsc",
     "build-umd": "webpack --config webpack.config.js",
     "build-debug": "tsc --project tsconfig.debug.json",
