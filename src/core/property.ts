@@ -32,7 +32,7 @@ export type MutableProperty = {
    * すべての値を削除します
    */
   readonly clear: () => void
-}
+} & ReadableProperty
 
 const isBoolean = (v: any): v is boolean => {
   return typeof v === "boolean"

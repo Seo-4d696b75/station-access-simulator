@@ -59,6 +59,7 @@ export { default as DencoManager } from "./core/dencoManager";
 export * from "./core/event/index";
 export * from "./core/film";
 export * from "./core/format";
+export { MutableProperty, ReadableProperty } from "./core/property";
 export * from "./core/random";
 export * from "./core/skill";
 export { default as SkillManager } from "./core/skill";

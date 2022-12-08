@@ -49,7 +49,7 @@ export const filmHolderSchema = objectSchema<FilmHolder>({
 const copyFilm = createCopyFunc(filmHolderSchema)
 const mergeFilm = createMergeFunc(filmHolderSchema)
 
-function copyProperty<T extends ReadableProperty | MutableProperty>(src: ReadonlyState<T>): T {
+function copyProperty<T extends ReadableProperty>(src: ReadonlyState<T>): T {
   if (src instanceof SkillPropertyReader) {
     return new SkillPropertyReader(
       copyProperty(src.base),
@@ -62,7 +62,7 @@ function copyProperty<T extends ReadableProperty | MutableProperty>(src: Readonl
   throw new SimulatorError(`can not copy unknown implementation: ${src}`)
 }
 
-function normalizeProperty<T extends ReadableProperty | MutableProperty>(src: ReadonlyState<T>): T {
+function normalizeProperty<T extends ReadableProperty>(src: ReadonlyState<T>): T {
   if (src instanceof SkillPropertyReader) {
     return copyProperty(src.base) as any
   }
@@ -72,7 +72,7 @@ function normalizeProperty<T extends ReadableProperty | MutableProperty>(src: Re
   throw new SimulatorError(`can not normalize unknown implementation: ${src}`)
 }
 
-function mergeProperty<T extends ReadableProperty | MutableProperty>(dst: T, src: ReadonlyState<T>) {
+function mergeProperty<T extends ReadableProperty>(dst: T, src: ReadonlyState<T>) {
   if (src instanceof SkillPropertyReader
     && dst instanceof SkillPropertyReader) {
     mergeProperty(dst.base, src.base)
