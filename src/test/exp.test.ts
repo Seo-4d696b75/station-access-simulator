@@ -4,6 +4,7 @@ import { AccessConfig, getDefense, startAccess } from "../core/access/index"
 import { initContext } from "../core/context"
 import DencoManager from "../core/dencoManager"
 import { initUser, refreshState } from "../core/user"
+import "../gen/matcher"
 
 describe("経験値の処理", () => {
   beforeAll(init)
@@ -171,7 +172,7 @@ describe("経験値の処理", () => {
     event = state.event[1]
     assert(event.type === "reboot")
     const linksEXP = event.data.exp
-    expect(event.data.denco).toMatchObject({
+    expect(event.data.denco).toMatchDencoState({
       ...reika,
       link: []  // リンク解除済み
     })
@@ -184,12 +185,12 @@ describe("経験値の処理", () => {
       link: [],
       currentExp: linksEXP
     }
-    expect(levelup.before).toMatchObject(reika)
+    expect(levelup.before).toMatchDencoState(reika)
     // レベルアップ後の状態
     let tmp = initUser(context, "someone", [reika])
     tmp = refreshState(context, tmp)
     reika = tmp.formation[0]
-    expect(afterAccess).toMatchObject(reika)
+    expect(afterAccess).toMatchDencoState(reika)
     // 最終状態
     const current = result.defense.formation[0]
     expect(current.level).toBe(reika.level)

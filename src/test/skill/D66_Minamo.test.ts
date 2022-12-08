@@ -5,7 +5,7 @@ import { Context, initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { getSkill, isSkillActive } from "../../core/skill"
 import { initUser, refreshState, UserState } from "../../core/user"
-import "../tool/matcher"
+import "../../gen/matcher"
 
 describe("みなものスキル", () => {
   beforeAll(init)

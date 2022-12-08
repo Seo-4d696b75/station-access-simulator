@@ -1,10 +1,11 @@
+import assert from "assert"
 import dayjs from "dayjs"
 import { activateSkill, hasSkillTriggered, init } from "../.."
 import { AccessConfig, getAccessDenco, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
-import { initUser } from "../../core/user"
-import "../tool/matcher"
+import { initUser, refreshState } from "../../core/user"
+import "../../gen/matcher"
 
 // デフォルトの計算式を使用する
 const accessScore = 100
@@ -352,6 +353,7 @@ describe("アクセス処理のフィルム補正", () => {
   })
 
   describe("発動確率の増減", () => {
+    // 通常アクセス
     test("ルナ-発動あり", () => {
       const context = initContext("test", "test", false)
       context.clock = dayjs('2022-01-01T23:00:00+0900').valueOf()
@@ -419,6 +421,69 @@ describe("アクセス処理のフィルム補正", () => {
       expect(hasSkillTriggered(result.defense, luna)).toBe(false)
       expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
       expect(result.defendPercent).toBe(0)
+    })
+
+    // イベント型
+    test("シャルロッテ-発動あり", () => {
+      const context = initContext("test", "test", false)
+      const start = context.currentTime
+      context.clock = start
+      context.random.mode = "force"
+      let charlotte = DencoManager.getDenco(context, "6", 80, 1)
+      charlotte.film = {
+        type: "film",
+        theme: "theme",
+        skill: {
+          // シャル砲発動まで待機時間を60分短縮 90 > 30分
+          timer: -3600,
+          cooldown: -3600,
+          probability: -20
+        }
+      }
+      let hiiru = DencoManager.getDenco(context, "34", 50)
+      let state = initUser(context, "とあるマスター", [charlotte, hiiru])
+      state = activateSkill(context, state, 0, 1)
+
+      context.clock = start + 1800 * 1000
+      state = refreshState(context, state)
+
+      expect(state.event.length).toBe(3)
+      let e = state.event[0]
+      assert(e.type === "skill_trigger")
+      expect(e.data.step).toBe("probability_check")
+      expect(e.data.denco).toMatchDenco(hiiru)
+      e = state.event[1]
+      assert(e.type === "access")
+      e = state.event[2]
+      assert(e.type === "skill_trigger")
+      expect(e.data.step).toBe("self")
+      expect(e.data.denco).toMatchDenco(charlotte)
+
+    })
+    test("シャルロッテ-発動なし", () => {
+      const context = initContext("test", "test", false)
+      const start = context.currentTime
+      context.clock = start
+      context.random.mode = "ignore"
+      let charlotte = DencoManager.getDenco(context, "6", 80, 1)
+      charlotte.film = {
+        type: "film",
+        theme: "theme",
+        skill: {
+          // シャル砲発動まで待機時間を60分短縮 90 > 30分
+          timer: -3600,
+          cooldown: -3600,
+          probability: -20
+        }
+      }
+      let hiiru = DencoManager.getDenco(context, "34", 50)
+      let state = initUser(context, "とあるマスター", [charlotte, hiiru])
+      state = activateSkill(context, state, 0, 1)
+
+      context.clock = start + 1800 * 1000
+      state = refreshState(context, state)
+
+      expect(state.event.length).toBe(0)
     })
   })
 })

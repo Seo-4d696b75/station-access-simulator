@@ -5,8 +5,8 @@ import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { skillInvalidateDenco } from "../tool/fake"
-import "../tool/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
 describe("リトのスキル", () => {
@@ -44,10 +44,9 @@ describe("リトのスキル", () => {
 
     assert(result.defense)
     let d = result.defense.formation[0]
-    // FIXME randomAccessの結果が上書きされる不具合
-    // copyStateToは型関係なく全部のデータを再起的に上書きしてしまう！
-    // expect(d.reboot).toBe(true)
-    // expect(d.hpAfter).toBe(true)
+    // resultには最初のアクセス結果
+    expect(d.reboot).toBe(true)
+    expect(d.hpAfter).toBe(0)
     expect(result.defense.event.length).toBe(4)
     let e = result.defense.event[0]
     assert(e.type === "access")
@@ -97,9 +96,9 @@ describe("リトのスキル", () => {
 
     assert(result.defense)
     let d0 = result.defense.formation[0]
-    // FIXME randomAccessの結果が上書きされる不具合
-    // expect(d0.reboot).toBe(true)
-    // expect(d0.hpAfter).toBe(true)
+    // resultには最初のアクセス結果
+    expect(d0.reboot).toBe(true)
+    expect(d0.hpAfter).toBe(0)
     let d1 = result.defense.formation[1]
     expect(result.defense.event.length).toBe(5)
     let e = result.defense.event[0]
