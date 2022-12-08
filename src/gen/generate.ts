@@ -28,7 +28,7 @@ async function generate(dir: string) {
 
   console.log(`${schemes.length} schema found.`)
 
-  // generate index.ts
+  // generate copy.ts
   let str = `import * as types from '../';\n`
   str += "import { ReadonlyState } from '../core/state';\n\n"
   str += "import { createCopyFunc, createMergeFunc } from './helper';\n"
@@ -58,7 +58,7 @@ async function generate(dir: string) {
   str += schemes.map(t => `  export const ${t.type}: (dst: types.${t.type}, src: ReadonlyState<types.${t.type}>) => void = createMergeFunc(schema.${t.importName})`).join("\n")
   str += "\n}\n"
 
-  await writeFile(join(dir, "index.ts"), str)
+  await writeFile(join(dir, "copy.ts"), str)
 
   // generate matcher.ts
   str = `import * as types from '../';\n`

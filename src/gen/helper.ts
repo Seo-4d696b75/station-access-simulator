@@ -35,11 +35,6 @@ type SchemaOf<T> =
   T extends readonly (infer U)[] ? ArraySchema<U> | CustomSchema :
   T extends Object ? ObjectSchema<T> | CustomSchema : never
 
-export interface TypedCopyFunc<T> {
-  copy: (src: ReadonlyState<T>) => T
-  merge: (dst: T, src: ReadonlyState<T>) => void
-}
-
 export function createCopyFunc<T>(schema: SchemaOf<T>): (src: ReadonlyState<T>) => T {
   return (src) => copy(schema, src)
 }
