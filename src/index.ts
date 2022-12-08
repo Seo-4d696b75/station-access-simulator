@@ -66,5 +66,6 @@ export * from "./core/state";
 export * from "./core/station";
 export { default as StationManager } from "./core/stationManager";
 export * from "./core/user";
+export { copy, merge } from "./gen/copy";
 export { dayjs };
 
