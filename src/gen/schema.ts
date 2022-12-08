@@ -50,52 +50,44 @@ const copyFilm = createCopyFunc(filmHolderSchema)
 const mergeFilm = createMergeFunc(filmHolderSchema)
 
 function copyProperty<T extends ReadableProperty | MutableProperty>(src: ReadonlyState<T>): T {
-  if (src?.constructor?.name === "SkillPropertyReader") {
-    const reader = src as SkillPropertyReader
+  if (src instanceof SkillPropertyReader) {
     return new SkillPropertyReader(
-      copyProperty(reader.base),
-      copyFilm(reader.film),
+      copyProperty(src.base),
+      copyFilm(src.film),
     ) as any
   }
-  if (src?.constructor?.name === "TypedMap") {
-    const map = src as TypedMap
-    return map.clone() as any
+  if (src instanceof TypedMap) {
+    return src.clone() as any
   }
-  throw new SimulatorError("can not copy unknown implementation")
+  throw new SimulatorError(`can not copy unknown implementation: ${src}`)
 }
 
 function normalizeProperty<T extends ReadableProperty | MutableProperty>(src: ReadonlyState<T>): T {
-  if (src?.constructor?.name === "SkillPropertyReader") {
-    const reader = src as SkillPropertyReader
-    return copyProperty(reader.base) as any
+  if (src instanceof SkillPropertyReader) {
+    return copyProperty(src.base) as any
   }
-  if (src?.constructor?.name === "TypedMap") {
-    const map = src as TypedMap
-    return map.clone() as any
+  if (src instanceof TypedMap) {
+    return src.clone() as any
   }
-  throw new SimulatorError("can not copy unknown implementation")
+  throw new SimulatorError(`can not normalize unknown implementation: ${src}`)
 }
 
 function mergeProperty<T extends ReadableProperty | MutableProperty>(dst: T, src: ReadonlyState<T>) {
-  if (src?.constructor?.name === "SkillPropertyReader"
-    && dst?.constructor?.name === "SkillPropertyReader") {
-    const srcReader = src as SkillPropertyReader
-    const dstReader = dst as SkillPropertyReader
-    mergeProperty(dstReader.base, srcReader.base)
-    mergeFilm(dstReader.film, srcReader.film)
+  if (src instanceof SkillPropertyReader
+    && dst instanceof SkillPropertyReader) {
+    mergeProperty(dst.base, src.base)
+    mergeFilm(dst.film, src.film)
     return
   }
-  if (src?.constructor?.name === "TypedMap"
-    && dst?.constructor?.name === "TypedMap") {
-    const srcMap = src as TypedMap
-    const dstMap = dst as TypedMap
-    dstMap.merge(srcMap)
+  if (src instanceof TypedMap
+    && dst instanceof TypedMap) {
+    dst.merge(src)
     return
   }
   throw new SimulatorError(
     "can not merge unknown implementation\n" +
-    `dst class: ${dst?.constructor?.name}, ` +
-    `src class: ${src?.constructor?.name}`
+    `dst class: ${dst}, ` +
+    `src class: ${src}`
   )
 }
 
