@@ -91,6 +91,8 @@ function mergeProperty<T extends ReadableProperty>(dst: T, src: ReadonlyState<T>
   )
 }
 
+export const mutablePropertySchema = customSchema<MutableProperty>(copyProperty, mergeProperty, normalizeProperty)
+
 // skill
 
 const skillTransitionSchema = objectSchema<SkillTransition<SkillTransitionType>>({
@@ -109,8 +111,8 @@ export const skillHolderSchema = objectSchema<SkillHolder>({
   level: primitiveSchema,
   name: primitiveSchema,
   transition: skillTransitionSchema,
-  property: customSchema(copyProperty, mergeProperty, normalizeProperty),
-  data: customSchema(copyProperty, mergeProperty, normalizeProperty),
+  property: mutablePropertySchema,
+  data: mutablePropertySchema,
   canEnabled: functionSchema,
   canActivated: functionSchema,
   onActivated: functionSchema,

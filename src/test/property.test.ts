@@ -1,6 +1,6 @@
 import assert from "assert";
 import { isEqual } from "lodash";
-import { activateSkill, copyState, copyStateTo, DencoManager, Film, getSkill, initContext, initUser, SkillManager } from "..";
+import { activateSkill, copy, DencoManager, Film, getSkill, initContext, initUser, merge, SkillManager } from "..";
 import { TypedMap } from "../core/property";
 import { SkillPropertyReader } from "../core/skill/property";
 
@@ -10,13 +10,13 @@ describe("copy, equals, merge of TypedMap", () => {
     const m1 = new TypedMap(p)
     expect(m1.readNumber("key1")).toBe(1)
     expect(m1.readString("key2")).toBe("string")
-    const m2 = copyState(m1)
+    const m2 = copy.MutableProperty(m1)
     expect(m2.readNumber("key1")).toBe(1)
     expect(m2.readString("key2")).toBe("string")
     expect(isEqual(m1, m2)).toBeTruthy()
-    expect(m1.property).not.toBe(m2.property)
+    expect(m1).not.toBe(m2)
     const m3 = new TypedMap(new Map<string, any>([["key1", true], ["key3", [1, 2, 3]]]))
-    copyStateTo({ data: m1 }, { data: m3 })
+    merge.MutableProperty(m3, m1)
     expect(m3.readNumber("key1")).toBe(1)
     expect(m3.readString("key2")).toBe("string")
     expect(m3.readNumberArray("key3")).toEqual([1, 2, 3])
@@ -25,15 +25,15 @@ describe("copy, equals, merge of TypedMap", () => {
     const m1 = new TypedMap()
     m1.putNumber("key1", 1)
     m1.putString("key2", "string")
-    const m2 = copyState(m1)
+    const m2 = copy.MutableProperty(m1)
     expect(m2.readNumber("key1")).toBe(1)
     expect(m2.readString("key2")).toBe("string")
     expect(isEqual(m1, m2)).toBeTruthy()
-    expect(m1.property).not.toBe(m2.property)
+    expect(m1).not.toBe(m2)
     const m3 = new TypedMap()
     m3.putNumber("key1", 10)
     m3.putBoolean("key3", true)
-    copyStateTo({ data: m1 }, { data: m3 })
+    merge.MutableProperty(m3, m1)
     expect(m3.readNumber("key1")).toBe(1)
     expect(m3.readString("key2")).toBe("string")
     expect(m3.readBoolean("key3")).toBe(true)
@@ -75,7 +75,8 @@ describe("SkillPropertyReader", () => {
   })
   test("copy", () => {
     const reader1 = new SkillPropertyReader(base, film)
-    const reader2 = copyState(reader1)
+    const reader2 = copy.MutableProperty(reader1)
+    assert(reader2 instanceof SkillPropertyReader)
     expect(reader1.film).not.toBe(reader2.film)
     expect(reader1.film).toEqual(reader2.film)
     expect(reader1.base).not.toBe(reader2.base)
@@ -88,15 +89,17 @@ describe("SkillPropertyReader", () => {
   })
   test("merge", () => {
     const reader = new SkillPropertyReader(base, film)
-    const reader1 = copyState(reader)
-    const reader2 = copyState(reader)
+    const reader1 = copy.MutableProperty(reader)
+    const reader2 = copy.MutableProperty(reader)
+    assert(reader1 instanceof SkillPropertyReader)
+    assert(reader2 instanceof SkillPropertyReader)
     const f = reader2.film
     assert(f.type === "film")
     assert(f.skill)
     f.skill.key1 = 10
     expect(reader1.readNumber("key1")).toBe(11)
     expect(reader2.readNumber("key1")).toBe(20)
-    copyStateTo(reader2, reader1)
+    merge.MutableProperty(reader1, reader2)
     expect(reader1.film).not.toBe(reader2.film)
     expect(reader1.film).toEqual(reader2.film)
     expect(reader1.readNumber("key1")).toBe(20)

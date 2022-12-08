@@ -18,6 +18,7 @@ export const toMatchLine = createMatcher<types.Line>(schema.lineSchema)
 export const toMatchStation = createMatcher<types.Station>(schema.stationSchema)
 export const toMatchStationLink = createMatcher<types.StationLink>(schema.stationLinkSchema)
 export const toMatchFilmHolder = createMatcher<types.FilmHolder>(schema.filmHolderSchema)
+export const toMatchMutableProperty = createMatcher<types.MutableProperty>(schema.mutablePropertySchema)
 export const toMatchSkillHolder = createMatcher<types.SkillHolder>(schema.skillHolderSchema)
 export const toMatchDenco = createMatcher<types.Denco>(schema.dencoSchema)
 export const toMatchDencoState = createMatcher<types.DencoState>(schema.dencoStateSchema)
@@ -45,6 +46,7 @@ declare global {
       toMatchStation(expected: types.Station, ...mergeWithExpected: any[]): R;
       toMatchStationLink(expected: types.StationLink, ...mergeWithExpected: any[]): R;
       toMatchFilmHolder(expected: types.FilmHolder, ...mergeWithExpected: any[]): R;
+      toMatchMutableProperty(expected: types.MutableProperty, ...mergeWithExpected: any[]): R;
       toMatchSkillHolder(expected: types.SkillHolder, ...mergeWithExpected: any[]): R;
       toMatchDenco(expected: types.Denco, ...mergeWithExpected: any[]): R;
       toMatchDencoState(expected: types.DencoState, ...mergeWithExpected: any[]): R;
@@ -70,6 +72,7 @@ declare global {
       toMatchStation: (expected: types.Station, ...mergeWithExpected: any[]) => any;
       toMatchStationLink: (expected: types.StationLink, ...mergeWithExpected: any[]) => any;
       toMatchFilmHolder: (expected: types.FilmHolder, ...mergeWithExpected: any[]) => any;
+      toMatchMutableProperty: (expected: types.MutableProperty, ...mergeWithExpected: any[]) => any;
       toMatchSkillHolder: (expected: types.SkillHolder, ...mergeWithExpected: any[]) => any;
       toMatchDenco: (expected: types.Denco, ...mergeWithExpected: any[]) => any;
       toMatchDencoState: (expected: types.DencoState, ...mergeWithExpected: any[]) => any;
@@ -95,6 +98,7 @@ declare global {
       toMatchStation: (expected: types.Station, ...mergeWithExpected: any[]) => any;
       toMatchStationLink: (expected: types.StationLink, ...mergeWithExpected: any[]) => any;
       toMatchFilmHolder: (expected: types.FilmHolder, ...mergeWithExpected: any[]) => any;
+      toMatchMutableProperty: (expected: types.MutableProperty, ...mergeWithExpected: any[]) => any;
       toMatchSkillHolder: (expected: types.SkillHolder, ...mergeWithExpected: any[]) => any;
       toMatchDenco: (expected: types.Denco, ...mergeWithExpected: any[]) => any;
       toMatchDencoState: (expected: types.DencoState, ...mergeWithExpected: any[]) => any;
@@ -123,6 +127,7 @@ expect.extend({
   toMatchStation,
   toMatchStationLink,
   toMatchFilmHolder,
+  toMatchMutableProperty,
   toMatchSkillHolder,
   toMatchDenco,
   toMatchDencoState,

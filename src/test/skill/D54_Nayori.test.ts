@@ -1,5 +1,5 @@
 import assert from "assert"
-import { Context, copyState, getSkill, init, ReadonlyState } from "../.."
+import { Context, copy, getSkill, init, ReadonlyState } from "../.."
 import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
@@ -406,7 +406,7 @@ describe("なよりのスキル", () => {
 
 function checkExp(context: Context, before: ReadonlyState<UserState>, after: ReadonlyState<UserState>, indices: number[], exp: number) {
   // 経験値を加算
-  let state = copyState<UserState>(before)
+  let state = copy.UserState(before)
   indices.forEach(i => state.formation[i].currentExp += exp)
   // レベルアップ考慮
   refreshEXPState(context, state)
