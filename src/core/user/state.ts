@@ -3,9 +3,9 @@ import { Event, SkillEventReservation } from "../event";
 import { UserProperty } from "./property";
 
 interface EventQueueEntryBase<T, E = undefined> {
-  readonly type: T
-  readonly time: number
-  readonly data: E
+  type: T
+  time: number
+  data: E
 }
 
 export type EventQueueEntry =

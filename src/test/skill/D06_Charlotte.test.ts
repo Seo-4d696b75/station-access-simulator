@@ -1,14 +1,12 @@
 import assert from "assert"
 import dayjs from "dayjs"
-import { init } from "../.."
+import { copy, init } from "../.."
 import { getAccessDenco } from "../../core/access/index"
 import { initContext } from "../../core/context"
-import { DencoState } from "../../core/denco"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill } from "../../core/skill"
-import { copyState } from "../../core/state"
 import { initUser, refreshState } from "../../core/user"
-import "../tool/matcher"
+import "../../gen/matcher"
 
 describe("シャルのスキル", () => {
   beforeAll(init)
@@ -58,8 +56,8 @@ describe("シャルのスキル", () => {
     let event = state.event[0]
     expect(event.type).toBe("access")
     assert(event.type === "access")
-    expect(event.data.access.time).toBe(context.currentTime)
-    charlotte = copyState<DencoState>(getAccessDenco(event.data.access, "offense"))
+    expect(event.data.time).toBe(context.currentTime)
+    charlotte = copy.DencoState(getAccessDenco(event.data, "offense"))
     expect(charlotte.name).toBe("charlotte")
 
     event = state.event[1]

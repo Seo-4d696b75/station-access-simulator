@@ -1,4 +1,4 @@
-import { Context, DencoState, init, StationLink, StationLinkStart } from "../.."
+import { Context, DencoState, init, StationLink } from "../.."
 import { AccessConfig, getAccessDenco, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
@@ -6,7 +6,7 @@ import { TypedMap } from "../../core/property"
 import { activateSkill, Skill } from "../../core/skill"
 import StationManager from "../../core/stationManager"
 import { initUser } from "../../core/user"
-import "../tool/matcher"
+import "../../gen/matcher"
 
 
 describe("アクセス処理中のSkillコールバック", () => {
@@ -374,16 +374,14 @@ describe("アクセス処理中のSkillコールバック", () => {
       expect(d1.link.length).toBe(1)
       expect(d1.link[0]).toMatchObject(link)
       expect(d2.link.length).toBe(0)
-      const start: StationLinkStart = {
-        ...link,
-        denco: d1,
-      }
       expect(onLinkStarted1.mock.calls.length).toBe(1)
       expect(onLinkStarted1.mock.calls[0][2]).toMatchDencoState(d1)
-      expect(onLinkStarted1.mock.calls[0][3]).toMatchObject(start)
+      expect(onLinkStarted1.mock.calls[0][3]).toMatchStationLink(link)
+      expect(onLinkStarted1.mock.calls[0][3].denco).toMatchDencoState(d1)
       expect(onLinkStarted2.mock.calls.length).toBe(1)
       expect(onLinkStarted2.mock.calls[0][2]).toMatchDencoState(d2)
-      expect(onLinkStarted2.mock.calls[0][3]).toMatchObject(start)
+      expect(onLinkStarted2.mock.calls[0][3]).toMatchStationLink(link)
+      expect(onLinkStarted2.mock.calls[0][3].denco).toMatchDencoState(d1)
     })
     test("リンク失敗", () => {
       const context = initContext("test", "test", false)
@@ -465,16 +463,15 @@ describe("アクセス処理中のSkillコールバック", () => {
       expect(d1.link.length).toBe(1)
       expect(d1.link[0]).toMatchObject(link)
       expect(d2.link.length).toBe(0)
-      const start: StationLinkStart = {
-        ...link,
-        denco: d1,
-      }
+
       expect(onLinkStarted1.mock.calls.length).toBe(1)
       expect(onLinkStarted1.mock.calls[0][2]).toMatchDencoState(d1)
-      expect(onLinkStarted1.mock.calls[0][3]).toMatchObject(start)
+      expect(onLinkStarted1.mock.calls[0][3]).toMatchStationLink(link)
+      expect(onLinkStarted1.mock.calls[0][3].denco).toMatchDencoState(d1)
       expect(onLinkStarted2.mock.calls.length).toBe(1)
       expect(onLinkStarted2.mock.calls[0][2]).toMatchDencoState(d2)
-      expect(onLinkStarted2.mock.calls[0][3]).toMatchObject(start)
+      expect(onLinkStarted2.mock.calls[0][3]).toMatchStationLink(link)
+      expect(onLinkStarted2.mock.calls[0][3].denco).toMatchDencoState(d1)
     })
     test("カウンターでリブート", () => {
       const context = initContext("test", "test", false)

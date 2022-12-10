@@ -32,7 +32,7 @@ export type MutableProperty = {
    * すべての値を削除します
    */
   readonly clear: () => void
-}
+} & ReadableProperty
 
 const isBoolean = (v: any): v is boolean => {
   return typeof v === "boolean"
@@ -148,5 +148,12 @@ export class TypedMap {
       })
       this.defaultProperty = dst
     }
+  }
+
+  clone(): TypedMap {
+    return new TypedMap(
+      new Map(this.property),
+      this.defaultProperty ? new Map(this.defaultProperty) : undefined
+    )
   }
 }

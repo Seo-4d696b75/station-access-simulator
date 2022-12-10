@@ -1,9 +1,10 @@
 import dayjs from "dayjs"
 import { AccessDencoState, AccessResult, AccessSide, AccessSideState, AccessState, getAccessDenco, getDefense, hasActiveSkill, hasDefense } from "."
+import { copy } from "../../"
 import { Context, withFixedClock } from "../context"
 import { TIME_FORMAT } from "../date"
 import { refreshSkillState } from "../skill/refresh"
-import { copyState, ReadonlyState } from "../state"
+import { ReadonlyState } from "../state"
 import { Station } from "../station"
 import { UserState } from "../user"
 import { getUserPropertyReader } from "../user/property"
@@ -115,7 +116,7 @@ export const startAccess = (context: Context, config: AccessConfig): AccessResul
 })
 
 function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessSideState {
-  const tmp = copyState<UserState>(f)
+  const tmp = copy.UserState(f)
   refreshSkillState(context, tmp)
   const formation = tmp.formation.map((e, idx) => {
     const s: AccessDencoState = {

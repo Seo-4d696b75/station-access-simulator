@@ -8,7 +8,7 @@ import { activateSkill } from "../../core/skill"
 import { LinksResult } from "../../core/station"
 import StationManager from "../../core/stationManager"
 import { getTargetDenco, initUser } from "../../core/user"
-import "../tool/matcher"
+import "../../gen/matcher"
 
 // デフォルトの計算式を使用する
 const accessScore = 100
@@ -19,7 +19,7 @@ const linkSuccessScore = 100
 
 describe("基本的なアクセス処理", () => {
   beforeAll(init)
-  
+
   test("守備側なし", () => {
     const context = initContext("test", "test", false)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -277,7 +277,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.disconnectedLink.time).toBe(result.time)
     //リンク解除済み＆経験値加算前の状態
     expect(d.disconnectedLink.denco).toMatchDencoState(
-      d, { currentExp: 68000 } // 最大レベル80
+      { ...d, currentExp: 68000 } // 最大レベル80
     )
 
     // リンク
@@ -289,7 +289,7 @@ describe("基本的なアクセス処理", () => {
     assert(result.defense)
     const charlotteResult = getTargetDenco(result.defense)
     charlotte = defense.formation[0]
-    expect(charlotteResult).toMatchObject({
+    expect(charlotteResult).toMatchDencoState({
       ...charlotte,
       link: charlotte.link.slice(1),
       currentExp: charlotte.currentExp + linkScore,
@@ -379,7 +379,7 @@ describe("基本的なアクセス処理", () => {
     assert(d.disconnectedLink)
     expect(d.disconnectedLink.link?.length).toBe(3)
     expect(d.disconnectedLink.denco).toMatchDencoState(
-      d, { currentExp: charlotte.currentExp } // 経験値追加前
+      { ...d, currentExp: charlotte.currentExp } // 経験値追加前
     )
     expect(result.defense?.score.link).toBe(d.disconnectedLink.totalScore)
     expect(d.exp.link).toBe(d.disconnectedLink.exp)
@@ -401,14 +401,14 @@ describe("基本的なアクセス処理", () => {
     assert(result.defense)
     charlotte = defense.formation[0]
     let charlotteResult = getTargetDenco(result.defense)
-    expect(charlotteResult).toMatchObject({
+    expect(charlotteResult).toMatchDencoState({
       ...charlotte,
       currentExp: charlotte.currentExp + data.exp, // 解除された全リンクの経験値
       link: [],
     })
     reika = offense.formation[0]
     let reikaResult = getTargetDenco(result.offense)
-    expect(reikaResult).toMatchObject({
+    expect(reikaResult).toMatchDencoState({
       ...reika,
       currentExp: 68000,
       link: [
@@ -717,7 +717,7 @@ describe("基本的なアクセス処理", () => {
     expect(d.disconnectedLink?.link[0]).toMatchObject(reika.link[0])
     expect(d.disconnectedLink?.totalScore).toBe(result.offense?.score?.link)
     expect(d.disconnectedLink?.exp).toBe(d.exp.link)
-    expect(d.disconnectedLink?.denco).toMatchDencoState(d, { currentExp: 0 }) // 経験値は追加前
+    expect(d.disconnectedLink?.denco).toMatchDencoState({ ...d, currentExp: 0 }) // 経験値は追加前
     let e = result.offense.event[1]
     expect(e.type).toBe("reboot")
     let reboot = e.data as LinksResult
@@ -792,6 +792,6 @@ describe("基本的なアクセス処理", () => {
     expect(reboot.denco.name).toBe("reika")
     expect(reboot.denco.link.length).toBe(0)
     expect(reboot.link.length).toBe(0)
-    expect(reboot.denco).toMatchDencoState(d, { currentExp: 0 })
+    expect(reboot.denco).toMatchDencoState({ ...d, currentExp: 0 })
   })
 })

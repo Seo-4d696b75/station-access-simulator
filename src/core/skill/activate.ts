@@ -1,6 +1,7 @@
+import { copy } from "../../"
 import { Context, withFixedClock } from "../context"
 import { DencoState } from "../denco"
-import { copyState, ReadonlyState } from "../state"
+import { ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill } from "./holder"
 import { SkillPropertyReader, withSkill } from "./property"
@@ -22,7 +23,7 @@ import { SkillActiveTimeout } from "./transition"
  * @returns `active`へ遷移した新しい状態
  */
 export const activateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
-  return carIndex.reduce((state, idx) => activateSkillOne(context, state, idx), copyState<UserState>(current))
+  return carIndex.reduce((state, idx) => activateSkillOne(context, state, idx), copy.UserState(current))
 })
 
 function activateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
@@ -86,14 +87,15 @@ function activateSkillAndCallback<T extends "manual" | "manual-condition" | "aut
       data: {
         time: context.currentTime,
         carIndex: carIndex,
-        denco: copyState<DencoState>(d),
+        denco: copy.DencoState(d),
         skillName: skill.name,
       }
     })
   }
   // callback #onActivated
   if (skill.onActivated) {
-    state = skill.onActivated(context, state, withSkill(d, skill, carIndex)) ?? state
+    const active = withSkill(copy.DencoState(d), skill, carIndex)
+    state = skill.onActivated(context, state, active) ?? state
   }
   refreshSkillState(context, state)
   return state
@@ -156,7 +158,7 @@ function getSkillActiveTimeout<T extends "manual" | "manual-condition" | "auto">
  * @returns `cooldown`へ遷移した新しい状態
  */
 export const deactivateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
-  const state = copyState<UserState>(current)
+  const state = copy.UserState(current)
   carIndex.forEach(idx => deactivateSkillOne(context, state, idx))
   return state
 })

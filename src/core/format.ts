@@ -1,10 +1,10 @@
 import { computeWidth } from "meaw"
-import { AccessDencoState, AccessResult, AccessSide, AccessUserResult, getAccessDenco } from "./access/index"
+import { AccessDencoState, AccessSide, getAccessDenco } from "./access/index"
 import { Context, SimulatorError } from "./context"
 import { formatDuration } from "./date"
 import { DencoAttribute } from "./denco"
 import { EventTriggeredSkill } from "./event"
-import { Event, LevelupDenco } from "./event/type"
+import { AccessEventData, AccessEventUser, Event, LevelupDenco } from "./event/type"
 import { ReadonlyState } from "./state"
 import { LinksResult, Station, StationLink } from "./station"
 import { UserState } from "./user"
@@ -35,11 +35,11 @@ export function formatEvents(context: Context, user: ReadonlyState<UserState> | 
   return user.event.map(e => formatEvent(context, e, detail, colored)).join("\n")
 }
 
-export function formatEvent(context: Context, event: Event, detail: boolean = true, colored: boolean = true): string {
+export function formatEvent(context: Context, event: ReadonlyState<Event>, detail: boolean = true, colored: boolean = true): string {
   const time = context.currentTime.valueOf()
   switch (event.type) {
     case "access":
-      return detail ? formatAccessDetail(event.data.access, event.data.which, time, colored) : formatAccessEvent(event.data.access, event.data.which, time, colored)
+      return detail ? formatAccessDetail(event.data, event.data.which, time, colored) : formatAccessEvent(event.data, event.data.which, time, colored)
     case "reboot":
       return detail ? formatRebootDetail(event.data, time, colored) : formatReboot(event.data, time, colored)
     case "skill_activated":
@@ -52,7 +52,7 @@ export function formatEvent(context: Context, event: Event, detail: boolean = tr
   }
 }
 
-function formatLevelupDetail(event: LevelupDenco, time: number, colored: boolean, width: number = 60): string {
+function formatLevelupDetail(event: ReadonlyState<LevelupDenco>, time: number, colored: boolean, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("level up!", "yellow", colored), width)
   str += formatLine(`${event.after.name}がレベルアップ！`, width, "left")
@@ -74,7 +74,7 @@ function formatLevelupDetail(event: LevelupDenco, time: number, colored: boolean
   return str
 }
 
-function formatLevelup(event: LevelupDenco, time: number, colored: boolean, width: number = 40): string {
+function formatLevelup(event: ReadonlyState<LevelupDenco>, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("level up!", "yellow", colored), width)
   str += formatLine(event.after.name, width)
@@ -93,7 +93,7 @@ function formatLevelup(event: LevelupDenco, time: number, colored: boolean, widt
   return str
 }
 
-function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, colored: boolean, width: number = 40): string {
+function formatSkillTriggerEvent(event: ReadonlyState<EventTriggeredSkill>, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("skill", "blue", colored), width)
   str += formatLine(event.denco.name, width)
@@ -106,7 +106,7 @@ function formatSkillTriggerEvent(event: EventTriggeredSkill, time: number, color
   return str
 }
 
-function formatReboot(result: LinksResult, time: number, colored: boolean, width: number = 40): string {
+function formatReboot(result: ReadonlyState<LinksResult>, time: number, colored: boolean, width: number = 40): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
   str += formatLine(color("reboot", "red", colored), width)
   str += formatLine(result.denco.name, width)
@@ -132,7 +132,7 @@ function formatReboot(result: LinksResult, time: number, colored: boolean, width
 }
 
 
-function formatRebootDetail(result: LinksResult, time: number, colored: boolean, width: number = 60): string {
+function formatRebootDetail(result: ReadonlyState<LinksResult>, time: number, colored: boolean, width: number = 60): string {
   if (result.link.length === 0) {
     // リンク無しの場合は簡易表示のみ
     return formatReboot(result, time, colored, width)
@@ -161,7 +161,7 @@ function formatRebootDetail(result: LinksResult, time: number, colored: boolean,
   return str
 }
 
-function formatAccessDetail(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, colored: boolean, width: number = 60): string {
+function formatAccessDetail(result: ReadonlyState<AccessEventData>, which: AccessSide, time: number, colored: boolean, width: number = 60): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -262,7 +262,7 @@ function formatAccessDetail(result: ReadonlyState<AccessResult>, which: AccessSi
 
 }
 
-function formatAccessEvent(result: ReadonlyState<AccessResult>, which: AccessSide, time: number, colored: boolean, width: number = 50): string {
+function formatAccessEvent(result: ReadonlyState<AccessEventData>, which: AccessSide, time: number, colored: boolean, width: number = 50): string {
   var str = "┏" + "━".repeat(width - 2) + "┓\n"
 
   // アクセス結果の表示
@@ -354,7 +354,7 @@ export function formatLinkTime(time: number, link?: ReadonlyState<StationLink> |
   return formatDuration(duration)
 }
 
-function formatAccessLinkTime(station: ReadonlyState<Station>, accessTime: number, state?: ReadonlyState<AccessUserResult> | null): string {
+function formatAccessLinkTime(station: ReadonlyState<Station>, accessTime: number, state?: ReadonlyState<AccessEventUser> | null): string {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.who === "defense") {
@@ -369,14 +369,14 @@ function formatAccessLinkTime(station: ReadonlyState<Station>, accessTime: numbe
   return "-"
 }
 
-function formatSkills(state?: ReadonlyState<AccessUserResult> | null): string {
+function formatSkills(state?: ReadonlyState<AccessEventUser> | null): string {
   if (!state) return ""
   const skills = state.triggeredSkills
   if (skills.length === 0) return "-"
   return skills.map(s => s.name).join(",")
 }
 
-function formatHP(state: ReadonlyState<AccessUserResult> | undefined, colored: boolean) {
+function formatHP(state: ReadonlyState<AccessEventUser> | undefined, colored: boolean) {
   if (!state) return ""
   const d = state.formation[state.carIndex]
   if (d.damage === undefined) {

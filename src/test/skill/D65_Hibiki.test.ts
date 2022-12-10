@@ -5,8 +5,8 @@ import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { getFixedDamageDenco } from "../tool/fake"
-import "../tool/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
 describe("あけひのスキル", () => {

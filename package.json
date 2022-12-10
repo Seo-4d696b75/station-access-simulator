@@ -14,33 +14,35 @@
     "test-coverage": "jest --silent --coverage",
     "dev": "ts-node src/main.ts",
     "watch": "ts-node-dev src/main.ts --respawn",
-    "build": "npm run build-cjs && npm run build-umd",
-    "build-cjs": "tsc",
+    "build": "rm -r lib umd && npm run build-cjs && npm run build-umd",
+    "build-cjs": "tsc && rm lib/gen/*.d.ts",
     "build-umd": "webpack --config webpack.config.js",
-    "build-debug": "tsc --project tsconfig.debug.json"
+    "build-debug": "tsc --project tsconfig.debug.json",
+    "gen": "ts-node src/gen/generate.ts"
   },
   "author": "@Seo-4d696b75",
   "license": "MIT License",
   "devDependencies": {
     "@types/jest": "^27.4.0",
+    "@types/lodash": "^4.14.191",
     "@types/node": "^16.7.10",
     "@types/source-map-support": "^0.5.4",
     "jest": "^27.4.7",
+    "lodash": "^4.17.21",
     "source-map-support": "^0.5.21",
     "ts-jest": "^27.1.2",
     "ts-loader": "^9.2.5",
     "ts-node": "^10.4.0",
     "typescript": "^4.4.2",
+    "typescript-parser": "^2.6.1",
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0",
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
     "@holiday-jp/holiday_jp": "^2.4.0",
-    "@types/lodash": "^4.14.190",
     "@types/seedrandom": "^3.0.1",
     "dayjs": "^1.11.6",
-    "lodash": "^4.17.21",
     "meaw": "^6.0.0",
     "seedrandom": "^3.0.5"
   }

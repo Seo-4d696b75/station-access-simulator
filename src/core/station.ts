@@ -1,5 +1,4 @@
 import { DencoState } from "./denco";
-import { ReadonlyState } from "./state";
 
 export type StationAttribute =
   "eco" |
@@ -73,13 +72,13 @@ export interface LinksResult {
   /**
    * リンクが解除されたタイミング
    */
-  readonly time: number
+  time: number
   /**
    * 解除されたリンクのスコア＆経験値が加算される直前の状態
    * 
    * 解除対象のリンクは{@link DencoState link}から削除済みです
    */
-  readonly denco: ReadonlyState<DencoState>
+  denco: DencoState
 
   /**
    * 解除されたリンク
@@ -87,7 +86,7 @@ export interface LinksResult {
    * **リンク数が0の場合があります** リンクを保持しない状態でカウンター攻撃を受けるなどして
    * リブートした場合は空配列になります
    */
-  readonly link: readonly ReadonlyState<LinkResult>[]
+  link: LinkResult[]
   /**
    * スコア合計値
    * 
@@ -97,33 +96,33 @@ export interface LinksResult {
    * - {@link comboBonus}
    * - {@link matchBonus}
    */
-  readonly totalScore: number
+  totalScore: number
   /**
    * リンクによるスコアの合計
    * 
    * 各リンク結果{@link LinkResult linkScore}の合計
    */
-  readonly linkScore: number
+  linkScore: number
   /**
    * 複数リンクによるボーナススコアの合計
    * 
    * 各リンク結果{@link LinkResult comboBonus}の合計
    */
-  readonly comboBonus: number
+  comboBonus: number
   /**
    * 駅とでんこ属性一致によるボーナススコア
    * 
    * 各リンク結果{@link LinkResult matchBonus}の合計
    */
-  readonly matchBonus: number
+  matchBonus: number
   /**
    * 駅とでんこ属性が一致するリンクの数
    */
-  readonly matchCnt: number
+  matchCnt: number
 
   // FIXME スコアアップの反映（現状ではリンクスコアアップは対応しない）
   // スキルによるスコアアップはリンクスコア対象外がほとんど
-  // readonly score: number
+  //  score: number
 
   /**
    * 経験値合計
@@ -131,5 +130,5 @@ export interface LinksResult {
    * {@link LinkResult totalScore}を基に計算される  
    * 経験値増加の効果によりスコア値と一致しない場合がある
    */
-  readonly exp: number
+  exp: number
 }

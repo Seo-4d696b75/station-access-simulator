@@ -3,7 +3,7 @@ import { DencoState } from "../core/denco"
 import { TypedMap } from "../core/property"
 import { activateSkill, deactivateSkill, getSkill, Skill, SkillDeactivateStrategy } from "../core/skill"
 import { initUser, refreshState } from "../core/user"
-import "./tool/matcher"
+import "../gen/matcher"
 
 
 describe("スキル状態遷移・コールバック", () => {

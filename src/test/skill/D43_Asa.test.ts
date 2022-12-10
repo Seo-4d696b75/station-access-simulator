@@ -130,6 +130,14 @@ describe("アサのスキル", () => {
     // activeTimeout > cooldownTimeout と逆転する
     const context = initContext("test", "test", false)
     let asa = DencoManager.getDenco(context, "43", 50)
+    asa.film = {
+      type: "film",
+      theme: "theme",
+      skill: {
+        // percent増加
+        extend: 600
+      }
+    }
     let reika = DencoManager.getDenco(context, "5", 50)
     let state = initUser(context, "とあるマスター", [asa, reika])
     const now = dayjs().valueOf()
@@ -141,16 +149,6 @@ describe("アサのスキル", () => {
     skill = getSkill(state.formation[0])
     expect(skill.transition.state).toBe("idle")
 
-    // 適当にpercentをモック
-    const spy = jest.spyOn(skill.property, "readNumber").mockImplementation((key, _) => {
-      switch (key) {
-        case "active": return 0
-        case "cooldown": return 9000
-        case "extend": return 620
-        case "probability": return 100
-        default: throw Error()
-      }
-    })
     state = activateSkill(context, state, 0)
 
     // reika 900 + 5400 sec

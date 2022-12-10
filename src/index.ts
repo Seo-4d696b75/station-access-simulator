@@ -59,6 +59,7 @@ export { default as DencoManager } from "./core/dencoManager";
 export * from "./core/event/index";
 export * from "./core/film";
 export * from "./core/format";
+export { MutableProperty, ReadableProperty } from "./core/property";
 export * from "./core/random";
 export * from "./core/skill";
 export { default as SkillManager } from "./core/skill";
@@ -66,5 +67,6 @@ export * from "./core/state";
 export * from "./core/station";
 export { default as StationManager } from "./core/stationManager";
 export * from "./core/user";
+export { copy, merge } from "./gen/copy";
 export { dayjs };
 
