@@ -44,11 +44,20 @@ export type AccessSkillTrigger = {
    */
   probabilityKey: string
   /**
-   * スキルが発動した場合の処理を関数として指定します. 
+   * スキルが発動した場合の処理を関数として指定します.  
+   * {@link probabilityKey}で指定した確率[%]で判定が成功した場合のみ実行されます.
    * 
    * 指定した関数には現在の状態が引数として渡されるので、関数内に状態を更新する処理を定義してください
    */
   recipe: AccessSkillRecipe
+
+  /**
+   * {@link probabilityKey}で指定した確率[%]で判定が失敗したときの処理
+   * 
+   * 判定失敗時の処理が定義されている場合は{@link recipe}, {@link fallbackRecipe}のどちらか必ず発動し、
+   * いずれの場合でも**スキルは発動した扱いで記録されます**
+   */
+  fallbackRecipe?: AccessSkillRecipe
 }
 
 /**
@@ -170,7 +179,7 @@ function canTriggerSkill(context: Context, state: AccessState, d: ReadonlyState<
   percent = Math.min(percent, 100)
   percent = Math.max(percent, 0)
   if (percent >= 100) return trigger.recipe
-  if (percent <= 0) return null
+  if (percent <= 0) return canTriggerOnFailure(context, trigger)
   // 上記までは確率に依存せず決定可能
 
   const boost = d.which === "offense" ? state.offense.probabilityBoostPercent : state.defense?.probabilityBoostPercent
@@ -194,8 +203,16 @@ function canTriggerSkill(context: Context, state: AccessState, d: ReadonlyState<
     return trigger.recipe
   } else {
     context.log.log(`スキルが発動しませんでした ${d.name} 確率:${percent}%`)
-    return null
+    return canTriggerOnFailure(context, trigger)
   }
+}
+
+function canTriggerOnFailure(context: Context, trigger: AccessSkillTrigger): AccessSkillRecipe | null {
+  if (trigger.fallbackRecipe) {
+    context.log.log(`スキル不発時の処理があります`)
+    return trigger.fallbackRecipe
+  }
+  return null
 }
 
 function markTriggerSkill(state: AccessSideState, step: AccessSkillStep, denco: Denco) {
