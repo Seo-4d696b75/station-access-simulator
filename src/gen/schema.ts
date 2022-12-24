@@ -1,4 +1,5 @@
 import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, AccessState, AccessTriggeredSkill, AccessUserResult, DamageCalcState, DamageState, ScoreExpState } from "../core/access"
+import { AccessScoreExpResult, AccessScoreExpState, ScoreExpCalcState, ScoreExpResult } from "../core/access/score"
 import { assert, SimulatorError } from "../core/context"
 import { Denco, DencoState } from "../core/denco"
 import { AccessEventData, AccessEventUser, Event, EventSkillTrigger, EventTriggeredSkill, LevelupDenco, SkillActivatedEventData, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
@@ -184,10 +185,35 @@ const damageCalcStateSchema = objectSchema<DamageCalcState>({
   constant: primitiveSchema,
 })
 
+const accessScoreExpStateSchema = objectSchema<AccessScoreExpState>({
+  accessBonus: primitiveSchema,
+  damageBonus: primitiveSchema,
+  linkBonus: primitiveSchema,
+})
+
+const accessScoreExpResultSchema = extendSchema<AccessScoreExpState, AccessScoreExpResult>(accessScoreExpStateSchema, {
+  total: primitiveSchema
+})
+
 const scoreExpStateSchema = objectSchema<ScoreExpState>({
-  access: primitiveSchema,
+  access: accessScoreExpStateSchema,
   skill: primitiveSchema,
   link: primitiveSchema,
+})
+
+const scoreExpResultSchema = objectSchema<ScoreExpResult>({
+  access: accessScoreExpResultSchema,
+  skill: primitiveSchema,
+  link: primitiveSchema,
+  total: primitiveSchema
+})
+
+const scoreExpCalcStateSchema = objectSchema<ScoreExpCalcState>({
+  access: primitiveSchema,
+  accessBonus: primitiveSchema,
+  damageBonus: primitiveSchema,
+  linkBonus: primitiveSchema,
+  link: primitiveSchema
 })
 
 export const accessDencoStateSchema = extendSchema<DencoState, AccessDencoState>(dencoStateSchema, {
@@ -202,6 +228,7 @@ export const accessDencoStateSchema = extendSchema<DencoState, AccessDencoState>
   reboot: primitiveSchema,
   damage: damageStateSchema,
   exp: scoreExpStateSchema,
+  expPercent: scoreExpCalcStateSchema,
 })
 
 const accessTriggerSkillSchema = extendSchema<Denco, AccessTriggeredSkill>(dencoSchema, {
@@ -216,8 +243,7 @@ export const accessSideStateSchema = objectSchema<AccessSideState>({
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
   score: scoreExpStateSchema,
-  displayedScore: primitiveSchema,
-  displayedExp: primitiveSchema,
+  scorePercent: scoreExpCalcStateSchema,
 })
 
 
@@ -249,6 +275,7 @@ export const linkResultSchema = extendSchema<StationLink, LinkResult>(stationLin
   matchAttr: primitiveSchema,
   matchBonus: primitiveSchema,
   totalScore: primitiveSchema,
+  exp: primitiveSchema,
 })
 
 export const linksResultSchema = objectSchema<LinksResult>({
@@ -267,9 +294,11 @@ const copyLinksResult = createCopyFunc(linksResultSchema)
 const mergeLinksResult = createMergeFunc(linksResultSchema)
 
 // event
-
-export const accessDencoResultSchema = extendSchema<AccessDencoState, AccessDencoResult>(accessDencoStateSchema, {
+accessDencoStateSchema.fields.damage
+export const accessDencoResultSchema = objectSchema<AccessDencoResult>({
+  ...accessDencoStateSchema.fields,
   disconnectedLink: linksResultSchema,
+  exp: scoreExpResultSchema,
 })
 
 const accessEventUserSchema = objectSchema<AccessEventUser>({
@@ -279,7 +308,8 @@ const accessEventUserSchema = objectSchema<AccessEventUser>({
   triggeredSkills: arraySchema(accessTriggerSkillSchema),
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
-  score: scoreExpStateSchema,
+  score: scoreExpResultSchema,
+  scorePercent: scoreExpCalcStateSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
 })
@@ -459,7 +489,8 @@ export const accessUserResultSchema = objectSchema<AccessUserResult>({
   triggeredSkills: arraySchema(accessTriggerSkillSchema),
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
-  score: scoreExpStateSchema,
+  score: scoreExpResultSchema,
+  scorePercent: scoreExpCalcStateSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
   event: arraySchema(customSchema(copyEvent, mergeEvent)),
