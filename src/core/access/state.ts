@@ -3,6 +3,7 @@ import { Denco, DencoState } from "../denco"
 import { ReadonlyState } from "../state"
 import { Station } from "../station"
 import { UserPropertyReader } from "../user"
+import { ScoreExpCalcState } from "./score"
 
 /**
  * アクセスにおけるスキルの評価ステップ
@@ -122,11 +123,16 @@ export interface AccessDencoState extends DencoState {
   damage?: DamageState
 
   /**
-   * このアクセス時に発生する経験値  
+   * アクセス処理中に獲得する経験値  
    * 
    * `access + skill + link`の合計値が経験値の総量です
    */
   exp: ScoreExpState
+
+  /**
+   * アクセス処理中に獲得する経験値の増加量[%]
+   */
+  expPercent: ScoreExpCalcState
 }
 
 
@@ -161,25 +167,16 @@ export interface AccessSideState {
   probabilityBoosted: boolean
 
   /**
-   * アクセス中に発生したスコア
+   * アクセス処理中に発生したスコア
    * 
    * でんこ毎に計算される経験値と異なりスコアはユーザ単位で計算される
    */
   score: ScoreExpState
 
   /**
-   * アクセス表示用のスコア値
-   * 
-   * アクセスで発生したスコア（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
+   * アクセス処理中に発生したスコアの増加量を指定します
    */
-  displayedScore: number
-
-  /**
-   * アクセス表示用の経験値値
-   * 
-    * アクセス・被アクセスするでんこがアクセス中に得た経験値（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
-   */
-  displayedExp: number
+  scorePercent: ScoreExpCalcState
 }
 
 /**

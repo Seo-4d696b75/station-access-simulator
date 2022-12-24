@@ -9,10 +9,9 @@ import { Station } from "../station"
 import { UserState } from "../user"
 import { getUserPropertyReader } from "../user/property"
 import { runAccessDamageCalculation } from "./damage"
-import { completeDisplayScoreExp } from "./display"
 import { completeDencoHP, updateDencoHP } from "./hp"
 import { completeAccess } from "./result"
-import { calcAccessScoreExp, calcLinkScoreExp } from "./score"
+import { calcAccessBonusScoreExp, calcLinkBonusScoreExp } from "./score"
 import { checkProbabilityBoost, filterActiveSkill, triggerSkillAt } from "./skill"
 
 /**
@@ -132,9 +131,20 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
       skillInvalidated: false,
       damage: undefined,
       exp: {
-        access: 0,
+        access: {
+          accessBonus: 0,
+          damageBonus: 0,
+          linkBonus: 0,
+        },
         skill: 0,
         link: 0,
+      },
+      expPercent: {
+        access: 0,
+        accessBonus: 0,
+        damageBonus: 0,
+        linkBonus: 0,
+        link: 0
       }
     }
     return s
@@ -151,12 +161,21 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
     probabilityBoostPercent: 0,
     probabilityBoosted: false,
     score: {
-      access: 0,
+      access: {
+        accessBonus: 0,
+        damageBonus: 0,
+        linkBonus: 0,
+      },
       skill: 0,
       link: 0,
     },
-    displayedScore: 0,
-    displayedExp: 0,
+    scorePercent: {
+      access: 0,
+      accessBonus: 0,
+      damageBonus: 0,
+      linkBonus: 0,
+      link: 0
+    },
   }
 }
 
@@ -262,11 +281,15 @@ function checkPink(context: Context, state: AccessState): AccessState {
  * 守備側の有無・足湯有無に関わらず実行する処理
  */
 function runAccessStart(context: Context, state: AccessState): AccessState {
-  // アクセスによるスコアと経験値
-  const [score, exp] = calcAccessScoreExp(context, state.offense, state.station)
+  // フィルムの経験値補正
+  applyFilmExpPercent(context, state, "offense")
+  applyFilmExpPercent(context, state, "defense")
+
+  // アクセスボーナスによるスコアと経験値
+  const [score, exp] = calcAccessBonusScoreExp(context, state.offense, state.station)
   const accessDenco = getAccessDenco(state, "offense")
-  accessDenco.exp.access += exp
-  state.offense.score.access += score
+  accessDenco.exp.access.accessBonus += exp
+  state.offense.score.access.accessBonus += score
   context.log.log(`アクセスによる追加 ${accessDenco.name} score:${score} exp:${exp}`)
 
   // 他ピンクに関係なく発動するスキル
@@ -308,15 +331,24 @@ function decideLinkResult(context: Context, state: AccessState) {
   context.log.log(`守備側のリンク解除：${state.linkDisconnected}`)
 
   if (state.linkSuccess) {
-    // リンク成功によるスコア＆経験値の付与
-    const [score, exp] = calcLinkScoreExp(context, state.offense, state)
+    // リンク成功ボーナスによるスコア＆経験値の付与
+    const [score, exp] = calcLinkBonusScoreExp(context, state.offense, state)
     const linkDenco = getAccessDenco(state, "offense")
-    linkDenco.exp.access += exp
-    state.offense.score.access += score
+    linkDenco.exp.access.linkBonus += exp
+    state.offense.score.access.linkBonus += score
     context.log.log(`リンク成功による追加 ${linkDenco.name} score:${score} exp:${exp}`)
   }
+}
 
-  // 表示用の経験値＆スコアの計算
-  completeDisplayScoreExp(context, state, "offense")
-  completeDisplayScoreExp(context, state, "defense")
+function applyFilmExpPercent(context: Context, state: AccessState, which: AccessSide) {
+  const side = (which === "offense") ? state.offense : state.defense
+  if (!side) return
+  // アクセス・非アクセスのでんこのみ確認
+  const d = side.formation[side.carIndex]
+  const film = d.film
+  if (film.type === "film" && film.expPercent) {
+    // アクセスで獲得する経験値・リンク経験値両方に影響
+    d.expPercent.access += film.expPercent
+    d.expPercent.link += film.expPercent
+  }
 }

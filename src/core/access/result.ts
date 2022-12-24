@@ -7,7 +7,7 @@ import { ReadonlyState } from "../state"
 import { LinksResult } from "../station"
 import { UserState } from "../user"
 import { refreshEXPState } from "../user/refresh"
-import { calcLinksResult } from "./score"
+import { calcExpPercent, calcLinksResult, calcScorePercent, ScoreExpResult } from "./score"
 import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "./state"
 /**
  * アクセスの結果
@@ -31,6 +31,22 @@ export interface AccessResult extends Omit<AccessState, "offense" | "defense"> {
  */
 export interface AccessUserResult extends Omit<AccessSideState, "user">, UserState {
   formation: AccessDencoResult[]
+
+  score: ScoreExpResult
+
+  /**
+   * アクセス表示用のスコア値
+   * 
+   * アクセスで発生したスコア（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
+   */
+  displayedScore: number
+
+  /**
+   * アクセス表示用の経験値値
+   * 
+    * アクセス・被アクセスするでんこがアクセス中に得た経験値（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
+   */
+  displayedExp: number
 }
 
 /**
@@ -53,6 +69,8 @@ export interface AccessDencoResult extends AccessDencoState {
    * 現在のHP
    */
   currentHp: number
+
+  exp: ScoreExpResult
 }
 
 /**
@@ -73,9 +91,17 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   completeDencoLink(context, result, "offense")
   completeDencoLink(context, result, "defense")
 
-  // 経験値の反映
+  // 経験値の増減・現在の経験値に反映
   completeDencoEXP(context, result, "offense")
   completeDencoEXP(context, result, "defense")
+
+  // スコアの増減
+  completeUserScore(context, result, "offense")
+  completeUserScore(context, result, "defense")
+
+  // 表示用の経験値＆スコアの計算
+  completeDisplayScoreExp(context, result, "offense")
+  completeDisplayScoreExp(context, result, "defense")
 
   // レベルアップ処理
   checkLevelup(context, result)
@@ -116,6 +142,27 @@ function initUserResult(context: Context, state: ReadonlyState<UserState>, acces
     event: [],
     queue: before.queue,
     user: before.user,
+    formation: after.formation.map(d => ({
+      ...d,
+      exp: {
+        ...d.exp,
+        total: 0,
+        access: {
+          ...d.exp.access,
+          total: 0,
+        }
+      }
+    })),
+    displayedScore: 0,
+    displayedExp: 0,
+    score: {
+      ...after.score,
+      total: 0,
+      access: {
+        ...after.score.access,
+        total: 0
+      }
+    }
   }
 }
 
@@ -123,13 +170,13 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
   const side = which === "offense" ? state.offense : state.defense
   if (!side) return
   // 編成全員のリンク解除を確認する
-  side.formation.map(d => {
+  side.formation.map((d, i) => {
     if (d.reboot) {
       // リブートにより全リンク解除
       const disconnectedLink = d.link
       d.link = []
       // カウンター攻撃などリンク数0でもリブートする
-      const linkResult = calcLinksResult(context, disconnectedLink, d)
+      const linkResult = calcLinksResult(context, disconnectedLink, side, i)
       if (linkResult.link.length > 0) {
         // 解除リンク数1以上の場合
         d.exp.link = linkResult.exp
@@ -156,7 +203,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
       // 対象リンクのみ解除
       const disconnectedLink = d.link[idx]
       d.link.splice(idx, 1)
-      const linkResult = calcLinksResult(context, [disconnectedLink], d)
+      const linkResult = calcLinksResult(context, [disconnectedLink], side, i)
       // 特にイベントは発生せず経験値だけ追加
       d.exp.link = linkResult.exp
       d.disconnectedLink = linkResult
@@ -168,14 +215,67 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
 function completeDencoEXP(context: Context, state: AccessResult, which: AccessSide) {
   const side = which === "offense" ? state.offense : state.defense
   side?.formation?.forEach(d => {
-    // アクセスによる経験値付与
-    const exp = d.exp.access + d.exp.skill + d.exp.link
+    // スキルによる経験値付与なども考慮して編成内全員を確認すること！
+    // スキル・フィルムによる獲得経験値の増減
+    d.exp.access.accessBonus = calcExpPercent(d.exp.access.accessBonus, d, "access_bonus")
+    d.exp.access.damageBonus = calcExpPercent(d.exp.access.damageBonus, d, "damage_bonus")
+    d.exp.access.linkBonus = calcExpPercent(d.exp.access.linkBonus, d, "link_bonus")
+    d.exp.access.total = d.exp.access.accessBonus
+      + d.exp.access.damageBonus + d.exp.access.linkBonus
+    // d.exp.skill スキルによる経験値付与（固定値）は変化しない！
+    // d.exp.link リンク経験値には反映済み
+    // 合計値
+    d.exp.total = d.exp.access.total + d.exp.skill + d.exp.link
+    const exp = d.exp.access.accessBonus + d.exp.access.damageBonus
+      + d.exp.access.linkBonus + d.exp.skill + d.exp.link
     if (d.who !== "other" || exp !== 0) {
       context.log.log(`経験値追加 ${d.name} ${d.currentExp}(current) + ${exp} -> ${d.currentExp + exp}`)
       context.log.log(`経験値詳細 access:${d.exp.access} skill:${d.exp.skill} link:${d.exp.link}`)
     }
     d.currentExp += exp
   })
+}
+
+function completeUserScore(context: Context, state: AccessResult, which: AccessSide) {
+  const side = which === "offense" ? state.offense : state.defense
+  if (!side) return
+  // スキルによる獲得スコア増減
+  side.score.access.accessBonus = calcScorePercent(side.score.access.accessBonus, side, "access_bonus")
+  side.score.access.damageBonus = calcScorePercent(side.score.access.damageBonus, side, "damage_bonus")
+  side.score.access.linkBonus = calcScorePercent(side.score.access.linkBonus, side, "link_bonus")
+  side.score.access.total = side.score.access.accessBonus
+    + side.score.access.damageBonus + side.score.access.linkBonus
+  // score.skill スキルによるスコア付与（固定値）は変化しない！
+  // score.link リンクスコアには反映済み
+  // 合計値
+  side.score.total = side.score.access.total + side.score.skill + side.score.link
+}
+
+/**
+ * 表示用の経験値＆スコアの計算（破壊的）
+ * 
+ * @param context 
+ * @param state 
+ * @param which 
+ */
+export function completeDisplayScoreExp(context: Context, state: AccessResult, which: AccessSide) {
+  const side = which === "offense" ? state.offense : state.defense
+  if (!side) return
+  // 基本的には直接アクセスするでんこの経験値とスコア
+  const d = side.formation[side.carIndex]
+  // アクセスで獲得する・リンクスコア＆経験値はそのまま
+  side.displayedScore = side.score.access.accessBonus + side.score.access.damageBonus
+    + side.score.access.linkBonus + side.score.skill
+  side.displayedExp = d.exp.access.accessBonus + d.exp.access.damageBonus + d.exp.access.linkBonus + d.exp.skill
+  // 守備側がリンク解除（フットバースorリブート）した場合はその駅のリンクのスコア＆経験値を表示
+  if (state.linkDisconnected && d.who === "defense") {
+    assert(d.disconnectedLink)
+    const idx = d.disconnectedLink.link.findIndex(l => l.name === state.station.name)
+    assert(idx >= 0, `リブートした守備側のリンクが見つかりません ${state.station.name}`)
+    const link = d.disconnectedLink.link[idx]
+    side.displayedScore += link.totalScore
+    side.displayedExp += link.exp
+  }
 }
 
 function addAccessEvent(context: Context, origin: ReadonlyState<UserState> | undefined, result: AccessResult, which: AccessSide) {
