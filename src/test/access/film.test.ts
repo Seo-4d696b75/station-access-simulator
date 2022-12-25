@@ -144,23 +144,47 @@ describe("アクセス処理のフィルム補正", () => {
       }
       const result = startAccess(context, config)
       // スコア＆経験値
-      expect(result.offense.score.access).toBe(accessScore + 260)// アクセス＋ダメージ量のスコア
+      expect(result.offense.score.total).toBe(accessScore + 260)// アクセス＋ダメージ量のスコア
+      expect(result.offense.score.access.total).toBe(accessScore + 260)
+      expect(result.offense.score.access.accessBonus).toBe(accessScore)
+      expect(result.offense.score.access.damageBonus).toBe(260)
+      expect(result.offense.score.access.linkBonus).toBe(0)
       expect(result.offense.score.skill).toBe(0)
       expect(result.offense.score.link).toBe(0)
       expect(result.offense.displayedScore).toBe(accessScore + 260)
       expect(result.offense.displayedExp).toBe(Math.floor((accessScore + 260) * 1.1))
-      expect(result.defense?.score.access).toBe(0)
+      expect(result.defense?.score.total).toBe(0)
+      expect(result.defense?.score.access.total).toBe(0)
       expect(result.defense?.score.skill).toBe(0)
       expect(result.defense?.score.link).toBe(0)
       expect(result.defense?.displayedScore).toBe(0)
       expect(result.defense?.displayedExp).toBe(0)
       // 攻守でんこのアクセス状態
       let d = getAccessDenco(result, "offense")
-      expect(d.exp.access).toBe(Math.floor((accessScore + 260) * 1.1))
+      expect(d.exp.total).toBe(d.exp.access.total)
+      expect(d.expPercent).toMatchObject({
+        access: 10,
+        accessBonus: 0,
+        damageBonus: 0,
+        linkBonus: 0,
+        link: 10,
+      })
+      expect(d.exp.access.total).toBe(Math.floor((accessScore + 260) * 1.1))
+      expect(d.exp.access.accessBonus).toBe(Math.floor(accessScore * 1.1))
+      expect(d.exp.access.damageBonus).toBe(Math.floor(260 * 1.1))
+      expect(d.exp.access.linkBonus).toBe(0)
       expect(d.exp.skill).toBe(0)
       expect(d.exp.link).toBe(0)
       d = getAccessDenco(result, "defense")
-      expect(d.exp.access).toBe(0)
+      expect(d.exp.total).toBe(0)
+      expect(d.expPercent).toMatchObject({
+        access: 5,
+        accessBonus: 0,
+        damageBonus: 0,
+        linkBonus: 0,
+        link: 5,
+      })
+      expect(d.exp.access.total).toBe(0)
       expect(d.exp.skill).toBe(0)
       expect(d.exp.link).toBe(0)
     })
@@ -202,27 +226,58 @@ describe("アクセス処理のフィルム補正", () => {
       }
       const result = startAccess(context, config)
       // スコア＆経験値
-      expect(result.offense.score.access).toBe(accessScore + linkSuccessScore)// アクセス＋リンク成功
+      expect(result.offense.score.total).toBe(accessScore + linkSuccessScore)// アクセス＋リンク成功
+      expect(result.offense.score.access.total).toBe(accessScore + linkSuccessScore)
+      expect(result.offense.score.access.accessBonus).toBe(accessScore)
+      expect(result.offense.score.access.damageBonus).toBe(0)
+      expect(result.offense.score.access.linkBonus).toBe(linkSuccessScore)
       expect(result.offense.score.skill).toBe(0)
       expect(result.offense.score.link).toBe(0)
       expect(result.offense.displayedScore).toBe(accessScore + linkSuccessScore)
       expect(result.offense.displayedExp).toBe(Math.floor((accessScore + linkSuccessScore) * 1.1))
-      const link = charlotte.link[0]
-      const linkScore = Math.floor((now - link.start) / 100)
-      expect(result.defense?.score.access).toBe(0)
+      const disconnect = getAccessDenco(result, "defense").disconnectedLink!
+      expect(disconnect.link.length).toBe(1) // フットバされたリンク単体
+      const link = disconnect.link[0]
+      expect(disconnect.totalScore).toBe(link.totalScore)
+      expect(disconnect.exp).toBe(link.exp)
+      // 単純な合計＊フィルム補正
+      expect(link.comboBonus).toBe(0)
+      expect(link.totalScore).toBe(link.linkScore + link.matchBonus)
+      expect(link.exp).toBe(Math.floor((link.linkScore + link.matchBonus) * 1.05))
+      expect(result.defense?.score.total).toBe(disconnect.totalScore)
+      expect(result.defense?.score.access.total).toBe(0)
       expect(result.defense?.score.skill).toBe(0)
-      expect(result.defense?.score.link).toBe(linkScore)
-      expect(result.defense?.displayedScore).toBe(linkScore)
-      expect(result.defense?.displayedExp).toBe(Math.floor(linkScore * 1.05))
+      expect(result.defense?.score.link).toBe(disconnect.totalScore)
+      expect(result.defense?.displayedScore).toBe(disconnect.totalScore)
+      expect(result.defense?.displayedExp).toBe(disconnect.exp)
       // 攻守でんこのアクセス状態
       let d = getAccessDenco(result, "offense")
-      expect(d.exp.access).toBe(Math.floor((accessScore + linkSuccessScore) * 1.1))
+      expect(d.exp.total).toBe(Math.floor((accessScore + linkSuccessScore) * 1.1))
+      expect(d.expPercent).toMatchObject({
+        access: 10,
+        accessBonus: 0,
+        damageBonus: 0,
+        linkBonus: 0,
+        link: 10,
+      })
+      expect(d.exp.access.total).toBe(Math.floor((accessScore + linkSuccessScore) * 1.1))
+      expect(d.exp.access.accessBonus).toBe(Math.floor((accessScore) * 1.1))
+      expect(d.exp.access.damageBonus).toBe(0)
+      expect(d.exp.access.linkBonus).toBe(Math.floor((linkSuccessScore) * 1.1))
       expect(d.exp.skill).toBe(0)
       expect(d.exp.link).toBe(0)
       d = getAccessDenco(result, "defense")
-      expect(d.exp.access).toBe(0)
+      expect(d.exp.total).toBe(disconnect.exp)
+      expect(d.expPercent).toMatchObject({
+        access: 5,
+        accessBonus: 0,
+        damageBonus: 0,
+        linkBonus: 0,
+        link: 5,
+      })
+      expect(d.exp.access.total).toBe(0)
       expect(d.exp.skill).toBe(0)
-      expect(d.exp.link).toBe(Math.floor(linkScore * 1.05))
+      expect(d.exp.link).toBe(disconnect.exp)
     })
 
     test("リブートあり", () => {
@@ -263,28 +318,53 @@ describe("アクセス処理のフィルム補正", () => {
       // スコア＆経験値
       expect(result.damageBase?.variable).toBe(338)
       expect(result.damageBase?.constant).toBe(0)
-      expect(result.offense.score.access).toBe(accessScore + 338 + linkSuccessScore)// アクセス＋ダメージ量＋リンク成功
+      expect(result.offense.score.total).toBe(accessScore + 338 + linkSuccessScore)// アクセス＋ダメージ量＋リンク成功
+      expect(result.offense.score.access.total).toBe(accessScore + 338 + linkSuccessScore)
+      expect(result.offense.score.access.accessBonus).toBe(accessScore)
+      expect(result.offense.score.access.damageBonus).toBe(338)
+      expect(result.offense.score.access.linkBonus).toBe(linkSuccessScore)
       expect(result.offense.score.skill).toBe(0)
       expect(result.offense.score.link).toBe(0)
       expect(result.offense.displayedScore).toBe(accessScore + 338 + linkSuccessScore)
       expect(result.offense.displayedExp).toBe(Math.floor((accessScore + 338 + linkSuccessScore) * 1.1))
-      const link = charlotte.link[0]
-      const linkScore = Math.floor((now - link.start) / 100)
-      expect(result.defense?.score.access).toBe(0)
+      const disconnect = getAccessDenco(result, "defense").disconnectedLink!
+      expect(disconnect.link.length).toBe(3) // リンクすべて解除
+      expect(result.defense?.score.total).toBe(disconnect.totalScore)
+      expect(result.defense?.score.access.total).toBe(0)
       expect(result.defense?.score.skill).toBe(0)
-      expect(result.defense?.score.link).toBe(getAccessDenco(result, "defense").disconnectedLink!.totalScore)
-      expect(result.defense?.displayedScore).toBe(linkScore) // アクセス駅のリンクのみ
-      expect(result.defense?.displayedExp).toBe(Math.floor(linkScore * 1.05))
+      expect(result.defense?.score.link).toBe(disconnect.totalScore)
+      expect(result.defense?.displayedScore).toBe(disconnect.link[0].totalScore) // アクセス駅のリンクのみ
+      expect(result.defense?.displayedExp).toBe(disconnect.link[0].exp)
       // 攻守でんこのアクセス状態
       let d = getAccessDenco(result, "offense")
-      expect(d.exp.access).toBe(Math.floor((accessScore + 338 + linkSuccessScore) * 1.1))
+      expect(d.exp.total).toBe(Math.floor((accessScore + 338 + linkSuccessScore) * 1.1))
+      expect(d.expPercent).toMatchObject({
+        access: 10,
+        accessBonus: 0,
+        damageBonus: 0,
+        linkBonus: 0,
+        link: 10,
+      })
+      expect(d.exp.access.total).toBe(d.exp.total)
       expect(d.exp.skill).toBe(0)
       expect(d.exp.link).toBe(0)
       d = getAccessDenco(result, "defense")
-      expect(d.exp.access).toBe(0)
+      expect(d.exp.total).toBe(disconnect.exp)
+      expect(d.expPercent).toMatchObject({
+        access: 5,
+        accessBonus: 0,
+        damageBonus: 0,
+        linkBonus: 0,
+        link: 5,
+      })
+      expect(d.exp.total).toBeGreaterThan(disconnect.totalScore) // 5%アップ
+      // 各リンク個別に補正が効くため合計の5%アップではない
+      const v = Math.floor(disconnect.totalScore * 1.05)
+      expect(d.exp.total).toBeLessThanOrEqual(v)
+      expect(d.exp.total).toBeGreaterThanOrEqual(v - 3)
+      expect(d.exp.access.total).toBe(0)
       expect(d.exp.skill).toBe(0)
-      expect(d.exp.link).toBe(d.disconnectedLink!.exp)
-      expect(d.disconnectedLink!.exp).toBe(Math.floor(d.disconnectedLink!.totalScore * 1.05))
+      expect(d.exp.link).toBe(disconnect.exp)
     })
   })
 

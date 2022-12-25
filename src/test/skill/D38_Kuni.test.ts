@@ -170,4 +170,7 @@ describe("くにのスキル", () => {
     d = getAccessDenco(result, "offense")
     expect(d.damage).toBeUndefined()
   })
+
+  // TODO まりかカウンター
+  // TODO まりかカウンターでリブートしたときフィルム補正
 })

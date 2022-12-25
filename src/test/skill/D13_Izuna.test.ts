@@ -1,3 +1,4 @@
+import assert from "assert"
 import { hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import { testAlwaysSkill } from "../tool/skillState"
@@ -79,27 +80,25 @@ describe("いずなのスキル", () => {
     expect(result.defendPercent).toBe(4)
     expect(result.damageBase?.variable).toBe(192)
     expect(result.damageRatio).toBe(1.0)
-    if (result.defense) {
-      // アクセス中の状態の確認
-      let accessIzuna = result.defense.formation[0]
-      expect(accessIzuna.damage).not.toBeUndefined()
-      expect(accessIzuna.damage?.value).toBe(192)
-      expect(accessIzuna.damage?.attr).toBe(false)
-      expect(accessIzuna.hpBefore).toBe(216)
-      expect(accessIzuna.hpAfter).toBe(24)
-      expect(accessIzuna.reboot).toBe(false)
-      expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
-      expect(result.defense.displayedExp).toBe(0)
-    }
+    assert(result.defense)
+    // アクセス中の状態の確認
+    let accessIzuna = result.defense.formation[0]
+    expect(accessIzuna.damage).not.toBeUndefined()
+    expect(accessIzuna.damage?.value).toBe(192)
+    expect(accessIzuna.damage?.attr).toBe(false)
+    expect(accessIzuna.hpBefore).toBe(216)
+    expect(accessIzuna.hpAfter).toBe(24)
+    expect(accessIzuna.reboot).toBe(false)
+    expect(accessIzuna.exp.total).toBe(0)
+    expect(result.defense.displayedExp).toBe(0)
+
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
-    if (result.defense) {
-      // リブート確認
-      defense = result.defense
-      izuna = defense.formation[0]
-      expect(izuna.currentHp).toBe(24)
-    }
 
+    // リブート確認
+    defense = result.defense
+    izuna = defense.formation[0]
+    expect(izuna.currentHp).toBe(24)
   })
   test("発動あり-ディフェンダー2", () => {
     const context = initContext("test", "test", false)
@@ -126,18 +125,18 @@ describe("いずなのスキル", () => {
     expect(result.defendPercent).toBe(8)
     expect(result.damageBase?.variable).toBe(184)
     expect(result.damageRatio).toBe(1.0)
-    if (result.defense) {
-      // アクセス中の状態の確認
-      let accessIzuna = result.defense.formation[0]
-      expect(accessIzuna.damage).not.toBeUndefined()
-      expect(accessIzuna.damage?.value).toBe(184)
-      expect(accessIzuna.damage?.attr).toBe(false)
-      expect(accessIzuna.hpBefore).toBe(216)
-      expect(accessIzuna.hpAfter).toBe(32)
-      expect(accessIzuna.reboot).toBe(false)
-      expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
-      expect(result.defense.displayedExp).toBe(0)
-    }
+    assert(result.defense)
+    // アクセス中の状態の確認
+    let accessIzuna = result.defense.formation[0]
+    expect(accessIzuna.damage).not.toBeUndefined()
+    expect(accessIzuna.damage?.value).toBe(184)
+    expect(accessIzuna.damage?.attr).toBe(false)
+    expect(accessIzuna.hpBefore).toBe(216)
+    expect(accessIzuna.hpAfter).toBe(32)
+    expect(accessIzuna.reboot).toBe(false)
+    expect(accessIzuna.exp.total).toBe(0)
+    expect(result.defense.displayedExp).toBe(0)
+
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
@@ -167,18 +166,18 @@ describe("いずなのスキル", () => {
     expect(result.defendPercent).toBe(15)
     expect(result.damageBase?.variable).toBe(170)
     expect(result.damageRatio).toBe(1.0)
-    if (result.defense) {
-      // アクセス中の状態の確認
-      let accessIzuna = result.defense.formation[0]
-      expect(accessIzuna.damage).not.toBeUndefined()
-      expect(accessIzuna.damage?.value).toBe(170)
-      expect(accessIzuna.damage?.attr).toBe(false)
-      expect(accessIzuna.hpBefore).toBe(256)
-      expect(accessIzuna.hpAfter).toBe(86)
-      expect(accessIzuna.reboot).toBe(false)
-      expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
-      expect(result.defense.displayedExp).toBe(0)
-    }
+    assert(result.defense)
+    // アクセス中の状態の確認
+    let accessIzuna = result.defense.formation[0]
+    expect(accessIzuna.damage).not.toBeUndefined()
+    expect(accessIzuna.damage?.value).toBe(170)
+    expect(accessIzuna.damage?.attr).toBe(false)
+    expect(accessIzuna.hpBefore).toBe(256)
+    expect(accessIzuna.hpAfter).toBe(86)
+    expect(accessIzuna.reboot).toBe(false)
+    expect(accessIzuna.exp.total).toBe(0)
+    expect(result.defense.displayedExp).toBe(0)
+
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
@@ -209,18 +208,18 @@ describe("いずなのスキル", () => {
     expect(result.defendPercent).toBe(28)
     expect(result.damageBase?.variable).toBe(144)
     expect(result.damageRatio).toBe(1.0)
-    if (result.defense) {
-      // アクセス中の状態の確認
-      let accessIzuna = result.defense.formation[0]
-      expect(accessIzuna.damage).not.toBeUndefined()
-      expect(accessIzuna.damage?.value).toBe(144)
-      expect(accessIzuna.damage?.attr).toBe(false)
-      expect(accessIzuna.hpBefore).toBe(336)
-      expect(accessIzuna.hpAfter).toBe(192)
-      expect(accessIzuna.reboot).toBe(false)
-      expect(accessIzuna.exp).toMatchObject({ access: 0, skill: 0 })
-      expect(result.defense.displayedExp).toBe(0)
-    }
+    assert(result.defense)
+    // アクセス中の状態の確認
+    let accessIzuna = result.defense.formation[0]
+    expect(accessIzuna.damage).not.toBeUndefined()
+    expect(accessIzuna.damage?.value).toBe(144)
+    expect(accessIzuna.damage?.attr).toBe(false)
+    expect(accessIzuna.hpBefore).toBe(336)
+    expect(accessIzuna.hpAfter).toBe(192)
+    expect(accessIzuna.reboot).toBe(false)
+    expect(accessIzuna.exp.total).toBe(0)
+    expect(result.defense.displayedExp).toBe(0)
+
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
