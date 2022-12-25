@@ -157,11 +157,14 @@ export interface ScoreExpCalcState {
 
   /**
    * 「リンクするときに獲得するボーナス」の増加量[%]
+   * 
+   * アクセス時にリンク成功した場合に獲得するスコア・経験値です. 
+   * **リンク保持によるスコア・経験値とは異なります**
    */
   linkBonus: number
 
   /**
-   * 「リンクするときに獲得するボーナス」の増加量[%]
+   * 「リンク保持で獲得する」スコア・経験値の増加量[%]
    */
   link: number
 }
@@ -226,10 +229,10 @@ export function calcAccessBonusScoreExp(context: Context, state: ReadonlyState<A
 
 export function calcDamageBonusScoreExp(context: Context, state: ReadonlyState<AccessSideState>, damage: number): [number, number] {
   const predicate = context.scorePredicate?.calcDamageBonus ?? DEFAULT_SCORE_PREDICATE.calcDamageBonus
-  // ダメージ量が負数（回復）の場合は一律経験値1を与える
   const score = damage >= 0 ? predicate(context, damage) : 0
-  // 基本的にスコアと経験値は同じ？
-  return [score, score]
+  // ダメージ量が負数（回復）の場合など経験値0は一律経験値1を与える
+  const exp = Math.max(score, 1)
+  return [score, exp]
 }
 
 export function calcLinkBonusScoreExp(context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>): [number, number] {
