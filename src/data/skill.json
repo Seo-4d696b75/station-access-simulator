@@ -1587,7 +1587,10 @@
       "75",
       "76",
       "78",
-      "80"
+      "80",
+      "83",
+      "85",
+      "87"
     ],
     "list": [
       {
@@ -4060,6 +4063,65 @@
         "denco_level": 80,
         "name": "逃げ道だって小さな旅",
         "probability": 20
+      }
+    ]
+  },
+  {
+    "numbering": "78",
+    "class": "D78_Naru",
+    "score_percent_failure": -50,
+    "ATK": 5,
+    "active": 3600,
+    "cooldown": 10800,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "恋心ばーさーく！ Lv.1",
+        "probability": 22,
+        "score_percent": 600
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "恋心ばーさーく！ Lv.2",
+        "probability": 25,
+        "score_percent": 650
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "恋心ばーさーく！ Lv.3",
+        "probability": 28,
+        "score_percent": 700
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "恋心ばーさーく！ Lv.4",
+        "probability": 31,
+        "score_percent": 750
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "恋心ばーさーく！ Lv.5",
+        "probability": 34,
+        "score_percent": 800
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "恋心ばーさーく！ Lv.6",
+        "probability": 37,
+        "score_percent": 850
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "まわれ運命のエンゲージリング",
+        "probability": 40,
+        "score_percent": 900
       }
     ]
   }
