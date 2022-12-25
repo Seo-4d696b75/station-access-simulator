@@ -3,7 +3,9 @@ import { SkillLogic, triggerSkillAfterAccess } from "..";
 const skill: SkillLogic = {
   transitionType: "always",
   onAccessComplete: (context, state, self, access) => {
-    const accessExp = self.exp.access // 他スキルによる経験値は対象外
+    // スキルによる経験値追加(固定値)は配布対象外
+    // ただしフィルム・スキルによる獲得経験値増加量は影響する
+    const accessExp = self.exp.access.total
     const linkExp = self.exp.link
     const exp = accessExp + linkExp // 再配布の対象経験値
     if (exp > 0 && state.formation.length >= 2) {
