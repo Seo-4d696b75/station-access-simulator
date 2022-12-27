@@ -1875,6 +1875,7 @@
   {
     "numbering": "38",
     "class": "D38_Kuni",
+    "probability_heal": 100,
     "list": [
       {
         "skill_level": 1,

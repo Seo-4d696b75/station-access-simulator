@@ -1,4 +1,6 @@
-import { addDamage, counterAttack, getAccessDenco } from "../core/access";
+import { counterAttack, getAccessDenco, getSide, hasSkillTriggered } from "../core/access";
+import { assert } from "../core/context";
+import { triggerSkillAfterAccess } from "../core/event";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
@@ -15,34 +17,48 @@ const skill: SkillLogic = {
       if (d.numbering === "37"
         && !d.reboot
         && d.hpAfter <= d.maxHp * hpTh / 100) {
-        return [
-          {
-            probabilityKey: "probability_heal",
-            recipe: (state) => {
-              // HP回復は確率発動
-              const sister = getAccessDenco(state, "defense")
-              const percent = self.skill.property.readNumber("heal")
-              const heal = Math.floor(sister.maxHp * percent / 100)
-              sister.damage = addDamage(sister.damage, {
-                // FIXME この実装だとお姉さまのHP回復量がアクセス表示ダイアログに反映されて現行仕様に反する
-                // でも回復量がどこの表示にも反映されていない現行仕様の方が変？
-                value: -heal, // 負数のダメージ量を加算
-                attr: false,
-              })
-              context.log.log(`お姉様は身体が弱い……。HP+${heal}`)
-            }
-          },
-          {
-            probabilityKey: "probability_counter",
-            recipe: (state) => {
-              context.log.log(`お姉様との旅路を邪魔するやつは、たとえマスターでも許さないからな…！！カウンター発動`)
-              return counterAttack(context, state, self)
-            }
+        // アクセス中に発動するのはカウンターのみ
+        // HP回復はアクセス直後のタイミング（青色ダイアログ表示される）
+        // 実装的には姉の被アクセス時に確率でカウンター、カウンターと同時にHPも回復
+        return {
+          probabilityKey: "probability",
+          recipe: (state) => {
+            context.log.log(`お姉様との旅路を邪魔するやつは、たとえマスターでも許さないからな…！！カウンター発動`)
+            return counterAttack(context, state, self)
           }
-        ]
+        }
       }
     }
   },
+  onAccessComplete: (context, state, self, access) => {
+    const side = getSide(access, self.which)
+    const idx = side.formation.findIndex(d => d.numbering === "37")
+    assert(idx >= 0)
+    // カウンター発動した場合はHPも回復
+    if (hasSkillTriggered(side, self)) {
+      return triggerSkillAfterAccess(
+        context,
+        state,
+        self,
+        {
+          probabilityKey: "probability_heal", // 100%
+          recipe: (state) => {
+            const sister = state.formation[idx]
+            assert(sister.numbering === "37")
+            assert(sister.currentHp < sister.maxHp)
+            // HPを直接いじる
+            const percent = self.skill.property.readNumber("heal")
+            const heal = Math.floor(sister.maxHp * percent / 100)
+            sister.currentHp = Math.min(
+              sister.currentHp + heal,
+              sister.maxHp,
+            )
+            context.log.log(`お姉様は身体が弱い……。HP+${heal}`)
+          }
+        },
+      )
+    }
+  }
 }
 
 export default skill
