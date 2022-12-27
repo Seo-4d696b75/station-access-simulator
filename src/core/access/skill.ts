@@ -2,11 +2,10 @@ import { copy } from "../../";
 import { Context } from "../context";
 import { Denco } from "../denco";
 import { random } from "../random";
-import { isSkillActive } from "../skill";
+import { canSkillInvalidated } from "../skill";
 import { SkillProperty, withSkill } from "../skill/property";
 import { ReadonlyState } from "../state";
 import { AccessDencoState, AccessSide, AccessSideState, AccessSkillStep, AccessState, AccessTriggeredSkill } from "./state";
-import { getDefense } from "./utils";
 
 /**
  * アクセス時に発動したスキル効果の処理
@@ -77,35 +76,37 @@ export function hasSkillTriggered(state: { readonly triggeredSkills: readonly Ac
 
 /**
  * アクセス中のスキル無効化の影響も考慮してアクティブなスキルか判定
+ * 
+ * - スキルを保有する
+ * - 保有するスキルがactive
+ * - 無効化の影響を受けていない
+ * - アクセス時に影響を受けるスキルである  
+ * 
+ * {@link canSkillInvalidated}と同様の実装
+ * 
  * @param d 
  * @returns 
  */
-export function hasActiveSkill(d: ReadonlyState<AccessDencoState>): boolean {
-  return isSkillActive(d.skill) && !d.skillInvalidated
-}
-
-export interface SkillTriggerQueueEntry {
-  carIndex: number
-  which: AccessSide
+export function hasValidatedSkill(d: ReadonlyState<AccessDencoState>): boolean {
+  return canSkillInvalidated(d)
 }
 
 /**
- * 編成からアクティブなスキル（スキルの保有・スキル状態・スキル無効化の影響を考慮）を抽出する
- * @param state
- * @returns 
+ * アクセス処理中のスキル発動判定の対象となるスキルを選択
+ * 
+ * see {@link hasValidatedSkill}
+ * 
+ * @param state 現在の状態
+ * @param which 守備・攻撃側どちらか
+ * @returns 対象のスキルを保有するでんこの編成内の位置
  */
-export function filterActiveSkill(state: ReadonlyState<AccessState>): SkillTriggerQueueEntry[] {
-  // 編成順に スキル発動有無の確認 > 発動による状態の更新 
-  const list = Array.from(state.offense.formation)
-  if (state.defense) {
-    list.push(...state.defense.formation)
-  }
-  return list.filter(d => {
-    return hasActiveSkill(d)
-  }).map(d => ({
-    carIndex: d.carIndex,
-    which: d.which,
-  }))
+export function filterValidatedSkill(state: ReadonlyState<AccessState>, which: AccessSide): number[] {
+  if (which === "defense" && !state.defense) return []
+  const formation = (which === "offense") ?
+    state.offense.formation : state.defense!.formation
+  return formation.filter(d => {
+    return hasValidatedSkill(d)
+  }).map(d => d.carIndex)
 }
 
 /**
@@ -119,18 +120,50 @@ export function triggerSkillAt(
   context: Context,
   current: ReadonlyState<AccessState>,
   step: AccessSkillStep,
-  target?: readonly SkillTriggerQueueEntry[],
 ): AccessState {
   let state = copy.AccessState(current)
-  // ただしアクティブなスキルの確認は初めに一括で行う（同じステップで発動するスキル無効化は互いに影響しない）
-  //  const offenseActive = filterActiveSkill(state.offense.formation)
-  //const defense = state.defense
-  //const defenseActive = defense ? filterActiveSkill(defense.formation) : undefined
-  const list = target ?? filterActiveSkill(state)
-  list.forEach(entry => {
-    const idx = entry.carIndex
-    const side = (entry.which === "offense") ? state.offense : getDefense(state)
-    const sideName = (entry.which === "offense") ? "攻撃側" : "守備側"
+
+  // 攻撃側 > 守備側の順序で発動判定・発動処理を行う
+  // ただし、発動判定は各編成内で一括で行う
+  // 同編成内のスキル無効化は互いに無効化はしない
+  state = triggerSkillOnSide(
+    context,
+    state,
+    step,
+    "offense",
+    filterValidatedSkill(state, "offense"),
+  )
+  state = triggerSkillOnSide(
+    context,
+    state,
+    step,
+    "defense",
+    filterValidatedSkill(state, "defense"),
+  )
+  return state
+}
+
+
+/**
+ * 各段階でスキルを評価する **破壊的**
+ * @param context 
+ * @param state 現在の状態
+ * @param step どの段階を評価するか
+ * @param which 攻撃・守備側どちらか
+ * @param indices スキルの発動判定の対象 スキル無効化の影響などで対象外の場合はindicesに含めない
+ * @returns 新しい状態
+ */
+export function triggerSkillOnSide(
+  context: Context,
+  state: AccessState,
+  step: AccessSkillStep,
+  which: AccessSide,
+  indices: number[],
+): AccessState {
+  const sideName = (which === "offense") ? "攻撃側" : "守備側"
+  const side = (which === "offense") ? state.offense : state.defense
+  if (!side) return state
+  indices.forEach(idx => {
     // 他スキルの発動で状態が変化する場合があるので毎度参照してからコピーする
     const d = copy.AccessDencoState(side.formation[idx])
     const skill = d.skill
@@ -148,9 +181,7 @@ export function triggerSkillAt(
         state = recipe(state) ?? state
       })
     }
-
   })
-
   return state
 }
 
