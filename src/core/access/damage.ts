@@ -2,6 +2,7 @@ import { AccessState, getAccessDenco } from "."
 import { Context } from "../context"
 import { formatPercent } from "../format"
 import { ReadonlyState } from "../state"
+import { triggerSkillAfterDamage } from "./afterDamage"
 import { updateDencoHP } from "./hp"
 import { calcDamageBonusScoreExp } from "./score"
 import { triggerSkillAt } from "./skill"
@@ -220,6 +221,8 @@ export function runAccessDamageCalculation(context: Context, state: AccessState)
   state.linkSuccess = state.linkDisconnected
 
   context.log.log(`守備の結果 HP: ${defense.hpBefore} > ${defense.hpAfter} reboot:${defense.reboot}`)
+
+  state = triggerSkillAfterDamage(context, state)
 
   return state
 }

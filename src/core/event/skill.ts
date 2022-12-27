@@ -1,4 +1,4 @@
-import { SkillTriggerEvent } from "."
+import { Event, SkillTriggerEvent } from "."
 import { copy, merge } from "../../"
 import { AccessDencoResult, AccessUserResult } from "../access"
 import { assert, Context, withFixedClock } from "../context"
@@ -9,7 +9,6 @@ import { SkillProperty, SkillPropertyReader, withSkill } from "../skill/property
 import { ReadonlyState } from "../state"
 import { UserProperty, UserState } from "../user"
 import { refreshUserState } from "../user/refresh"
-import { Event } from "./"
 
 /**
  * スキル発動型のイベントの詳細
@@ -47,6 +46,7 @@ export interface SkillEventState {
    * 確率補正%
    */
   probabilityBoostPercent: number
+  probabilityBoosted: boolean
 
 }
 
@@ -151,6 +151,7 @@ export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<A
     carIndex: self.carIndex,
     event: [],
     probabilityBoostPercent: 0,
+    probabilityBoosted: false,
   }
   const result = execute(context, eventState, trigger)
   if (result) {
@@ -218,6 +219,7 @@ export function triggerSkillAtEvent(context: Context, state: ReadonlyState<UserS
     carIndex: idx,
     event: [],
     probabilityBoostPercent: 0,
+    probabilityBoosted: false,
   }
   const result = execute(context, eventState, trigger)
   if (result) {
@@ -305,11 +307,15 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
     },
   }
   state.event.push(triggerEvent)
+
+  // 確率補正が効いたか確認
+  checkProbabilityBoosted(state)
+
   context.log.log("スキル評価イベントの終了")
   return state
 }
 
-function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>, trigger: EventSkillTrigger | void, property: SkillProperty): EventSkillRecipe | undefined {
+function canTriggerSkill(context: Context, state: SkillEventState, trigger: EventSkillTrigger | void, property: SkillProperty): EventSkillRecipe | undefined {
   if (typeof trigger === "undefined") return
   let percent = property.readNumber(trigger.probabilityKey, 100)
   const boost = state.probabilityBoostPercent
@@ -319,10 +325,13 @@ function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>
   if (percent <= 0) {
     return
   }
+  // ここまでは確率に依存せず決定できる（確率補正は効かなかった）
+
   if (boost !== 0) {
     const v = percent * (1 + boost / 100.0)
     context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
     percent = Math.min(v, 100)
+    state.probabilityBoosted = true
   }
   if (random(context, percent)) {
     context.log.log(`スキルが発動できます 確率:${percent}%`)
@@ -330,4 +339,10 @@ function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>
   }
   context.log.log(`スキルが発動しませんでした 確率:${percent}%`)
   return
+}
+
+function checkProbabilityBoosted(state: SkillEventState) {
+  if (!state.probabilityBoosted && state.probabilityBoostPercent !== 0) {
+    state.event = state.event.filter(e => !(e.type === "skill_trigger" && e.data.step === "probability_check"))
+  }
 }

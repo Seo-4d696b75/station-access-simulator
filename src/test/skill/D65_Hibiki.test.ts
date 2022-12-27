@@ -246,7 +246,7 @@ describe("ひびきのスキル", () => {
         expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
         expect(hasSkillTriggered(result.defense, mio)).toBe(false)
         // 確率ブースト（まひる発動率100%未満）は無効化の前に発動しているはず
-        // TODO 現行のゲームではひいる発動していない
+        // FIXME 現行のゲームではひいる発動していない
         // issue: https://github.com/Seo-4d696b75/station-access-simulator/issues/16
         expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
         // eco無効化

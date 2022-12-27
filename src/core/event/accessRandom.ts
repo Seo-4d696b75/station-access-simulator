@@ -70,5 +70,6 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
       accessEvent,
     ],
     probabilityBoostPercent: state.probabilityBoostPercent,
+    probabilityBoosted: state.probabilityBoosted,
   }
 })

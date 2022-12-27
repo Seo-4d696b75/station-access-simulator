@@ -536,5 +536,6 @@ export const skillEventStateSchema = objectSchema<SkillEventState>({
   formation: arraySchema(skillEventDencoStateSchema),
   event: arraySchema(eventSchema),
   probabilityBoostPercent: primitiveSchema,
+  probabilityBoosted: primitiveSchema,
   carIndex: primitiveSchema,
 })
