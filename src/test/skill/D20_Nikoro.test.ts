@@ -351,7 +351,8 @@ describe("にころのスキル", () => {
     expect(trigger.step).toBe("self")
     expect(trigger.time).toBe(result.time)
     d = result.defense.formation[1]
-    // TODO 現行仕様だとレベルアップ前のスキルレベルの値25%が適用されている
+    // FIXME 現行仕様だとレベルアップ前のスキルレベルの値25%が適用されている
+    // issue: https://github.com/Seo-4d696b75/station-access-simulator/issues/17
     const exp = Math.floor(reboot.exp * 0.3) // レベルアップ後のスキルレベルが適用
     expect(d.exp.access.total).toBe(0)
     expect(d.exp.skill).toBe(0) // アクセス中には付与されない

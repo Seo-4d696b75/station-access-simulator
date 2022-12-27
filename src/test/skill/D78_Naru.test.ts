@@ -477,6 +477,4 @@ describe("なるのスキル", () => {
       expect(result.offense.score.skill).toBe(0)
     })
   })
-
-  // TODO てすとによる無効化の影響
 })

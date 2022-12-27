@@ -406,10 +406,10 @@ describe("なよりのスキル", () => {
     expect(dNayori.exp.skill).toBe(0)
     expect(dNayori.exp.total).toBe(dNayori.exp.link)
     expect(dNayori.currentExp).toBe(99)
-    // FIXME
-    // 実際のゲームの動作では 「なよりのリブート」→「スキルレベル3→4」→「スキルレベル3発動」
+    // FIXME 実際のゲームの動作では 「なよりのリブート」→「スキルレベル3→4」→「スキルレベル3発動」
     // 現在の実装ではスキルレベル４で発動してしまう
     // でもダイアログの表示順的にはこっちのほうが自然では？
+    // issue: https://github.com/Seo-4d696b75/station-access-simulator/issues/17
     const exp = Math.floor(100 * 0.12)
     checkExp(context, defense, result.defense!, [1], exp)
   })
