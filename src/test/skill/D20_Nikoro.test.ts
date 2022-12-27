@@ -390,4 +390,36 @@ describe("にころのスキル", () => {
     expect(result.defense.event[0].type).toBe("access")
     expect(result.defense.event[1].type).toBe("reboot")
   })
+  test("発動あり-守備側-確率補正効かない", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let nikoro = DencoManager.getDenco(context, "20", 80, 10)
+    let imura = DencoManager.getDenco(context, "19", 80, 1)
+    let hiiru = DencoManager.getDenco(context, "34", 50)
+    let defense = initUser(context, "とあるマスター１", [imura])
+    let offense = initUser(context, "とあるマスター２", [nikoro, hiiru])
+    offense = activateSkill(context, offense, 1)
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: imura.link[0],
+    }
+    const result = startAccess(context, config)
+    // にころスキル発動(確率100%)
+    // ひいるは効かない
+    assert(result.defense)
+    expect(hasSkillTriggered(result.offense, nikoro)).toBe(false)
+    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+    expect(result.offense.event.length).toBe(2)
+    expect(result.offense.event[0].type).toBe("access")
+    let e = result.offense.event[1]
+    assert(e.type === "skill_trigger")
+    expect(e.data.denco).toMatchDenco(nikoro)
+  })
 })
