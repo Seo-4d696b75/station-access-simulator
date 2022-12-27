@@ -219,9 +219,10 @@ describe("ひびきのスキル", () => {
         let mio = DencoManager.getDenco(context, "36", 50)
         let hibiki = DencoManager.getDenco(context, "65", 50, 1)
         let mahiru = DencoManager.getDenco(context, "EX02", 50)
+        let hiiru = DencoManager.getDenco(context, "34", 50)
         let imura = DencoManager.getDenco(context, "19", 50)
-        let defense = initUser(context, "とあるマスター", [hibiki, mahiru, fubu, mio])
-        defense = activateSkill(context, defense, 1, 2, 3)
+        let defense = initUser(context, "とあるマスター", [hibiki, mahiru, fubu, mio, hiiru])
+        defense = activateSkill(context, defense, 1, 2, 3, 4)
         let offense = initUser(context, "とあるマスター２", [imura])
         offense = activateSkill(context, offense, 0)
         const config = {
@@ -244,6 +245,10 @@ describe("ひびきのスキル", () => {
         expect(hasSkillTriggered(result.defense, mahiru)).toBe(true)
         expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
         expect(hasSkillTriggered(result.defense, mio)).toBe(false)
+        // 確率ブースト（まひる発動率100%未満）は無効化の前に発動しているはず
+        // TODO 現行のゲームではひいる発動していない
+        // issue: https://github.com/Seo-4d696b75/station-access-simulator/issues/16
+        expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
         // eco無効化
         assert(result.defense)
         expect(result.offense.formation[0].skillInvalidated).toBe(true)
@@ -251,6 +256,7 @@ describe("ひびきのスキル", () => {
         // サポーターの無効化
         expect(result.defense.formation[2].skillInvalidated).toBe(true)
         expect(result.defense.formation[3].skillInvalidated).toBe(true)
+        expect(result.defense.formation[4].skillInvalidated).toBe(true)
         expect(result.defendPercent).toBe(0)
       })
 
