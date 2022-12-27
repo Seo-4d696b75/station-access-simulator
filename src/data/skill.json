@@ -4123,5 +4123,67 @@
         "score_percent": 900
       }
     ]
+  },
+  {
+    "numbering": "EX02",
+    "class": "EX02_Mahiru",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ゴーイングマイレール Lv.1",
+        "active": 480,
+        "cooldown": 15720,
+        "probability": 70
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ゴーイングマイレール Lv.2",
+        "active": 600,
+        "cooldown": 15600,
+        "probability": 75
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ゴーイングマイレール Lv.3",
+        "active": 840,
+        "cooldown": 15360,
+        "probability": 80
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ゴーイングマイレール Lv.4",
+        "active": 1080,
+        "cooldown": 15120,
+        "probability": 85
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ゴーイングマイレール Lv.5",
+        "active": 1320,
+        "cooldown": 14880,
+        "probability": 90
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ゴーイングマイレール Lv.6",
+        "active": 1560,
+        "cooldown": 14640,
+        "probability": 95
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "真昼の太陽のように",
+        "active": 1800,
+        "cooldown": 14400,
+        "probability": 100
+      }
+    ]
   }
 ]
