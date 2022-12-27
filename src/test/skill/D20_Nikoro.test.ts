@@ -1,5 +1,5 @@
 import assert from "assert"
-import { AccessConfig, DencoManager, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { AccessConfig, activateSkill, DencoManager, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import "../../gen/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
@@ -358,5 +358,35 @@ describe("にころのスキル", () => {
     expect(d.exp.link).toBe(0)
     expect(d.currentExp).toBe(exp) // アクセス直後に直接加算
 
+  })
+
+  test("発動なし-守備側-スキル無効化", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let nikoro = DencoManager.getDenco(context, "20", 80, 10)
+    let imura = DencoManager.getDenco(context, "19", 80)
+    let tesuto = DencoManager.getDenco(context, "EX04", 50)
+    let offense = initUser(context, "とあるマスター１", [imura, tesuto])
+    offense = activateSkill(context, offense, 0, 1)
+    let defense = initUser(context, "とあるマスター２", [nikoro])
+    const config: AccessConfig = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: nikoro.link[0],
+    }
+    const result = startAccess(context, config)
+    // にころ無効化
+    assert(result.defense)
+    expect(hasSkillTriggered(result.defense, nikoro)).toBe(false)
+    expect(result.defense.formation[0].skillInvalidated).toBe(true)
+    expect(result.defense.event.length).toBe(2)
+    expect(result.defense.event[0].type).toBe("access")
+    expect(result.defense.event[1].type).toBe("reboot")
   })
 })

@@ -1,4 +1,5 @@
-import { init } from "../.."
+import assert from "assert"
+import { dayjs, init } from "../.."
 import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
@@ -261,6 +262,55 @@ describe("なるのスキル", () => {
       expect(result.offense.score.skill).toBe(0)
       // リンクスコアは対象外
       expect(result.offense.score.link).toBe(d.exp.link)
+    })
+
+    test("てすとで無効化されない", () => {
+      // 通常の獲得スコアUP系のスキルは`start_access`で発動判定・発動処理するので
+      // 無効化の影響を受けるはず....がなるだけ特別に無効化されない（日頃の不幸のせめてもの報い？）
+
+      const context = initContext("test", "test", false)
+      context.random.mode = "force"
+      context.clock = dayjs("2020-01-01T23:00:00").valueOf()
+      let tesuto = DencoManager.getDenco(context, "EX04", 50)
+      let naru = DencoManager.getDenco(context, "78", 50)
+      let luna = DencoManager.getDenco(context, "3", 50, 1)
+      let offense = initUser(context, "とあるマスター", [naru, tesuto])
+      offense = activateSkill(context, offense, 0, 1)
+      let defense = initUser(context, "とあるマスター２", [luna])
+      const config = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: luna.link[0],
+      }
+      const result = startAccess(context, config)
+      expect(result.defense).not.toBeUndefined()
+      expect(result.linkSuccess).toBe(true)
+      // なるのスキルは例外的に無効化スキルと同じ`before_access`で発動する
+      expect(hasSkillTriggered(result.offense, naru)).toBe(true)
+      expect(hasSkillTriggered(result.offense, tesuto)).toBe(true)
+      expect(hasSkillTriggered(result.offense, luna)).toBe(false)
+      // 無効化
+      assert(result.defense)
+      expect(result.offense.formation[0].skillInvalidated).toBe(true)
+      expect(result.defense.formation[0].skillInvalidated).toBe(true)
+
+      expect(result.attackPercent).toBe(0)
+      expect(result.defendPercent).toBe(0)
+      expect(result.offense.scorePercent.access).toBe(750)
+      expect(result.offense.scorePercent.link).toBe(0)
+      let damage = getAccessDenco(result, "defense").damage!.value
+      // スコア増加 +750%
+      expect(result.offense.score.access.accessBonus).toBe(850)
+      expect(result.offense.score.access.linkBonus).toBe(850)
+      expect(result.offense.score.access.damageBonus).toBe(Math.floor(damage * 8.5))
+      expect(result.offense.score.link).toBe(0)
+      expect(result.offense.score.skill).toBe(0)
     })
   })
 

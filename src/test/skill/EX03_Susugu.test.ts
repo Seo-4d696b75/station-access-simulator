@@ -137,7 +137,43 @@ describe("すすぐのスキル", () => {
         expect(result.defense.formation[0].skillInvalidated).toBe(true)
       })
       test("攻撃側のてすとで守備側のすすぐが無効化され発動しない", () => {
-        // TODO
+        const context = initContext("test", "test", false)
+        context.random.mode = "force"
+        context.clock = dayjs("2022-01-01T23:00:00").valueOf()
+        let reika = DencoManager.getDenco(context, "5", 50)
+        let tesuto = DencoManager.getDenco(context, "EX04", 50)
+        let susugu = DencoManager.getDenco(context, "EX03", 50)
+        let luna = DencoManager.getDenco(context, "3", 80, 1)
+        let offense = initUser(context, "とあるマスター", [reika, tesuto])
+        offense = activateSkill(context, offense, 0, 1)
+        let defense = initUser(context, "とあるマスター２", [luna, susugu])
+        defense = activateSkill(context, defense, 1)
+        const config = {
+          offense: {
+            state: offense,
+            carIndex: 0
+          },
+          defense: {
+            state: defense,
+            carIndex: 0
+          },
+          station: luna.link[0],
+        }
+        const result = startAccess(context, config)
+        expect(result.defense).not.toBeUndefined()
+        // 攻撃側のてすとが先に発動する
+        // 守備側のすすぐ&ルナが発動前に無効化され発動しない
+        // レイカはすすぐに無効化されず発動する
+        expect(hasSkillTriggered(result.offense, tesuto)).toBe(true)
+        expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+        expect(hasSkillTriggered(result.defense, luna)).toBe(false)
+        expect(hasSkillTriggered(result.defense, susugu)).toBe(false)
+        // 無効化
+        assert(result.defense)
+        expect(result.offense.formation[0].skillInvalidated).toBe(false)
+        expect(result.defense.formation[0].skillInvalidated).toBe(true)
+        expect(result.defense.formation[1].skillInvalidated).toBe(true)
+
       })
     })
   })
