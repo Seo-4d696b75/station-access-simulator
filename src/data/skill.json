@@ -4126,6 +4126,76 @@
     ]
   },
   {
+    "numbering": "79",
+    "class": "D79_Shizu",
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "カンペキテンサイおでかけプラン Lv.1",
+        "active": 1800,
+        "cooldown": 9000,
+        "ATK": 8,
+        "DEF": -4
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "カンペキテンサイおでかけプラン Lv.2",
+        "active": 1800,
+        "cooldown": 9000,
+        "ATK": 10,
+        "DEF": -4.5
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "カンペキテンサイおでかけプラン Lv.3",
+        "active": 1800,
+        "cooldown": 9000,
+        "ATK": 12,
+        "DEF": -5
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "カンペキテンサイおでかけプラン Lv.4",
+        "active": 1800,
+        "cooldown": 9000,
+        "ATK": 14,
+        "DEF": -5.5
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "カンペキテンサイおでかけプラン Lv.5",
+        "active": 2400,
+        "cooldown": 8400,
+        "ATK": 16,
+        "DEF": -7
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "カンペキテンサイおでかけプラン Lv.6",
+        "active": 3000,
+        "cooldown": 7800,
+        "ATK": 18,
+        "DEF": -8.5
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "ヒロイック・ジャーニー",
+        "active": 3600,
+        "cooldown": 7200,
+        "ATK": 20,
+        "DEF": -10
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
