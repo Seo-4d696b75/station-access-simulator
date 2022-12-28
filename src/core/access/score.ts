@@ -3,10 +3,9 @@
  */
 import { copy } from "../../"
 import { Context } from "../context"
-import { Denco, DencoState } from "../denco"
 import { ReadonlyState } from "../state"
 import { LinkResult, LinksResult, Station, StationLink } from "../station"
-import { AccessSideState, AccessState } from "./state"
+import { AccessDencoState, AccessSideState, AccessState } from "./state"
 
 
 /**
@@ -24,27 +23,27 @@ import { AccessSideState, AccessState } from "./state"
  * カウンター攻撃やスキルの影響で編成内のでんこに経験値が発生する場合もあります.
  */
 export interface ScoreExpState {
-
-  // TODO ねこぱんの記載
   /**
+   * 「アクセスしたとき獲得するスコア・経験値」
+   * 
    * アクセス中に発生する基本的なスコア・経験値
    * 
-   * ### 含まれる値の種類
-   * - アクセス開始時に直接アクセスするでんこに付与するスコア・経験値
-   * - アクセス相手に与えたダメージ量に応じて付与するスコア・経験値
-   * - リンク成功時に付与するスコア・経験値
-   * 
-   * ### 経験値の場合の注意
-   * - 原則として直接アクセスするでんこにのみ発生します
+   * ### 注意
+   * - 経験値は原則として直接アクセスするでんこにのみ発生します
    *   - 例外：ダメージ計算を伴うカウンター（シーナなど）ではダメージ量に応じた経験値が入ります
-   * - スコアより経験値の方が多い場合があります
+   * - スコアと経験値が異なる場合があります
    *   - フィルムの獲得経験値増加の補正
+   *   - スキルによるスコア増加
    */
-  access: number
+  access: AccessScoreExpState
+
   /**
    * スキルによるスコア・経験値
    * 
-   * **経験値を配布するスキルでは配布対象外となります**
+   * ### 注意
+   * - 経験値を配布するスキルでは配布対象外となります
+   * - 獲得するスコア・経験値を増加させるスキルの影響を受けません  
+   *   スキル説明にある「他のスキルによって獲得したスコアは効果の対象外です」の対象外に該当します
    */
   skill: number
   /**
@@ -64,6 +63,113 @@ export interface ScoreExpState {
 }
 
 /**
+ * アクセス中に発生したスコア・経験値
+ * 
+ * **スキル・フィルムによる獲得するスコア・経験値の増減が影響しています**
+ */
+export interface ScoreExpResult extends ScoreExpState {
+
+  access: AccessScoreExpResult
+
+  /**
+   * 合計値  
+   * - {@link access}
+   * - {@link skill}
+   * - {@link link}
+   */
+  total: number
+}
+
+// FIXME ねこぱんの影響
+/**
+ * 「アクセスしたとき獲得するスコア・経験値」
+ */
+export interface AccessScoreExpState {
+  /**
+   * アクセス開始時に直接アクセスするでんこに付与するスコア・経験値  
+   * その日◯駅目のボーナス・月新駅・赤新駅のボーナスなど  
+   * {@link ScorePredicate calcAccessScore}の値をもとに計算します
+   */
+  accessBonus: number
+
+  /**
+   * 「与ダメージによるボーナス」  
+   * 
+   * アクセス相手に与えたダメージ量に応じて付与するスコア・経験値  
+   * {@link ScorePredicate calcDamageScore}の値をもとに計算します
+   */
+  damageBonus: number
+
+  /**
+   * 「リンクするときに獲得するボーナス」
+   * 
+   * リンク成功時に付与するスコア・経験値  
+   * {@link ScorePredicate calcLinkSuccessScore}の値をもとに計算します
+   */
+  linkBonus: number
+}
+
+/**
+ * 「アクセスしたとき獲得するスコア・経験値」
+ * 
+ * **スキル・フィルムによる獲得するスコア・経験値の増減が影響しています**
+ */
+export interface AccessScoreExpResult extends AccessScoreExpState {
+  /**
+   * 合計値  
+   * - {@link accessBonus}
+   * - {@link damageBonus}
+   * - {@link linkBonus}
+   */
+  total: number
+}
+
+/**
+ * 獲得するスコア・経験値の増減量を%単位で指定します
+ * 
+ * ### 獲得するスコア・経験値の増加と追加の違い
+ * 「経験値を与える」「スコアを追加する」など固定値で追加する場合は{@link ScoreExpState}に直接加算してください
+ */
+export interface ScoreExpCalcState {
+
+  /**
+   * 「アクセスしたとき獲得するスコア・経験値」の増加量[%]
+   * 
+   * 以下３種類の内訳があります. 
+   * **`access`に指定した増加量は各内訳の増加量[%]に加算して計算されます**
+   * - {@link accessBonus}
+   * - {@link damageBonus}
+   * - {@link linkBonus}
+   */
+  access: number
+
+  /**
+   * アクセス開始時に付与するスコア・経験値の増加量[%]  
+   * 
+   * その日◯駅目のボーナス・月新駅・赤新駅のボーナスなど  
+   */
+  accessBonus: number
+
+  /**
+   * 「与ダメージによるボーナス」の増加量[%] 
+   */
+  damageBonus: number
+
+  /**
+   * 「リンクするときに獲得するボーナス」の増加量[%]
+   * 
+   * アクセス時にリンク成功した場合に獲得するスコア・経験値です. 
+   * **リンク保持によるスコア・経験値とは異なります**
+   */
+  linkBonus: number
+
+  /**
+   * 「リンク保持で獲得する」スコア・経験値の増加量[%]
+   */
+  link: number
+}
+
+/**
  * スコアの計算方法を定義します
  * 
  * スコアの値を元に経験値も計算されます
@@ -72,24 +178,30 @@ export interface ScorePredicate {
   /**
    * アクセス開始時にアクセス側が取得するスコアを計算
    * 
-   * アクセス相手ユーザ・でんこやリンク成功可否などに依存しない
+   * アクセス相手ユーザ・でんこやリンク成功可否などに依存しません  
+   * (ex) その日◯駅目のボーナス・月新駅・赤新駅のボーナスなど
+   * 
    * @param state アクセスする本人を含む編成の現在の状態
    * @param station アクセスする駅
    */
-  calcAccessScore: (context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>) => number
+  calcAccessBonus: (context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>) => number
 
   /**
+   * 「リンクのボーナス」
+   * 
    * アクセス側がリンク成功時に取得するスコアを計算  
    * @param state アクセスする本人を含む編成の現在の状態
    * @param access アクセスの状態
    */
-  calcLinkSuccessScore: (context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>) => number
+  calcLinkBonus: (context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>) => number
 
   /**
-   * アクセス側が与えたダメージ量に応じたスコアを計算
+   * 「与ダメージによるボーナス」  
+   * 
+   * 相手に与えたダメージ量に応じたスコアを計算
    * @param damage ダメージ量(>=0)
    */
-  calcDamageScore: (context: Context, damage: number) => number
+  calcDamageBonus: (context: Context, damage: number) => number
   /**
    * リンク保持によるスコアを計算
    * 
@@ -99,46 +211,49 @@ export interface ScorePredicate {
 }
 
 /**
- * contextに指定がない場合のfall-back
+ * contextに指定がない場合のfallback
  */
 const DEFAULT_SCORE_PREDICATE: ScorePredicate = {
-  calcAccessScore: (context, state, station) => 100,
-  calcLinkSuccessScore: (context, state, access) => 100,
-  calcDamageScore: (context, damage) => Math.floor(damage),
+  calcAccessBonus: (context, state, station) => 100,
+  calcLinkBonus: (context, state, access) => 100,
+  calcDamageBonus: (context, damage) => Math.floor(damage),
   calcLinkScore: (context, link) => Math.floor((context.currentTime - link.start) / 100)
 }
 
-export function calcAccessScoreExp(context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>): [number, number] {
-  const predicate = context.scorePredicate?.calcAccessScore ?? DEFAULT_SCORE_PREDICATE.calcAccessScore
+export function calcAccessBonusScoreExp(context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>): [number, number] {
+  const predicate = context.scorePredicate?.calcAccessBonus ?? DEFAULT_SCORE_PREDICATE.calcAccessBonus
   const score = predicate(context, state, station)
-  return [score, calcAccessScoreToExp(score, state)]
+  // 基本的にスコアと経験値は同じ？
+  return [score, score]
 }
 
-export function calcDamageScoreExp(context: Context, state: ReadonlyState<AccessSideState>, damage: number): [number, number] {
-  const predicate = context.scorePredicate?.calcDamageScore ?? DEFAULT_SCORE_PREDICATE.calcDamageScore
-  // ダメージ量が負数（回復）の場合は一律経験値1を与える
+export function calcDamageBonusScoreExp(context: Context, state: ReadonlyState<AccessSideState>, damage: number): [number, number] {
+  const predicate = context.scorePredicate?.calcDamageBonus ?? DEFAULT_SCORE_PREDICATE.calcDamageBonus
   const score = damage >= 0 ? predicate(context, damage) : 0
-  const exp = damage >= 0 ? calcAccessScoreToExp(score, state) : 1
+  // ダメージ量が負数（回復）の場合など経験値0は一律経験値1を与える
+  const exp = Math.max(score, 1)
   return [score, exp]
 }
 
-export function calcLinkScoreExp(context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>): [number, number] {
-  const predicate = context.scorePredicate?.calcLinkSuccessScore ?? DEFAULT_SCORE_PREDICATE.calcLinkSuccessScore
+export function calcLinkBonusScoreExp(context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>): [number, number] {
+  const predicate = context.scorePredicate?.calcLinkBonus ?? DEFAULT_SCORE_PREDICATE.calcLinkBonus
   const score = predicate(context, state, access)
-  return [score, calcAccessScoreToExp(score, state)]
+  // 基本的にスコアと経験値は同じ？
+  return [score, score]
 }
 
-export function calcLinkResult(context: Context, link: StationLink, d: Denco, idx: number): LinkResult {
+export function calcLinkResult(context: Context, link: StationLink, state: ReadonlyState<Omit<AccessSideState, "user">>, dencoIdx: number, linkIdx: number): LinkResult {
   const time = context.currentTime
   const duration = time - link.start
   if (duration < 0) {
     context.log.error(`リンク時間が負数です ${duration}[ms] ${JSON.stringify(link)}`)
   }
+  const d = state.formation[dencoIdx]
   const predicate = context.scorePredicate?.calcLinkScore ?? DEFAULT_SCORE_PREDICATE.calcLinkScore
   const score = predicate(context, link)
   const attr = (link.attr === d.attr)
-  const ratio = (idx < LINK_COMBO_RATIO.length) ?
-    LINK_COMBO_RATIO[idx] : LINK_COMBO_RATIO[LINK_COMBO_RATIO.length - 1]
+  const ratio = (linkIdx < LINK_COMBO_RATIO.length) ?
+    LINK_COMBO_RATIO[linkIdx] : LINK_COMBO_RATIO[LINK_COMBO_RATIO.length - 1]
   const match = attr ? Math.floor(score * 0.15) : 0
   const combo = Math.floor(score * (ratio - 1))
   return {
@@ -149,7 +264,8 @@ export function calcLinkResult(context: Context, link: StationLink, d: Denco, id
     matchAttr: attr,
     matchBonus: match,
     comboBonus: combo,
-    totalScore: score + match + combo,
+    totalScore: calcScorePercent(score + match + combo, state, "link"),
+    exp: calcExpPercent(score + match + combo, d, "link")
   }
 }
 
@@ -165,24 +281,24 @@ const LINK_COMBO_RATIO: readonly number[] = [
 
 /**
  * 指定したリンクを解除したリンク結果を計算する
+ * 
+ * スキル・フィルムによる獲得スコア・経験値の増減は反映済み
  * @param context 
  * @param links 解除するリンク
- * @param d 対象のリンクを解除した直後の状態
- * @param which アクセス時にどちら側か
  * @returns 
  */
-export function calcLinksResult(context: Context, links: readonly StationLink[], d: ReadonlyState<DencoState>): LinksResult {
+export function calcLinksResult(context: Context, links: readonly StationLink[], state: ReadonlyState<Omit<AccessSideState, "user">>, dencoIdx: number): LinksResult {
   const time = context.currentTime
-  const linkResult = links.map((link, idx) => calcLinkResult(context, link, d, idx))
+  const linkResult = links.map((link, idx) => calcLinkResult(context, link, state, dencoIdx, idx))
   const linkScore = linkResult.map(link => link.linkScore).reduce((a, b) => a + b, 0)
   const match = linkResult.filter(link => link.matchAttr)
   const matchBonus = match.map(link => link.matchBonus).reduce((a, b) => a + b, 0)
   const comboBonus = linkResult.map(link => link.comboBonus).reduce((a, b) => a + b, 0)
-  const totalScore = linkScore + matchBonus + comboBonus
-  const exp = calcLinkScoreToExp(totalScore, d)
+  const totalScore = linkResult.map(link => link.totalScore).reduce((a, b) => a + b, 0)
+  const exp = linkResult.map(link => link.exp).reduce((a, b) => a + b, 0)
   const result: LinksResult = {
     time: time,
-    denco: copy.DencoState(d),
+    denco: copy.DencoState(state.formation[dencoIdx]),
     totalScore: totalScore,
     linkScore: linkScore,
     comboBonus: comboBonus,
@@ -195,30 +311,62 @@ export function calcLinksResult(context: Context, links: readonly StationLink[],
 }
 
 /**
- * リンクスコア -> リンク経験値を計算
- * 
- * {@link ScoreExpState link}
- * @param score must be >= 0
- * @returns must be >= 0
+ * see {@link ScoreExpState}
+ * スキルによるスコア・経験値付与（固定値）は変化しない！
  */
-export function calcLinkScoreToExp(score: number, state: ReadonlyState<DencoState>): number {
+type ScoreExpCalcType =
+  "access_bonus" |
+  "damage_bonus" |
+  "link_bonus" |
+  "link"
+
+/**
+ * スキルによるスコア増加量を計算する
+ * @param score 
+ * @param state 
+ * @returns 
+ */
+export function calcScorePercent(score: number, state: ReadonlyState<Omit<AccessSideState, "user">>, type: ScoreExpCalcType): number {
   let percent = 100
-  // フィルム補正
-  const film = state.film
-  if (film.type === "film" && film.expPercent) {
-    percent += film.expPercent
+  switch (type) {
+    case "access_bonus":
+      percent += (state.scorePercent.access + state.scorePercent.accessBonus)
+      break
+    case "damage_bonus":
+      percent += (state.scorePercent.access + state.scorePercent.damageBonus)
+      break
+    case "link_bonus":
+      percent += (state.scorePercent.access + state.scorePercent.linkBonus)
+      break
+    case "link":
+      percent += state.scorePercent.link
   }
   return Math.floor(score * percent / 100)
 }
 
-// ScoreExpState.access アクセス開始・ダメージ量・リンク成功
-function calcAccessScoreToExp(score: number, state: ReadonlyState<AccessSideState>): number {
+// FIXME ねこぱん未実装
+/**
+ * スキル・フィルムによる経験値増加量を計算する
+ * 
+ * @param exp 
+ * @param state 
+ * @param type 
+ * @returns 
+ */
+export function calcExpPercent(exp: number, state: ReadonlyState<AccessDencoState>, type: ScoreExpCalcType): number {
   let percent = 100
-  // フィルム補正
-  const film = state.formation[state.carIndex].film
-  if (film.type === "film" && film.expPercent) {
-    percent += film.expPercent
+  switch (type) {
+    case "access_bonus":
+      percent += (state.expPercent.access + state.expPercent.accessBonus)
+      break
+    case "damage_bonus":
+      percent += (state.expPercent.access + state.expPercent.damageBonus)
+      break
+    case "link_bonus":
+      percent += (state.expPercent.access + state.expPercent.linkBonus)
+      break
+    case "link":
+      percent += state.expPercent.link
   }
-  // TODO ねこぱん
-  return Math.floor(score * percent / 100)
+  return Math.floor(exp * percent / 100)
 }

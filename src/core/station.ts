@@ -37,7 +37,7 @@ export interface LinkResult extends StationLink {
   /**
    * リンクの基本スコア
    * 
-   * リンクの時間にのみ依存して計算される {@link ScorePredicate calcLinkScore}
+   * リンク時間に基づき計算します {@link ScorePredicate calcLinkScore}
    */
   linkScore: number
   /**
@@ -55,11 +55,28 @@ export interface LinkResult extends StationLink {
   /**
    * スコア合計
    * 
-   * - {@link linkScore}
-   * - {@link comboBonus}
-   * - {@link matchBonus}
+   * ### 計算方法
+   * - 1. スコアの合計を計算
+   *   - {@link linkScore}
+   *   - {@link comboBonus}
+   *   - {@link matchBonus}
+   * - 2. スキルによる獲得スコア増減を計算  
+   *   {@link ScoreExpCalcState link}
    */
   totalScore: number
+
+  /**
+   * 経験値
+   * 
+   * ### 計算方法
+   * - 1. スコアの総和を計算
+   *   - {@link linkScore}
+   *   - {@link comboBonus}
+   *   - {@link matchBonus}
+   * - 2. スキル・フィルムによる獲得経験値の増減を計算  
+   *   {@link ScoreExpCalcState link}
+   */
+  exp: number
 }
 
 /**
@@ -90,11 +107,7 @@ export interface LinksResult {
   /**
    * スコア合計値
    * 
-   * 全リンクスコア{@link link}の合計＝以下の合計
-   * 
-   * - {@link linkScore}
-   * - {@link comboBonus}
-   * - {@link matchBonus}
+   * 各リンク結果{@link LinkResult totalScore}の合計
    */
   totalScore: number
   /**
@@ -120,15 +133,10 @@ export interface LinksResult {
    */
   matchCnt: number
 
-  // FIXME スコアアップの反映（現状ではリンクスコアアップは対応しない）
-  // スキルによるスコアアップはリンクスコア対象外がほとんど
-  //  score: number
-
   /**
    * 経験値合計
    * 
-   * {@link LinkResult totalScore}を基に計算される  
-   * 経験値増加の効果によりスコア値と一致しない場合がある
+   * 各リンク結果{@link LinkResult exp}の合計
    */
   exp: number
 }

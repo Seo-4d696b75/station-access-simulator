@@ -3,6 +3,7 @@ import { Denco, DencoState } from "../denco"
 import { ReadonlyState } from "../state"
 import { Station } from "../station"
 import { UserPropertyReader } from "../user"
+import { ScoreExpCalcState } from "./score"
 
 /**
  * アクセスにおけるスキルの評価ステップ
@@ -104,6 +105,31 @@ export interface AccessDencoState extends DencoState {
 
   /**
    * アクセス処理中においてスキル無効化の影響によりこのでんこが保有するスキルが無効化されているか
+   * 
+   * ### スキル無効化のタイミング
+   * 原則として`before_access`の段階で発動します. 
+   * 無効化対象のでんこに`skillInvalidated = true`のフラグを設定してください
+   * 
+   * ### 無効化の対象
+   * 同じ編成内の無効化スキル同士は互いに干渉しません. 
+   * **すべて無効化スキルが発動して効果が反映されます**
+   * 
+   * (ex.1)同じ編成にactiveなちとせ・まひるが居る場合
+   *  - ちとせ・まひる両方のスキルが発動します
+   *  - 両編成のサポーター・ecoでんこ全員のスキルが無効化されます
+   * 
+   * このとき、まひるのスキルによりちとせのスキルも無効化されますが、
+   * **既に発動したスキルの効果は消えません** 
+   * ちとせのスキルが発動した記録はそのまま、ちとせによって無効化されたサポータのスキルも無効化されたままです
+   * 
+   * 一方、`start_access`以降の段階で発動するスキルは発動前に無効化されるので発動しません.
+   * 
+   * ただし、攻守異なる編成内に複数の無効化スキルがいるとき、場合によっては互いの無効化の影響があります
+   * 
+   * (ex.2)攻撃側編成にactiveなまひる、守備側にちとせが居る場合
+   * - 攻撃側・守備側の順序でスキルが発動判定・発動処理されます
+   * - 攻撃側のまひるが先に発動してecoのちとせは無効化されます
+   * - 守備側のちとせは発動前に無効化され、サポーターの無効化は発動しません
    */
   skillInvalidated: boolean
 
@@ -122,11 +148,16 @@ export interface AccessDencoState extends DencoState {
   damage?: DamageState
 
   /**
-   * このアクセス時に発生する経験値  
+   * アクセス処理中に獲得する経験値  
    * 
    * `access + skill + link`の合計値が経験値の総量です
    */
   exp: ScoreExpState
+
+  /**
+   * アクセス処理中に獲得する経験値の増加量[%]
+   */
+  expPercent: ScoreExpCalcState
 }
 
 
@@ -161,25 +192,16 @@ export interface AccessSideState {
   probabilityBoosted: boolean
 
   /**
-   * アクセス中に発生したスコア
+   * アクセス処理中に発生したスコア
    * 
    * でんこ毎に計算される経験値と異なりスコアはユーザ単位で計算される
    */
   score: ScoreExpState
 
   /**
-   * アクセス表示用のスコア値
-   * 
-   * アクセスで発生したスコア（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
+   * アクセス処理中に発生したスコアの増加量を指定します
    */
-  displayedScore: number
-
-  /**
-   * アクセス表示用の経験値値
-   * 
-    * アクセス・被アクセスするでんこがアクセス中に得た経験値（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
-   */
-  displayedExp: number
+  scorePercent: ScoreExpCalcState
 }
 
 /**

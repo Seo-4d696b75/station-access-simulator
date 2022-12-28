@@ -6,25 +6,25 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     // 相手不在・足湯では発動しない
     if (step === "before_access" && state.defense && !state.pinkMode) {
-      const anySupporter = [
-        ...state.offense.formation,
+      const any = [
         ...state.defense.formation,
-      ].some(d => d.type === "supporter" && canSkillInvalidated(d))
-      if (!anySupporter) return // 無効化の対象が存在しない
+        ...state.offense.formation,
+      ].some(d => d.attr === "eco" && canSkillInvalidated(d))
+      if (!any) return
       return {
         probabilityKey: "probability",
         recipe: (state) => {
           const target = [
             ...state.offense.formation,
             ...state.defense!.formation,
-          ].filter(d => d.type === "supporter" && canSkillInvalidated(d))
+          ].filter(d => d.attr === "eco" && canSkillInvalidated(d))
           const names = target.map(d => d.name).join(",")
           target.forEach(d => d.skillInvalidated = true)
-          context.log.log(`サポーターのスキルも何のその、ですよ♪ 無効化：${names}`)
-        },
+          context.log.log(`通れない道はあたいに任せな！ 無効化：${names}`)
+        }
       }
     }
-  },
+  }
 }
 
 export default skill

@@ -958,7 +958,6 @@
       "50",
       "56",
       "58",
-      "65",
       "67",
       "70",
       "74",
@@ -1587,7 +1586,10 @@
       "75",
       "76",
       "78",
-      "80"
+      "80",
+      "83",
+      "85",
+      "87"
     ],
     "list": [
       {
@@ -1873,6 +1875,7 @@
   {
     "numbering": "38",
     "class": "D38_Kuni",
+    "probability_heal": 100,
     "list": [
       {
         "skill_level": 1,
@@ -4060,6 +4063,251 @@
         "denco_level": 80,
         "name": "逃げ道だって小さな旅",
         "probability": 20
+      }
+    ]
+  },
+  {
+    "numbering": "78",
+    "class": "D78_Naru",
+    "score_percent_failure": -50,
+    "ATK": 5,
+    "active": 3600,
+    "cooldown": 10800,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "恋心ばーさーく！ Lv.1",
+        "probability": 22,
+        "score_percent": 600
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "恋心ばーさーく！ Lv.2",
+        "probability": 25,
+        "score_percent": 650
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "恋心ばーさーく！ Lv.3",
+        "probability": 28,
+        "score_percent": 700
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "恋心ばーさーく！ Lv.4",
+        "probability": 31,
+        "score_percent": 750
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "恋心ばーさーく！ Lv.5",
+        "probability": 34,
+        "score_percent": 800
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "恋心ばーさーく！ Lv.6",
+        "probability": 37,
+        "score_percent": 850
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "まわれ運命のエンゲージリング",
+        "probability": 40,
+        "score_percent": 900
+      }
+    ]
+  },
+  {
+    "numbering": "EX02",
+    "class": "EX02_Mahiru",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ゴーイングマイレール Lv.1",
+        "active": 480,
+        "cooldown": 15720,
+        "probability": 70
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ゴーイングマイレール Lv.2",
+        "active": 600,
+        "cooldown": 15600,
+        "probability": 75
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ゴーイングマイレール Lv.3",
+        "active": 840,
+        "cooldown": 15360,
+        "probability": 80
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ゴーイングマイレール Lv.4",
+        "active": 1080,
+        "cooldown": 15120,
+        "probability": 85
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ゴーイングマイレール Lv.5",
+        "active": 1320,
+        "cooldown": 14880,
+        "probability": 90
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ゴーイングマイレール Lv.6",
+        "active": 1560,
+        "cooldown": 14640,
+        "probability": 95
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "真昼の太陽のように",
+        "active": 1800,
+        "cooldown": 14400,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "numbering": "EX03",
+    "class": "EX03_Susugu",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "お片付けしちゃいましょ！ Lv.1",
+        "active": 480,
+        "cooldown": 15720,
+        "probability": 70
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "お片付けしちゃいましょ！ Lv.2",
+        "active": 600,
+        "cooldown": 15600,
+        "probability": 75
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "お片付けしちゃいましょ！ Lv.3",
+        "active": 840,
+        "cooldown": 15360,
+        "probability": 80
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "お片付けしちゃいましょ！ Lv.4",
+        "active": 1080,
+        "cooldown": 15120,
+        "probability": 85
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "お片付けしちゃいましょ！ Lv.5",
+        "active": 1320,
+        "cooldown": 14880,
+        "probability": 90
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "お片付けしちゃいましょ！ Lv.6",
+        "active": 1560,
+        "cooldown": 14640,
+        "probability": 95
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "洗い浄め濯ぐもの",
+        "active": 1800,
+        "cooldown": 14400,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "numbering": "EX04",
+    "class": "EX04_Tesuto",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "徹底点検安全確認 Lv.1",
+        "active": 480,
+        "cooldown": 15720,
+        "probability": 70
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "徹底点検安全確認 Lv.2",
+        "active": 600,
+        "cooldown": 15600,
+        "probability": 75
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "徹底点検安全確認 Lv.3",
+        "active": 840,
+        "cooldown": 15360,
+        "probability": 80
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "徹底点検安全確認 Lv.4",
+        "active": 1080,
+        "cooldown": 15120,
+        "probability": 85
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "徹底点検安全確認 Lv.5",
+        "active": 1320,
+        "cooldown": 14880,
+        "probability": 90
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "徹底点検安全確認 Lv.6",
+        "active": 1560,
+        "cooldown": 14640,
+        "probability": 95
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "ぐれーてすと・ちぇっかー",
+        "active": 1800,
+        "cooldown": 14400,
+        "probability": 100
       }
     ]
   }

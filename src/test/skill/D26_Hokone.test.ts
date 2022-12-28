@@ -192,9 +192,17 @@ describe("ほこねのスキル", () => {
     expect(d.hpAfter).toBe(d.maxHp)
     expect(d.currentHp).toBe(d.maxHp)
     // ほこね経験値＆スコアの確認
-    expect(result.offense.score.access).toBe(100)
+    expect(result.offense.score.access.accessBonus).toBe(100)
+    expect(result.offense.score.access.linkBonus).toBe(0)
+    expect(result.offense.score.access.damageBonus).toBe(0) // 回復時のスコアは0
+    expect(result.offense.score.access.total).toBe(100)
+    expect(result.offense.score.total).toBe(100)
     d = getAccessDenco(result, "offense")
-    expect(d.exp.access).toBe(101) // 回復時はダメージ量相当の経験値は1
+    expect(d.exp.access.accessBonus).toBe(100)
+    expect(d.exp.access.damageBonus).toBe(1) // 回復時はダメージ量相当の経験値は1
+    expect(d.exp.access.linkBonus).toBe(0)
+    expect(d.exp.access.total).toBe(101)
+    expect(d.exp.total).toBe(101)
   })
   test("発動あり-うらら相手-ATK増加", () => {
     const context = initContext("test", "test", false)
@@ -230,9 +238,17 @@ describe("ほこねのスキル", () => {
     expect(d.hpAfter).toBe(d.maxHp)
     expect(d.currentHp).toBe(d.maxHp)
     // ほこね経験値＆スコアの確認
-    expect(result.offense.score.access).toBe(100)
+    expect(result.offense.score.access.accessBonus).toBe(100)
+    expect(result.offense.score.access.linkBonus).toBe(0)
+    expect(result.offense.score.access.damageBonus).toBe(0) // 回復時のスコアは0
+    expect(result.offense.score.access.total).toBe(100)
+    expect(result.offense.score.total).toBe(100)
     d = getAccessDenco(result, "offense")
-    expect(d.exp.access).toBe(101) // 回復時はダメージ量相当の経験値は1
+    expect(d.exp.access.accessBonus).toBe(100)
+    expect(d.exp.access.damageBonus).toBe(1) // 回復時はダメージ量相当の経験値は1
+    expect(d.exp.access.linkBonus).toBe(0)
+    expect(d.exp.access.total).toBe(101)
+    expect(d.exp.total).toBe(101)
   })
   test("発動あり-うらら相手-DEF増加", () => {
     const context = initContext("test", "test", false)
@@ -272,9 +288,17 @@ describe("ほこねのスキル", () => {
     expect(d.hpAfter).toBe(10 + heal)
     expect(d.currentHp).toBe(10 + heal)
     // ほこね経験値＆スコアの確認
-    expect(result.offense.score.access).toBe(100)
+    expect(result.offense.score.access.accessBonus).toBe(100)
+    expect(result.offense.score.access.linkBonus).toBe(0)
+    expect(result.offense.score.access.damageBonus).toBe(0) // 回復時のスコアは0
+    expect(result.offense.score.access.total).toBe(100)
+    expect(result.offense.score.total).toBe(100)
     d = getAccessDenco(result, "offense")
-    expect(d.exp.access).toBe(101) // 回復時はダメージ量相当の経験値は1
+    expect(d.exp.access.accessBonus).toBe(100)
+    expect(d.exp.access.damageBonus).toBe(1) // 回復時はダメージ量相当の経験値は1
+    expect(d.exp.access.linkBonus).toBe(0)
+    expect(d.exp.access.total).toBe(101)
+    expect(d.exp.total).toBe(101)
   })
   test("発動あり-うらら相手-ミオ", () => {
     // ミオの発動有無の確認

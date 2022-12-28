@@ -14,9 +14,9 @@ type ArraySchema<T> = {
 
 type ObjectSchema<T> = {
   type: "object",
-  fields: {
+  fields: Required<{
     [key in keyof T]: SchemaOf<T[key]>
-  }
+  }>
 }
 
 type FunctionSchema = BaseTypeSchema<"function">
@@ -242,15 +242,5 @@ export function customSchema<T>(
     copy: copy,
     merge: merge,
     normalize: normalize
-  }
-}
-
-export function extendSchema<P, C extends P>(parent: ObjectSchema<P>, fields: { [key in Exclude<keyof C, keyof P>]: SchemaOf<C[key]> }): ObjectSchema<C> {
-  return {
-    type: "object",
-    fields: {
-      ...parent.fields,
-      ...fields,
-    } as any
   }
 }

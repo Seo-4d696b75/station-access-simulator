@@ -54,9 +54,10 @@ describe("マコのスキル", () => {
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(seria.ap + 50)
     expect(d.reboot).toBe(false)
-    expect(d.exp.access).toBe(0)
+    expect(d.exp.access.total).toBe(0)
     expect(d.exp.link).toBe(0)
     expect(d.exp.skill).toBe(100)
+    expect(d.exp.total).toBe(100)
   })
 
   test("発動なし-攻撃側(アクセス)", () => {
@@ -160,9 +161,10 @@ describe("マコのスキル", () => {
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(seria.ap + 40)
     expect(d.reboot).toBe(false)
-    expect(d.exp.access).toBe(0)
+    expect(d.exp.access.total).toBe(0)
     expect(d.exp.link).toBe(0)
     expect(d.exp.skill).toBe(100)
+    expect(d.exp.total).toBe(100)
   })
   test("発動あり-攻撃側(編成内)-固定ダメージ軽減200", () => {
     const context = initContext("test", "test", false)
@@ -201,7 +203,7 @@ describe("マコのスキル", () => {
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(seria.ap - 150)
     expect(d.reboot).toBe(false)
-    expect(d.exp.access).toBe(0)
+    expect(d.exp.access.total).toBe(0)
     expect(d.exp.link).toBe(0)
     expect(d.exp.skill).toBe(100)
   })

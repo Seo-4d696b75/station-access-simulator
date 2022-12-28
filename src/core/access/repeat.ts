@@ -17,6 +17,9 @@ export function repeatAccess(context: Context, state: ReadonlyState<AccessState>
     station: state.station,
     offense: copy.AccessSideState(state.offense),
     defense: state.defense ? copy.AccessSideState(state.defense) : undefined,
+    // ダメージ計算に関わる状態は初期化する！
+    // 公式お知らせ -【不具合】特定のスキルが同時に発動した際、意図しない挙動となる
+    // https://ekimemo.com/news/20220922121500_1
     damageFixed: 0,
     attackPercent: 0,
     defendPercent: 0,

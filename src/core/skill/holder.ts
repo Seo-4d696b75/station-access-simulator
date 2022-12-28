@@ -1,3 +1,4 @@
+import { AccessDencoState } from "../access"
 import { SimulatorError } from "../context"
 import { MutableProperty, ReadableProperty } from "../property"
 import { ReadonlyState } from "../state"
@@ -165,4 +166,26 @@ export function getSkill<S extends SkillState | ReadonlyState<SkillState>>(denco
 */
 export function isSkillActive<S extends SkillState | ReadonlyState<SkillState>>(skill: S | SkillNotAcquired | SkillNone): skill is S {
   return skill.type === "possess" && skill.transition.state === "active"
+}
+
+/**
+ * アクセス開始時においてスキル無効化の対象となるか判定する
+ * 
+ * 以下の条件を全て満たす場合のみ`true`  
+ * - スキルを保有している
+ * - スキル状態が`active`である
+ * - まだ無効化の影響を受けていない
+ * - アクセス時に影響を受けるスキルである  
+ *   「アクセス時に影響を受けないスキルに関しては無効化されません」と説明されており、実装では
+ *   アクセス処理のコールバック `triggerOnAccess, onAccessComplete`のいずれも未定義の場合と判断する
+ * 
+ * @param state アクセス処理中の状態 
+ * @returns 
+ */
+export function canSkillInvalidated<S extends ReadonlyState<AccessDencoState>>(state: S): boolean {
+  const skill = state.skill
+  return skill.type === "possess"
+    && skill.transition.state === "active"
+    && !state.skillInvalidated
+    && (!!skill.triggerOnAccess || !!skill.onAccessComplete)
 }

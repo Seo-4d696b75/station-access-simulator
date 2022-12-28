@@ -2,7 +2,7 @@ import dayjs from "dayjs"
 import { DencoManager, init } from "../.."
 import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
-import { activateSkill } from "../../core/skill"
+import { activateSkill, isSkillActive } from "../../core/skill"
 import { initUser } from "../../core/user"
 import { testManualSkill } from "../tool/skillState"
 
@@ -120,6 +120,38 @@ describe("ちとせのスキル", () => {
     d = result.offense.formation[1]
     expect(d.skillInvalidated).toBe(false)
     expect(result.attackPercent).toBe(0)
+  })
+
+  test("発動なし-アクセス時に影響しないサポーター", () => {
+    const context = initContext("test", "test", false)
+    context.random.mode = "force"
+    let chitose = DencoManager.getDenco(context, "61", 50)
+    let charlotte = DencoManager.getDenco(context, "6", 80, 1)
+    charlotte.currentHp = charlotte.maxHp - 1
+    let moe = DencoManager.getDenco(context, "9", 50)
+    let defense = initUser(context, "とあるマスター", [charlotte, moe])
+    // もえactive
+    expect(isSkillActive(defense.formation[1].skill)).toBe(true)
+    let offense = initUser(context, "とあるマスター２", [chitose])
+    offense = activateSkill(context, offense, 0)
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: charlotte.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result.offense, chitose)).toBe(false)
+    // スキル無効化の確認
+    let d = getDefense(result).formation[1]
+    expect(d.type).toBe("supporter")
+    expect(d.skillInvalidated).toBe(false)
   })
   test("発動なし-フットバース", () => {
     const context = initContext("test", "test", false)

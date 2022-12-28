@@ -1,10 +1,9 @@
 import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "."
 import { copy } from "../../"
-import { Context } from "../context"
+import { assert, Context } from "../context"
 import { Denco } from "../denco"
 import { ReadonlyState } from "../state"
 import { runAccessDamageCalculation } from "./damage"
-import { hasDefense } from "./utils"
 
 /**
  * カウンター攻撃を処理する
@@ -24,44 +23,38 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
     context.log.warn("反撃は１回までだよ")
     return state
   }
-  if (hasDefense(state)) {
-    const idx = state.defense.formation.findIndex(d => d.numbering === denco.numbering)
-    if (idx < 0) {
-      context.log.error(`反撃するでんこが見つかりません ${denco.numbering} ${denco.name}`)
-    }
-    const next: AccessState = {
-      time: state.time,
-      station: state.station,
-      // 編成内の直接アクセスされた以外のでんこによる反撃の場合もあるため慎重に
-      offense: turnSide(state.defense, "defense", idx),
-      // 原則さっきまでのoffense
-      defense: turnSide(state.offense, "offense", state.offense.carIndex),
-      damageFixed: 0,
-      attackPercent: 0,
-      defendPercent: 0,
-      damageRatio: 1.0,
-      linkSuccess: false,
-      linkDisconnected: false,
-      pinkMode: false,
-      pinkItemSet: false,
-      pinkItemUsed: false,
-      depth: state.depth + 1,
-    }
-
-    // カウンター実行
-    context.log.log("攻守交代、カウンター攻撃を開始")
-    const result = runAccessDamageCalculation(context, next)
-    context.log.log("カウンター攻撃を終了")
-    if (!result.defense) {
-      context.log.error(`カウンター攻撃の結果に守備側が見つかりません`)
-    }
-
-    // カウンター攻撃によるでんこ状態の反映 AccessDencoState[]
-    state.offense = turnSide(result.defense, "defense", state.offense.carIndex)
-    state.defense = turnSide(result.offense, "offense", state.defense.carIndex)
-  } else {
-    context.log.error("相手が存在しないので反撃はできません")
+  assert(state.defense, "相手が存在しないので反撃はできません")
+  const idx = state.defense.formation.findIndex(d => d.numbering === denco.numbering)
+  assert(idx >= 0, `反撃するでんこが見つかりません ${denco.numbering} ${denco.name}`)
+  const next: AccessState = {
+    time: state.time,
+    station: state.station,
+    // 編成内の直接アクセスされた以外のでんこによる反撃の場合もあるため慎重に
+    offense: turnSide(state.defense, "defense", idx),
+    // 原則さっきまでのoffense
+    defense: turnSide(state.offense, "offense", state.offense.carIndex),
+    // ダメージ計算に関わる状態は初期化する！
+    damageFixed: 0,
+    attackPercent: 0,
+    defendPercent: 0,
+    damageRatio: 1.0,
+    linkSuccess: false,
+    linkDisconnected: false,
+    pinkMode: false,
+    pinkItemSet: false,
+    pinkItemUsed: false,
+    depth: state.depth + 1,
   }
+
+  // カウンター実行
+  context.log.log("攻守交代、カウンター攻撃を開始")
+  const result = runAccessDamageCalculation(context, next)
+  context.log.log("カウンター攻撃を終了")
+  assert(result.defense, `カウンター攻撃の結果に守備側が見つかりません`)
+
+  // カウンター攻撃によるでんこ状態の反映 AccessDencoState[]
+  state.offense = turnSide(result.defense, "defense", state.offense.carIndex)
+  state.defense = turnSide(result.offense, "offense", state.defense.carIndex)
   return state
 }
 
@@ -76,14 +69,8 @@ function turnSide(state: AccessSideState, currentSide: AccessSide, nextAccessIdx
     return next
   })
   return {
-    user: state.user,
+    ...state,
     carIndex: nextAccessIdx,
     formation: nextFormation,
-    triggeredSkills: state.triggeredSkills,
-    probabilityBoostPercent: state.probabilityBoostPercent,
-    probabilityBoosted: state.probabilityBoosted,
-    score: state.score,
-    displayedScore: state.displayedScore,
-    displayedExp: state.displayedExp,
   }
 }

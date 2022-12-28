@@ -1,4 +1,5 @@
 import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, AccessState, AccessTriggeredSkill, AccessUserResult, DamageCalcState, DamageState, ScoreExpState } from "../core/access"
+import { AccessScoreExpResult, AccessScoreExpState, ScoreExpCalcState, ScoreExpResult } from "../core/access/score"
 import { assert, SimulatorError } from "../core/context"
 import { Denco, DencoState } from "../core/denco"
 import { AccessEventData, AccessEventUser, Event, EventSkillTrigger, EventTriggeredSkill, LevelupDenco, SkillActivatedEventData, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
@@ -9,7 +10,7 @@ import { SkillPropertyReader } from "../core/skill/property"
 import { ReadonlyState } from "../core/state"
 import { Line, LinkResult, LinksResult, Station, StationLink } from "../core/station"
 import { DailyStatistics, EventQueueEntry, StationStatistics, UserProperty, UserPropertyReader, UserState } from "../core/user"
-import { arraySchema, createCopyFunc, createMergeFunc, customSchema, extendSchema, functionSchema, objectSchema, primitiveSchema } from "./helper"
+import { arraySchema, createCopyFunc, createMergeFunc, customSchema, functionSchema, objectSchema, primitiveSchema } from "./helper"
 
 // line & station
 
@@ -24,7 +25,8 @@ export const stationSchema = objectSchema<Station>({
   lines: arraySchema(lineSchema),
 })
 
-export const stationLinkSchema = extendSchema<Station, StationLink>(stationSchema, {
+export const stationLinkSchema = objectSchema<StationLink>({
+  ...stationSchema.fields,
   start: primitiveSchema,
 })
 
@@ -134,7 +136,8 @@ export const dencoSchema = objectSchema<Denco>({
   attr: primitiveSchema,
 })
 
-export const dencoStateSchema = extendSchema<Denco, DencoState>(dencoSchema, {
+export const dencoStateSchema = objectSchema<DencoState>({
+  ...dencoSchema.fields,
   level: primitiveSchema,
   nextExp: primitiveSchema,
   currentExp: primitiveSchema,
@@ -184,13 +187,40 @@ const damageCalcStateSchema = objectSchema<DamageCalcState>({
   constant: primitiveSchema,
 })
 
+const accessScoreExpStateSchema = objectSchema<AccessScoreExpState>({
+  accessBonus: primitiveSchema,
+  damageBonus: primitiveSchema,
+  linkBonus: primitiveSchema,
+})
+
+const accessScoreExpResultSchema = objectSchema<AccessScoreExpResult>({
+  ...accessScoreExpStateSchema.fields,
+  total: primitiveSchema
+})
+
 const scoreExpStateSchema = objectSchema<ScoreExpState>({
-  access: primitiveSchema,
+  access: accessScoreExpStateSchema,
   skill: primitiveSchema,
   link: primitiveSchema,
 })
 
-export const accessDencoStateSchema = extendSchema<DencoState, AccessDencoState>(dencoStateSchema, {
+const scoreExpResultSchema = objectSchema<ScoreExpResult>({
+  access: accessScoreExpResultSchema,
+  skill: primitiveSchema,
+  link: primitiveSchema,
+  total: primitiveSchema
+})
+
+const scoreExpCalcStateSchema = objectSchema<ScoreExpCalcState>({
+  access: primitiveSchema,
+  accessBonus: primitiveSchema,
+  damageBonus: primitiveSchema,
+  linkBonus: primitiveSchema,
+  link: primitiveSchema
+})
+
+export const accessDencoStateSchema = objectSchema<AccessDencoState>({
+  ...dencoStateSchema.fields,
   which: primitiveSchema,
   who: primitiveSchema,
   carIndex: primitiveSchema,
@@ -202,9 +232,11 @@ export const accessDencoStateSchema = extendSchema<DencoState, AccessDencoState>
   reboot: primitiveSchema,
   damage: damageStateSchema,
   exp: scoreExpStateSchema,
+  expPercent: scoreExpCalcStateSchema,
 })
 
-const accessTriggerSkillSchema = extendSchema<Denco, AccessTriggeredSkill>(dencoSchema, {
+const accessTriggerSkillSchema = objectSchema<AccessTriggeredSkill>({
+  ...dencoSchema.fields,
   step: primitiveSchema
 })
 
@@ -216,8 +248,7 @@ export const accessSideStateSchema = objectSchema<AccessSideState>({
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
   score: scoreExpStateSchema,
-  displayedScore: primitiveSchema,
-  displayedExp: primitiveSchema,
+  scorePercent: scoreExpCalcStateSchema,
 })
 
 
@@ -241,7 +272,8 @@ export const accessStateSchema = objectSchema<AccessState>({
 
 // station link result
 
-export const linkResultSchema = extendSchema<StationLink, LinkResult>(stationLinkSchema, {
+export const linkResultSchema = objectSchema<LinkResult>({
+  ...stationLinkSchema.fields,
   end: primitiveSchema,
   duration: primitiveSchema,
   linkScore: primitiveSchema,
@@ -249,6 +281,7 @@ export const linkResultSchema = extendSchema<StationLink, LinkResult>(stationLin
   matchAttr: primitiveSchema,
   matchBonus: primitiveSchema,
   totalScore: primitiveSchema,
+  exp: primitiveSchema,
 })
 
 export const linksResultSchema = objectSchema<LinksResult>({
@@ -267,9 +300,11 @@ const copyLinksResult = createCopyFunc(linksResultSchema)
 const mergeLinksResult = createMergeFunc(linksResultSchema)
 
 // event
-
-export const accessDencoResultSchema = extendSchema<AccessDencoState, AccessDencoResult>(accessDencoStateSchema, {
+accessDencoStateSchema.fields.damage
+export const accessDencoResultSchema = objectSchema<AccessDencoResult>({
+  ...accessDencoStateSchema.fields,
   disconnectedLink: linksResultSchema,
+  exp: scoreExpResultSchema,
 })
 
 const accessEventUserSchema = objectSchema<AccessEventUser>({
@@ -279,7 +314,8 @@ const accessEventUserSchema = objectSchema<AccessEventUser>({
   triggeredSkills: arraySchema(accessTriggerSkillSchema),
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
-  score: scoreExpStateSchema,
+  score: scoreExpResultSchema,
+  scorePercent: scoreExpCalcStateSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
 })
@@ -459,7 +495,8 @@ export const accessUserResultSchema = objectSchema<AccessUserResult>({
   triggeredSkills: arraySchema(accessTriggerSkillSchema),
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
-  score: scoreExpStateSchema,
+  score: scoreExpResultSchema,
+  scorePercent: scoreExpCalcStateSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
   event: arraySchema(customSchema(copyEvent, mergeEvent)),
@@ -486,7 +523,8 @@ export const accessResultSchema = objectSchema<AccessResult>({
 
 // skill event
 
-export const skillEventDencoStateSchema = extendSchema<DencoState, SkillEventDencoState>(dencoStateSchema, {
+export const skillEventDencoStateSchema = objectSchema<SkillEventDencoState>({
+  ...dencoStateSchema.fields,
   who: primitiveSchema,
   carIndex: primitiveSchema,
   skillInvalidated: primitiveSchema,
@@ -498,5 +536,6 @@ export const skillEventStateSchema = objectSchema<SkillEventState>({
   formation: arraySchema(skillEventDencoStateSchema),
   event: arraySchema(eventSchema),
   probabilityBoostPercent: primitiveSchema,
+  probabilityBoosted: primitiveSchema,
   carIndex: primitiveSchema,
 })
