@@ -1,7 +1,7 @@
 import { initContext } from ".."
 import { DencoState } from "../core/denco"
 import { TypedMap } from "../core/property"
-import { activateSkill, deactivateSkill, getSkill, Skill, SkillDeactivateStrategy } from "../core/skill"
+import { activateSkill, deactivateSkill, getSkill, Skill, SkillDeactivateStrategy, SkillLogic } from "../core/skill"
 import { initUser, refreshState } from "../core/user"
 import "../gen/matcher"
 
@@ -130,11 +130,24 @@ describe("スキル状態遷移・コールバック", () => {
       const context = initContext("test", "test", false)
       const start = context.currentTime
       context.clock = start
-
       let denco = init("default_timeout", [["active", 10], ["cooldown", 10]])
+
+      const onUnable = jest.fn((_, state, self) => state)
+      if (transitionType === "auto") {
+        const skill = getSkill(denco) as SkillLogic<"auto">
+        skill.onUnable = onUnable
+      }
+
       let state = initUser(context, "test-user", [denco])
       let s = getSkill(state.formation[0])
-      expect(s.transition.state).toBe(idleState)
+      if (transitionType === "auto") {
+        expect(s.transition.state).toBe("unable")
+        expect(onUnable.mock.calls.length).toBe(1)
+        expect(onUnable.mock.calls[0][1]).toMatchObject(state)
+        expect(onUnable.mock.calls[0][2]).toMatchDencoState(state.formation[0])
+      } else {
+        expect(s.transition.state).toBe("idle")
+      }
       expect(s.transitionType).toBe(transitionType)
       expect(s.transition.data).toBeUndefined()
       state = activateSkill(context, state, 0)
@@ -164,7 +177,14 @@ describe("スキル状態遷移・コールバック", () => {
       context.clock = start + 20000
       state = refreshState(context, state)
       s = getSkill(state.formation[0])
-      expect(s.transition.state).toBe(idleState)
+      if (transitionType === "auto") {
+        expect(s.transition.state).toBe("unable")
+        expect(onUnable.mock.calls.length).toBe(2)
+        expect(onUnable.mock.calls[1][1]).toMatchObject(state)
+        expect(onUnable.mock.calls[1][2]).toMatchDencoState(state.formation[0])
+      } else {
+        expect(s.transition.state).toBe("idle")
+      }
     })
     test("activateSkill-default_timeout-フィルム補正あり", () => {
       const context = initContext("test", "test", false)
@@ -252,13 +272,27 @@ describe("スキル状態遷移・コールバック", () => {
     test("deactivateSkill", () => {
 
       const context = initContext("test", "test", false)
-      const now = context.currentTime
-      context.clock = now
+      const start = context.currentTime
+      context.clock = start
 
       let denco = init("self_deactivate", [["cooldown", 10]])
+
+      const onUnable = jest.fn((_, state, self) => state)
+      if (transitionType === "auto") {
+        const skill = getSkill(denco) as SkillLogic<"auto">
+        skill.onUnable = onUnable
+      }
+
       let state = initUser(context, "test-user", [denco])
       let s = getSkill(state.formation[0])
-      expect(s.transition.state).toBe(idleState)
+      if (transitionType === "auto") {
+        expect(s.transition.state).toBe("unable")
+        expect(onUnable.mock.calls.length).toBe(1)
+        expect(onUnable.mock.calls[0][1]).toMatchObject(state)
+        expect(onUnable.mock.calls[0][2]).toMatchDencoState(state.formation[0])
+      } else {
+        expect(s.transition.state).toBe("idle")
+      }
       expect(s.transitionType).toBe(transitionType)
       expect(s.transition.data).toBeUndefined()
       state = activateSkill(context, state, 0)
@@ -275,8 +309,20 @@ describe("スキル状態遷移・コールバック", () => {
       s = getSkill(state.formation[0])
       expect(s.transition.state).toBe("cooldown")
       expect(s.transition.data).toMatchObject({
-        cooldownTimeout: now + 10000,
+        cooldownTimeout: start + 10000,
       })
+
+      context.clock = start + 10000
+      state = refreshState(context, state)
+      s = getSkill(state.formation[0])
+      if (transitionType === "auto") {
+        expect(s.transition.state).toBe("unable")
+        expect(onUnable.mock.calls.length).toBe(2)
+        expect(onUnable.mock.calls[1][1]).toMatchObject(state)
+        expect(onUnable.mock.calls[1][2]).toMatchDencoState(state.formation[0])
+      } else {
+        expect(s.transition.state).toBe("idle")
+      }
     })
     test("deactivateSkill-フィルム補正あり", () => {
 
@@ -316,10 +362,10 @@ describe("スキル状態遷移・コールバック", () => {
     })
   })
 
-
   describe("manual-condition", () => {
     const canEnabled = jest.fn()
     const onActivated = jest.fn((_, state, self) => state)
+    const onUnable = jest.fn((_, state, self) => state)
     const init = (deactivate: SkillDeactivateStrategy, property: undefined | [string, any][]): DencoState => {
       const skill: Skill = {
         type: "possess",
@@ -334,6 +380,7 @@ describe("スキル状態遷移・コールバック", () => {
         data: new TypedMap(),
         onActivated: onActivated,
         canEnabled: canEnabled,
+        onUnable: onUnable,
         deactivate: deactivate,
       }
       return {
@@ -345,6 +392,7 @@ describe("スキル状態遷移・コールバック", () => {
     beforeEach(() => {
       onActivated.mockClear()
       canEnabled.mockClear()
+      onUnable.mockClear()
       canEnabled.mockImplementation((_, state, self) => true)
     })
 
@@ -361,7 +409,8 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
       expect(canEnabled.mock.calls[0][1]).toMatchObject(state)
-      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
+      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "not_init" } } })
+      expect(onUnable.mock.calls.length).toBe(0)
 
       let s = getSkill(state.formation[0])
       expect(s.transition.state).toBe("idle")
@@ -399,6 +448,27 @@ describe("スキル状態遷移・コールバック", () => {
       s = getSkill(state.formation[0])
       expect(s.transition.state).toBe("unable")
       expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
+      d = state.formation[0]
+      expect(onUnable.mock.calls.length).toBe(1)
+      expect(onUnable.mock.calls[0][1]).toMatchObject(state)
+      expect(onUnable.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
+    })
+
+
+    test("onUnable呼び出し@初期化", () => {
+      const context = initContext("test", "test", false)
+      canEnabled.mockImplementation((_, state, self) => false)
+
+      let d = init("default_timeout", [["active", 10], ["cooldown", 10]])
+      let state = initUser(context, "test-user", [d])
+      d = state.formation[0]
+      // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
+      expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
+      expect(canEnabled.mock.calls[0][1]).toMatchObject(state)
+      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "not_init" } } })
+      expect(onUnable.mock.calls.length).toBe(1)
+      expect(onUnable.mock.calls[0][1]).toMatchObject(state)
+      expect(onUnable.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
     })
 
     test("deactivateSkill", () => {
@@ -413,7 +483,7 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canEnabled.mock.calls.length).toBeGreaterThan(0)
       expect(canEnabled.mock.calls[0][1]).toMatchObject(state)
-      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
+      expect(canEnabled.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "not_init" } } })
 
       let s = getSkill(state.formation[0])
       expect(s.transition.state).toBe("idle")
@@ -443,6 +513,7 @@ describe("スキル状態遷移・コールバック", () => {
 
     const canActivated = jest.fn()
     const onActivated = jest.fn((_, state, self) => state)
+    const onUnable = jest.fn((_, state, self) => state)
     const init = (): DencoState => {
       const skill: Skill = {
         type: "possess",
@@ -457,6 +528,7 @@ describe("スキル状態遷移・コールバック", () => {
         data: new TypedMap(),
         onActivated: onActivated,
         canActivated: canActivated,
+        onUnable: onUnable,
       }
       return {
         ...dencoBase,
@@ -466,6 +538,7 @@ describe("スキル状態遷移・コールバック", () => {
 
     beforeEach(() => {
       onActivated.mockClear()
+      onUnable.mockClear()
       canActivated.mockClear()
       canActivated.mockImplementation((_, state, self) => true)
     })
@@ -487,13 +560,14 @@ describe("スキル状態遷移・コールバック", () => {
       // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
       expect(canActivated.mock.calls.length).toBeGreaterThan(0)
       expect(canActivated.mock.calls[0][1]).toMatchObject(state)
-      expect(canActivated.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
+      expect(canActivated.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "not_init" } } })
       expect(s.transition.state).toBe("active")
       expect(s.transition.data).toBeUndefined()
       expect(s.transitionType).toBe("auto-condition")
       expect(onActivated.mock.calls.length).toBe(1)
       expect(onActivated.mock.calls[0][1]).toMatchObject(state)
       expect(onActivated.mock.calls[0][2]).toMatchDencoState(d)
+      expect(onUnable.mock.calls.length).toBe(0)
 
       canActivated.mockClear()
       canActivated.mockImplementation((_, state, self) => false)
@@ -504,6 +578,28 @@ describe("スキル状態遷移・コールバック", () => {
       expect(canActivated.mock.calls.length).toBeGreaterThan(0)
       expect(canActivated.mock.calls[0][1]).toMatchObject(state)
       expect(canActivated.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "active" } } })
+      expect(onUnable.mock.calls.length).toBe(1)
+      expect(onUnable.mock.calls[0][1]).toMatchObject(state)
+      expect(onUnable.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
+      expect(s.transition.state).toBe("unable")
+    })
+
+    test("onUnable呼び出し@初期化", () => {
+      const context = initContext("test", "test", false)
+      let d = init()
+      canActivated.mockImplementation((_, state, self) => false)
+
+      let state = initUser(context, "user", [d])
+      d = state.formation[0]
+      let s = getSkill(d)
+      // refreshSkillStateは差分がなくなるまで繰り返すので１回以上呼び出し
+      expect(canActivated.mock.calls.length).toBeGreaterThan(0)
+      expect(canActivated.mock.calls[0][1]).toMatchObject(state)
+      expect(canActivated.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "not_init" } } })
+      expect(onActivated.mock.calls.length).toBe(0)
+      expect(onUnable.mock.calls.length).toBe(1)
+      expect(onUnable.mock.calls[0][1]).toMatchObject(state)
+      expect(onUnable.mock.calls[0][2]).toMatchDencoState(d, { skill: { transition: { state: "unable" } } })
       expect(s.transition.state).toBe("unable")
     })
   })

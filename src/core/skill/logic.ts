@@ -68,7 +68,7 @@ export type SkillLogic<T extends SkillTransitionType = SkillTransitionType> =
 
 type ManualSkillLogic = DeactivatableSkillLogic<"manual">
 
-interface ManualConditionSkillLogic extends DeactivatableSkillLogic<"manual-condition"> {
+type ManualConditionSkillLogic = DeactivatableSkillLogic<"manual-condition"> & SkillUnableCallback & {
   /**
    * スキル状態の遷移タイプ`manual-condition`において`idle <> unable`状態であるか判定する
    * 
@@ -77,9 +77,9 @@ interface ManualConditionSkillLogic extends DeactivatableSkillLogic<"manual-cond
   canEnabled: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => boolean
 }
 
-type AutoSkillLogic = DeactivatableSkillLogic<"auto">
+type AutoSkillLogic = DeactivatableSkillLogic<"auto"> & SkillUnableCallback
 
-interface AutoConditionSkillLogic extends ActivatableSkillLogic<"auto-condition"> {
+type AutoConditionSkillLogic = ActivatableSkillLogic<"auto-condition"> & SkillUnableCallback & {
   /**
    * スキル状態の遷移タイプ`auto-condition`において`active`状態であるか判定する
    * 
@@ -139,6 +139,10 @@ interface ActivatableSkillLogic<T extends "manual" | "manual-condition" | "auto"
    */
   onActivated?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => void | UserState
 
+}
+
+interface SkillUnableCallback {
+  onUnable?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => void | UserState
 }
 
 // スキル状態遷移のタイプに依存しない、共通のコールバック定義
