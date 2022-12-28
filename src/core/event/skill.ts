@@ -107,6 +107,13 @@ export type EventSkillTrigger = {
    * 指定した関数には現在の状態が引数として渡されるので、関数内に状態を更新する処理を定義してください
    */
   recipe: EventSkillRecipe
+
+  /**
+   * {@link probabilityKey}で指定した確率[%]で発動判定が失敗したときに実行する処理
+   * 
+   * こちらの処理は実行されてもスキル発動として記録されません
+   */
+  fallbackRecipe?: EventSkillRecipe
 }
 
 /**
@@ -291,6 +298,14 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   const recipe = canTriggerSkill(context, state, trigger, property)
   if (!recipe) {
     context.log.log("スキル評価イベントの終了（発動なし）")
+    if (trigger.fallbackRecipe) {
+      // 発動失敗時の処理
+      context.log.log(`スキル不発時の処理があります`)
+      state = trigger.fallbackRecipe(state) ?? state
+      // 発動の記録はなし
+      state.event = []
+      return state
+    }
     // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
     return
   }
