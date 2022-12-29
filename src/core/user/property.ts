@@ -50,6 +50,19 @@ export interface DailyStatistics {
 }
 
 /**
+ * - `None` : いずれの新駅でもない
+ * - `Daily` : 今日の新駅
+ * - `Monthly` : 今月の新駅（黄色新駅）
+ * - `New` : 赤新駅 
+ */
+export enum NewStationType {
+  None = 0,
+  Daily = 1,
+  Monthly = 2,
+  New = 4,
+}
+
+/**
  * ユーザがこれまでアクセスした駅の情報
  */
 export interface StationStatistics {
@@ -74,6 +87,17 @@ export interface StationStatistics {
    * @return これまでに駅にアクセスした回数（０以上の整数）
    */
   getStationAccessCount: (station: ReadonlyState<Station>) => number
+
+  /**
+   * 指定した駅が新駅か判定する
+   * 
+   * **未定義の挙動** この関数が`undefined`の場合はすべての駅を新駅として扱いません  
+   * {@link NewStationType None}を返します
+   * @param station 
+   * @returns 新駅のタイプ
+   */
+  isNewStation: (station: ReadonlyState<Station>) => NewStationType
+
 }
 
 /**
@@ -147,7 +171,13 @@ export function getUserPropertyReader(property: ReadonlyState<UserProperty>): Us
         "history.getStationAccessCount",
         property.history?.getStationAccessCount,
         0 as number,
+        (value) => Number.isInteger(value) && value >= 0,
       ),
+      isNewStation: initFuncProxy<NewStationType, (s: ReadonlyState<Station>) => NewStationType>(
+        "history.isNewStation",
+        property.history?.isNewStation,
+        NewStationType.None,
+      )
     }
   }
 }

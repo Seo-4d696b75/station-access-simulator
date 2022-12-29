@@ -161,6 +161,7 @@ const userPropertyReaderSchema = objectSchema<UserPropertyReader>({
   history: objectSchema<UserPropertyReader["history"]>({
     isHomeStation: functionSchema,
     getStationAccessCount: functionSchema,
+    isNewStation: functionSchema,
   })
 })
 
@@ -173,6 +174,7 @@ export const userPropertySchema = objectSchema<UserProperty>({
   history: objectSchema<StationStatistics>({
     isHomeStation: functionSchema,
     getStationAccessCount: functionSchema,
+    isNewStation: functionSchema,
   })
 })
 
