@@ -4254,6 +4254,62 @@
     ]
   },
   {
+    "numbering": "81",
+    "class": "D81_You",
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "気分はHOT＆HAPPY☆ Lv.1",
+        "EXP": 60,
+        "EXP_additional": 130
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "気分はHOT＆HAPPY☆ Lv.2",
+        "EXP": 70,
+        "EXP_additional": 150
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "気分はHOT＆HAPPY☆ Lv.3",
+        "EXP": 80,
+        "EXP_additional": 170
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "気分はHOT＆HAPPY☆ Lv.4",
+        "EXP": 90,
+        "EXP_additional": 190
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "気分はHOT＆HAPPY☆ Lv.5",
+        "EXP": 110,
+        "EXP_additional": 210
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "気分はHOT＆HAPPY☆ Lv.6",
+        "EXP": 130,
+        "EXP_additional": 230
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "ハピネス・トゥ・ユウ",
+        "EXP": 150,
+        "EXP_additional": 250
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
