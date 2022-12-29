@@ -1,4 +1,4 @@
-import { Event, SkillTriggerEvent } from "."
+import { SkillTriggerEvent } from "."
 import { copy, merge } from "../../"
 import { AccessDencoResult, AccessUserResult } from "../access"
 import { assert, Context, withFixedClock } from "../context"
@@ -7,7 +7,7 @@ import { random } from "../random"
 import { isSkillActive, ProbabilityPercent, Skill, WithSkill } from "../skill"
 import { SkillProperty, SkillPropertyReader, withSkill } from "../skill/property"
 import { ReadonlyState } from "../state"
-import { UserProperty, UserState } from "../user"
+import { UserState } from "../user"
 import { refreshUserState } from "../user/refresh"
 
 /**
@@ -29,18 +29,11 @@ export interface EventTriggeredSkill {
 /**
  * スキル発動型イベントにおけるスキル評価中の状態
  */
-export interface SkillEventState {
+export interface SkillEventState extends UserState {
   time: number
-  user: UserProperty
 
   formation: SkillEventDencoState[]
   carIndex: number
-
-  /**
-   * このスキル発動に付随して発動する他スキルのイベント
-   * 現状だと確率補正のひいるのスキル発動イベントのみ
-   */
-  event: Event[]
 
   /**
    * 確率補正%
@@ -142,7 +135,7 @@ export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<A
   let next = copy.AccessUserResult(state)
   if (self.skillInvalidated) {
     context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
-    return copy.AccessUserResult(state)
+    return next
   }
   const eventState: SkillEventState = {
     user: copy.UserProperty(state.user),
@@ -156,32 +149,18 @@ export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<A
       }
     }),
     carIndex: self.carIndex,
-    event: [],
+    event: state.event.map(e => copy.Event(e)),
+    queue: state.queue.map(e => copy.EventQueueEntry(e)),
     probabilityBoostPercent: 0,
     probabilityBoosted: false,
   }
   const result = execute(context, eventState, trigger)
   if (result) {
     // スキル発動による影響の反映
-    next.formation.forEach((d, idx) => {
-      // 編成内位置は不変と仮定
-      merge.DencoState(d, result.formation[idx])
-    })
-    next.event.push(...result.event)
-    // next = {
-    //   ...next,
-    //   formation: result.formation.map((d, idx) => {
-    //     const access = copy.AccessDencoResult(state.formation[idx])
-    //     merge.DencoState(access, d)
-    //     return access
-    //   }),
-    //   event: [
-    //     ...state.event.map(e => copy.Event(e)),
-    //     ...result.event,
-    //   ],
-    // }
+    // formation: UserState[], event, queueを更新
+    merge.UserState(next, result)
+    refreshUserState(context, next)
   }
-  refreshUserState(context, next)
   return next
 })
 
@@ -202,19 +181,18 @@ export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<A
  * @returns スキルを評価して更新した新しい状態
  */
 export function triggerSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, trigger: EventSkillTrigger): UserState {
-  let next = copy.UserState(state)
   const idx = state.formation.findIndex(d => d.numbering === self.numbering)
   if (idx < 0) {
     context.log.log(`スキル発動の主体となるでんこが編成内に居ません（終了） formation: ${state.formation.map(d => d.name)}`)
-    return next
+    return copy.UserState(state)
   }
   if (state.formation[idx].skill.type !== "possess") {
     context.log.log(`スキル発動の主体となるでんこがスキルを保有していません（終了） skill: ${state.formation[idx].skill.type}`)
-    return next
+    return copy.UserState(state)
   }
   const eventState: SkillEventState = {
+    ...copy.UserState(state),
     time: context.currentTime,
-    user: copy.UserProperty(state.user),
     formation: state.formation.map((d, i) => {
       return {
         ...copy.DencoState(d),
@@ -224,29 +202,16 @@ export function triggerSkillAtEvent(context: Context, state: ReadonlyState<UserS
       }
     }),
     carIndex: idx,
-    event: [],
     probabilityBoostPercent: 0,
     probabilityBoosted: false,
   }
   const result = execute(context, eventState, trigger)
   if (result) {
-    // スキル発動による影響の反映
-    next.formation.forEach((d, idx) => {
-      // 編成位置は不変と仮定
-      merge.DencoState(d, result.formation[idx])
-    })
-    next.event.push(...result.event)
-    // next = {
-    //   ...next,
-    //   formation: result.formation.map(d => copy.DencoState(d)),
-    //   event: [
-    //     ...next.event,
-    //     ...result.event,
-    //   ],
-    // }
+    refreshUserState(context, result)
+    return result
+  } else {
+    return copy.UserState(state)
   }
-  refreshUserState(context, next)
-  return next
 }
 
 function execute(context: Context, state: SkillEventState, trigger: EventSkillTrigger): SkillEventState | undefined {

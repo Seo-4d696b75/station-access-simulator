@@ -1,4 +1,4 @@
-import { copy } from "../../"
+import { copy, merge } from "../../"
 import { AccessConfig, startAccess } from "../access"
 import { assert, Context, withFixedClock } from "../context"
 import { ReadonlyState } from "../state"
@@ -25,51 +25,22 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
   }
   const config: AccessConfig = {
     offense: {
-      state: {
-        user: state.user,
-        formation: state.formation.map(d => copy.DencoState(d)),
-        event: [],
-        queue: [],
-      },
+      state: state,
       carIndex: state.carIndex
     },
     station: station
   }
   const result = startAccess(context, config)
-  if (result.offense.event.length !== 1) {
-    context.log.error(`イベント数が想定外 event:${JSON.stringify(result.offense.event)}`)
-  }
-  // アクセスイベントのみ選択
+  // アクセスイベントの確認
+  const eventSize = result.offense.event.length
   assert(
-    result.offense.event.length > 0 &&
-    result.offense.event[0].type === "access",
-    "access event not found at event[0]"
+    eventSize > 0 &&
+    result.offense.event[eventSize-1].type === "access",
+    "access event not found"
   )
-  const accessEvent = result.offense.event[0]
-  // queueは空のはず
-  assert(
-    result.offense.queue.length === 0,
-    "unexpected queue entry added while random access"
-  )
-  return {
-    time: state.time,
-    user: state.user,
-    formation: result.offense.formation.map((d, idx) => {
-      // 編成位置は不変と仮定
-      let current = state.formation[idx]
-      return {
-        ...copy.DencoState(d),
-        who: current.who,
-        carIndex: current.carIndex,
-        skillInvalidated: current.skillInvalidated,
-      }
-    }),
-    carIndex: state.carIndex,
-    event: [
-      ...state.event.map(e => copy.Event(e)),
-      accessEvent,
-    ],
-    probabilityBoostPercent: state.probabilityBoostPercent,
-    probabilityBoosted: state.probabilityBoosted,
-  }
+  // アクセス処理の反映
+  let next = copy.SkillEventState(state)
+  // formation: UserState[], event, queueを更新
+  merge.UserState(next, result.offense)
+  return next
 })

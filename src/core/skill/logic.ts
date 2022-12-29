@@ -142,6 +142,15 @@ interface ActivatableSkillLogic<T extends "manual" | "manual-condition" | "auto"
 }
 
 interface SkillUnableCallback {
+
+  /**
+   * スキル状態が`unable`へ変更された直後の処理をここで行う
+   * 
+   * スキル状態遷移のタイプ`manual-condition,auto,auto-condition`限定  
+   * 
+   * @param self **Readonly** このスキルを保持するでんこ自身の現在の状態 スキルの状態は`unable`です（`self.skill.active === false`）
+   * @return 状態を更新する場合は新しい状態を返します
+   */
   onUnable?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => void | UserState
 }
 

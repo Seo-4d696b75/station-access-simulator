@@ -24,11 +24,19 @@ import { SkillActiveTimeout } from "./transition"
  */
 export const activateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
   const state = copy.UserState(current)
-  carIndex.forEach(idx => activateSkillOne(context, state, idx))
+  carIndex.forEach(idx => activateSkillAt(context, state, idx))
   return state
 })
 
-function activateSkillOne<T extends UserState>(context: Context, state: T, carIndex: number) {
+/**
+ * 指定した位置のでんこのスキル状態をactiveに変更します
+ * 
+ * see {@link activateSkill}
+ * 
+ * @param state 現在の状態であり変更が直接書き込まれます
+ * @param carIndex 編成内の位置
+ */
+export function activateSkillAt<T extends UserState>(context: Context, state: T, carIndex: number) {
   const d = state.formation[carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.length: ${state.formation.length}`)
@@ -166,11 +174,19 @@ function getSkillActiveTimeout<T extends "manual" | "manual-condition" | "auto">
  */
 export const deactivateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
   const state = copy.UserState(current)
-  carIndex.forEach(idx => deactivateSkillOne(context, state, idx))
+  carIndex.forEach(idx => deactivateSkillAt(context, state, idx))
   return state
 })
 
-function deactivateSkillOne(context: Context, state: UserState, carIndex: number) {
+/**
+ * 指定した位置のでんこのスキル状態をcooldownに変更します
+ * 
+ * see {@link deactivateSkill}
+ * 
+ * @param state 現在の状態であり変更が直接書き込まれます
+ * @param carIndex 編成内の位置
+ */
+export function deactivateSkillAt<T extends UserState>(context: Context, state: T, carIndex: number) {
   const d = state.formation[carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.length: ${state.formation.length}`)
