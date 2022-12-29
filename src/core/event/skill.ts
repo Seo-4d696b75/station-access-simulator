@@ -40,7 +40,6 @@ export interface SkillEventState extends UserState {
    */
   probabilityBoostPercent: number
   probabilityBoosted: boolean
-
 }
 
 export interface SkillEventDencoState extends DencoState {
@@ -221,6 +220,10 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
     context.log.error(`スキルを保持していません ${self.name}`)
   }
 
+  // 処理開始前のEventを記録
+  const originalEvent = state.event
+  state.event = []
+
   const skill = self.skill
   context.log.log(`${self.name} ${skill.name}`)
 
@@ -266,9 +269,13 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
     if (trigger.fallbackRecipe) {
       // 発動失敗時の処理
       context.log.log(`スキル不発時の処理があります`)
+      const eventSize = state.event.length
       state = trigger.fallbackRecipe(state) ?? state
-      // 発動の記録はなし
-      state.event = []
+      // fallbackRecipe内でイベント記録は追加されない前提
+      assert(eventSize === state.event.length, "fallbackRecipeでイベント記録が追加されています")
+      // 変更した状態を返すがスキル発動の記録はなし
+      // イベント記録は元に戻す
+      state.event = originalEvent
       return state
     }
     // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
@@ -290,6 +297,12 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
 
   // 確率補正が効いたか確認
   checkProbabilityBoosted(state)
+
+  // 発動したスキルをイベント記録に追加
+  state.event = [
+    ...originalEvent,
+    ...state.event,
+  ]
 
   context.log.log("スキル評価イベントの終了")
   return state
