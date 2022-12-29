@@ -4310,6 +4310,65 @@
     ]
   },
   {
+    "numbering": "82",
+    "class": "D82_Yukari",
+    "active": 1800,
+    "cooldown": 7200,
+    "probability": 100,
+    "eco_count": 4,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "良妻のたたずまい Lv.1",
+        "DEF": 1,
+        "DEF_eco":5
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "良妻のたたずまい Lv.2",
+        "DEF": 2,
+        "DEF_eco": 10
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "良妻のたたずまい Lv.3",
+        "DEF": 3,
+        "DEF_eco": 15
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "良妻のたたずまい Lv.4",
+        "DEF": 4,
+        "DEF_eco": 20
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "良妻のたたずまい Lv.5",
+        "DEF": 6,
+        "DEF_eco": 25
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "良妻のたたずまい Lv.6",
+        "DEF": 8,
+        "DEF_eco": 30
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "どうかわたしの名前を呼んで",
+        "DEF": 10,
+        "DEF_eco": 35
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
