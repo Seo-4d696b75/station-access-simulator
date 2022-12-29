@@ -174,7 +174,7 @@ function initPropertyReader<T extends NonNullable<any>>(propertyName: string, pr
 
 function initFuncProxy<T extends NonNullable<any>, F extends (...args: any[]) => T>(funcName: string, func: F | undefined, funcDefaultReturnValue: T, validator?: (v: T) => boolean) {
   return (context: Context, ...args: Parameters<F>): T => {
-    let value = func?.(args)
+    let value = func?.(...args)
     if (value === undefined) {
       value = funcDefaultReturnValue
       context.log.log(`${funcName}() 関数定義のデフォルト値を返しました : ${funcDefaultReturnValue}`)
