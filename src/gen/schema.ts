@@ -2,7 +2,7 @@ import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, Acc
 import { AccessScoreExpResult, AccessScoreExpState, ScoreExpCalcState, ScoreExpResult } from "../core/access/score"
 import { assert, SimulatorError } from "../core/context"
 import { Denco, DencoState } from "../core/denco"
-import { AccessEventData, AccessEventUser, Event, EventSkillTrigger, EventTriggeredSkill, LevelupDenco, SkillActivatedEventData, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
+import { AccessEventData, AccessEventUser, Event, EventSkillTrigger, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
 import { FilmHolder } from "../core/film"
 import { MutableProperty, ReadableProperty, TypedMap } from "../core/property"
 import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition, SkillTransitionType } from "../core/skill"
@@ -343,16 +343,6 @@ export const accessEventDataSchema = objectSchema<AccessEventData>({
 const copyAccessEventData = createCopyFunc(accessEventDataSchema)
 const mergeAccessEventData = createMergeFunc(accessEventDataSchema)
 
-const skillActivatedEventDataSchema = objectSchema<SkillActivatedEventData>({
-  time: primitiveSchema,
-  carIndex: primitiveSchema,
-  denco: dencoStateSchema,
-  skillName: primitiveSchema,
-})
-
-const copySkillActivatedData = createCopyFunc(skillActivatedEventDataSchema)
-const mergeSkillActivatedData = createMergeFunc(skillActivatedEventDataSchema)
-
 const eventTriggeredSkillSchema = objectSchema<EventTriggeredSkill>({
   time: primitiveSchema,
   carIndex: primitiveSchema,
@@ -385,11 +375,6 @@ function copyEvent(e: ReadonlyState<Event>): Event {
         type: "reboot",
         data: copyLinksResult(e.data)
       }
-    case "skill_activated":
-      return {
-        type: "skill_activated",
-        data: copySkillActivatedData(e.data)
-      }
     case "skill_trigger":
       return {
         type: "skill_trigger",
@@ -413,10 +398,6 @@ function mergeEvent(dst: Event, src: ReadonlyState<Event>) {
     case "reboot":
       assert(src.type === "reboot")
       mergeLinksResult(dst.data, src.data)
-      break
-    case "skill_activated":
-      assert(src.type === "skill_activated")
-      mergeSkillActivatedData(dst.data, src.data)
       break
     case "skill_trigger":
       assert(src.type === "skill_trigger")
