@@ -4197,6 +4197,63 @@
     ]
   },
   {
+    "numbering": "80",
+    "class": "D80_Nemo",
+    "probability": 100,
+    "cooldown": 10800,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "蒼華一撃 Lv.1",
+        "damage_fixed": 80,
+        "probability_skill": 50
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "蒼華一撃 Lv.2",
+        "damage_fixed": 100,
+        "probability_skill": 55
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "蒼華一撃 Lv.3",
+        "damage_fixed": 120,
+        "probability_skill": 60
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "蒼華一撃 Lv.4",
+        "damage_fixed": 140,
+        "probability_skill": 65
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "蒼華一撃 Lv.5",
+        "damage_fixed": 160,
+        "probability_skill": 70
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "蒼華一撃 Lv.6",
+        "damage_fixed": 180,
+        "probability_skill": 75
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "瑠璃唐草を忘れない",
+        "damage_fixed": 200,
+        "probability_skill": 80
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
