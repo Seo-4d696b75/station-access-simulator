@@ -268,7 +268,7 @@ describe("みなものスキル", () => {
     expect(state.event.length).toBe(2)
     expect(state.event[0].type).toBe("access")
     let e = state.event[1]
-    assert(e.type === "skill_activated")
+    assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
     expect(e.data.denco).toMatchDencoState(d)
     expect(e.data.skillName).toBe("みんなでショウ・タイム Lv.4")

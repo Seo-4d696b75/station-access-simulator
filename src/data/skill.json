@@ -3421,6 +3421,7 @@
     "active": 1800,
     "cooldown": 0,
     "probability": 100,
+    "probability_activate": 100,
     "link_count": 2,
     "list": [
       {

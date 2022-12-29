@@ -1,4 +1,5 @@
-import { activateSkill, SkillLogic } from "../core/skill";
+import { triggerSkillAtEvent } from "../core/event";
+import { activateSkillAt, SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "auto",
@@ -13,7 +14,18 @@ const skill: SkillLogic = {
     const linkCountTh = self.skill.property.readNumber("link_count")
     if (linkCount >= linkCountTh) {
       // 条件を満たしたら自動で有効化
-      return activateSkill(context, state, self.carIndex)
+      // 有効化はスキル発動として処理する（イベント記録される）
+      return triggerSkillAtEvent(
+        context,
+        state,
+        self,
+        {
+          probabilityKey: "probability_activate", // 100%
+          recipe: (state) => {
+            activateSkillAt(context, state, self.carIndex)
+          }
+        }
+      )
     }
   },
   triggerOnAccess: (context, state, step, self) => {
