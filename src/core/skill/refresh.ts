@@ -164,6 +164,12 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
         }
       }
       result = true
+      // callback
+      if (skill.onCooldown) {
+        const self = withSkill(copy.DencoState(denco), skill, idx)
+        const next = skill.onCooldown(context, state, self)
+        if (next) merge.UserState(state, next)
+      }
     }
   }
   if (skill.transition.state === "cooldown") {

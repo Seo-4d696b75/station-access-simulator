@@ -126,6 +126,7 @@ export const skillHolderSchema = objectSchema<SkillHolder>({
   onLinkStarted: functionSchema,
   onHourCycle: functionSchema,
   onUnable: functionSchema,
+  onCooldown: functionSchema,
 })
 
 // denco

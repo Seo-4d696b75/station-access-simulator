@@ -212,6 +212,12 @@ export function deactivateSkillAt<T extends UserState>(context: Context, state: 
           data: timeout
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
+        // callback
+        if (skill.onCooldown) {
+          const self = withSkill(copy.DencoState(d), skill, carIndex)
+          const next = skill.onCooldown(context, state, self)
+          if (next) merge.UserState(state, next)
+        }
         refreshSkillState(context, state)
         return
       } else {

@@ -66,18 +66,27 @@ export type SkillLogic<T extends SkillTransitionType = SkillTransitionType> =
   T extends "auto-condition" ? AutoConditionSkillLogic :
   T extends "always" ? AlwaysSkillLogic : never
 
-type ManualSkillLogic = DeactivatableSkillLogic<"manual">
+type ManualSkillLogic =
+  DeactivatableSkillLogic<"manual">
+  & SkillCooldownCallback
 
-type ManualConditionSkillLogic = DeactivatableSkillLogic<"manual-condition"> & SkillUnableCallback & {
-  /**
-   * スキル状態の遷移タイプ`manual-condition`において`idle <> unable`状態であるか判定する
-   * 
-   * @returns trueの場合は`idle`状態へ遷移
-   */
-  canEnabled: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => boolean
-}
+type ManualConditionSkillLogic =
+  DeactivatableSkillLogic<"manual-condition">
+  & SkillUnableCallback
+  & SkillCooldownCallback
+  & {
+    /**
+     * スキル状態の遷移タイプ`manual-condition`において`idle <> unable`状態であるか判定する
+     * 
+     * @returns trueの場合は`idle`状態へ遷移
+     */
+    canEnabled: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => boolean
+  }
 
-type AutoSkillLogic = DeactivatableSkillLogic<"auto"> & SkillUnableCallback
+type AutoSkillLogic =
+  DeactivatableSkillLogic<"auto">
+  & SkillUnableCallback
+  & SkillCooldownCallback
 
 type AutoConditionSkillLogic = ActivatableSkillLogic<"auto-condition"> & SkillUnableCallback & {
   /**
@@ -152,6 +161,19 @@ interface SkillUnableCallback {
    * @return 状態を更新する場合は新しい状態を返します
    */
   onUnable?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => void | UserState
+}
+
+interface SkillCooldownCallback {
+
+  /**
+   * スキル状態が`cooldown`へ変更された直後の処理をここで行う
+   * 
+   * スキル状態遷移のタイプ`manual,manual-condition,auto`限定  
+   * 
+   * @param self **Readonly** このスキルを保持するでんこ自身の現在の状態 スキルの状態は`cooldown`です（`self.skill.active === false`）
+   * @return 状態を更新する場合は新しい状態を返します
+   */
+  onCooldown?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => void | UserState
 }
 
 // スキル状態遷移のタイプに依存しない、共通のコールバック定義
