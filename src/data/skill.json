@@ -4322,7 +4322,7 @@
         "denco_level": 5,
         "name": "良妻のたたずまい Lv.1",
         "DEF": 1,
-        "DEF_eco":5
+        "DEF_eco": 5
       },
       {
         "skill_level": 2,
@@ -4365,6 +4365,85 @@
         "name": "どうかわたしの名前を呼んで",
         "DEF": 10,
         "DEF_eco": 35
+      }
+    ]
+  },
+  {
+    "numbering": "83",
+    "class": "D83_Kurogane",
+    "active": 1800,
+    "probability": 100,
+    "probability_activate": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "くろがね忍法・変化の術！ Lv.1",
+        "cooldown": 1800,
+        "ATK_heat": 16,
+        "ATK_cool": 8,
+        "DEF_cool": 8,
+        "DEF_eco": 16
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "くろがね忍法・変化の術！ Lv.2",
+        "cooldown": 1500,
+        "ATK_heat": 20,
+        "ATK_cool": 10,
+        "DEF_cool": 10,
+        "DEF_eco": 20
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "くろがね忍法・変化の術！ Lv.3",
+        "cooldown": 1200,
+        "ATK_heat": 24,
+        "ATK_cool": 12,
+        "DEF_cool": 12,
+        "DEF_eco": 24
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "くろがね忍法・変化の術！ Lv.4",
+        "cooldown": 900,
+        "ATK_heat": 28,
+        "ATK_cool": 14,
+        "DEF_cool": 14,
+        "DEF_eco": 28
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "くろがね忍法・変化の術！ Lv.5",
+        "cooldown": 600,
+        "ATK_heat": 32,
+        "ATK_cool": 16,
+        "DEF_cool": 16,
+        "DEF_eco": 32
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "くろがね忍法・変化の術！ Lv.6",
+        "cooldown": 300,
+        "ATK_heat": 36,
+        "ATK_cool": 18,
+        "DEF_cool": 18,
+        "DEF_eco": 36
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "朧なれども夢あらば",
+        "cooldown": 0,
+        "ATK_heat": 40,
+        "ATK_cool": 20,
+        "DEF_cool": 20,
+        "DEF_eco": 40
       }
     ]
   },
