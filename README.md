@@ -26,7 +26,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@^0.3.1/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@^0.4.0/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -77,6 +77,49 @@ init().then(() => {
 # 5. What's New?
 [各バージョンの一覧はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
 
+
+**v0.4.0**  
+- `SkillLogic` コールバックの追加
+  - 編成内のでんこがリンクを開始 `onLinkStarted`
+  - スキル状態がunableに変化 `onUnable`
+  - スキル状態がcooldownに変化 `onCooldown`
+- スキル状態が非アクティブでもコールバックを呼び出す
+- 状態のコピー関数を修正
+- 発動したスキルの効果内容を確率で変化させる実装を追加
+- スキル発動判定に失敗した場合の処理を追加
+- スコア・経験値の内訳を細分化、型定義の修正
+- でんこの名前を複数種類追加　`name, fullName, firstName`
+- スキルの追加
+  - 66 みなも
+  - 67 まぜ
+  - 68 みつる
+  - 70 みやび
+  - 71 るり
+  - 72 ナギサ
+  - 73 やまと
+  - 74 コヨイ
+  - 75 ニナ
+  - 77 リト
+  - 78 なる
+  - 79 シズ
+  - 80 ねも
+  - 81 ゆう
+  - 82 ゆかり
+  - 83 くろがね
+  - 84 みそら
+  - 85 めぐる
+- 不具合の修正
+  - 61 Chitoseのスキルがアクセス時に影響しないサポーターのスキルも無効化してしまう
+  - 65 Hibikiのスキルがレンに無効化されてしまう
+  - アクセス直後のスキル発動で発動確率が100%でも確率補正（ひいる）が効いててしまう
+  - 特定の場合でカウンターが２回以上発動しない（まりか > みこと・くに）
+  - 38 Kuni のスキル発動タイミングが誤っていた
+  - スキル発動の呼び出し内から`activate/deactivateSkill`を呼び出せない（型定義が不適当）
+  - アクセス以外のスキル発動でEvent記録が破壊される場合がある
+  - `UserPropertyReader`の初期化が不適当で関数の呼び出しが正しく機能しない
+  - 新駅の判定処理を追加
+  
+
 **v0.3.1**
 - サンプルプロジェクトの追加
 - UMDファイルの分割(Code Splitting)
@@ -85,44 +128,3 @@ init().then(() => {
 - コンソール出力での表示の不具合を修正
   - リンク解除されたアクセスでリンク時間が表示されない不具合
   - アクセスでレベルアップ後の最大HP,レベルで表示される不具合
-
-**v0.3.0**
-- Docsの追加
-- サンプルコードの追加
-- アクセス中のスキル処理`after_damage`の修正
-- カスタムErrorの追加 `SimulationError`
-- フィルムの追加
-  - スキルの`active, cooldown`時間にフィルム補正を反映
-  - アクセスのダメージ計算にATK,DEFを増減させるフィルム補正を反映
-  - アクセスの獲得経験値を増加させるフィルム補正の反映
-  - スキル処理におけるプロパティ読み出しにフィルム補正を反映  
-  - スキルの発動確率にフィルム補正を反映
-- スキル処理の型定義`SkillLogic`を刷新
-  - スキル状態の遷移タイプ`always, manual, auto...`に応じて必要なプロパティを型で明示的に定義
-  - `SkillLogic`に状態遷移タイプのプロパティ`transitionType`を追加
-  - スキルの`active,cooldown`時間の指定方法を変更
-  - スキルの発動確率の指定方法を変更
-  - プロパティ`canTriggerPink`削除
-- 編成内のでんこのリンク解除を伝達するコールバック`onLinkDisconnected`の追加
-- スキルの追加
-  - 51 Himegi
-  - 52 Noa
-  - 53 Malin
-  - 54 Nayori
-  - 55 Himari
-  - 56 Rara
-  - 57 Mizuho
-  - 58 Marika
-  - 59 Momiji
-  - 60 Shiori
-  - 62 Mako
-  - 63 Tsumugi
-  - 64 Akehi
-  - 65 Hibiki
-- 不具合の修正
-  - 関数`fixClock`を使用しても時間差のある処理で時刻が正しく記録されない不具合
-  - でんこ最大レベル80のとき経験値を追加した場合の不具合
-  - タイムラインの出力関数`printEvents`で0駅リンクのリブートイベントの表示
-  - アクセスイベントのデータ`AccessEventData`にレベルアップが反映されてない不具合
-  - アクセス以外のスキル発動で発動確率をブーストするひいるのスキルが正しく記録されない不具合
-  - セリアの回復スキルの回復量が固定値で計算されていた不具合
