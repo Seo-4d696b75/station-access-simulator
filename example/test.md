@@ -13,7 +13,7 @@ npmにパッケージを公開する前にローカルで正しく使えるか�
 `cd example && npm link ekimemo-access-simulator`
 
 3. 動作確認
-`npx ts-node src/index.ts`
+`npx ts-node src/main.ts`
 
 3. 後処理
 `npm unlink ekimemo-access-simulator`  
