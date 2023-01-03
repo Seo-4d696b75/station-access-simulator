@@ -2,8 +2,9 @@ import { AccessState, getAccessDenco } from "."
 import { Context } from "../context"
 import { formatPercent } from "../format"
 import { ReadonlyState } from "../state"
+import { triggerSkillAfterDamage } from "./afterDamage"
 import { updateDencoHP } from "./hp"
-import { calcDamageScoreExp } from "./score"
+import { calcDamageBonusScoreExp } from "./score"
 import { triggerSkillAt } from "./skill"
 /**
  * アクセス中に各でんこに発生したダメージ
@@ -196,9 +197,9 @@ export function runAccessDamageCalculation(context: Context, state: AccessState)
   }
   // ダメージ量に応じたスコア＆経験値の追加
   const accessDenco = getAccessDenco(state, "offense")
-  const [score, exp] = calcDamageScoreExp(context, state.offense, damage.value)
-  accessDenco.exp.access += exp
-  state.offense.score.access += score
+  const [score, exp] = calcDamageBonusScoreExp(context, state.offense, damage.value)
+  accessDenco.exp.access.damageBonus += exp
+  state.offense.score.access.damageBonus += score
   context.log.log(`ダメージ量による追加 ${accessDenco.name} score:${score} exp:${exp}`)
   // 反撃など複数回のダメージ計算が発生する場合はそのまま加算
   const damageSum = addDamage(defense.damage, damage)
@@ -220,6 +221,8 @@ export function runAccessDamageCalculation(context: Context, state: AccessState)
   state.linkSuccess = state.linkDisconnected
 
   context.log.log(`守備の結果 HP: ${defense.hpBefore} > ${defense.hpAfter} reboot:${defense.reboot}`)
+
+  state = triggerSkillAfterDamage(context, state)
 
   return state
 }

@@ -6,6 +6,7 @@ const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
   onAccessComplete: (context, state, self) => {
+    if(!self.skill.active) return
     // アクセス前後で自編成個体のHPが変化して3割以下となった個体が対象
     // アクセス・被アクセス以外の個体もHPが変化するので自編成の全個体を注目
     const percentTh = self.skill.property.readNumber("heal_th")

@@ -1,6 +1,7 @@
+import assert from "assert"
 import { activateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 describe("ふぶのスキル", () => {
   beforeAll(init)
@@ -88,18 +89,18 @@ describe("ふぶのスキル", () => {
     expect(result.defendPercent).toBe(19)
     expect(result.damageBase?.variable).toBe(162)
     expect(result.damageRatio).toBe(1.0)
-    if (result.defense) {
-      // アクセス中の状態の確認
-      let accessFubu = result.defense.formation[0]
-      expect(accessFubu.damage).not.toBeUndefined()
-      expect(accessFubu.damage?.value).toBe(162)
-      expect(accessFubu.damage?.attr).toBe(false)
-      expect(accessFubu.hpBefore).toBe(228)
-      expect(accessFubu.hpAfter).toBe(66)
-      expect(accessFubu.reboot).toBe(false)
-      expect(accessFubu.exp).toMatchObject({ access: 0, skill: 0 })
-      expect(result.defense.displayedExp).toBe(0)
-    }
+    assert(result.defense)
+    // アクセス中の状態の確認
+    let accessFubu = result.defense.formation[0]
+    expect(accessFubu.damage).not.toBeUndefined()
+    expect(accessFubu.damage?.value).toBe(162)
+    expect(accessFubu.damage?.attr).toBe(false)
+    expect(accessFubu.hpBefore).toBe(228)
+    expect(accessFubu.hpAfter).toBe(66)
+    expect(accessFubu.reboot).toBe(false)
+    expect(accessFubu.exp.total).toBe(0)
+    expect(result.defense.displayedExp).toBe(0)
+
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })
@@ -131,18 +132,18 @@ describe("ふぶのスキル", () => {
     expect(result.defendPercent).toBe(19)
     expect(result.damageBase?.variable).toBe(210)
     expect(result.damageRatio).toBe(1.3)
-    if (result.defense) {
-      // アクセス中の状態の確認
-      let accessCharlotte = result.defense.formation[0]
-      expect(accessCharlotte.damage).not.toBeUndefined()
-      expect(accessCharlotte.damage?.value).toBe(210)
-      expect(accessCharlotte.damage?.attr).toBe(true)
-      expect(accessCharlotte.hpBefore).toBe(228)
-      expect(accessCharlotte.hpAfter).toBe(18)
-      expect(accessCharlotte.reboot).toBe(false)
-      expect(accessCharlotte.exp).toMatchObject({ access: 0, skill: 0 })
-      expect(result.defense.displayedExp).toBe(0)
-    }
+    assert(result.defense)
+    // アクセス中の状態の確認
+    let accessCharlotte = result.defense.formation[0]
+    expect(accessCharlotte.damage).not.toBeUndefined()
+    expect(accessCharlotte.damage?.value).toBe(210)
+    expect(accessCharlotte.damage?.attr).toBe(true)
+    expect(accessCharlotte.hpBefore).toBe(228)
+    expect(accessCharlotte.hpAfter).toBe(18)
+    expect(accessCharlotte.reboot).toBe(false)
+    expect(accessCharlotte.exp.total).toBe(0)
+    expect(result.defense.displayedExp).toBe(0)
+
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
   })

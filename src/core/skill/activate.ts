@@ -1,9 +1,10 @@
+import { copy, merge } from "../../"
 import { Context, withFixedClock } from "../context"
 import { DencoState } from "../denco"
-import { copyState, ReadonlyState } from "../state"
+import { ReadonlyState } from "../state"
 import { UserState } from "../user"
 import { Skill } from "./holder"
-import { SkillPropertyReader, withActiveSkill } from "./property"
+import { SkillPropertyReader, withSkill } from "./property"
 import { refreshSkillState } from "./refresh"
 import { SkillActiveTimeout } from "./transition"
 
@@ -22,10 +23,20 @@ import { SkillActiveTimeout } from "./transition"
  * @returns `active`へ遷移した新しい状態
  */
 export const activateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
-  return carIndex.reduce((state, idx) => activateSkillOne(context, state, idx), copyState<UserState>(current))
+  const state = copy.UserState(current)
+  carIndex.forEach(idx => activateSkillAt(context, state, idx))
+  return state
 })
 
-function activateSkillOne(context: Context, state: UserState, carIndex: number): UserState {
+/**
+ * 指定した位置のでんこのスキル状態をactiveに変更します
+ * 
+ * see {@link activateSkill}
+ * 
+ * @param state 現在の状態であり変更が直接書き込まれます
+ * @param carIndex 編成内の位置
+ */
+export function activateSkillAt<T extends UserState>(context: Context, state: T, carIndex: number) {
   const d = state.formation[carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.length: ${state.formation.length}`)
@@ -42,10 +53,11 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
     case "manual-condition": {
       switch (skill.transition.state) {
         case "idle": {
-          return activateSkillAndCallback(context, state, d, skill, carIndex)
+          activateSkillAndCallback(context, state, skill, carIndex)
+          return
         }
         case "active": {
-          return state
+          return
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.transition.state},transition:${skill.transitionType})`)
@@ -55,10 +67,11 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
     case "auto": {
       switch (skill.transition.state) {
         case "unable": {
-          return activateSkillAndCallback(context, state, d, skill, carIndex)
+          activateSkillAndCallback(context, state, skill, carIndex)
+          return
         }
         case "active": {
-          return state
+          return
         }
         default: {
           context.log.error(`スキル状態をactiveに変更できません(state:${skill.transition.state},type:auto)`)
@@ -71,7 +84,8 @@ function activateSkillOne(context: Context, state: UserState, carIndex: number):
   }
 }
 
-function activateSkillAndCallback<T extends "manual" | "manual-condition" | "auto">(context: Context, state: UserState, d: DencoState, skill: Skill<T>, carIndex: number): UserState {
+function activateSkillAndCallback<T extends "manual" | "manual-condition" | "auto", U extends UserState>(context: Context, state: U, skill: Skill<T>, carIndex: number) {
+  const d = state.formation[carIndex]
   context.log.log(`スキル状態の変更：${d.name} ${skill.transition.state} -> active`)
   skill.transition = {
     state: "active",
@@ -81,10 +95,13 @@ function activateSkillAndCallback<T extends "manual" | "manual-condition" | "aut
   skill.data.clear()
   // callback #onActivated
   if (skill.onActivated) {
-    state = skill.onActivated(context, state, withActiveSkill(d, skill, carIndex)) ?? state
+    const active = withSkill(copy.DencoState(d), skill, carIndex)
+    const next = skill.onActivated(context, state, active)
+    if (next) {
+      merge.UserState(state, next)
+    }
   }
   refreshSkillState(context, state)
-  return state
 }
 
 function getSkillActiveTimeout<T extends "manual" | "manual-condition" | "auto">(context: Context, d: ReadonlyState<DencoState>, skill: ReadonlyState<Skill<T>>): SkillActiveTimeout | undefined {
@@ -144,12 +161,20 @@ function getSkillActiveTimeout<T extends "manual" | "manual-condition" | "auto">
  * @returns `cooldown`へ遷移した新しい状態
  */
 export const deactivateSkill = (context: Context, current: ReadonlyState<UserState>, ...carIndex: number[]): UserState => withFixedClock(context, () => {
-  const state = copyState<UserState>(current)
-  carIndex.forEach(idx => deactivateSkillOne(context, state, idx))
+  const state = copy.UserState(current)
+  carIndex.forEach(idx => deactivateSkillAt(context, state, idx))
   return state
 })
 
-function deactivateSkillOne(context: Context, state: UserState, carIndex: number) {
+/**
+ * 指定した位置のでんこのスキル状態をcooldownに変更します
+ * 
+ * see {@link deactivateSkill}
+ * 
+ * @param state 現在の状態であり変更が直接書き込まれます
+ * @param carIndex 編成内の位置
+ */
+export function deactivateSkillAt<T extends UserState>(context: Context, state: T, carIndex: number) {
   const d = state.formation[carIndex]
   if (!d) {
     context.log.error(`対象のでんこが見つかりません carIndex: ${carIndex}, formation.length: ${state.formation.length}`)
@@ -187,6 +212,12 @@ function deactivateSkillOne(context: Context, state: UserState, carIndex: number
           data: timeout
         }
         context.log.log(`スキル状態の変更：${d.name} active -> cooldown`)
+        // callback
+        if (skill.onCooldown) {
+          const self = withSkill(copy.DencoState(d), skill, carIndex)
+          const next = skill.onCooldown(context, state, self)
+          if (next) merge.UserState(state, next)
+        }
         refreshSkillState(context, state)
         return
       } else {

@@ -3,7 +3,7 @@ export { addDamage, calcAccessDamage, DamageCalcOption, DamageCalcState, DamageS
 export { repeatAccess } from "./repeat"
 export { AccessDencoResult, AccessResult, AccessUserResult } from "./result"
 export { ScoreExpState, ScorePredicate } from "./score"
-export { AccessSkillRecipe, AccessSkillTrigger, AccessSkillTriggers, hasActiveSkill, hasSkillTriggered } from "./skill"
+export { AccessSkillRecipe, AccessSkillTrigger, AccessSkillTriggers, hasSkillTriggered, hasValidatedSkill } from "./skill"
 export * from "./start"
 export * from "./state"
 export * from "./utils"

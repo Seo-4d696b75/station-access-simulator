@@ -1,7 +1,6 @@
 import { EventTriggeredSkill } from "."
-import { AccessResult, AccessSide } from "../access"
+import { AccessResult, AccessSide, AccessUserResult } from "../access"
 import { DencoState } from "../denco"
-import { ReadonlyState } from "../state"
 import { LinksResult } from "../station"
 
 export type EventType =
@@ -11,36 +10,38 @@ export type EventType =
   "levelup"
 
 interface EventBase<T, V = undefined> {
-  readonly type: T,
-  readonly data: V
+  type: T,
+  data: V
 }
 
 /**
  * レベルアップのイベント情報
  */
 export interface LevelupDenco {
-  readonly time: number
-  readonly after: ReadonlyState<DencoState>
-  readonly before: ReadonlyState<DencoState>
+  time: number
+  after: DencoState
+  before: DencoState
 }
+
+export type AccessEventUser = Omit<AccessUserResult, "event" | "queue">
 
 /**
  * アクセスのイベント情報
+ * 
+ * 各でんこの状態はアクセス処理終了直後の状態であり、 
+ * - アクセスによるリンクの解除は反映済
+ * - 解除されたリンクスコア・経験値は追加済み
+ * - 追加された経験値によるレベルアップ済み
  */
-export interface AccessEventData {
-  /**
-   * アクセスの詳細
-   * 
-   * 各でんこの状態はアクセス処理終了直後の状態であり、 
-   * - アクセスによるリンクの解除は反映済
-   * - 解除されたリンクスコア・経験値は追加済み
-   * - 追加された経験値によるレベルアップ済み
-   */
-  readonly access: ReadonlyState<AccessResult>
+export interface AccessEventData extends Omit<AccessResult, "offense" | "defense"> {
+
   /**
    * アクセスの攻撃側・守備側のどちら側か
    */
-  readonly which: AccessSide
+  which: AccessSide
+
+  offense: AccessEventUser
+  defense?: AccessEventUser
 }
 
 export type AccessEvent = EventBase<"access", AccessEventData>

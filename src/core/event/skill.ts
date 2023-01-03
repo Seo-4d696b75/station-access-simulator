@@ -1,52 +1,45 @@
 import { SkillTriggerEvent } from "."
+import { copy, merge } from "../../"
 import { AccessDencoResult, AccessUserResult } from "../access"
 import { assert, Context, withFixedClock } from "../context"
 import { Denco, DencoState } from "../denco"
 import { random } from "../random"
-import { isSkillActive, ProbabilityPercent, Skill, WithActiveSkill } from "../skill"
-import { SkillProperty, SkillPropertyReader, withActiveSkill } from "../skill/property"
-import { copyState, ReadonlyState } from "../state"
-import { UserProperty, UserState } from "../user"
+import { isSkillActive, ProbabilityPercent, Skill, WithSkill } from "../skill"
+import { SkillProperty, SkillPropertyReader, withSkill } from "../skill/property"
+import { ReadonlyState } from "../state"
+import { UserState } from "../user"
 import { refreshUserState } from "../user/refresh"
-import { Event } from "./"
 
 /**
  * スキル発動型のイベントの詳細
  */
 export interface EventTriggeredSkill {
-  readonly time: number
-  readonly carIndex: number
+  time: number
+  carIndex: number
   /**
    * 発動したスキルを保有する本人の状態
    * 
    * スキルが発動して状態が更新された直後の状態
    */
-  readonly denco: ReadonlyState<DencoState>
-  readonly skillName: string
-  readonly step: EventSkillStep
+  denco: DencoState
+  skillName: string
+  step: EventSkillStep
 }
 
 /**
  * スキル発動型イベントにおけるスキル評価中の状態
  */
-export interface SkillEventState {
+export interface SkillEventState extends UserState {
   time: number
-  user: UserProperty
 
   formation: SkillEventDencoState[]
   carIndex: number
 
   /**
-   * このスキル発動に付随して発動する他スキルのイベント
-   * 現状だと確率補正のひいるのスキル発動イベントのみ
-   */
-  event: Event[]
-
-  /**
    * 確率補正%
    */
   probabilityBoostPercent: number
-
+  probabilityBoosted: boolean
 }
 
 export interface SkillEventDencoState extends DencoState {
@@ -106,6 +99,13 @@ export type EventSkillTrigger = {
    * 指定した関数には現在の状態が引数として渡されるので、関数内に状態を更新する処理を定義してください
    */
   recipe: EventSkillRecipe
+
+  /**
+   * {@link probabilityKey}で指定した確率[%]で発動判定が失敗したときに実行する処理
+   * 
+   * こちらの処理は実行されてもスキル発動として記録されません
+   */
+  fallbackRecipe?: EventSkillRecipe
 }
 
 /**
@@ -127,47 +127,39 @@ export type EventSkillTrigger = {
  * @param trigger スキル発動の確率計算の方法・発動時の処理方法
  * @returns スキルが発動した場合は効果が反映さらた新しい状態・発動しない場合はstateと同値な状態
  */
-export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<WithActiveSkill<AccessDencoResult>>, trigger: EventSkillTrigger): AccessUserResult => withFixedClock(context, () => {
-  let next = copyState<AccessUserResult>(state)
+export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<WithSkill<AccessDencoResult>>, trigger: EventSkillTrigger): AccessUserResult => withFixedClock(context, () => {
+  if (!self.skill.active) {
+    context.log.error(`スキルの状態がactiveではありません ${self.name}`)
+  }
+  let next = copy.AccessUserResult(state)
   if (self.skillInvalidated) {
     context.log.log(`スキルが直前のアクセスで無効化されています ${self.name}`)
     return next
   }
   const eventState: SkillEventState = {
-    user: copyState<UserProperty>(state.user),
+    user: copy.UserProperty(state.user),
     time: context.currentTime,
     formation: state.formation.map((d, idx) => {
       return {
-        ...copyState<DencoState>(d),
+        ...copy.DencoState(d),
         who: idx === self.carIndex ? "self" : "other",
         carIndex: idx,
         skillInvalidated: d.skillInvalidated
       }
     }),
     carIndex: self.carIndex,
-    event: [],
+    event: state.event.map(e => copy.Event(e)),
+    queue: state.queue.map(e => copy.EventQueueEntry(e)),
     probabilityBoostPercent: 0,
+    probabilityBoosted: false,
   }
   const result = execute(context, eventState, trigger)
   if (result) {
     // スキル発動による影響の反映
-    next = {
-      ...next,
-      formation: result.formation.map((d, idx) => {
-        // 編成内位置は不変と仮定
-        let access = state.formation[idx]
-        return {
-          ...access,           // アクセス中の詳細など
-          ...copyState<DencoState>(d), // でんこ最新状態(順番注意)
-        }
-      }),
-      event: [
-        ...state.event,
-        ...result.event,
-      ],
-    }
+    // formation: UserState[], event, queueを更新
+    merge.UserState(next, result)
+    refreshUserState(context, next)
   }
-  refreshUserState(context, next)
   return next
 })
 
@@ -188,46 +180,37 @@ export const triggerSkillAfterAccess = (context: Context, state: ReadonlyState<A
  * @returns スキルを評価して更新した新しい状態
  */
 export function triggerSkillAtEvent(context: Context, state: ReadonlyState<UserState>, self: Denco, trigger: EventSkillTrigger): UserState {
-  let next = copyState<UserState>(state)
   const idx = state.formation.findIndex(d => d.numbering === self.numbering)
   if (idx < 0) {
     context.log.log(`スキル発動の主体となるでんこが編成内に居ません（終了） formation: ${state.formation.map(d => d.name)}`)
-    return next
+    return copy.UserState(state)
   }
   if (state.formation[idx].skill.type !== "possess") {
     context.log.log(`スキル発動の主体となるでんこがスキルを保有していません（終了） skill: ${state.formation[idx].skill.type}`)
-    return next
+    return copy.UserState(state)
   }
   const eventState: SkillEventState = {
-    time: context.currentTime.valueOf(),
-    user: state.user,
-    formation: next.formation.map((d, i) => {
+    ...copy.UserState(state),
+    time: context.currentTime,
+    formation: state.formation.map((d, i) => {
       return {
-        ...copyState<DencoState>(d),
+        ...copy.DencoState(d),
         who: idx === i ? "self" : "other",
         carIndex: i,
         skillInvalidated: false
       }
     }),
     carIndex: idx,
-    event: [],
     probabilityBoostPercent: 0,
+    probabilityBoosted: false,
   }
   const result = execute(context, eventState, trigger)
   if (result) {
-    // スキル発動による影響の反映
-    next = {
-      user: result.user,
-      formation: result.formation.map(d => copyState<DencoState>(d)),
-      event: [
-        ...next.event,
-        ...result.event,
-      ],
-      queue: next.queue,
-    }
+    refreshUserState(context, result)
+    return result
+  } else {
+    return copy.UserState(state)
   }
-  refreshUserState(context, next)
-  return next
 }
 
 function execute(context: Context, state: SkillEventState, trigger: EventSkillTrigger): SkillEventState | undefined {
@@ -236,6 +219,10 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   if (self.skill.type !== "possess") {
     context.log.error(`スキルを保持していません ${self.name}`)
   }
+
+  // 処理開始前のEventを記録
+  const originalEvent = state.event
+  state.event = []
 
   const skill = self.skill
   context.log.log(`${self.name} ${skill.name}`)
@@ -246,13 +233,13 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   }).map(d => d.carIndex)
   others.forEach(idx => {
     // スキル発動による状態変更を考慮して各評価直前にコピー
-    const s = copyState<SkillEventDencoState>(state.formation[idx])
+    const s = copy.SkillEventDencoState(state.formation[idx])
     const skill = s.skill
     if (skill.type !== "possess") {
       context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${s.name} possess => ${skill.type}`)
     }
     if (!skill.triggerOnEvent) return
-    const active = withActiveSkill(s, skill, s.carIndex)
+    const active = withSkill(s, skill, s.carIndex)
     const trigger = skill.triggerOnEvent?.(context, state, active)
     const recipe = canTriggerSkill(context, state, trigger, active.skill.property)
     if (!recipe) return
@@ -262,7 +249,7 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
       data: {
         time: state.time.valueOf(),
         carIndex: idx,
-        denco: copyState<DencoState>(state.formation[idx]),
+        denco: copy.DencoState(state.formation[idx]),
         skillName: skill.name,
         step: "probability_check"
       },
@@ -279,6 +266,18 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   const recipe = canTriggerSkill(context, state, trigger, property)
   if (!recipe) {
     context.log.log("スキル評価イベントの終了（発動なし）")
+    if (trigger.fallbackRecipe) {
+      // 発動失敗時の処理
+      context.log.log(`スキル不発時の処理があります`)
+      const eventSize = state.event.length
+      state = trigger.fallbackRecipe(state) ?? state
+      // fallbackRecipe内でイベント記録は追加されない前提
+      assert(eventSize === state.event.length, "fallbackRecipeでイベント記録が追加されています")
+      // 変更した状態を返すがスキル発動の記録はなし
+      // イベント記録は元に戻す
+      state.event = originalEvent
+      return state
+    }
     // 主体となるスキルが発動しない場合は他すべての付随的に発動したスキルも取り消し
     return
   }
@@ -287,19 +286,29 @@ function execute(context: Context, state: SkillEventState, trigger: EventSkillTr
   let triggerEvent: SkillTriggerEvent = {
     type: "skill_trigger",
     data: {
-      time: state.time.valueOf(),
+      time: state.time,
       carIndex: state.carIndex,
-      denco: copyState<DencoState>(state.formation[state.carIndex]),
+      denco: copy.DencoState(state.formation[state.carIndex]),
       skillName: skill.name,
       step: "self"
     },
   }
   state.event.push(triggerEvent)
+
+  // 確率補正が効いたか確認
+  checkProbabilityBoosted(state)
+
+  // 発動したスキルをイベント記録に追加
+  state.event = [
+    ...originalEvent,
+    ...state.event,
+  ]
+
   context.log.log("スキル評価イベントの終了")
   return state
 }
 
-function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>, trigger: EventSkillTrigger | void, property: SkillProperty): EventSkillRecipe | undefined {
+function canTriggerSkill(context: Context, state: SkillEventState, trigger: EventSkillTrigger | void, property: SkillProperty): EventSkillRecipe | undefined {
   if (typeof trigger === "undefined") return
   let percent = property.readNumber(trigger.probabilityKey, 100)
   const boost = state.probabilityBoostPercent
@@ -309,10 +318,13 @@ function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>
   if (percent <= 0) {
     return
   }
+  // ここまでは確率に依存せず決定できる（確率補正は効かなかった）
+
   if (boost !== 0) {
     const v = percent * (1 + boost / 100.0)
     context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
     percent = Math.min(v, 100)
+    state.probabilityBoosted = true
   }
   if (random(context, percent)) {
     context.log.log(`スキルが発動できます 確率:${percent}%`)
@@ -320,4 +332,10 @@ function canTriggerSkill(context: Context, state: ReadonlyState<SkillEventState>
   }
   context.log.log(`スキルが発動しませんでした 確率:${percent}%`)
   return
+}
+
+function checkProbabilityBoosted(state: SkillEventState) {
+  if (!state.probabilityBoosted && state.probabilityBoostPercent !== 0) {
+    state.event = state.event.filter(e => !(e.type === "skill_trigger" && e.data.step === "probability_check"))
+  }
 }

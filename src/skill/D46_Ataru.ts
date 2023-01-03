@@ -1,8 +1,6 @@
-import { AccessUserResult } from "../core/access";
+import { copy } from "../";
 import { assert } from "../core/context";
 import { SkillLogic } from "../core/skill";
-import { copyState } from "../core/state";
-import { UserState } from "../core/user";
 
 const KEY = "damage_count_key"
 
@@ -10,13 +8,14 @@ const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
   onAccessComplete: (context, state, self, access) => {
+    if (!self.skill.active) return
     // 基本的にダメージはアクセスでしか発生しない
     // リブート時は逆にカウント減少
     if (self.hpAfter < self.hpBefore && !self.reboot) {
       const current = self.skill.data.readNumber(KEY, 0)
       const max = self.skill.property.readNumber("count_max")
       // 書き込み可能な状態にコピーする
-      const next = copyState<AccessUserResult>(state)
+      const next = copy.AccessUserResult(state)
       const d = next.formation[self.carIndex]
       assert(d.skill.type === "possess")
       if (current < max) {
@@ -30,12 +29,13 @@ const skill: SkillLogic = {
     }
   },
   onDencoReboot(context, state, self) {
+    if (!self.skill.active) return
     const current = self.skill.data.readNumber(KEY, 0)
     const decrease = self.skill.property.readNumber("count_decrease")
     const value = Math.max(current - decrease, 0)
     if (value < current) {
       // 書き込み可能な状態にコピーする
-      const next = copyState<UserState>(state)
+      const next = copy.UserState(state)
       const d = next.formation[self.carIndex]
       assert(d.skill.type === "possess")
       d.skill.data.putNumber(KEY, value)

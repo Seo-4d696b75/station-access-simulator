@@ -3,8 +3,8 @@ import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../.
 import { initContext } from "../../core/context"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { getDefPercentDenco, getFixedDamageDenco } from "../fake"
-import { testManualSkill } from "../skillState"
+import { getDefPercentDenco, getFixedDamageDenco } from "../tool/fake"
+import { testManualSkill } from "../tool/skillState"
 
 describe("ゆのかのスキル", () => {
   beforeAll(init)

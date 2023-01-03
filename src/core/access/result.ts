@@ -1,13 +1,13 @@
 import { AccessConfig } from "."
-import { Context } from "../context"
-import { isSkillActive } from "../skill"
-import { withActiveSkill } from "../skill/property"
+import { copy, merge } from "../../"
+import { assert, Context } from "../context"
+import { withSkill } from "../skill/property"
 import { refreshSkillState } from "../skill/refresh"
-import { copyState, copyStateTo, ReadonlyState } from "../state"
-import { LinksResult, Station } from "../station"
+import { ReadonlyState } from "../state"
+import { LinksResult } from "../station"
 import { UserState } from "../user"
 import { refreshEXPState } from "../user/refresh"
-import { calcLinksResult } from "./score"
+import { calcExpPercent, calcLinksResult, calcScorePercent, ScoreExpResult } from "./score"
 import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "./state"
 /**
  * アクセスの結果
@@ -31,6 +31,22 @@ export interface AccessResult extends Omit<AccessState, "offense" | "defense"> {
  */
 export interface AccessUserResult extends Omit<AccessSideState, "user">, UserState {
   formation: AccessDencoResult[]
+
+  score: ScoreExpResult
+
+  /**
+   * アクセス表示用のスコア値
+   * 
+   * アクセスで発生したスコア（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
+   */
+  displayedScore: number
+
+  /**
+   * アクセス表示用の経験値値
+   * 
+    * アクセス・被アクセスするでんこがアクセス中に得た経験値（リンクスコア除く） + 守備側のリンクが解除された場合のその駅のリンクスコア
+   */
+  displayedExp: number
 }
 
 /**
@@ -53,6 +69,8 @@ export interface AccessDencoResult extends AccessDencoState {
    * 現在のHP
    */
   currentHp: number
+
+  exp: ScoreExpResult
 }
 
 /**
@@ -64,7 +82,7 @@ export interface AccessDencoResult extends AccessDencoState {
  */
 export function completeAccess(context: Context, config: AccessConfig, access: ReadonlyState<AccessState>): AccessResult {
   let result: AccessResult = {
-    ...copyState<AccessState>(access),
+    ...copy.AccessState(access),
     offense: initUserResult(context, config.offense.state, access, "offense"),
     defense: config.defense ? initUserResult(context, config.defense.state, access, "defense") : undefined,
   }
@@ -73,9 +91,17 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   completeDencoLink(context, result, "offense")
   completeDencoLink(context, result, "defense")
 
-  // 経験値の反映
+  // 経験値の増減・現在の経験値に反映
   completeDencoEXP(context, result, "offense")
   completeDencoEXP(context, result, "defense")
+
+  // スコアの増減
+  completeUserScore(context, result, "offense")
+  completeUserScore(context, result, "defense")
+
+  // 表示用の経験値＆スコアの計算
+  completeDisplayScoreExp(context, result, "offense")
+  completeDisplayScoreExp(context, result, "defense")
 
   // レベルアップ処理
   checkLevelup(context, result)
@@ -91,6 +117,7 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   callbackReboot(context, result, "defense")
   callbackLinkDisconnect(context, result, "offense")
   callbackLinkDisconnect(context, result, "defense")
+  callbackLinkStarted(context, result)
   callbackAfterAccess(context, result, "offense")
   callbackAfterAccess(context, result, "defense")
   checkSKillState(context, result)
@@ -107,14 +134,35 @@ function initUserResult(context: Context, state: ReadonlyState<UserState>, acces
     context.log.error(`アクセス結果の初期化に失敗`)
   }
 
-  const after = copyState<AccessSideState>(side)
-  const before = copyState<UserState>(state)
+  const after = copy.AccessSideState(side)
+  const before = copy.UserState(state)
 
   return {
     ...after,
     event: [],
     queue: before.queue,
     user: before.user,
+    formation: after.formation.map(d => ({
+      ...d,
+      exp: {
+        ...d.exp,
+        total: 0,
+        access: {
+          ...d.exp.access,
+          total: 0,
+        }
+      }
+    })),
+    displayedScore: 0,
+    displayedExp: 0,
+    score: {
+      ...after.score,
+      total: 0,
+      access: {
+        ...after.score.access,
+        total: 0
+      }
+    }
   }
 }
 
@@ -122,13 +170,13 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
   const side = which === "offense" ? state.offense : state.defense
   if (!side) return
   // 編成全員のリンク解除を確認する
-  side.formation.map(d => {
+  side.formation.map((d, i) => {
     if (d.reboot) {
       // リブートにより全リンク解除
       const disconnectedLink = d.link
       d.link = []
       // カウンター攻撃などリンク数0でもリブートする
-      const linkResult = calcLinksResult(context, disconnectedLink, d)
+      const linkResult = calcLinksResult(context, disconnectedLink, side, i)
       if (linkResult.link.length > 0) {
         // 解除リンク数1以上の場合
         d.exp.link = linkResult.exp
@@ -143,7 +191,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
     } else if (d.who === "offense" && state.linkSuccess) {
       // 攻撃側のリンク成功
       d.link.push({
-        ...copyState<Station>(state.station),
+        ...copy.Station(state.station),
         start: context.currentTime,
       })
     } else if (d.who === "defense" && state.linkDisconnected) {
@@ -155,7 +203,7 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
       // 対象リンクのみ解除
       const disconnectedLink = d.link[idx]
       d.link.splice(idx, 1)
-      const linkResult = calcLinksResult(context, [disconnectedLink], d)
+      const linkResult = calcLinksResult(context, [disconnectedLink], side, i)
       // 特にイベントは発生せず経験値だけ追加
       d.exp.link = linkResult.exp
       d.disconnectedLink = linkResult
@@ -167,28 +215,81 @@ function completeDencoLink(context: Context, state: AccessResult, which: AccessS
 function completeDencoEXP(context: Context, state: AccessResult, which: AccessSide) {
   const side = which === "offense" ? state.offense : state.defense
   side?.formation?.forEach(d => {
-    // アクセスによる経験値付与
-    const exp = d.exp.access + d.exp.skill + d.exp.link
+    // スキルによる経験値付与なども考慮して編成内全員を確認すること！
+    // スキル・フィルムによる獲得経験値の増減
+    d.exp.access.accessBonus = calcExpPercent(d.exp.access.accessBonus, d, "access_bonus")
+    d.exp.access.damageBonus = calcExpPercent(d.exp.access.damageBonus, d, "damage_bonus")
+    d.exp.access.linkBonus = calcExpPercent(d.exp.access.linkBonus, d, "link_bonus")
+    d.exp.access.total = d.exp.access.accessBonus
+      + d.exp.access.damageBonus + d.exp.access.linkBonus
+    // d.exp.skill スキルによる経験値付与（固定値）は変化しない！
+    // d.exp.link リンク経験値には反映済み
+    // 合計値
+    d.exp.total = d.exp.access.total + d.exp.skill + d.exp.link
+    const exp = d.exp.access.accessBonus + d.exp.access.damageBonus
+      + d.exp.access.linkBonus + d.exp.skill + d.exp.link
     if (d.who !== "other" || exp !== 0) {
       context.log.log(`経験値追加 ${d.name} ${d.currentExp}(current) + ${exp} -> ${d.currentExp + exp}`)
-      context.log.log(`経験値詳細 access:${d.exp.access} skill:${d.exp.skill} link:${d.exp.link}`)
+      context.log.log(`経験値詳細 access:${d.exp.access.total} skill:${d.exp.skill} link:${d.exp.link}`)
     }
     d.currentExp += exp
   })
+}
+
+function completeUserScore(context: Context, state: AccessResult, which: AccessSide) {
+  const side = which === "offense" ? state.offense : state.defense
+  if (!side) return
+  // スキルによる獲得スコア増減
+  side.score.access.accessBonus = calcScorePercent(side.score.access.accessBonus, side, "access_bonus")
+  side.score.access.damageBonus = calcScorePercent(side.score.access.damageBonus, side, "damage_bonus")
+  side.score.access.linkBonus = calcScorePercent(side.score.access.linkBonus, side, "link_bonus")
+  side.score.access.total = side.score.access.accessBonus
+    + side.score.access.damageBonus + side.score.access.linkBonus
+  // score.skill スキルによるスコア付与（固定値）は変化しない！
+  // score.link リンクスコアには反映済み
+  // 合計値
+  side.score.total = side.score.access.total + side.score.skill + side.score.link
+}
+
+/**
+ * 表示用の経験値＆スコアの計算（破壊的）
+ * 
+ * @param context 
+ * @param state 
+ * @param which 
+ */
+export function completeDisplayScoreExp(context: Context, state: AccessResult, which: AccessSide) {
+  const side = which === "offense" ? state.offense : state.defense
+  if (!side) return
+  // 基本的には直接アクセスするでんこの経験値とスコア
+  const d = side.formation[side.carIndex]
+  // アクセスで獲得する・リンクスコア＆経験値はそのまま
+  side.displayedScore = side.score.access.accessBonus + side.score.access.damageBonus
+    + side.score.access.linkBonus + side.score.skill
+  side.displayedExp = d.exp.access.accessBonus + d.exp.access.damageBonus + d.exp.access.linkBonus + d.exp.skill
+  // 守備側がリンク解除（フットバースorリブート）した場合はその駅のリンクのスコア＆経験値を表示
+  if (state.linkDisconnected && d.who === "defense") {
+    assert(d.disconnectedLink)
+    const idx = d.disconnectedLink.link.findIndex(l => l.name === state.station.name)
+    assert(idx >= 0, `リブートした守備側のリンクが見つかりません ${state.station.name}`)
+    const link = d.disconnectedLink.link[idx]
+    side.displayedScore += link.totalScore
+    side.displayedExp += link.exp
+  }
 }
 
 function addAccessEvent(context: Context, origin: ReadonlyState<UserState> | undefined, result: AccessResult, which: AccessSide) {
   const side = (which === "offense") ? result.offense : result.defense
   if (!side || !origin) return
   side.event = [
-    ...origin.event,
+    ...origin.event.map(e => copy.Event(e)),
     {
       // このアクセスイベントを追加
       type: "access",
-      data: {
-        access: copyState(result),
+      data: copy.AccessEventData({
+        ...result,
         which: which
-      }
+      })
     },
     ...side.event
   ]
@@ -214,19 +315,18 @@ function callbackReboot(context: Context, state: AccessResult, which: AccessSide
 
   // リブートのコールバック
   // コールバックで状態が変化する場合があるので最初に対象を検査
-  // 無効化スキルの影響は無視
+  // 保有スキルすべてにコールバック
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess")
     .filter(d => d.reboot)
     .map(d => d.carIndex)
     .forEach(idx => {
       const d = side.formation[idx]
       const skill = d.skill
       if (skill.type === "possess" && skill.onDencoReboot) {
-        const next = skill.onDencoReboot(context, side, withActiveSkill(d, skill, idx))
-        if (next) {
-          copyStateTo<UserState>(next, side)
-        }
+        const active = withSkill(copy.AccessDencoResult(d), skill, idx)
+        const next = skill.onDencoReboot(context, side, active)
+        if (next) merge.UserState(side, next)
       }
     })
 }
@@ -245,9 +345,9 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
   if (disconnects.length === 0) return
 
   // コールバックで状態が変化する場合があるので最初に対象を検査
-  // 無効化スキルの影響は無視
+  // 保有スキルすべてにコールバック
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess")
     .map(d => d.carIndex)
     .forEach(idx => {
       disconnects.forEach(disconnect => {
@@ -255,33 +355,66 @@ function callbackLinkDisconnect(context: Context, state: AccessResult, which: Ac
         const d = side.formation[idx]
         const skill = d.skill
         if (skill.type === "possess" && skill.onLinkDisconnected) {
-          const next = skill.onLinkDisconnected(context, side, withActiveSkill(d, skill, idx), disconnect)
-          if (next) {
-            copyStateTo<UserState>(next, side)
-          }
+          const active = withSkill(copy.DencoState(d), skill, idx)
+          const next = skill.onLinkDisconnected(context, side, active, disconnect)
+          if (next) merge.UserState(side, next)
         }
       })
     })
 
 }
 
+function callbackLinkStarted(context: Context, state: AccessResult) {
+  // 原則としてアクセスする側のみ
+  const side = state.offense
+
+  // リンク開始のコールバック
+  if (!state.linkSuccess) return
+  // 編成内の全でんこにコールバックする!
+  // このコールバック中に新たにリンクが開始される場合は考慮しない
+  const d = side.formation[side.carIndex]
+  const link = d.link.find(l => l.name === state.station.name)
+  assert(link, `獲得したリンクが見つかりません: ${state.station.name}`)
+
+  const start = {
+    ...copy.StationLink(link),
+    denco: copy.DencoState(d),
+  }
+
+  // コールバックで状態が変化する場合があるので最初に対象を検査
+  // 保有スキルすべてにコールバック
+  side.formation
+    .filter(d => d.skill.type === "possess")
+    .map(d => d.carIndex)
+    .forEach(idx => {
+      // スキル発動による状態変更を考慮して評価直前に参照
+      const d = side.formation[idx]
+      const skill = d.skill
+      if (skill.type === "possess" && skill.onLinkStarted) {
+        const active = withSkill(copy.DencoState(d), skill, idx)
+        const next = skill.onLinkStarted(context, side, active, start)
+        if (next) merge.UserState(side, next)
+      }
+    })
+}
+
 function callbackAfterAccess(context: Context, state: AccessResult, which: AccessSide) {
   const side = (which === "offense") ? state.offense : state.defense
   if (!side) return
   let formation = side
-  // 無効化スキルの影響は無視
   side.formation
-    .filter(d => isSkillActive(d.skill))
+    .filter(d => d.skill.type === "possess") // 保有スキルすべてにコールバック
     .map(d => d.carIndex)
     .forEach(idx => {
       // スキル発動による状態変更を考慮して評価直前にコピー
-      const d = copyState(formation.formation[idx])
+      const d = copy.AccessDencoResult(formation.formation[idx])
       const skill = d.skill
       if (skill.type !== "possess") {
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
       if (skill && skill.onAccessComplete) {
-        const next = skill.onAccessComplete(context, formation, withActiveSkill(d, skill, idx), state)
+        const active = withSkill(d, skill, idx)
+        const next = skill.onAccessComplete(context, formation, active, state)
         if (next) {
           formation = next
         }

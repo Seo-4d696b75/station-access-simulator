@@ -4,7 +4,7 @@ import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/acces
 import { initContext } from "../../core/context"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 describe("レンのスキル", () => {
   beforeAll(init)

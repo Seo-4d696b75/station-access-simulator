@@ -1,7 +1,7 @@
 import { activateSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
-import { getFixedDamageDenco } from "../fake"
-import { testAlwaysSkill } from "../skillState"
+import { getFixedDamageDenco } from "../tool/fake"
+import { testAlwaysSkill } from "../tool/skillState"
 
 describe("るるのスキル", () => {
   beforeAll(init)

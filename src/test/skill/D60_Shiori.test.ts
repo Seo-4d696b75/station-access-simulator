@@ -4,8 +4,8 @@ import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
-import "../matcher"
-import { testAlwaysSkill } from "../skillState"
+import "../../gen/matcher"
+import { testAlwaysSkill } from "../tool/skillState"
 
 describe("しおりのスキル", () => {
   beforeAll(init)
@@ -68,7 +68,7 @@ describe("しおりのスキル", () => {
     expect(e.data.skillName).toBe("たぶん完璧なアドバイス！ Lv.4")
     // 経験値追加
     expect(dSeria.name).toBe("seria")
-    expect(dSeria.exp.access).toBe(0)
+    expect(dSeria.exp.access.total).toBe(0)
     expect(dSeria.exp.skill).toBe(0) // アクセス中の発動ではない！
     expect(dSeria.exp.link).toBe(linkExp)
     expect(dSeria.currentExp).toBe(linkExp + 350 * linkCnt)
@@ -301,9 +301,9 @@ describe("しおりのスキル", () => {
     let d = result.offense.formation[0]
     expect(d.reboot).toBe(true)
     expect(d.exp.link).toBeGreaterThan(0)
-    expect(d.exp.access).toBe(100 + result.damageBase!.variable) // アクセス開始＋ダメージ量
+    expect(d.exp.access.total).toBe(100 + result.damageBase!.variable) // アクセス開始＋ダメージ量
     expect(d.exp.skill).toBe(0)
-    expect(d.currentExp).toBe(d.exp.access + d.exp.link + 350 * 3)
+    expect(d.currentExp).toBe(d.exp.access.total + d.exp.link + 350 * 3)
   })
 
 

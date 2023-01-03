@@ -4,8 +4,8 @@ import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { getFixedDamageDenco } from "../fake"
-import { testManualSkill } from "../skillState"
+import { getFixedDamageDenco } from "../tool/fake"
+import { testManualSkill } from "../tool/skillState"
 
 describe("ミオのスキル", () => {
   beforeAll(init)

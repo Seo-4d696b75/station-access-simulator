@@ -1,7 +1,7 @@
 import assert from "assert"
 import dayjs from "dayjs"
-import { activateSkill, deactivateSkill, getSkill, initContext, initUser, refreshState } from ".."
-import DencoManager from "../core/dencoManager"
+import { activateSkill, deactivateSkill, getSkill, initContext, initUser, refreshState } from "../.."
+import DencoManager from "../../core/dencoManager"
 
 export interface ManualSkillTestOption {
   number: string

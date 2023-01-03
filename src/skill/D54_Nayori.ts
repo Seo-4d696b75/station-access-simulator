@@ -6,10 +6,10 @@ const skill: SkillLogic = {
   onAccessComplete: (context, state, self, access) => {
     // 配布対象はアクセスによる経験値・リブートによるリンク経験値
     if (self.who === "offense" || self.reboot) {
-      // アクセスの経験値（アクセス開始時・リンク成功・与ダメージ量相応）
+      // アクセスによる獲得経験値（アクセス開始時・リンク成功・与ダメージ量相応）
       // スキルによる経験値配布は対象外
       // リブートしたリンクの経験値
-      const exp = self.exp.access + self.exp.link
+      const exp = self.exp.access.total + self.exp.link
       // 配布対象の数
       const dstIndices = self.skill.property
         .readNumberArray("exp_index")

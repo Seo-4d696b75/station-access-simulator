@@ -97,7 +97,7 @@ Overviewで説明した３つのStepを詳説します
 4. ダメージ計算後の処理
 5. アクセス結果の確定
 
-<img src="https://user-images.githubusercontent.com/25225028/202895210-55ce0f06-83c8-4f1d-92d0-5c4ba0db577a.png" width="800">
+<img src="https://user-images.githubusercontent.com/25225028/209692592-908a102c-c093-4436-9768-fac2c2bd3201.png" width="800">
 
 #### ダメージ計算の方法
 ダメージ計算に関わるスキル処理を行いながらダメージを計算し、でんこのHPとリブートの有無を決定します.
@@ -138,7 +138,9 @@ Overviewで説明した３つのStepを詳説します
 - （アクセス側のみ）リンク成功によるスコア・経験値
 
 
-最後にコールバックを呼び出しアクセスは終了です.
+最後にコールバックを呼び出しアクセス処理は終了です.
 
-- （リブートした場合のみ）`onDencoReboot`
+- `onDencoReboot`（リブートした場合）
+- `onLinkDisconnected`（リンクが解除された場合）
+- `onLinkStarted`（新たにリンク開始した場合）
 - `onAccessComplete`

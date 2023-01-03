@@ -1,7 +1,7 @@
 import { activateSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import StationManager from "../..//core/stationManager"
 import DencoManager from "../../core/dencoManager"
-import { testManualSkill } from "../skillState"
+import { testManualSkill } from "../tool/skillState"
 
 
 describe("イムラのスキル", () => {

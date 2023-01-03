@@ -26,6 +26,21 @@ export function getDefense<T>(state: { defense?: T }): T {
   return s
 }
 
+
+/**
+ * アクセスにおける編成サイド（攻撃・守備側）を取得する
+ * @param state アクセス状態 {@link AccessState}
+ * @param which 攻撃側・守備側のどちらか指定する
+ * @throws 存在しない守備側を指定した場合はErrorを投げる
+ */
+ export function getSide<T>(state: { offense: T, defense?: T }, which: AccessSide): T {
+  if (which === "offense") {
+    return state.offense
+  } else {
+    return getDefense(state)
+  }
+}
+
 /**
  * アクセスにおける編成（攻撃・守備側）を取得する
  * @param state アクセス状態 {@link AccessState}

@@ -1,9 +1,10 @@
+import { copy } from "../../"
 import { DencoState } from "../denco"
 import { FilmHolder } from "../film"
 import { ReadableProperty } from "../property"
-import { copyState, ReadonlyState } from "../state"
+import { ReadonlyState } from "../state"
 import { Skill } from "./holder"
-import { WithActiveSkill } from "./logic"
+import { WithSkill } from "./logic"
 
 /**
  * スキルに関する各種データ（スキルプロパティ）でのアクセス方法を定義します
@@ -25,22 +26,22 @@ export interface SkillProperty extends ReadableProperty {
   readonly film: ReadonlyState<FilmHolder>
 }
 
-export function withActiveSkill<T extends DencoState>(denco: ReadonlyState<T>, skill: Skill, idx: number): WithActiveSkill<T> {
+export function withSkill<T extends DencoState>(denco: T, skill: Skill, idx: number): WithSkill<T> {
   /*
    ここでの状態のコピーは必須ではないが、
    テストで使うmockの呼び出しが参照でキャプチャーしている
    後続の処理で破壊されるとテストしにくいのでコピーしておく
    */
-  let d = copyState(denco)
-  let s = copyState(skill)
-  const active = {
-    ...s,
-    property: new SkillPropertyReader(s.property, d.film)
-  }
+  // let d = copy.DencoState(denco) Tのコピー方法は知らないので呼び出し側に任せる
+  let s = copy.SkillHolder(skill) as Skill
   return {
-    ...d,
+    ...denco,
     carIndex: idx,
-    skill: active
+    skill: {
+      ...s,
+      active: s.transition.state === "active",
+      property: new SkillPropertyReader(s.property, copy.FilmHolder(denco.film))
+    },
   }
 }
 

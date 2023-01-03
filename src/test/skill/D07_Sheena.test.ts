@@ -1,10 +1,11 @@
+import assert from "assert"
 import { init } from "../.."
 import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { testAlwaysSkill } from "../skillState"
+import { testAlwaysSkill } from "../tool/skillState"
 
 describe("シーナのスキル", () => {
   beforeAll(init)
@@ -56,10 +57,14 @@ describe("シーナのスキル", () => {
     // 経験値
     let dSheena = getAccessDenco(result, "offense")
     let dCharlotte = getAccessDenco(result, "defense")
-    expect(dSheena.exp.access).toBe(100 + dCharlotte.damage!.value) // 開始・ダメージ
+    expect(dSheena.exp.access.accessBonus).toBe(100)
+    expect(dSheena.exp.access.damageBonus).toBe(dCharlotte.damage!.value)
+    expect(dSheena.exp.access.linkBonus).toBe(0)
+    expect(dSheena.exp.access.total).toBe(100 + dCharlotte.damage!.value) // 開始・ダメージ
     expect(dSheena.exp.link).toBe(0)
     expect(dSheena.exp.skill).toBe(0)
-    expect(dSheena.currentExp).toBe(dSheena.exp.access)
+    expect(dSheena.exp.total).toBe(dSheena.exp.access.total)
+    expect(dSheena.currentExp).toBe(dSheena.exp.total)
     expect(dCharlotte.currentExp).toBe(0)
   })
 
@@ -128,11 +133,11 @@ describe("シーナのスキル", () => {
     const result = startAccess(context, config)
     expect(result.offense.event.length).toBe(1)
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      expect(result.defense.event.length).toBe(2)
-      expect(result.defense.event[0].type).toBe("access")
-      expect(result.defense.event[1].type).toBe("reboot")
-    }
+    assert(result.defense)
+    expect(result.defense.event.length).toBe(2)
+    expect(result.defense.event[0].type).toBe("access")
+    expect(result.defense.event[1].type).toBe("reboot")
+
     // 発動なし
     expect(result.defense?.triggeredSkills.length).toBe(0)
     // ダメージ計算
@@ -149,14 +154,19 @@ describe("シーナのスキル", () => {
     // 経験値
     let dSheena = getAccessDenco(result, "defense")
     let dCharlotte = getAccessDenco(result, "offense")
-    expect(dSheena.exp.access).toBe(0)
+    expect(dSheena.exp.access.total).toBe(0)
     expect(dSheena.exp.link).toBeGreaterThan(0)
     expect(dSheena.exp.link).toBe(dSheena.disconnectedLink!.exp)
     expect(dSheena.exp.skill).toBe(0)
+    expect(dSheena.exp.total).toBe(dSheena.exp.link)
     expect(dSheena.currentExp).toBe(dSheena.exp.link)
-    expect(dCharlotte.exp.access).toBe(100 + dSheena.damage!.value + 100) // 開始・ダメージ・成功
+    expect(dCharlotte.exp.access.accessBonus).toBe(100)
+    expect(dCharlotte.exp.access.linkBonus).toBe(100)
+    expect(dCharlotte.exp.access.damageBonus).toBe(dSheena.damage!.value)
+    expect(dCharlotte.exp.access.total).toBe(100 + dSheena.damage!.value + 100) // 開始・ダメージ・成功
     expect(dCharlotte.exp.link).toBe(0)
     expect(dCharlotte.exp.skill).toBe(0)
+    expect(dCharlotte.exp.total).toBe(dCharlotte.exp.access.total)
     expect(dCharlotte.currentExp).toBe(charlotte.nextExp) // 最大レベル80
   })
 
@@ -214,14 +224,22 @@ describe("シーナのスキル", () => {
     // 経験値
     let dSheena = getAccessDenco(result, "defense")
     let dCharlotte = getAccessDenco(result, "offense")
-    expect(dSheena.exp.access).toBe(dCharlotte.damage!.value) // ダメージ
+    expect(dSheena.exp.access.accessBonus).toBe(0)
+    expect(dSheena.exp.access.damageBonus).toBe(dCharlotte.damage!.value)
+    expect(dSheena.exp.access.linkBonus).toBe(0)
+    expect(dSheena.exp.access.total).toBe(dCharlotte.damage!.value) // ダメージ
     expect(dSheena.exp.link).toBe(0)
     expect(dSheena.exp.skill).toBe(0)
-    expect(dSheena.currentExp).toBe(dSheena.exp.access)
-    expect(dCharlotte.exp.access).toBe(100 + dSheena.damage!.value) // 開始・ダメージ
+    expect(dSheena.exp.total).toBe(dSheena.exp.access.total)
+    expect(dSheena.currentExp).toBe(dSheena.exp.access.total)
+    expect(dCharlotte.exp.access.accessBonus).toBe(100)
+    expect(dCharlotte.exp.access.damageBonus).toBe(dSheena.damage!.value)
+    expect(dCharlotte.exp.access.linkBonus).toBe(0)
+    expect(dCharlotte.exp.access.total).toBe(100 + dSheena.damage!.value) // 開始・ダメージ
     expect(dCharlotte.exp.link).toBe(0)
     expect(dCharlotte.exp.skill).toBe(0)
-    expect(dCharlotte.currentExp).toBe(dCharlotte.exp.access)
+    expect(dCharlotte.exp.total).toBe(dCharlotte.exp.access.total)
+    expect(dCharlotte.currentExp).toBe(dCharlotte.exp.access.total)
   })
   test("発動あり-守備側-ATK/DEF増減", () => {
     const context = initContext("test", "test", false)

@@ -33,8 +33,7 @@ export type SkillTransitionState =
   "active" |
   "cooldown"
 
-export interface SkillTransitionBase<Type extends SkillTransitionType, State extends SkillTransitionState, D = undefined> {
-  // type: Type,
+export interface SkillTransitionBase<State extends SkillTransitionState, D = undefined> {
   state: State,
   data: D,
 }
@@ -69,30 +68,30 @@ export interface SkillActiveTimeout extends SkillCooldownTimeout {
 export type SkillDeactivateStrategy = "default_timeout" | "self_deactivate"
 
 type ManualSkillTransition =
-  SkillTransitionBase<"manual", "idle"> |
-  SkillTransitionBase<"manual", "active", SkillActiveTimeout | undefined> |
-  SkillTransitionBase<"manual", "cooldown", SkillCooldownTimeout>
+  SkillTransitionBase<"idle"> |
+  SkillTransitionBase<"active", SkillActiveTimeout | undefined> |
+  SkillTransitionBase<"cooldown", SkillCooldownTimeout>
 
 type ManualConditionSkillTransition =
-  SkillTransitionBase<"manual-condition", "unable"> |
-  SkillTransitionBase<"manual-condition", "idle"> |
-  SkillTransitionBase<"manual-condition", "active", SkillActiveTimeout | undefined> |
-  SkillTransitionBase<"manual-condition", "cooldown", SkillCooldownTimeout>
+  SkillTransitionBase<"unable"> |
+  SkillTransitionBase<"idle"> |
+  SkillTransitionBase<"active", SkillActiveTimeout | undefined> |
+  SkillTransitionBase<"cooldown", SkillCooldownTimeout>
 
 type AutoSkillTransition =
-  SkillTransitionBase<"auto", "unable"> |
-  SkillTransitionBase<"auto", "active", SkillActiveTimeout | undefined> |
-  SkillTransitionBase<"auto", "cooldown", SkillCooldownTimeout>
+  SkillTransitionBase<"unable"> |
+  SkillTransitionBase<"active", SkillActiveTimeout | undefined> |
+  SkillTransitionBase<"cooldown", SkillCooldownTimeout>
 
 type AutoConditionSkillTransition =
-  SkillTransitionBase<"auto-condition", "unable"> |
-  SkillTransitionBase<"auto-condition", "active">
+  SkillTransitionBase<"unable"> |
+  SkillTransitionBase<"active">
 
 type AlwaysSkillTransition =
-  SkillTransitionBase<"always", "active">
+  SkillTransitionBase<"active">
 
 export type SkillTransition<T extends SkillTransitionType> =
-  SkillTransitionBase<T, "not_init"> | (
+  SkillTransitionBase<"not_init"> | (
     T extends "manual" ? ManualSkillTransition :
     T extends "manual-condition" ? ManualConditionSkillTransition :
     T extends "auto" ? AutoSkillTransition :

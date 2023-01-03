@@ -102,6 +102,7 @@
   ],
   "exclude": [
     "src/main.ts",
-    "src/test"
+    "src/test",
+    "src/gen/",
   ]
 }

@@ -1,11 +1,11 @@
 import assert from "assert"
-import { Context, copyState, getSkill, init, ReadonlyState } from "../.."
+import { Context, copy, getSkill, init, ReadonlyState } from "../.."
 import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser, UserState } from "../../core/user"
 import { refreshEXPState } from "../../core/user/refresh"
-import { testAlwaysSkill } from "../skillState"
+import { testAlwaysSkill } from "../tool/skillState"
 
 const DEFAULT_EXP = 100
 const DEFAULT_LINK_EXP_UNIT = 1 / 100
@@ -84,13 +84,17 @@ describe("なよりのスキル", () => {
     let dSeria = result.offense.formation[1]
     let dCharlotte = getDefense(result).formation[0]
     // セリアに配布
-    const exp = Math.floor(dNayori.exp.access * 0.08)
+    const exp = Math.floor(dNayori.exp.access.total * 0.08)
     expect(dSeria.currentExp).toBe(exp)
     // 自身には配布しない
-    expect(dNayori.exp.access).toBe(DEFAULT_EXP + dCharlotte.damage!.value)
+    expect(dNayori.exp.access.accessBonus).toBe(DEFAULT_EXP)
+    expect(dNayori.exp.access.damageBonus).toBe(dCharlotte.damage!.value)
+    expect(dNayori.exp.access.linkBonus).toBe(0)
+    expect(dNayori.exp.access.total).toBe(DEFAULT_EXP + dCharlotte.damage!.value)
     expect(dNayori.exp.link).toBe(0)
     expect(dNayori.exp.skill).toBe(0)
-    expect(dNayori.currentExp).toBe(dNayori.exp.access)
+    expect(dNayori.exp.total).toBe(dNayori.exp.access.total)
+    expect(dNayori.currentExp).toBe(dNayori.exp.access.total)
   })
 
   test("発動あり-攻撃側(アクセス)-リンク成功", () => {
@@ -130,12 +134,16 @@ describe("なよりのスキル", () => {
     let dReika = result.offense.formation[4]
     let dCharlotte = getDefense(result).formation[0]
     // 自身には配布しない
-    expect(dNayori.exp.access).toBe(DEFAULT_EXP * 2 + dCharlotte.damage!.value) // 開始・ダメージ・成功
+    expect(dNayori.exp.access.accessBonus).toBe(DEFAULT_EXP) // アクセス開始
+    expect(dNayori.exp.access.damageBonus).toBe(dCharlotte.damage!.value)
+    expect(dNayori.exp.access.linkBonus).toBe(DEFAULT_EXP)
+    expect(dNayori.exp.access.total).toBe(DEFAULT_EXP * 2 + dCharlotte.damage!.value)
     expect(dNayori.exp.link).toBe(0)
     expect(dNayori.exp.skill).toBe(0)
-    expect(dNayori.currentExp).toBe(dNayori.exp.access)
+    expect(dNayori.exp.total).toBe(dNayori.exp.access.total)
+    expect(dNayori.currentExp).toBe(dNayori.exp.access.total)
     // 配布対象
-    const exp = Math.floor(dNayori.exp.access * 0.08)
+    const exp = Math.floor(dNayori.exp.access.total * 0.08)
     checkExp(context, offense, result.offense, [0, 1, 2, 3], exp)
     // 配布対象外
     expect(dReika.currentExp).toBe(0)
@@ -182,11 +190,12 @@ describe("なよりのスキル", () => {
     // 経験値配布
     let dNayori = result.defense!.formation[0]
     // 自身には配布しない
-    expect(dNayori.exp.access).toBe(0)
+    expect(dNayori.exp.access.total).toBe(0)
     expect(dNayori.exp.link).toBe(dNayori.disconnectedLink!.exp)
     expect(dNayori.disconnectedLink!.link[0].duration).toBe(10000)
     expect(dNayori.exp.link).toBe(10000 * DEFAULT_LINK_EXP_UNIT)
     expect(dNayori.exp.skill).toBe(0)
+    expect(dNayori.exp.total).toBe(dNayori.exp.link)
     expect(dNayori.currentExp).toBe(dNayori.exp.link)
     // 配布
     const exp = Math.floor(dNayori.exp.link * 0.08)
@@ -329,11 +338,12 @@ describe("なよりのスキル", () => {
     // 経験値配布
     let dNayori = result.defense!.formation[0]
     // 自身には配布しない
-    expect(dNayori.exp.access).toBe(0)
+    expect(dNayori.exp.access.total).toBe(0)
     expect(dNayori.exp.link).toBe(dNayori.disconnectedLink!.exp)
     expect(dNayori.disconnectedLink!.link[0].duration).toBe(10000)
     expect(dNayori.exp.link).toBe(100)
     expect(dNayori.exp.skill).toBe(0)
+    expect(dNayori.exp.total).toBe(dNayori.exp.link)
     expect(dNayori.currentExp).toBe(dNayori.exp.link)
     // 配布
     const exp = Math.floor(100 * 0.08)
@@ -389,16 +399,17 @@ describe("なよりのスキル", () => {
     // 経験値配布
     let dNayori = result.defense!.formation[0]
     // 自身には配布しない
-    expect(dNayori.exp.access).toBe(0)
+    expect(dNayori.exp.access.total).toBe(0)
     expect(dNayori.exp.link).toBe(dNayori.disconnectedLink!.exp)
     expect(dNayori.disconnectedLink!.link[0].duration).toBe(10000)
     expect(dNayori.exp.link).toBe(100)
     expect(dNayori.exp.skill).toBe(0)
+    expect(dNayori.exp.total).toBe(dNayori.exp.link)
     expect(dNayori.currentExp).toBe(99)
-    // FIXME
-    // 実際のゲームの動作では 「なよりのリブート」→「スキルレベル3→4」→「スキルレベル3発動」
+    // FIXME 実際のゲームの動作では 「なよりのリブート」→「スキルレベル3→4」→「スキルレベル3発動」
     // 現在の実装ではスキルレベル４で発動してしまう
     // でもダイアログの表示順的にはこっちのほうが自然では？
+    // issue: https://github.com/Seo-4d696b75/station-access-simulator/issues/17
     const exp = Math.floor(100 * 0.12)
     checkExp(context, defense, result.defense!, [1], exp)
   })
@@ -406,7 +417,7 @@ describe("なよりのスキル", () => {
 
 function checkExp(context: Context, before: ReadonlyState<UserState>, after: ReadonlyState<UserState>, indices: number[], exp: number) {
   // 経験値を加算
-  let state = copyState<UserState>(before)
+  let state = copy.UserState(before)
   indices.forEach(i => state.formation[i].currentExp += exp)
   // レベルアップ考慮
   refreshEXPState(context, state)

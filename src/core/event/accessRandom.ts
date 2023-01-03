@@ -1,7 +1,7 @@
+import { copy, merge } from "../../"
 import { AccessConfig, startAccess } from "../access"
-import { Context, withFixedClock } from "../context"
-import { DencoState } from "../denco"
-import { copyState, ReadonlyState } from "../state"
+import { assert, Context, withFixedClock } from "../context"
+import { ReadonlyState } from "../state"
 import { Station } from "../station"
 import { SkillEventState } from "./skill"
 
@@ -25,37 +25,22 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
   }
   const config: AccessConfig = {
     offense: {
-      state: {
-        user: state.user,
-        formation: state.formation.map(d => copyState<DencoState>(d)),
-        event: [],
-        queue: [],
-      },
+      state: state,
       carIndex: state.carIndex
     },
     station: station
   }
   const result = startAccess(context, config)
-  if (result.offense.event.length !== 1) {
-    context.log.error(`イベント数が想定外 event:${JSON.stringify(result.offense.event)}`)
-  }
-  return {
-    time: state.time,
-    user: state.user,
-    formation: result.offense.formation.map((d, idx) => {
-      let current = state.formation[idx]
-      return {
-        ...copyState<DencoState>(d),
-        who: current.who,
-        carIndex: current.carIndex,
-        skillInvalidated: current.skillInvalidated,
-      }
-    }),
-    carIndex: state.carIndex,
-    event: [
-      ...state.event,
-      result.offense.event[0],
-    ],
-    probabilityBoostPercent: state.probabilityBoostPercent,
-  }
+  // アクセスイベントの確認
+  const eventSize = result.offense.event.length
+  assert(
+    eventSize > 0 &&
+    result.offense.event[eventSize-1].type === "access",
+    "access event not found"
+  )
+  // アクセス処理の反映
+  let next = copy.SkillEventState(state)
+  // formation: UserState[], event, queueを更新
+  merge.UserState(next, result.offense)
+  return next
 })

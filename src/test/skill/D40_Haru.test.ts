@@ -4,7 +4,7 @@ import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/in
 import { initContext } from "../../core/context"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
-import { testAlwaysSkill } from "../skillState"
+import { testAlwaysSkill } from "../tool/skillState"
 
 describe("ハルのスキル", () => {
   beforeAll(init)

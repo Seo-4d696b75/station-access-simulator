@@ -1,6 +1,6 @@
 import assert from "assert";
 import { isEqual } from "lodash";
-import { activateSkill, copyState, copyStateTo, DencoManager, Film, getSkill, initContext, initUser, SkillManager } from "..";
+import { activateSkill, copy, DencoManager, Film, getSkill, initContext, initUser, merge, SkillManager } from "..";
 import { TypedMap } from "../core/property";
 import { SkillPropertyReader } from "../core/skill/property";
 
@@ -10,13 +10,13 @@ describe("copy, equals, merge of TypedMap", () => {
     const m1 = new TypedMap(p)
     expect(m1.readNumber("key1")).toBe(1)
     expect(m1.readString("key2")).toBe("string")
-    const m2 = copyState(m1)
+    const m2 = copy.MutableProperty(m1)
     expect(m2.readNumber("key1")).toBe(1)
     expect(m2.readString("key2")).toBe("string")
     expect(isEqual(m1, m2)).toBeTruthy()
-    expect(m1.property).not.toBe(m2.property)
+    expect(m1).not.toBe(m2)
     const m3 = new TypedMap(new Map<string, any>([["key1", true], ["key3", [1, 2, 3]]]))
-    copyStateTo({ data: m1 }, { data: m3 })
+    merge.MutableProperty(m3, m1)
     expect(m3.readNumber("key1")).toBe(1)
     expect(m3.readString("key2")).toBe("string")
     expect(m3.readNumberArray("key3")).toEqual([1, 2, 3])
@@ -25,15 +25,15 @@ describe("copy, equals, merge of TypedMap", () => {
     const m1 = new TypedMap()
     m1.putNumber("key1", 1)
     m1.putString("key2", "string")
-    const m2 = copyState(m1)
+    const m2 = copy.MutableProperty(m1)
     expect(m2.readNumber("key1")).toBe(1)
     expect(m2.readString("key2")).toBe("string")
     expect(isEqual(m1, m2)).toBeTruthy()
-    expect(m1.property).not.toBe(m2.property)
+    expect(m1).not.toBe(m2)
     const m3 = new TypedMap()
     m3.putNumber("key1", 10)
     m3.putBoolean("key3", true)
-    copyStateTo({ data: m1 }, { data: m3 })
+    merge.MutableProperty(m3, m1)
     expect(m3.readNumber("key1")).toBe(1)
     expect(m3.readString("key2")).toBe("string")
     expect(m3.readBoolean("key3")).toBe(true)
@@ -75,7 +75,8 @@ describe("SkillPropertyReader", () => {
   })
   test("copy", () => {
     const reader1 = new SkillPropertyReader(base, film)
-    const reader2 = copyState(reader1)
+    const reader2 = copy.MutableProperty(reader1)
+    assert(reader2 instanceof SkillPropertyReader)
     expect(reader1.film).not.toBe(reader2.film)
     expect(reader1.film).toEqual(reader2.film)
     expect(reader1.base).not.toBe(reader2.base)
@@ -88,15 +89,17 @@ describe("SkillPropertyReader", () => {
   })
   test("merge", () => {
     const reader = new SkillPropertyReader(base, film)
-    const reader1 = copyState(reader)
-    const reader2 = copyState(reader)
+    const reader1 = copy.MutableProperty(reader)
+    const reader2 = copy.MutableProperty(reader)
+    assert(reader1 instanceof SkillPropertyReader)
+    assert(reader2 instanceof SkillPropertyReader)
     const f = reader2.film
     assert(f.type === "film")
     assert(f.skill)
     f.skill.key1 = 10
     expect(reader1.readNumber("key1")).toBe(11)
     expect(reader2.readNumber("key1")).toBe(20)
-    copyStateTo(reader2, reader1)
+    merge.MutableProperty(reader1, reader2)
     expect(reader1.film).not.toBe(reader2.film)
     expect(reader1.film).toEqual(reader2.film)
     expect(reader1.readNumber("key1")).toBe(20)
@@ -105,7 +108,7 @@ describe("SkillPropertyReader", () => {
 
 describe("型安全なプロパティの読み書き", () => {
   const dencos = [
-    { numbering: "1", name: "seria", full_name: "黄陽セリア", type: "supporter", attribute: "eco", EXP: [0, 400, 800, 1200, 1600, 2100, 2600, 3200, 3700, 4300, 4900, 5500, 6100, 6800, 7500, 8100, 8800, 9500, 10200, 10900, 11700, 12400, 13200, 13900, 14700, 15500, 16300, 17100, 17900, 18700, 19600, 20400, 21200, 22100, 23000, 23800, 24700, 25600, 26500, 27300, 28300, 29200, 30100, 31000, 32000, 32900, 33800, 34800, 35800, 36700, 37600, 38700, 39600, 40600, 41600, 42600, 43600, 44600, 45600, 46600, 47600, 48700, 49700, 50800, 51700, 52900, 53800, 55000, 56000, 57000, 58100, 59200, 60300, 61400, 62400, 63600, 64600, 65800, 66800, 68000], AP: [50, 53, 57, 60, 64, 67, 71, 74, 77, 81, 84, 87, 91, 94, 97, 100, 103, 107, 110, 112, 115, 118, 121, 123, 126, 129, 131, 133, 136, 138, 140, 142, 144, 145, 147, 149, 150, 151, 153, 154, 155, 156, 157, 157, 158, 159, 159, 159, 159, 160, 163, 166, 170, 173, 176, 180, 183, 186, 190, 193, 196, 200, 203, 206, 210, 213, 216, 220, 223, 226, 230, 233, 236, 240, 243, 246, 250, 253, 256, 260], HP: [72, 75, 78, 82, 85, 89, 92, 96, 99, 102, 106, 109, 113, 116, 120, 123, 126, 130, 133, 137, 140, 144, 147, 150, 154, 157, 161, 164, 168, 171, 174, 178, 181, 185, 188, 192, 195, 198, 202, 205, 209, 212, 216, 219, 222, 226, 229, 233, 236, 240, 243, 247, 250, 254, 258, 261, 265, 268, 272, 276, 279, 283, 286, 290, 294, 297, 301, 304, 308, 312, 315, 319, 322, 326, 330, 333, 337, 340, 344, 348] },
+    { numbering: "1", name: "seria", full_name: "黄陽セリア", first_name: "セリア", type: "supporter", attr: "eco", AP: [50, 53, 57, 60, 64, 67, 71, 74, 77, 81, 84, 87, 91, 94, 97, 100, 103, 107, 110, 112, 115, 118, 121, 123, 126, 129, 131, 133, 136, 138, 140, 142, 144, 145, 147, 149, 150, 151, 153, 154, 155, 156, 157, 157, 158, 159, 159, 159, 159, 160, 163, 166, 170, 173, 176, 180, 183, 186, 190, 193, 196, 200, 203, 206, 210, 213, 216, 220, 223, 226, 230, 233, 236, 240, 243, 246, 250, 253, 256, 260], HP: [72, 75, 78, 82, 85, 89, 92, 96, 99, 102, 106, 109, 113, 116, 120, 123, 126, 130, 133, 137, 140, 144, 147, 150, 154, 157, 161, 164, 168, 171, 174, 178, 181, 185, 188, 192, 195, 198, 202, 205, 209, 212, 216, 219, 222, 226, 229, 233, 236, 240, 243, 247, 250, 254, 258, 261, 265, 268, 272, 276, 279, 283, 286, 290, 294, 297, 301, 304, 308, 312, 315, 319, 322, 326, 330, 333, 337, 340, 344, 348] },
   ]
   const skills = [
     {

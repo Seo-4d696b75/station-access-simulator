@@ -1,9 +1,9 @@
 import dayjs from "dayjs"
+import { copy, merge } from "../../"
 import { Context } from "../context"
 import { TIME_FORMAT } from "../date"
-import { copyStateTo } from "../state"
 import { UserState } from "../user"
-import { withActiveSkill } from "./property"
+import { withSkill } from "./property"
 
 
 /**
@@ -67,29 +67,25 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
       break
     }
     case "manual-condition": {
-      if (skill.transition.state === "not_init") {
-        skill.transition = {
-          state: "unable",
-          data: undefined
-        }
-        result = true
-      }
-      if (skill.transition.state === "idle" || skill.transition.state === "unable") {
-        const enable = skill.canEnabled(context, state, withActiveSkill(denco, skill, idx))
-        if (enable && skill.transition.state === "unable") {
-          context.log.log(`スキル状態の変更：${denco.name} unable -> idle`)
+      const current = skill.transition.state
+      if (current === "idle" || current === "unable" || current === "not_init") {
+        const active = withSkill(copy.DencoState(denco), skill, idx)
+        const enable = skill.canEnabled(context, state, active)
+        if (enable && current !== "idle") {
+          context.log.log(`スキル状態の変更：${denco.name} ${current} -> idle`)
           skill.transition = {
             state: "idle",
             data: undefined
           }
           result = true
-        } else if (!enable && skill.transition.state === "idle") {
-          context.log.log(`スキル状態の変更：${denco.name} idle -> unable`)
+        } else if (!enable && current !== "unable") {
+          context.log.log(`スキル状態の変更：${denco.name} ${current} -> unable`)
           skill.transition = {
             state: "unable",
             data: undefined
           }
           result = true
+          callbackOnUnable(context, state, idx)
         }
         break
       } else {
@@ -104,22 +100,18 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
           data: undefined
         }
         result = true
+        callbackOnUnable(context, state, idx)
       }
       result = refreshTimeout(context, state, idx) || result
       break
     }
     case "auto-condition": {
-      if (skill.transition.state === "not_init") {
-        skill.transition = {
-          state: "unable",
-          data: undefined
-        }
-        result = true
-      }
       // スキル状態の確認・更新
-      const active = skill.canActivated(context, state, withActiveSkill(denco, skill, idx))
-      if (active && skill.transition.state === "unable") {
-        context.log.log(`スキル状態の変更：${denco.name} unable -> active`)
+      const current = skill.transition.state
+      const self = withSkill(copy.DencoState(denco), skill, idx)
+      const active = skill.canActivated(context, state, self)
+      if (active && current !== "active") {
+        context.log.log(`スキル状態の変更：${denco.name} ${current} -> active`)
         skill.transition = {
           state: "active",
           data: undefined
@@ -128,16 +120,18 @@ export function refreshSkillStateOne(context: Context, state: UserState, idx: nu
         skill.data.clear()
         result = true
         if (skill.onActivated) {
-          const next = skill.onActivated(context, state, withActiveSkill(denco, skill, idx))
-          if (next) copyStateTo(next, state)
+          const self = withSkill(copy.DencoState(denco), skill, idx)
+          const next = skill.onActivated(context, state, self)
+          if (next) merge.UserState(state, next)
         }
-      } else if (!active && skill.transition.state === "active") {
-        context.log.log(`スキル状態の変更：${denco.name} active -> unable`)
+      } else if (!active && current !== "unable") {
+        context.log.log(`スキル状態の変更：${denco.name} ${current} -> unable`)
         skill.transition = {
           state: "unable",
           data: undefined
         }
         result = true
+        callbackOnUnable(context, state, idx)
       }
       break
     }
@@ -170,6 +164,12 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
         }
       }
       result = true
+      // callback
+      if (skill.onCooldown) {
+        const self = withSkill(copy.DencoState(denco), skill, idx)
+        const next = skill.onCooldown(context, state, self)
+        if (next) merge.UserState(state, next)
+      }
     }
   }
   if (skill.transition.state === "cooldown") {
@@ -188,7 +188,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
         case "manual-condition": {
           context.log.log(`スキル状態の変更：${denco.name} cooldown -> unable (timeout:${dayjs.tz(data.cooldownTimeout).format(TIME_FORMAT)})`)
           skill.transition = {
-            state: "unable",
+            state: "not_init",
             data: undefined
           }
           // check unable <=> idle
@@ -201,6 +201,7 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
             state: "unable",
             data: undefined
           }
+          callbackOnUnable(context, state, idx)
           result = true
           break
         }
@@ -208,4 +209,16 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
     }
   }
   return result
+}
+
+function callbackOnUnable(context: Context, state: UserState, idx: number) {
+  const denco = state.formation[idx]
+  const skill = denco.skill
+  if (skill.type !== "possess") return
+  if (skill.transitionType === "manual" || skill.transitionType === "always") return
+  if (skill.onUnable) {
+    const self = withSkill(copy.DencoState(denco), skill, idx)
+    const next = skill.onUnable(context, state, self)
+    if (next) merge.UserState(state, next)
+  }
 }
