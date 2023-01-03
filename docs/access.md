@@ -138,7 +138,9 @@ Overviewで説明した３つのStepを詳説します
 - （アクセス側のみ）リンク成功によるスコア・経験値
 
 
-最後にコールバックを呼び出しアクセスは終了です.
+最後にコールバックを呼び出しアクセス処理は終了です.
 
-- （リブートした場合のみ）`onDencoReboot`
+- `onDencoReboot`（リブートした場合）
+- `onLinkDisconnected`（リンクが解除された場合）
+- `onLinkStarted`（新たにリンク開始した場合）
 - `onAccessComplete`
