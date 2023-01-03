@@ -4448,6 +4448,78 @@
     ]
   },
   {
+    "numbering": "84",
+    "class": "D84_Misora",
+    "probability": 100,
+    "target_name": [
+      "ド",
+      "レ",
+      "ミ",
+      "ファ",
+      "ソ",
+      "ラ",
+      "シ",
+      "ど",
+      "れ",
+      "み",
+      "ふぁ",
+      "そ",
+      "ら",
+      "し"
+    ],
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ドレミファ・ステップ♪ Lv.1",
+        "ATK": 4,
+        "DEF": 4
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ドレミファ・ステップ♪ Lv.2",
+        "ATK": 5,
+        "DEF": 5
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ドレミファ・ステップ♪ Lv.3",
+        "ATK": 6,
+        "DEF": 6
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ドレミファ・ステップ♪ Lv.4",
+        "ATK": 7,
+        "DEF": 7
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ドレミファ・ステップ♪ Lv.5",
+        "ATK": 8,
+        "DEF": 8
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ドレミファ・ステップ♪ Lv.6",
+        "ATK": 9,
+        "DEF": 9
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "ひびけみんなのメロディ",
+        "ATK": 10,
+        "DEF": 10
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
