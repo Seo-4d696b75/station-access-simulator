@@ -4520,6 +4520,58 @@
     ]
   },
   {
+    "numbering": "85",
+    "class": "D85_Meguru",
+    "active": 3600,
+    "cooldown": 7200,
+    "probability": 100,
+    "count_max": 20,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "めぐるのバチつよ生配信♪ Lv.1",
+        "ATK_max": 40
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "めぐるのバチつよ生配信♪ Lv.2",
+        "ATK_max": 50
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "めぐるのバチつよ生配信♪ Lv.3",
+        "ATK_max": 60
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "めぐるのバチつよ生配信♪ Lv.4",
+        "ATK_max": 70
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "めぐるのバチつよ生配信♪ Lv.5",
+        "ATK_max": 80
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "めぐるのバチつよ生配信♪ Lv.6",
+        "ATK_max": 90
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "スターリング・リング",
+        "ATK_max": 100
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
