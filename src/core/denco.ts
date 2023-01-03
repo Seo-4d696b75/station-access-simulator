@@ -21,7 +21,26 @@ export type DencoAttribute =
  */
 export interface Denco {
   numbering: string
+
+  /**
+   * アルファベット表記の名前
+   * 
+   * 車両基地で表示される名前で、原則として{@link firstName}のアルファベット表記です
+   */
   name: string
+
+  /**
+   * 苗字・ミドルネームを含む名前
+   */
+  fullName: string
+
+  /**
+   * でんこの名前
+   * 
+   * 車両編成画面で表示される名前で、苗字・ミドルネームは含みません
+   */
+  firstName: string
+
   type: DencoType
   attr: DencoAttribute
 }

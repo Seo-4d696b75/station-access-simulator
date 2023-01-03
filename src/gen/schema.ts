@@ -134,6 +134,8 @@ export const skillHolderSchema = objectSchema<SkillHolder>({
 export const dencoSchema = objectSchema<Denco>({
   numbering: primitiveSchema,
   name: primitiveSchema,
+  fullName: primitiveSchema,
+  firstName: primitiveSchema,
   type: primitiveSchema,
   attr: primitiveSchema,
 })
