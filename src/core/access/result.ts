@@ -230,7 +230,7 @@ function completeDencoEXP(context: Context, state: AccessResult, which: AccessSi
       + d.exp.access.linkBonus + d.exp.skill + d.exp.link
     if (d.who !== "other" || exp !== 0) {
       context.log.log(`経験値追加 ${d.name} ${d.currentExp}(current) + ${exp} -> ${d.currentExp + exp}`)
-      context.log.log(`経験値詳細 access:${d.exp.access} skill:${d.exp.skill} link:${d.exp.link}`)
+      context.log.log(`経験値詳細 access:${d.exp.access.total} skill:${d.exp.skill} link:${d.exp.link}`)
     }
     d.currentExp += exp
   })
