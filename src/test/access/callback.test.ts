@@ -30,6 +30,8 @@ describe("アクセス処理中のSkillコールバック", () => {
     return {
       level: 5,
       name: "denco",
+      fullName: "でんこ",
+      firstName: "でんこ",
       numbering: "5", // DencoLevelStatusが取得できるよう便宜的に指定
       currentExp: 0,
       nextExp: 100,

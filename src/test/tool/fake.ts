@@ -9,6 +9,8 @@ export function getDefPercentDenco(def: number): DencoState {
   return {
     numbering: `test-defense-percent:${def}`,
     name: `test-defense-percent:${def}`,
+    fullName: "でんこ",
+    firstName: "でんこ",
     type: "supporter",
     attr: "flat",
     level: 50,
@@ -53,6 +55,8 @@ export function getFixedDamageDenco(damage: number): DencoState {
   return {
     numbering: "test1",
     name: "test1",
+    fullName: "でんこ",
+    firstName: "でんこ",
     type: "supporter",
     attr: "flat",
     level: 50,
@@ -92,6 +96,8 @@ export function skillInvalidateDenco(targetNumber: string): DencoState {
   return {
     numbering: "test",
     name: "test",
+    fullName: "でんこ",
+    firstName: "でんこ",
     type: "trickster",
     attr: "flat",
     level: 50,

@@ -8,6 +8,8 @@ describe("schema", () => {
     const d: Denco = {
       numbering: "0",
       name: "denco",
+      fullName: "でんこ",
+      firstName: "でんこ",
       type: "attacker",
       attr: "cool",
     }
