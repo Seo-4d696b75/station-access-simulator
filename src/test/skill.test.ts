@@ -10,6 +10,8 @@ describe("スキル状態遷移・コールバック", () => {
   const dencoBase: DencoState = {
     level: 5,
     name: "denco",
+    fullName: "でんこ",
+    firstName: "でんこ",
     numbering: "test",
     currentExp: 0,
     nextExp: 100,
