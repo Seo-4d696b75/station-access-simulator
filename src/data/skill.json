@@ -4572,6 +4572,68 @@
     ]
   },
   {
+    "numbering": "86",
+    "class": "D86_Minato",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ヒストリートーク Lv.1",
+        "active": 720,
+        "cooldown": 11880,
+        "probability": 40
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ヒストリートーク Lv.2",
+        "active": 900,
+        "cooldown": 11700,
+        "probability": 50
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ヒストリートーク Lv.3",
+        "active": 1080,
+        "cooldown": 11520,
+        "probability": 60
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ヒストリートーク Lv.4",
+        "active": 1260,
+        "cooldown": 11340,
+        "probability": 70
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ヒストリートーク Lv.5",
+        "active": 1440,
+        "cooldown": 11160,
+        "probability": 80
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ヒストリートーク Lv.6",
+        "active": 1620,
+        "cooldown": 10980,
+        "probability": 90
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "水底の記憶",
+        "active": 1800,
+        "cooldown": 10800,
+        "probability": 100
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
