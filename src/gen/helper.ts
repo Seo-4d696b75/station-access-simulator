@@ -1,4 +1,5 @@
 import { merge as mergeAny } from "lodash"
+import { SimulatorError } from "../core/context"
 import { ReadonlyState } from "../core/state"
 
 type BaseTypeSchema<T extends string> = {
@@ -36,11 +37,23 @@ type SchemaOf<T> =
   T extends Object ? ObjectSchema<T> | CustomSchema : never
 
 export function createCopyFunc<T>(schema: SchemaOf<T>): (src: ReadonlyState<T>) => T {
-  return (src) => copy(schema, src)
+  return (src) => {
+    try {
+      return copy(schema, src)
+    } catch (e) {
+      throw new SimulatorError(`fail to copy. schema: ${JSON.stringify(schema)}, caused by ${e}`)
+    }
+  } 
 }
 
 export function createMergeFunc<T>(schema: SchemaOf<T>): (dst: T, src: ReadonlyState<T>) => void {
-  return (dst, src) => merge(schema, dst, src)
+  return (dst, src) => {
+    try {
+      merge(schema, dst, src)
+    } catch(e) {
+      throw new SimulatorError(`fail to merge. schema: ${JSON.stringify(schema)}, caused by ${e}`)
+    }
+  }
 }
 
 export function createMatcher<T>(
