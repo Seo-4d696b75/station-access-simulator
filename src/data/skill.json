@@ -4634,6 +4634,64 @@
     ]
   },
   {
+    "numbering": "87",
+    "class": "D87_Hime",
+    "active": 900,
+    "cooldown": 5400,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "わ～るず・もすと！ Lv.1",
+        "ATK": 7,
+        "ATK_eco": 25
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "わ～るず・もすと！ Lv.2",
+        "ATK": 10,
+        "ATK_eco": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "わ～るず・もすと！ Lv.3",
+        "ATK": 13,
+        "ATK_eco": 35
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "わ～るず・もすと！ Lv.4",
+        "ATK": 16,
+        "ATK_eco": 40
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "わ～るず・もすと！ Lv.5",
+        "ATK": 19,
+        "ATK_eco": 45
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "わ～るず・もすと！ Lv.6",
+        "ATK": 22,
+        "ATK_eco": 50
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "やっぱりひめが一番でしょ？",
+        "ATK": 25,
+        "ATK_eco": 55
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
