@@ -4692,6 +4692,66 @@
     ]
   },
   {
+    "numbering": "88",
+    "class": "D88_Tamaki",
+    "active": 900,
+    "active_limit": 3600,
+    "cooldown": 5400,
+    "probability": 100,
+    "probability_extend": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "エンドレス・ビート Lv.1",
+        "ATK": 9,
+        "active_extend": 120
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "エンドレス・ビート Lv.2",
+        "ATK": 9,
+        "active_extend": 180
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "エンドレス・ビート Lv.3",
+        "ATK": 9,
+        "active_extend": 240
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "エンドレス・ビート Lv.4",
+        "ATK": 9,
+        "active_extend": 300
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "エンドレス・ビート Lv.5",
+        "ATK": 11,
+        "active_extend": 360
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "エンドレス・ビート Lv.6",
+        "ATK": 13,
+        "active_extend": 420
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "夜明けまではそばにいて",
+        "ATK": 15,
+        "active_extend": 480
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
