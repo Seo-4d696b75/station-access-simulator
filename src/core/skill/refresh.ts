@@ -160,7 +160,8 @@ function refreshTimeout(context: Context, state: UserState, idx: number): boolea
       skill.transition = {
         state: "cooldown",
         data: {
-          cooldownTimeout: data.cooldownTimeout
+          cooldownTimeout: data.cooldownTimeout,
+          cooldownDuration: data.cooldownDuration,
         }
       }
       result = true

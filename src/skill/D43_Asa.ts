@@ -1,3 +1,4 @@
+import { assert } from "../core/context";
 import { formatDuration } from "../core/date";
 import { EventSkillTrigger, triggerSkillAtEvent } from "../core/event";
 import { SkillLogic } from "../core/skill";
@@ -41,8 +42,8 @@ const skill: SkillLogic = {
           if (s.transition.state !== "active") return
           // active, cooldownの時間があるスキルタイプのみ
           if (s.transition.data?.cooldownTimeout) {
-            const duration = s.transition.data.activeTimeout - s.transition.data.activatedAt
-            if (duration < 0) context.log.error("スキルのactive時間が負数です")
+            assert(s.transition.data.activeTimeout > s.transition.data.activatedAt)
+            const duration = s.transition.data.activeDuration
             const v = duration * (1 + percent / 100)
             // 端数を切り捨てて分単位に調整
             const unit = 60 * 1000 // ms
@@ -53,7 +54,9 @@ const skill: SkillLogic = {
               data: {
                 activatedAt: s.transition.data.activatedAt,
                 activeTimeout: nextTimeout,
-                cooldownTimeout: s.transition.data.cooldownTimeout,
+                activeDuration: s.transition.data.activeDuration,
+                cooldownTimeout: s.transition.data.cooldownTimeout, // cooldownの終了時刻は固定
+                cooldownDuration: s.transition.data.cooldownDuration,
               }
             }
             context.log.log(`${d.name} ${formatDuration(duration)} => ${formatDuration(nextDuration)}`)

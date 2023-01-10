@@ -103,6 +103,8 @@ const skillTransitionSchema = objectSchema<SkillTransition<SkillTransitionType>>
     activatedAt: primitiveSchema,
     activeTimeout: primitiveSchema,
     cooldownTimeout: primitiveSchema,
+    activeDuration: primitiveSchema,
+    cooldownDuration: primitiveSchema,
   }),
 })
 

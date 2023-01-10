@@ -128,7 +128,9 @@ function getSkillActiveTimeout<T extends "manual" | "manual-condition" | "auto">
       }
       return {
         activatedAt: context.currentTime,
+        activeDuration: active * 1000,
         activeTimeout: context.currentTime + active * 1000,
+        cooldownDuration: cooldown * 1000,
         cooldownTimeout: context.currentTime + (active + cooldown) * 1000,
       }
     }
@@ -205,6 +207,7 @@ export function deactivateSkillAt<T extends UserState>(context: Context, state: 
           cooldown = next
         }
         const timeout = {
+          cooldownDuration: cooldown * 1000,
           cooldownTimeout: context.currentTime + cooldown * 1000,
         }
         skill.transition = {
