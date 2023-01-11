@@ -1,5 +1,4 @@
 import { merge as mergeAny } from "lodash"
-import { SimulatorError } from "../core/context"
 import { ReadonlyState } from "../core/state"
 
 type BaseTypeSchema<T extends string> = {
@@ -38,21 +37,13 @@ type SchemaOf<T> =
 
 export function createCopyFunc<T>(schema: SchemaOf<T>): (src: ReadonlyState<T>) => T {
   return (src) => {
-    try {
-      return copy(schema, src)
-    } catch (e) {
-      throw new SimulatorError(`fail to copy. schema: ${JSON.stringify(schema)}, caused by ${e}`)
-    }
-  } 
+    return copy(schema, src)
+  }
 }
 
 export function createMergeFunc<T>(schema: SchemaOf<T>): (dst: T, src: ReadonlyState<T>) => void {
   return (dst, src) => {
-    try {
-      merge(schema, dst, src)
-    } catch(e) {
-      throw new SimulatorError(`fail to merge. schema: ${JSON.stringify(schema)}, caused by ${e}`)
-    }
+    merge(schema, dst, src)
   }
 }
 
@@ -141,7 +132,7 @@ function mergeArray<T>(schema: SchemaOf<T>, dst: T[], src: ReadonlyState<T>[]): 
   for (let i = 0; i < src.length; i++) {
     if (i < dst.length) {
       // merge item
-      merge(schema, dst[i], src[i])
+    merge(schema, dst[i], src[i])
     } else {
       // copy src to dst
       dst.push(copy(schema, src[i]))

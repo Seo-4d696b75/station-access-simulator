@@ -93,8 +93,9 @@ export class Context {
 
 export function assert(value: unknown, message?: string | Error): asserts value {
   if (value) return
-  const e = typeof message === "string" ? new SimulatorError(message) : message
-  throw e
+  if (typeof message === "string") throw new SimulatorError(message)
+  if (message === undefined) throw new SimulatorError("assertion error")
+  throw message
 }
 
 
