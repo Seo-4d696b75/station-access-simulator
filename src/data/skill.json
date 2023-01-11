@@ -4752,6 +4752,69 @@
     ]
   },
   {
+    "numbering": "89",
+    "class": "D89_Ginka",
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "しろかねの盾 Lv.1",
+        "active": 1800,
+        "cooldown": 9000,
+        "DEF": 24
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "しろかねの盾 Lv.2",
+        "active": 2100,
+        "cooldown": 8700,
+        "DEF": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "しろかねの盾 Lv.3",
+        "active": 2400,
+        "cooldown": 8400,
+        "DEF": 36
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "しろかねの盾 Lv.4",
+        "active": 2700,
+        "cooldown": 8100,
+        "DEF": 42
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "しろかねの盾 Lv.5",
+        "active": 3000,
+        "cooldown": 7800,
+        "DEF": 48
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "しろかねの盾 Lv.6",
+        "active": 3300,
+        "cooldown": 7500,
+        "DEF": 54
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "かそけき銀の楼閣",
+        "active": 3600,
+        "cooldown": 7200,
+        "DEF": 60
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
