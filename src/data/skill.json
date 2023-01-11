@@ -4815,6 +4815,76 @@
     ]
   },
   {
+    "numbering": "90",
+    "class": "D90_Ai",
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "夢と希望とド根性っ！ Lv.1",
+        "active": 1800,
+        "cooldown": 12600,
+        "DEF": 9,
+        "DEF_heat": 8
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "夢と希望とド根性っ！ Lv.2",
+        "active": 2100,
+        "cooldown": 12300,
+        "DEF": 10,
+        "DEF_heat": 10
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "夢と希望とド根性っ！ Lv.3",
+        "active": 2400,
+        "cooldown": 12000,
+        "DEF": 11,
+        "DEF_heat": 12
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "夢と希望とド根性っ！ Lv.4",
+        "active": 2700,
+        "cooldown": 11700,
+        "DEF": 12,
+        "DEF_heat": 14
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "夢と希望とド根性っ！ Lv.5",
+        "active": 3000,
+        "cooldown": 11400,
+        "DEF": 13,
+        "DEF_heat": 16
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "夢と希望とド根性っ！ Lv.6",
+        "active": 3300,
+        "cooldown": 11100,
+        "DEF": 14,
+        "DEF_heat": 18
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "藍より青く相を愛して",
+        "active": 3600,
+        "cooldown": 10800,
+        "DEF": 15,
+        "DEF_heat": 20
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
