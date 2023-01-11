@@ -473,7 +473,16 @@ export const userStateSchema = objectSchema<UserState>({
   user: userPropertySchema,
   formation: arraySchema(dencoStateSchema),
   event: arraySchema(eventSchema),
-  queue: arraySchema(eventQueueEntrySchema),
+  queue: customSchema<EventQueueEntry[]>(
+    (src) => src.map(e => copyEventQueueEntry(e)),
+    (dst, src) => {
+      // timeに基づきsortするためリスト内の相対的位置が変化する
+      // リスト要素どうしの対応が曖昧になりデフォルト実装ではmergeできない
+      // entryの各要素は変更されないと仮定して丸ごとコピーする
+      dst.splice(0, dst.length)
+      src.forEach(e => dst.push(copyEventQueueEntry(e)))
+    }
+  )
 })
 
 // access result
