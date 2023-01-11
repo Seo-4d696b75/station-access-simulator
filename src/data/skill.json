@@ -4885,6 +4885,79 @@
     ]
   },
   {
+    "numbering": "91",
+    "class": "D91_Yoshino",
+    "probability_def": 100,
+    "probability_exp": 100,
+    "DEF_cool": 15,
+    "DEF_heat": -10,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "暑がり克服修行中 Lv.1",
+        "active": 1800,
+        "cooldown": 9000,
+        "exp": 100,
+        "score": 140
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "暑がり克服修行中 Lv.2",
+        "active": 2100,
+        "cooldown": 8700,
+        "exp": 150,
+        "score": 200
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "暑がり克服修行中 Lv.3",
+        "active": 2400,
+        "cooldown": 8400,
+        "exp": 200,
+        "score": 260
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "暑がり克服修行中 Lv.4",
+        "active": 2700,
+        "cooldown": 8100,
+        "exp": 250,
+        "score": 320
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "暑がり克服修行中 Lv.5",
+        "active": 3000,
+        "cooldown": 7800,
+        "exp": 300,
+        "score": 380
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "暑がり克服修行中 Lv.6",
+        "active": 3300,
+        "cooldown": 7500,
+        "exp": 350,
+        "score": 440
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "冬来りなば春遠からじ",
+        "active": 3600,
+        "cooldown": 7200,
+        "exp": 400,
+        "score": 500
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
