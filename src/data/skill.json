@@ -4958,6 +4958,68 @@
     ]
   },
   {
+    "numbering": "92",
+    "class": "D92_Subaru",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "プレアデスドライブ Lv.1",
+        "ATK": 10,
+        "DEF": 10,
+        "probability": 26
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "プレアデスドライブ Lv.2",
+        "ATK": 12,
+        "DEF": 12,
+        "probability": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "プレアデスドライブ Lv.3",
+        "ATK": 14,
+        "DEF": 14,
+        "probability": 34
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "プレアデスドライブ Lv.4",
+        "ATK": 16,
+        "DEF": 16,
+        "probability": 38
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "プレアデスドライブ Lv.5",
+        "ATK": 18,
+        "DEF": 18,
+        "probability": 42
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "プレアデスドライブ Lv.6",
+        "ATK": 20,
+        "DEF": 20,
+        "probability": 46
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "天の光はすべて星",
+        "ATK": 22,
+        "DEF": 22,
+        "probability": 50
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
