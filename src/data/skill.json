@@ -5020,6 +5020,64 @@
     ]
   },
   {
+    "numbering": "93",
+    "class": "D93_Asahi",
+    "active": 3600,
+    "cooldown": 10800,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "エンパサイズフィールド Lv.1",
+        "DEF": 8,
+        "DEF_additional": 20
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "エンパサイズフィールド Lv.2",
+        "DEF": 10,
+        "DEF_additional": 25
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "エンパサイズフィールド Lv.3",
+        "DEF": 12,
+        "DEF_additional": 30
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "エンパサイズフィールド Lv.4",
+        "DEF": 14,
+        "DEF_additional": 35
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "エンパサイズフィールド Lv.5",
+        "DEF": 16,
+        "DEF_additional": 40
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "エンパサイズフィールド Lv.6",
+        "DEF": 18,
+        "DEF_additional": 45
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "それは優しくきらめく朝陽",
+        "DEF": 20,
+        "DEF_additional": 50
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
