@@ -5078,6 +5078,62 @@
     ]
   },
   {
+    "numbering": "94",
+    "class": "D94_Yuki",
+    "max_access_count": 14,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "きみにサプライズ Lv.1",
+        "exp": 60,
+        "exp_cool": 110
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "きみにサプライズ Lv.2",
+        "exp": 80,
+        "exp_cool": 140
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "きみにサプライズ Lv.3",
+        "exp": 100,
+        "exp_cool": 170
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "きみにサプライズ Lv.4",
+        "exp": 120,
+        "exp_cool": 200
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "きみにサプライズ Lv.5",
+        "exp": 130,
+        "exp_cool": 250
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "きみにサプライズ Lv.6",
+        "exp": 140,
+        "exp_cool":300
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "きみと、サプライズ",
+        "exp": 150,
+        "exp_cool": 350
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
