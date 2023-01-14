@@ -22,7 +22,7 @@ const skill: SkillLogic = {
         && ecoCnt >= self.skill.property.readNumber("eco_count")
       if (triggerTop || triggerEco) {
         return {
-          probabilityKey: "probability", // 100%
+          probability: "probability", // 100%
           recipe: (state) => {
             context.log.log("一歩退いて皆さんのお手伝いをさせていただければと……♡")
             let def = 0

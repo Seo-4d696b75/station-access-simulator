@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       const defense = getAccessDenco(state, "defense")
       if (step === "damage_special" && defense.numbering === "25") {
         return {
-          probabilityKey: "probability_heal",
+          probability: "probability_heal",
           recipe: (state) => {
             const heal = self.skill.property.readNumber("heal")
             const base = calcAccessDamage(context, state)
@@ -25,7 +25,7 @@ const skill: SkillLogic = {
         }
       } else if (step === "damage_common" && defense.numbering !== "25") {
         return {
-          probabilityKey: "probability_atk",
+          probability: "probability_atk",
           recipe: (state) => {
             const atk = self.skill.property.readNumber("ATK")
             state.attackPercent += atk

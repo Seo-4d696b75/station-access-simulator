@@ -15,7 +15,7 @@ const skill: SkillLogic = {
       // 再配布できる場合
       if (target.currentExp < target.nextExp) {
         return triggerSkillAfterAccess(context, state, self, {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const percent = self.skill.property.readNumber("EXP")
             let dst = state.formation[idx] // 編成位置は変わらない前提

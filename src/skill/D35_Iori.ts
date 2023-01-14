@@ -13,7 +13,7 @@ const skill: SkillLogic = {
       const count = Math.min(target.length, max)
       if (count > 0) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const def = count * self.skill.property.readNumber("DEF")
             state.defendPercent += def

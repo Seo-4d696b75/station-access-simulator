@@ -13,7 +13,7 @@ const skill: SkillLogic = {
         .length
       if (heatCnt === state.offense.formation.length) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const atk = self.skill.property.readNumber("ATK")
             state.attackPercent += atk

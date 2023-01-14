@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       const defense = getAccessDenco(state, "defense")
       if (!defense.reboot && !hasSkillTriggered(state.offense, self)) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             context.log.log("気合入れて頑張っていこー♪")
             return repeatAccess(context, state)

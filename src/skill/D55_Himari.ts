@@ -34,7 +34,7 @@ const skill: SkillLogic = {
       // アクセスをうけるでんこ着用フィルムが同種最大数か？
       if (filmThemeMap.get(theme) !== maxCnt) return
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const unit = self.skill.property.readNumber("DEF")
           const def = unit * maxCnt

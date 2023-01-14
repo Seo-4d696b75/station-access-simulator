@@ -21,7 +21,7 @@ const skill: SkillLogic = {
         state,
         self,
         {
-          probabilityKey: "probability_activate", // 100%
+          probability: "probability_activate", // 100%
           recipe: (state) => {
             // スキル有効化
             activateSkillAt(context, state, self.carIndex)
@@ -50,7 +50,7 @@ const skill: SkillLogic = {
       const def = self.skill.property.readNumber(`DEF_${attr}`, 0)
       if (self.who === "offense" && atk > 0) {
         return {
-          probabilityKey: "probability", // 100%
+          probability: "probability", // 100%
           recipe: (state) => {
             state.attackPercent += atk
             context.log.log(`あるじ殿のためならばたとえ火の中水の中！ ATK${formatPercent(atk)}`)
@@ -59,7 +59,7 @@ const skill: SkillLogic = {
       }
       if (self.who === "defense" && def > 0) {
         return {
-          probabilityKey: "probability", // 100%
+          probability: "probability", // 100%
           recipe: (state) => {
             state.defendPercent += def
             context.log.log(`あるじ殿のためならばたとえ火の中水の中！ DEF${formatPercent(def)}`)

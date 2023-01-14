@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       && !state.pinkMode
       && dist >= 1.0) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const distMax = self.skill.property.readNumber("distMax")
           const expMax = self.skill.property.readNumber("expMax")

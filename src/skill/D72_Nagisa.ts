@@ -5,7 +5,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_fixed" && self.who === "offense") {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const count = [
             ...state.offense.formation,

@@ -7,7 +7,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "defense") {
       return {
-        probabilityKey: "probability", // 100%
+        probability: "probability", // 100%
         recipe: (state) => {
           let def = self.skill.property.readNumber("DEF")
           const activeCnt = state.offense.formation

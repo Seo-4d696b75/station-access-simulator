@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       && self.who === "other"
       && getAccessDenco(state, "offense").type === "defender") {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const def = self.skill.property.readNumber("ATK")
           state.attackPercent += def

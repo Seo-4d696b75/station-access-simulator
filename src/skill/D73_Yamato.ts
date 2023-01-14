@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       const defense = getAccessDenco(state, "defense")
       if (offense.attr === defense.attr) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const damage = self.skill.property.readNumber("damage_fixed")
             state.damageFixed += damage

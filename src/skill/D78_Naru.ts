@@ -21,7 +21,7 @@ const skill: SkillLogic = {
       // 他の獲得するスコアを増加させるタイプのスキルは無効化影響を受けるのでstart_accessで処理する
       // なぜ、なるだけ特別なのかは不明
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const scorePercent = self.skill.property.readNumber("score_percent")
           // アクセスで獲得するスコアを増加させる

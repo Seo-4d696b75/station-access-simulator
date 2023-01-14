@@ -10,7 +10,7 @@ const skill: SkillLogic = {
       const defense = state.defense.formation[state.defense.carIndex]
       if (defense.type === "attacker") {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const def = self.skill.property.readNumber("DEF")
             state.defendPercent += def

@@ -15,7 +15,7 @@ const skill: SkillLogic = {
     if (d.currentExp < d.nextExp) {
       // 経験値追加できる？
       return triggerSkillAtEvent(context, state, self, {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const d = state.formation[idx]
           const cnt = links.link.length

@@ -7,7 +7,7 @@ const skill: SkillLogic = {
     if (step === "damage_common" &&
       self.who === "defense") {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const hour = dayjs.tz(context.currentTime).hour()
           if (hour < 6 || hour >= 18) {

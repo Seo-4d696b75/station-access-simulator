@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       const offense = getAccessDenco(state, "offense")
       if (offense.ap > self.ap) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const maxDEF = self.skill.property.readNumber("DEF")
             const def = Math.floor(maxDEF * (offense.ap - self.ap) / offense.ap)

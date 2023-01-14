@@ -422,7 +422,7 @@ export const eventSchema = customSchema(copyEvent, mergeEvent)
 // event queue
 
 const eventSkillTriggerSchema = objectSchema<EventSkillTrigger>({
-  probabilityKey: primitiveSchema,
+  probability: primitiveSchema,
   recipe: functionSchema,
   fallbackRecipe: functionSchema,
 })

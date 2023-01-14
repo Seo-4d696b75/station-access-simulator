@@ -13,7 +13,7 @@ const skill: SkillLogic = {
         .length
       if (cnt > 0) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             if (self.which === "offense") {
               const unit = self.skill.property.readNumber("ATK")

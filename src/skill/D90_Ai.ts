@@ -14,7 +14,7 @@ const skill: SkillLogic = {
       && getAccessDenco(state, "defense").attr === "cool"
     ) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           let def = self.skill.property.readNumber("DEF")
           // 相手編成がすべてheat

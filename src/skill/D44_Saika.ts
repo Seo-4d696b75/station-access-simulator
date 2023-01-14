@@ -10,7 +10,7 @@ const skill: SkillLogic = {
       state.defense !== undefined &&
       dist >= 3.0) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const threshold1 = self.skill.property.readNumber("threshold1")
           const threshold2 = self.skill.property.readNumber("threshold2")

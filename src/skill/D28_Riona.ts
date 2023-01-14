@@ -11,7 +11,7 @@ const skill: SkillLogic = {
         - (state.offense.user.history.getStationAccessCount(context, state.station))
       if (diff > 0) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             // 最大ATK上昇量
             const max = self.skill.property.readNumber("ATK")

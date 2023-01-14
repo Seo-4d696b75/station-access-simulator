@@ -9,7 +9,7 @@ const skill: SkillLogic = {
   },
   onHourCycle: (context, state, self) => {
     return triggerSkillAtEvent(context, state, self, {
-      probabilityKey: "probability",
+      probability: "probability",
       recipe: (state) => {
         const heal = self.skill.property.readNumber("heal")
         context.log.log(`編成内のみなさまのHPを回復いたしますよ♪ +${heal}%`)

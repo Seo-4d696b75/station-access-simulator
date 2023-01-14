@@ -26,7 +26,7 @@ const skill: SkillLogic = {
           state,
           self,
           {
-            probabilityKey: "probability",
+            probability: "probability",
             recipe: (state) => {
               const percent = self.skill.property.readNumber("exp_percent")
               const dstExp = Math.floor(exp * percent / 100)

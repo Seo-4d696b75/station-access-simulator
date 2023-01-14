@@ -25,7 +25,7 @@ const skill: SkillLogic = {
   onActivated: (context, state, self) => {
     // スキルが有効化した瞬間にスキル発動
     const trigger: EventSkillTrigger = {
-      probabilityKey: "probability",
+      probability: "probability",
       recipe: (state) => {
         const percent = self.skill.property.readNumber("extend")
         context.log.log(`サポーターってなかなか大変だよね。スキルもう少し頑張りたいってときに、わたしが応援する スキル時間+${percent}%`)

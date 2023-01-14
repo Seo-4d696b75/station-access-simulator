@@ -14,7 +14,7 @@ const skill: SkillLogic = {
       && self.who !== "offense"
     ) {
       return {
-        probabilityKey: "probability", // 100%
+        probability: "probability", // 100%
         recipe: (state) => {
           const atk = self.skill.property.readNumber("ATK")
           state.attackPercent += atk
@@ -37,7 +37,7 @@ const skill: SkillLogic = {
         state,
         self,
         {
-          probabilityKey: "probability_extend", // 100%
+          probability: "probability_extend", // 100%
           recipe: (state) => {
             const d = state.formation[self.carIndex]
             const skill = getSkill(d)

@@ -12,7 +12,7 @@ const skill: SkillLogic = {
       ].some(d => d.type === "supporter" && canSkillInvalidated(d))
       if (!anySupporter) return // 無効化の対象が存在しない
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const target = [
             ...state.offense.formation,

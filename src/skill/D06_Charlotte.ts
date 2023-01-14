@@ -8,7 +8,7 @@ const skill: SkillLogic = {
     const timer = self.skill.property.readNumber("timer")
     const time = context.currentTime + timer * 1000
     return enqueueSkillEvent(context, state, time, self, {
-      probabilityKey: "probability",
+      probability: "probability",
       recipe: (state) => {
         return accessRandomStation(context, state)
       }

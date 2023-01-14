@@ -5,7 +5,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "pink_check" && !state.pinkMode) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           state.pinkMode = true
         }

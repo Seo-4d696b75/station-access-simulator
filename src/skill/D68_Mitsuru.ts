@@ -8,7 +8,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense") {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const atkBase = self.skill.property.readNumber("ATK")
           const atkAdditional = self.skill.property.readNumber("ATK_additional")

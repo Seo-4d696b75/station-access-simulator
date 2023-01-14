@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       && state.defense
       && self.currentHp > 1) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const atk = self.skill.property.readNumber("ATK")
           state.attackPercent += atk

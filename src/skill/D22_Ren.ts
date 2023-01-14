@@ -12,7 +12,7 @@ const skill: SkillLogic = {
       const target = self.skill.property.readStringArray("invalidated")
       if (target.includes(defense.numbering)) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const defense = getAccessDenco(state, "defense")
             defense.skillInvalidated = true

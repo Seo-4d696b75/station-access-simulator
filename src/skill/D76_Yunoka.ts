@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       && !state.pinkMode) {
       if (step === "damage_common") {
         return {
-          probabilityKey: "probability_atk",
+          probability: "probability_atk",
           recipe: (state) => {
             const atk = self.skill.property.readNumber("ATK")
             state.attackPercent += atk
@@ -23,7 +23,7 @@ const skill: SkillLogic = {
         const d = getAccessDenco(state, "defense")
         if (d.hpAfter > 0) {
           return {
-            probabilityKey: "probability_heal",
+            probability: "probability_heal",
             recipe: (state) => {
               const defense = getAccessDenco(state, "defense")
               // 相手のHPを0にできなかった場合

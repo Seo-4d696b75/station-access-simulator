@@ -12,7 +12,7 @@ const skill: SkillLogic = {
       ].some(d => d.attr === "heat" && canSkillInvalidated(d))
       if (!any) return
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const target = [
             ...state.offense.formation,

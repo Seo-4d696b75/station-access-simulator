@@ -14,7 +14,7 @@ const skill: SkillLogic = {
       && getAccessDenco(state, "offense").attr === "heat"
     ) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           let exp = self.skill.property.readNumber("EXP")
           context.log.log(`なんでもみんなで騒いで楽しむのがイチバン！経験値配布：${exp}`)

@@ -10,7 +10,7 @@ const skill: SkillLogic = {
       const damage = self.damage?.value
       assert(damage)
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           // アクセスしてきた相手、もしくはアクセスした相手
           // カウンターによるダメージの場合は攻撃側の場合もある

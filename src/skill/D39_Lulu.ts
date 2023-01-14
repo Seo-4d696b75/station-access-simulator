@@ -6,7 +6,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_special" && self.who === "defense" && self.hpBefore === self.maxHp) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const damage = getBaseDamage(context, state)
           // 通常ダメージ(ATK,DEF考慮含む)を0にする

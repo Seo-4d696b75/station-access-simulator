@@ -46,7 +46,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_common" && self.who === "offense" && state.defense) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const cnt = self.skill.data.readNumber(KEY, 0)
           const max = self.skill.property.readNumber("count_max")

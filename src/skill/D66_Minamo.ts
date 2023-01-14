@@ -20,7 +20,7 @@ const skill: SkillLogic = {
         state,
         self,
         {
-          probabilityKey: "probability_activate", // 100%
+          probability: "probability_activate", // 100%
           recipe: (state) => {
             activateSkillAt(context, state, self.carIndex)
           }
@@ -31,7 +31,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_fixed" && self.who === "offense") {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const damage = self.skill.property.readNumber("damage_fixed")
           state.damageFixed += damage

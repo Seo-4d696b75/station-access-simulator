@@ -21,7 +21,7 @@ const skill: SkillLogic = {
         // HP回復はアクセス直後のタイミング（青色ダイアログ表示される）
         // 実装的には姉の被アクセス時に確率でカウンター、カウンターと同時にHPも回復
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             context.log.log(`お姉様との旅路を邪魔するやつは、たとえマスターでも許さないからな…！！カウンター発動`)
             return counterAttack(context, state, self)
@@ -41,7 +41,7 @@ const skill: SkillLogic = {
         state,
         self,
         {
-          probabilityKey: "probability_heal", // 100%
+          probability: "probability_heal", // 100%
           recipe: (state) => {
             const sister = state.formation[idx]
             assert(sister.numbering === "37")

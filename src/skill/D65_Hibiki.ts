@@ -14,7 +14,7 @@ const skill: SkillLogic = {
         .map(d => d.carIndex)
       if (indices.length > 0) {
         return {
-          probabilityKey: "probability_support",
+          probability: "probability_support",
           recipe: (state) => {
             const formation = getDefense(state).formation
             const target = indices.map(i => formation[i])
@@ -32,7 +32,7 @@ const skill: SkillLogic = {
     // リブート時はhpAfter = 0なので最終的なHP(currentHp)を参照する
     if (self.hpBefore > self.currentHp && self.currentHp <= self.maxHp * percentTh / 100) {
       return triggerSkillAfterAccess(context, state, self, {
-        probabilityKey: "probability_heal",
+        probability: "probability_heal",
         recipe: (state) => {
           const d = state.formation[self.carIndex]
           const percentHeal = self.skill.property.readNumber("heal")

@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       const cnt = getDefense(state).formation.filter(d => d.type === "defender").length
       if (cnt > 0) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const unit = self.skill.property.readNumber("DEF")
             const def = unit * cnt
@@ -27,7 +27,7 @@ const skill: SkillLogic = {
       const cnt = state.offense.formation.filter(d => d.type === "attacker").length
       if (cnt > 0) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const unit = self.skill.property.readNumber("ATK")
             const atk = unit * cnt

@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       const stationCount = getDefense(state).user.daily.readAccessStationCount(context)
       if (self.who === "defense") {
         triggers.push({
-          probabilityKey: "probability_self",
+          probability: "probability_self",
           recipe: (state) => {
             const countSelfTh = self.skill.property.readNumber("station_count_self")
             const unit = self.skill.property.readNumber("damage_fixed_self")
@@ -23,7 +23,7 @@ const skill: SkillLogic = {
       const countOtherTh = self.skill.property.readNumber("station_count_other")
       if (stationCount >= countOtherTh) {
         triggers.push({
-          probabilityKey: "probability_other",
+          probability: "probability_other",
           recipe: (state) => {
             const damage = self.skill.property.readNumber("damage_fixed_other")
             state.damageFixed += damage

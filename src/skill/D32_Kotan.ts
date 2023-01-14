@@ -6,7 +6,7 @@ const skill: SkillLogic = {
     if (step === "damage_common" && self.who === "offense" && state.defense) {
       const count = state.offense.user.daily.readAccessStationCount(context)
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const maxATK = self.skill.property.readNumber("ATK")
           const maxStation = self.skill.property.readNumber("max_station")

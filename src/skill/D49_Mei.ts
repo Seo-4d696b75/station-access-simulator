@@ -10,7 +10,7 @@ const skill: SkillLogic = {
       const d = getAccessDenco(state, "offense")
       if (self.currentHp > d.currentHp) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const diff = self.currentHp - d.currentHp
             // 0 < diff < 自身の最大HP

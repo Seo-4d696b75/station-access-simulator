@@ -15,7 +15,7 @@ const skill: SkillLogic = {
       && getAccessDenco(state, "defense").type === "trickster"
     ) {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const d = getAccessDenco(state, "defense")
           d.skillInvalidated = true

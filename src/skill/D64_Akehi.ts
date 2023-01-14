@@ -10,7 +10,7 @@ const skill: SkillLogic = {
       const th = self.skill.property.readNumber("dist")
       if (self.who === "offense" || dist >= th) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             if (self.who === "offense") {
               const perDist = self.skill.property.readNumber("ATK_self")

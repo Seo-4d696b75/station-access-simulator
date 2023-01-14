@@ -32,16 +32,24 @@ export type AccessSkillTriggers = AccessSkillTrigger | AccessSkillTrigger[]
  */
 export type AccessSkillTrigger = {
   /**
+   * スキルの発動確率を指定します
+   * 
+   * number, string型によって指定方法が変わります
+   * 
+   * ## number
+   * 発動確率[%]を直接指定します
+   * 
+   * ## string
    * スキルプロパティから発動確率[%]を読み出します  
    * ```js
-   * readNumber(probabilityKey, 100)
+   * readNumber(probability, 100)
    * ```
    * 
    * - スキルプロパティに未定義の場合はデフォルト値100[%]を使用します. 
-   * - **フィルム補正が影響します！** `probabilityKey`で定義されたスキル補正により
+   * - **フィルム補正が影響します！** `probability`で定義されたスキル補正により
    * 読み出す発動確率の値[%]が変化する場合があります.
    */
-  probabilityKey: string
+  probability: number | string
   /**
    * スキルが発動した場合の処理を関数として指定します.  
    * {@link probabilityKey}で指定した確率[%]で判定が成功した場合のみ実行されます.
@@ -206,7 +214,9 @@ function getTargetRecipes(context: Context, state: AccessState, step: AccessSkil
  * @returns 
  */
 function canTriggerSkill(context: Context, state: AccessState, d: ReadonlyState<AccessDencoState>, trigger: AccessSkillTrigger, property: SkillProperty): AccessSkillRecipe | null {
-  let percent = property.readNumber(trigger.probabilityKey, 100)
+  let percent = typeof trigger.probability === "number"
+    ? trigger.probability
+    : property.readNumber(trigger.probability, 100)
   percent = Math.min(percent, 100)
   percent = Math.max(percent, 0)
   if (percent >= 100) return trigger.recipe

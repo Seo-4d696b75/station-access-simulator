@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       && self.currentHp === self.maxHp
     ) {
       return {
-        probabilityKey: "probability", // 100%
+        probability: "probability", // 100%
         recipe: (state) => {
           const def = self.skill.property.readNumber("DEF")
           state.defendPercent += def

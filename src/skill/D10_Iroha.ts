@@ -17,7 +17,7 @@ const skill: SkillLogic = {
   onActivated: (context, state, self) => {
     // スキルが有効化した瞬間にスキル発動
     return triggerSkillAtEvent(context, state, self, {
-      probabilityKey: "probability",
+      probability: "probability",
       recipe: (state) => {
         const links = state.formation[self.carIndex].link
         const stations = links.map(link => link.name).join(",")

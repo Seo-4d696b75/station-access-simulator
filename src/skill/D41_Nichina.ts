@@ -21,7 +21,7 @@ const skill: SkillLogic = {
       // 自身より高レベルは対象外
       if (dst.level > self.level) return
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           // 書き込み可能な移譲先を再度取得
           const formation = getFormation(state, self.which)

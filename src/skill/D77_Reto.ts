@@ -7,7 +7,7 @@ const skill: SkillLogic = {
     // 「アクセスされて自身のHPが0になった時」
     if (self.who === "defense" && self.hpAfter === 0) {
       return triggerSkillAfterAccess(context, state, self, {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => accessRandomStation(context, state)
       })
     }

@@ -13,7 +13,7 @@ const skill: SkillLogic = {
       const [atk, def] = readAtkDef(d.type, self.skill.property)
       if (self.which === "offense" && atk > 0) {
         return {
-          probabilityKey: "probability", // 100%
+          probability: "probability", // 100%
           recipe: (state) => {
             state.attackPercent += atk
             context.log.log(`でんこも好き。みんな個性があるんだ。ATK${formatPercent(atk)}`)
@@ -22,7 +22,7 @@ const skill: SkillLogic = {
       }
       if (self.which === "defense" && def > 0) {
         return {
-          probabilityKey: "probability", // 100%
+          probability: "probability", // 100%
           recipe: (state) => {
             state.defendPercent += def
             context.log.log(`でんこも好き。みんな個性があるんだ。DEF${formatPercent(def)}`)

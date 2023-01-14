@@ -14,7 +14,7 @@ const skill: SkillLogic = {
       })
       if (anySupporter) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const all = [
               ...state.offense.formation,

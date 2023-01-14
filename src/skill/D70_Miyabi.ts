@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       const d = getAccessDenco(state, "offense")
       if (d.attr === "heat") {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const def = self.skill.property.readNumber("DEF")
             state.defendPercent += def

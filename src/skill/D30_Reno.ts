@@ -9,7 +9,7 @@ const skill: SkillLogic = {
       const night = hour < 6 || hour >= 18
       if (night && self.who === "offense") {
         return {
-          probabilityKey: "probability_atk",
+          probability: "probability_atk",
           recipe: (state) => {
             const atk = self.skill.property.readNumber("ATK")
             state.attackPercent += atk
@@ -18,7 +18,7 @@ const skill: SkillLogic = {
         }
       } else if (!night && self.who === "defense") {
         return {
-          probabilityKey: "probability_def",
+          probability: "probability_def",
           recipe: (state) => {
             const def = self.skill.property.readNumber("DEF")
             state.defendPercent += def

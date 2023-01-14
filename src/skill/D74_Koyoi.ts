@@ -19,7 +19,7 @@ const skill: SkillLogic = {
       const triggerOther = count >= self.skill.property.readNumber("count_other")
       if (!triggerSelf && !triggerOther) return
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           context.log.log(`雰囲気の近い人たちと一緒だと力が出る、というか……`)
           if (triggerSelf) {

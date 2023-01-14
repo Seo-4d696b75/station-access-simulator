@@ -13,7 +13,7 @@ const skill: SkillLogic = {
       // みずほと同種のフィルムを着用している（本人も含む）
       if (getFilmTheme(d.film) === getFilmTheme(self.film)) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             if (self.which === "offense") {
               const atk = self.skill.property.readNumber("ATK")

@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       const isTarget = target.some(t => d.firstName.includes(t))
       if (isTarget && self.which === "offense") {
         return {
-          probabilityKey: "probability", // 100%
+          probability: "probability", // 100%
           recipe: (state) => {
             const atk = self.skill.property.readNumber("ATK")
             state.attackPercent += atk
@@ -20,7 +20,7 @@ const skill: SkillLogic = {
         }
       } else if (isTarget && self.which === "defense") {
         return {
-          probabilityKey: "probability", // 100%
+          probability: "probability", // 100%
           recipe: (state) => {
             const def = self.skill.property.readNumber("DEF")
             state.defendPercent += def

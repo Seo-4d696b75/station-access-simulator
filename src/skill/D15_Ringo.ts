@@ -8,7 +8,7 @@ const skill: SkillLogic = {
       const hour = dayjs.tz(context.currentTime).hour()
       if ((hour < 6 || hour >= 18) && self.who === "defense") {
         return {
-          probabilityKey: "probability_def",
+          probability: "probability_def",
           recipe: (state) => {
             const def = self.skill.property.readNumber("DEF")
             state.defendPercent += def
@@ -18,7 +18,7 @@ const skill: SkillLogic = {
       }
       if ((6 <= hour && hour < 18) && self.who === "offense") {
         return {
-          probabilityKey: "probability_atk",
+          probability: "probability_atk",
           recipe: (state) => {
             const atk = self.skill.property.readNumber("ATK")
             state.attackPercent += atk

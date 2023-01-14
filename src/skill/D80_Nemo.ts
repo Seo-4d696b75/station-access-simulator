@@ -7,7 +7,7 @@ const skill: SkillLogic = {
   triggerOnAccess: (context, state, step, self) => {
     if (step === "damage_fixed" && self.who === "offense") {
       return {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const damage = self.skill.property.readNumber("damage_fixed")
           state.damageFixed += damage
@@ -29,7 +29,7 @@ const skill: SkillLogic = {
       state,
       self,
       {
-        probabilityKey: "probability_skill",
+        probability: "probability_skill",
         recipe: (_) => {
           // 確率の判定が成功したらそのままactive
           context.log.log(`ねものスキル状態がactiveで継続します`)

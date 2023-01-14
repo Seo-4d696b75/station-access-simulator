@@ -8,7 +8,7 @@ const skill: SkillLogic = {
       const isHome = getDefense(state).user.history.isHomeStation(context, state.station)
       if (isHome) {
         return {
-          probabilityKey: "probability",
+          probability: "probability",
           recipe: (state) => {
             const def = self.skill.property.readNumber("DEF")
             context.log.log(`わたしのスキル、よくアクセスする駅やその近くで活躍するんだって。DEF+${def}%`)

@@ -17,7 +17,7 @@ const skill: SkillLogic = {
       .map(d => d.carIndex)
     if (indices.length > 0) {
       return triggerSkillAfterAccess(context, state, self, {
-        probabilityKey: "probability",
+        probability: "probability",
         recipe: (state) => {
           const percentHeal = self.skill.property.readNumber("heal")
           context.log.log(`検測開始しま～す HP${formatPercent(percentHeal)}`)
