@@ -5261,6 +5261,66 @@
     ]
   },
   {
+    "numbering": "97",
+    "class": "D97_Amane",
+    "active": 900,
+    "probability": 100,
+    "cooldown": 10800,
+    "active_limit": 3600,
+    "active_shorten": 60,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "絶好調ナルシズム Lv.1",
+        "ATK": 14,
+        "active_extend": 120
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "絶好調ナルシズム Lv.2",
+        "ATK": 20,
+        "active_extend": 130
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "絶好調ナルシズム Lv.3",
+        "ATK": 26,
+        "active_extend": 140
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "絶好調ナルシズム Lv.4",
+        "ATK": 32,
+        "active_extend": 150
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "絶好調ナルシズム Lv.5",
+        "ATK": 38,
+        "active_extend": 160
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "絶好調ナルシズム Lv.6",
+        "ATK": 44,
+        "active_extend": 170
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "遍く天地の美と愛よ",
+        "ATK": 50,
+        "active_extend": 180
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
