@@ -5122,7 +5122,7 @@
         "denco_level": 70,
         "name": "きみにサプライズ Lv.6",
         "exp": 140,
-        "exp_cool":300
+        "exp_cool": 300
       },
       {
         "skill_level": 7,
@@ -5130,6 +5130,69 @@
         "name": "きみと、サプライズ",
         "exp": 150,
         "exp_cool": 350
+      }
+    ]
+  },
+  {
+    "numbering": "95",
+    "class": "D95_Hina",
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ヤバンなことはやめるのよ！ Lv.1",
+        "ATK": -6,
+        "active": 1800,
+        "cooldown": 10800
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ヤバンなことはやめるのよ！ Lv.2",
+        "ATK": -7.5,
+        "active": 2400,
+        "cooldown": 10200
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ヤバンなことはやめるのよ！ Lv.3",
+        "ATK": -9,
+        "active": 3000,
+        "cooldown": 9600
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ヤバンなことはやめるのよ！ Lv.4",
+        "ATK": -10.5,
+        "active": 3600,
+        "cooldown": 9000
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ヤバンなことはやめるのよ！ Lv.5",
+        "ATK": -12,
+        "active": 4200,
+        "cooldown": 8400
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ヤバンなことはやめるのよ！ Lv.6",
+        "ATK": -13.5,
+        "active": 4800,
+        "cooldown": 7800
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "リトルレディ・リトルプライド",
+        "ATK": -15,
+        "active": 5400,
+        "cooldown": 7200
       }
     ]
   },
