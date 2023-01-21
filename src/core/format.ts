@@ -1,5 +1,5 @@
 import { computeWidth } from "meaw"
-import { AccessDencoState, AccessSide, getAccessDenco } from "./access/index"
+import { AccessDencoState, AccessSide, getAccessDenco, hasSkillTriggered } from "./access/index"
 import { Context, SimulatorError } from "./context"
 import { formatDuration } from "./date"
 import { DencoAttribute } from "./denco"
@@ -214,9 +214,9 @@ function formatAccessDetail(result: ReadonlyState<AccessEventData>, which: Acces
   str += formatSpace(`${right.name}のマスター`, tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
-  str += "┃" + formatSpace(formatSkills(leftSide), tableLeft, "left")
+  str += "┃" + formatSpace(formatSkills(result, leftSide), tableLeft, "left")
   str += " skill"
-  str += formatSpace(formatSkills(rightSide), tableRight, "right") + "┃\n"
+  str += formatSpace(formatSkills(result, rightSide), tableRight, "right") + "┃\n"
 
   str += "┠" + "─".repeat(width - 2) + "┨\n"
   str += "┃" + formatSpace(formatDamage(left, colored), tableLeft, "left")
@@ -366,11 +366,11 @@ function formatAccessLinkTime(station: ReadonlyState<Station>, accessTime: numbe
   return "-"
 }
 
-function formatSkills(state?: ReadonlyState<AccessEventUser> | null): string {
-  if (!state) return ""
-  const skills = state.triggeredSkills
-  if (skills.length === 0) return "-"
-  return skills.map(s => s.name).join(",")
+function formatSkills(state: ReadonlyState<AccessEventData>, side?: ReadonlyState<AccessEventUser> | null): string {
+  if (!side) return ""
+  const triggers = side.formation.filter(d => hasSkillTriggered(state, d.which, d))
+  if (triggers.length === 0) return "-"
+  return triggers.map(d => d.firstName).join(",")
 }
 
 function formatHP(state: ReadonlyState<AccessEventUser> | undefined, colored: boolean) {
