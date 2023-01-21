@@ -73,6 +73,11 @@ export function triggerSkillOnSide(
       }
     }).filter((t): t is AccessSkillTriggerState => !!t)
 
+
+  // 同編成内の同一stepで発動するスキルは違いに干渉しない
+  // 最後にまとめて発動リスト追加
+  state.skillTriggers.push(...triggers)
+  
   // スキル発動による効果の反映
   triggers.forEach(t => {
     // 他スキルの発動で状態が変化する場合があるので毎度stateから参照
@@ -80,9 +85,6 @@ export function triggerSkillOnSide(
     state = triggerAccessSkillEffect(context, state, d, t)
   })
 
-  // 同編成内の同一stepで発動するスキルは違いに干渉しない
-  // 最後にまとめて発動リスト追加
-  state.skillTriggers.push(...triggers)
   return state
 }
 
