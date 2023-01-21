@@ -4,8 +4,9 @@ import { Denco } from "../denco";
 import { random } from "../random";
 import { canSkillInvalidated } from "../skill";
 import { SkillProperty, withSkill } from "../skill/property";
+import { AccessSkillEffect, AccessSkillTriggerState, SkillEffectState } from "../skill/trigger";
 import { ReadonlyState } from "../state";
-import { AccessDencoState, AccessSide, AccessSideState, AccessSkillStep, AccessState, AccessTriggeredSkill } from "./state";
+import { AccessDencoState, AccessSide, AccessSideState, AccessSkillStep, AccessState } from "./state";
 
 /**
  * アクセス時に発動したスキル効果の処理
@@ -75,11 +76,26 @@ export type AccessSkillTrigger = {
  * @param step `undefined`の場合は`denco`の一致でのみ検索する
  * @returns true if has been triggered
  */
-export function hasSkillTriggered(state: { readonly triggeredSkills: readonly AccessTriggeredSkill[] } | undefined, denco: Denco, step?: AccessSkillStep): boolean {
-  if (!state) return false
-  return state.triggeredSkills.findIndex(t => {
-    return t.numbering === denco.numbering && (!step || step === t.step)
-  }) >= 0
+export function hasSkillTriggered(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
+  return getSkillEffectState(state, which, denco).some(e => e.triggered)
+}
+
+export function hasSkillInvalidated(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
+  return getSkillEffectState(state, which, denco).some(e => e.invalidated)
+}
+
+export function getSkillEffectState(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): SkillEffectState<AccessSkillEffect>[]{
+  const predicate = (d: ReadonlyState<Denco>) => {
+    return typeof denco === "object"
+      ? d.numbering === denco.numbering
+      : denco.match(/^[a-z]+$/)
+      ? d.name === denco
+      : d.numbering === denco
+  }
+  return state.skillTriggers
+    .filter(t => t.denco.which === which && predicate(t.denco))
+    .map(t => t.effect)
+    .flat()
 }
 
 /**
@@ -257,14 +273,6 @@ function canTriggerOnFailure(context: Context, trigger: AccessSkillTrigger): Acc
 }
 
 function markTriggerSkill(state: AccessSideState, step: AccessSkillStep, denco: Denco) {
-  const list = state.triggeredSkills
-  const idx = list.findIndex(d => d.numbering === denco.numbering)
-  if (idx < 0) {
-    list.push({
-      ...denco,
-      step: step
-    })
-  }
 }
 
 /**
@@ -273,7 +281,4 @@ function markTriggerSkill(state: AccessSideState, step: AccessSkillStep, denco: 
  * @param d アクセス終了後の状態
  */
 export function checkProbabilityBoost(d: AccessSideState) {
-  if (!d.probabilityBoosted && d.probabilityBoostPercent !== 0) {
-    d.triggeredSkills = d.triggeredSkills.filter(s => s.step !== "probability_check")
-  }
 }
