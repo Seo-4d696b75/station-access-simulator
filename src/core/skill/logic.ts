@@ -8,6 +8,7 @@ import { UserState } from "../user"
 import { Skill, SkillState } from "./holder"
 import { SkillProperty } from "./property"
 import { SkillDeactivateStrategy, SkillTransitionType } from "./transition"
+import { SkillTriggerCallbacks } from "./trigger"
 
 /**
 * スキルの発動確率を百分率で表現
@@ -177,7 +178,7 @@ interface SkillCooldownCallback {
 }
 
 // スキル状態遷移のタイプに依存しない、共通のコールバック定義
-interface BaseSkillLogic<T extends SkillTransitionType> {
+interface BaseSkillLogic<T extends SkillTransitionType> extends SkillTriggerCallbacks {
 
   /**
    * スキル状態遷移のタイプを指定します
