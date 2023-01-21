@@ -44,6 +44,7 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
     pinkItemSet: false,
     pinkItemUsed: false,
     depth: state.depth + 1,
+    skillTriggers: [],
   }
 
   // カウンター実行
@@ -55,6 +56,8 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
   // カウンター攻撃によるでんこ状態の反映 AccessDencoState[]
   state.offense = turnSide(result.defense, "defense", state.offense.carIndex)
   state.defense = turnSide(result.offense, "offense", state.defense.carIndex)
+  // 発動スキルの継承
+  state.skillTriggers.push(...result.skillTriggers)
   return state
 }
 

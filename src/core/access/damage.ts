@@ -5,7 +5,7 @@ import { ReadonlyState } from "../state"
 import { triggerSkillAfterDamage } from "./afterDamage"
 import { updateDencoHP } from "./hp"
 import { calcDamageBonusScoreExp } from "./score"
-import { triggerSkillAt } from "./skill"
+import { triggerAccessSkillAt } from "./_skill"
 /**
  * アクセス中に各でんこに発生したダメージ
  * 
@@ -159,11 +159,11 @@ export function runAccessDamageCalculation(context: Context, state: AccessState)
 
   // ダメージ増減の設定
   context.log.log("スキルを評価：ATK&DEFの増減")
-  state = triggerSkillAt(context, state, "damage_common")
+  state = triggerAccessSkillAt(context, state, "onAccessDamagePercent")
 
   // 特殊なダメージの計算
   context.log.log("スキルを評価：特殊なダメージ計算")
-  state = triggerSkillAt(context, state, "damage_special")
+  state = triggerAccessSkillAt(context, state, "onAccessDamageSpecial")
 
   // 基本ダメージの計算
   if (!state.damageBase) {
@@ -175,7 +175,7 @@ export function runAccessDamageCalculation(context: Context, state: AccessState)
 
   // 固定ダメージの計算
   context.log.log("スキルを評価：固定ダメージ")
-  state = triggerSkillAt(context, state, "damage_fixed")
+  state = triggerAccessSkillAt(context, state, "onAccessDamageFixed")
   context.log.log(`固定ダメージの計算：${state.damageFixed}`)
 
   // 最終ダメージ計算 固定ダメージ等の影響でも負数にはならない

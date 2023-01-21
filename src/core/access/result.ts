@@ -142,17 +142,19 @@ function initUserResult(context: Context, state: ReadonlyState<UserState>, acces
     event: [],
     queue: before.queue,
     user: before.user,
-    formation: after.formation.map(d => ({
-      ...d,
-      exp: {
-        ...d.exp,
-        total: 0,
-        access: {
-          ...d.exp.access,
+    formation: after.formation.map(d => {
+      return {
+        ...d,
+        exp: {
+          ...d.exp,
           total: 0,
-        }
+          access: {
+            ...d.exp.access,
+            total: 0,
+          }
+        },
       }
-    })),
+    }),
     displayedScore: 0,
     displayedExp: 0,
     score: {

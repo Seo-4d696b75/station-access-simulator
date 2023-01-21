@@ -30,6 +30,7 @@ export function repeatAccess(context: Context, state: ReadonlyState<AccessState>
     pinkItemSet: false,
     pinkItemUsed: false,
     depth: state.depth + 1,
+    skillTriggers: state.skillTriggers.map(t => copy.AccessSkillTriggerState(t)),
   }
   const result = runAccessDamageCalculation(context, next)
   context.log.log(`アクセス処理を終了 #${state.depth + 1}`)

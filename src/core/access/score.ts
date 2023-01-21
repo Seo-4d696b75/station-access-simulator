@@ -124,13 +124,21 @@ export interface AccessScoreExpResult extends AccessScoreExpState {
   total: number
 }
 
+export function addScoreExpBoost(dst: ScoreExpBoostPercent, src: ReadonlyState<ScoreExpBoostPercent>) {
+  dst.access += src.access
+  dst.accessBonus += src.accessBonus
+  dst.damageBonus += src.damageBonus
+  dst.linkBonus += src.linkBonus
+  dst.link += src.link
+}
+
 /**
  * 獲得するスコア・経験値の増減量を%単位で指定します
  * 
  * ### 獲得するスコア・経験値の増加と追加の違い
  * 「経験値を与える」「スコアを追加する」など固定値で追加する場合は{@link ScoreExpState}に直接加算してください
  */
-export interface ScoreExpCalcState {
+export interface ScoreExpBoostPercent {
 
   /**
    * 「アクセスしたとき獲得するスコア・経験値」の増加量[%]
