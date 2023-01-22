@@ -203,6 +203,9 @@ export type AccessSide =
   "offense" |
   "defense"
 
+export function invertAccessSide(which: AccessSide): AccessSide {
+  return which === "offense" ? "defense" : "offense"
+}
 
 export interface AccessState {
   /**
