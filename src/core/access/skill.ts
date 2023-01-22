@@ -85,6 +85,10 @@ export function hasSkillInvalidated(state: ReadonlyState<{skillTriggers: AccessS
 }
 
 export function getSkillEffectState(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): SkillEffectState<AccessSkillEffect>[]{
+  return getSkillTriggerState(state, which, denco).map(t => t.effect).flat()
+}
+
+export function getSkillTriggerState(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): ReadonlyState<AccessSkillTriggerState>[]{
   const predicate = (d: ReadonlyState<Denco>) => {
     return typeof denco === "object"
       ? d.numbering === denco.numbering
@@ -94,8 +98,6 @@ export function getSkillEffectState(state: ReadonlyState<{skillTriggers: AccessS
   }
   return state.skillTriggers
     .filter(t => t.denco.which === which && predicate(t.denco))
-    .map(t => t.effect)
-    .flat()
 }
 
 /**
