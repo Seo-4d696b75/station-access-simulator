@@ -7,7 +7,7 @@ import { FilmHolder } from "../core/film"
 import { MutableProperty, ReadableProperty, TypedMap } from "../core/property"
 import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition, SkillTransitionType } from "../core/skill"
 import { SkillPropertyReader } from "../core/skill/property"
-import { AccessSkillEffect, AccessSkillTriggerState, SkillEffectState, WithAccessPosition } from "../core/skill/trigger"
+import { AccessSkillTriggerState, WithAccessPosition } from "../core/skill/trigger"
 import { ReadonlyState } from "../core/state"
 import { Line, LinkResult, LinksResult, Station, StationLink } from "../core/station"
 import { DailyStatistics, EventQueueEntry, StationStatistics, UserProperty, UserPropertyReader, UserState } from "../core/user"
@@ -229,7 +229,7 @@ const scoreExpResultSchema = objectSchema<ScoreExpResult>({
   total: primitiveSchema
 })
 
-const scoreExpCalcStateSchema = objectSchema<ScoreExpBoostPercent>({
+const scoreExpPercentSchema = objectSchema<ScoreExpBoostPercent>({
   access: primitiveSchema,
   accessBonus: primitiveSchema,
   damageBonus: primitiveSchema,
@@ -250,30 +250,36 @@ export const accessDencoStateSchema = objectSchema<AccessDencoState>({
   reboot: primitiveSchema,
   damage: damageStateSchema,
   exp: scoreExpStateSchema,
-  expPercent: scoreExpCalcStateSchema,
+  expPercent: scoreExpPercentSchema,
 })
 
-export const accessSkillTriggerStateSchema = objectSchema<AccessSkillTriggerState>({
-  denco: objectSchema<WithAccessPosition<Denco>>({
-    ...dencoSchema.fields,
-    which: primitiveSchema,
-    who: primitiveSchema,
-    carIndex: primitiveSchema
-  }),
+const withAccessPositionDencoSchema = objectSchema<WithAccessPosition<Denco>>({
+  ...dencoSchema.fields,
+  which: primitiveSchema,
+  who: primitiveSchema,
+  carIndex: primitiveSchema
+})
+
+const accessSkillTriggerStateSchema = objectSchema<AccessSkillTriggerState>({
+  denco: withAccessPositionDencoSchema,
+  type: primitiveSchema,
+  skillName: primitiveSchema,
   probability: primitiveSchema,
   boostedProbability: primitiveSchema,
   canTrigger: primitiveSchema,
   invalidated: primitiveSchema,
-  skillName: primitiveSchema,
-  effect: arraySchema(
-    customSchema<SkillEffectState<AccessSkillEffect>>(
-      (src) => Object.assign({}, src),
-      (dst, src) => {
-        assert(dst.type === src.type)
-        Object.assign(dst, src)
-      }
-    )
-  )
+  triggered: primitiveSchema,
+
+  // each skill trigger
+  enable: primitiveSchema,
+  percent: primitiveSchema,
+  recipe: functionSchema,
+  isTarget: functionSchema,
+  score: primitiveSchema,
+  exp: functionSchema,
+  scoreBoost: scoreExpPercentSchema,
+  expBoost: functionSchema,
+  damage: primitiveSchema,
 })
 
 export const accessSideStateSchema = objectSchema<AccessSideState>({
@@ -283,7 +289,7 @@ export const accessSideStateSchema = objectSchema<AccessSideState>({
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
   score: scoreExpStateSchema,
-  scorePercent: scoreExpCalcStateSchema,
+  scorePercent: scoreExpPercentSchema,
 })
 
 
@@ -303,7 +309,7 @@ export const accessStateSchema = objectSchema<AccessState>({
   pinkMode: primitiveSchema,
   pinkItemSet: primitiveSchema,
   pinkItemUsed: primitiveSchema,
-  skillTriggers: arraySchema(accessSkillTriggerStateSchema),
+  skillTriggers: arraySchema(accessSkillTriggerStateSchema as any),
 })
 
 // station link result
@@ -350,7 +356,7 @@ const accessEventUserSchema = objectSchema<AccessEventUser>({
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
   score: scoreExpResultSchema,
-  scorePercent: scoreExpCalcStateSchema,
+  scorePercent: scoreExpPercentSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
 })
@@ -372,7 +378,7 @@ export const accessEventDataSchema = objectSchema<AccessEventData>({
   pinkMode: primitiveSchema,
   pinkItemSet: primitiveSchema,
   pinkItemUsed: primitiveSchema,
-  skillTriggers: arraySchema(accessSkillTriggerStateSchema),
+  skillTriggers: arraySchema(accessSkillTriggerStateSchema as any),
 })
 
 const copyAccessEventData = createCopyFunc(accessEventDataSchema)
@@ -522,7 +528,7 @@ export const accessUserResultSchema = objectSchema<AccessUserResult>({
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
   score: scoreExpResultSchema,
-  scorePercent: scoreExpCalcStateSchema,
+  scorePercent: scoreExpPercentSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
   event: arraySchema(customSchema(copyEvent, mergeEvent)),
@@ -545,7 +551,7 @@ export const accessResultSchema = objectSchema<AccessResult>({
   pinkMode: primitiveSchema,
   pinkItemSet: primitiveSchema,
   pinkItemUsed: primitiveSchema,
-  skillTriggers: arraySchema(accessSkillTriggerStateSchema),
+  skillTriggers: arraySchema(accessSkillTriggerStateSchema as any),
 })
 
 // skill event
