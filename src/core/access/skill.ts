@@ -4,7 +4,7 @@ import { Denco } from "../denco";
 import { random } from "../random";
 import { canSkillInvalidated } from "../skill";
 import { SkillProperty, withSkill } from "../skill/property";
-import { AccessSkillEffect, AccessSkillTriggerState, SkillEffectState } from "../skill/trigger";
+import { AccessSkillTriggerState } from "../skill/trigger";
 import { ReadonlyState } from "../state";
 import { AccessDencoState, AccessSide, AccessSideState, AccessSkillStep, AccessState } from "./state";
 
@@ -76,25 +76,21 @@ export type AccessSkillTrigger = {
  * @param step `undefined`の場合は`denco`の一致でのみ検索する
  * @returns true if has been triggered
  */
-export function hasSkillTriggered(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
-  return getSkillEffectState(state, which, denco).some(e => e.triggered)
+export function hasSkillTriggered(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
+  return getSkillTrigger(state, which, denco).some(e => e.triggered)
 }
 
-export function hasSkillInvalidated(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
-  return getSkillEffectState(state, which, denco).some(e => e.invalidated)
+export function hasSkillInvalidated(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
+  return getSkillTrigger(state, which, denco).some(e => e.invalidated)
 }
 
-export function getSkillEffectState(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): SkillEffectState<AccessSkillEffect>[]{
-  return getSkillTriggerState(state, which, denco).map(t => t.effect).flat()
-}
-
-export function getSkillTriggerState(state: ReadonlyState<{skillTriggers: AccessSkillTriggerState[]}>, which: AccessSide, denco: ReadonlyState<Denco> | string): ReadonlyState<AccessSkillTriggerState>[]{
+export function getSkillTrigger(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): AccessSkillTriggerState[] {
   const predicate = (d: ReadonlyState<Denco>) => {
     return typeof denco === "object"
       ? d.numbering === denco.numbering
       : denco.match(/^[a-z]+$/)
-      ? d.name === denco
-      : d.numbering === denco
+        ? d.name === denco
+        : d.numbering === denco
   }
   return state.skillTriggers
     .filter(t => t.denco.which === which && predicate(t.denco))
