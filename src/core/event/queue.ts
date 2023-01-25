@@ -1,6 +1,6 @@
 import dayjs from "dayjs"
-import { EventSkillTrigger, triggerSkillAtEvent } from "."
-import { copy, merge } from "../../"
+import { triggerSkillAtEvent } from "."
+import { copy, EventSkillTrigger, merge } from "../../"
 import { Context } from "../context"
 import { TIME_FORMAT } from "../date"
 import { Denco } from "../denco"
