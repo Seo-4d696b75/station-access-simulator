@@ -9,6 +9,34 @@ import { AccessDencoState, AccessSide, AccessState } from "./state";
 
 
 /**
+ * 指定したでんこのスキルが発動済みか確認する
+ * 
+ * @param state 
+ * @param denco 
+ * @param step `undefined`の場合は`denco`の一致でのみ検索する
+ * @returns true if has been triggered
+ */
+export function hasSkillTriggered(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
+  return getSkillTrigger(state, which, denco).some(e => e.triggered)
+}
+
+export function hasSkillInvalidated(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
+  return getSkillTrigger(state, which, denco).some(e => e.invalidated)
+}
+
+export function getSkillTrigger(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): AccessSkillTriggerState[] {
+  const predicate = (d: ReadonlyState<Denco>) => {
+    return typeof denco === "object"
+      ? d.numbering === denco.numbering
+      : denco.match(/^[a-z]+$/)
+        ? d.name === denco
+        : d.numbering === denco
+  }
+  return state.skillTriggers
+    .filter(t => t.denco.which === which && predicate(t.denco))
+}
+
+/**
  * 各段階でスキルを評価する
  * @param context 
  * @param current 現在の状態

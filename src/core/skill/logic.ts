@@ -1,14 +1,14 @@
-import { AccessDencoResult, AccessDencoState, AccessResult, AccessSkillStep, AccessSkillTriggers, AccessState, AccessUserResult } from "../access"
+import { AccessDencoResult, AccessDencoState, AccessResult, AccessSkillStep, AccessState } from "../access"
 import { Context } from "../context"
 import { DencoState } from "../denco"
-import { EventSkillTrigger, SkillEventDencoState, SkillEventState } from "../event"
+import { SkillEventDencoState, SkillEventState } from "../event"
 import { ReadonlyState } from "../state"
 import { LinksResult, StationLinkStart } from "../station"
 import { UserState } from "../user"
 import { Skill, SkillState } from "./holder"
 import { SkillProperty } from "./property"
 import { SkillDeactivateStrategy, SkillTransitionType } from "./transition"
-import { SkillTriggerCallbacks } from "./trigger"
+import { EventSkillTrigger, SkillTriggerCallbacks } from "./trigger"
 
 /**
 * スキルの発動確率を百分率で表現
@@ -177,6 +177,16 @@ interface SkillCooldownCallback {
   onCooldown?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => void | UserState
 }
 
+// TODO remove
+
+type AccessSkillRecipe = (state: AccessState) => void | AccessState;
+export type AccessSkillTriggers = AccessSkillTrigger | AccessSkillTrigger[]
+type AccessSkillTrigger = {
+  probability: number | string
+  recipe: AccessSkillRecipe
+  fallbackRecipe?: AccessSkillRecipe
+}
+
 // スキル状態遷移のタイプに依存しない、共通のコールバック定義
 interface BaseSkillLogic<T extends SkillTransitionType> extends SkillTriggerCallbacks {
 
@@ -189,6 +199,7 @@ interface BaseSkillLogic<T extends SkillTransitionType> extends SkillTriggerCall
    */
   transitionType: T
 
+  // TODO remove it
   /**
    * アクセス時の各段階においてスキル発動の判定とスキル発動処理を定義します
    * 
@@ -209,7 +220,7 @@ interface BaseSkillLogic<T extends SkillTransitionType> extends SkillTriggerCall
    * スキル発動有無を判定し、発動する場合は`recipe`で状態を更新します 
    * 
    */
-  triggerOnAccess?: (context: Context, state: ReadonlyState<AccessState>, step: AccessSkillStep, self: ReadonlyState<WithSkill<AccessDencoState>>) => void | AccessSkillTriggers
+  triggerOnAccess?: (context: Context, state: ReadonlyState<AccessState>, step: AccessSkillStep, self: ReadonlyState<WithSkill<AccessDencoState>>) => void | AccessSkillTriggers;
 
 
   /**
@@ -261,7 +272,7 @@ interface BaseSkillLogic<T extends SkillTransitionType> extends SkillTriggerCall
    * @param access **Readonly** 直前のアクセスの状態 
    * @returns 状態を更新する場合は新しい状態を返します
    */
-  onAccessComplete?: (context: Context, state: ReadonlyState<AccessUserResult>, self: ReadonlyState<WithSkill<AccessDencoResult>>, access: ReadonlyState<AccessResult>) => void | AccessUserResult
+  onAccessComplete?: (context: Context, access: ReadonlyState<AccessResult>, self: ReadonlyState<WithSkill<AccessDencoResult>>) => void | AccessResult
 
   /**
    * スキルを保持するでんこがリブートした直後に呼ばれます

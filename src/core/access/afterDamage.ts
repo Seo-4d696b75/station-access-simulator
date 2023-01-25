@@ -1,8 +1,7 @@
 import { AccessSide, AccessState, getFormation, getSide } from "."
 import { Context } from "../context"
 import { updateDencoHP } from "./hp"
-import { hasSkillTriggered } from "./skill"
-import { triggerSkillOnSide } from "./_skill"
+import { hasSkillTriggered, triggerSkillOnSide } from "./_skill"
 
 
 interface AfterDamageSkillEntry {

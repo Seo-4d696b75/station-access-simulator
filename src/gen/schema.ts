@@ -2,12 +2,12 @@ import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, Acc
 import { AccessScoreExpResult, AccessScoreExpState, ScoreExpBoostPercent, ScoreExpResult } from "../core/access/score"
 import { assert, SimulatorError } from "../core/context"
 import { Denco, DencoState } from "../core/denco"
-import { AccessEventData, AccessEventUser, Event, EventSkillTrigger, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
+import { AccessEventData, AccessEventUser, Event, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
 import { FilmHolder } from "../core/film"
 import { MutableProperty, ReadableProperty, TypedMap } from "../core/property"
 import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition, SkillTransitionType } from "../core/skill"
 import { SkillPropertyReader } from "../core/skill/property"
-import { AccessSkillTriggerState, WithAccessPosition } from "../core/skill/trigger"
+import { AccessSkillTriggerState, EventSkillTrigger, EventSkillTriggerState, WithAccessPosition, WithSkillEventPosition } from "../core/skill/trigger"
 import { ReadonlyState } from "../core/state"
 import { Line, LinkResult, LinksResult, Station, StationLink } from "../core/station"
 import { DailyStatistics, EventQueueEntry, StationStatistics, UserProperty, UserPropertyReader, UserState } from "../core/user"
@@ -386,10 +386,14 @@ const mergeAccessEventData = createMergeFunc(accessEventDataSchema)
 
 const eventTriggeredSkillSchema = objectSchema<EventTriggeredSkill>({
   time: primitiveSchema,
-  carIndex: primitiveSchema,
-  denco: dencoStateSchema,
+  denco: objectSchema<WithSkillEventPosition<DencoState>>({
+    ...dencoStateSchema.fields,
+    who: primitiveSchema,
+    carIndex: primitiveSchema
+  }),
   skillName: primitiveSchema,
-  step: primitiveSchema,
+  probability: primitiveSchema,
+  boostedProbability: primitiveSchema,
 })
 
 const copyEventTriggerSkill = createCopyFunc(eventTriggeredSkillSchema)
@@ -456,9 +460,9 @@ export const eventSchema = customSchema(copyEvent, mergeEvent)
 // event queue
 
 const eventSkillTriggerSchema = objectSchema<EventSkillTrigger>({
+  type: primitiveSchema,
   probability: primitiveSchema,
   recipe: functionSchema,
-  fallbackRecipe: functionSchema,
 })
 
 const skillEventReservationSchema = objectSchema<SkillEventReservation>({
@@ -556,18 +560,35 @@ export const accessResultSchema = objectSchema<AccessResult>({
 
 // skill event
 
+const eventSkillTriggerStateSchema = objectSchema<EventSkillTriggerState>({
+  denco: objectSchema<WithSkillEventPosition<Denco>>({
+    ...dencoSchema.fields,
+    who: primitiveSchema,
+    carIndex: primitiveSchema
+  }),
+  type: primitiveSchema,
+  skillName: primitiveSchema,
+  probability: primitiveSchema,
+  boostedProbability: primitiveSchema,
+  canTrigger: primitiveSchema,
+  invalidated: primitiveSchema,
+  triggered: primitiveSchema,
+
+  // each skill trigger
+  percent: primitiveSchema,
+  recipe: functionSchema,
+})
+
 export const skillEventDencoStateSchema = objectSchema<SkillEventDencoState>({
   ...dencoStateSchema.fields,
   who: primitiveSchema,
   carIndex: primitiveSchema,
-  skillInvalidated: primitiveSchema,
 })
 
 export const skillEventStateSchema = objectSchema<SkillEventState>({
   ...userStateSchema.fields,
   time: primitiveSchema,
   formation: arraySchema(skillEventDencoStateSchema),
-  probabilityBoostPercent: primitiveSchema,
-  probabilityBoosted: primitiveSchema,
   carIndex: primitiveSchema,
+  skillTriggers: arraySchema(eventSkillTriggerStateSchema as any),
 })
