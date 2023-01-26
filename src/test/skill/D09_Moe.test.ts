@@ -1,9 +1,11 @@
+import assert from "assert"
 import dayjs from "dayjs"
 import { init } from "../.."
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
 import { initUser, refreshState } from "../../core/user"
+import "../../gen/matcher"
 
 describe("もえのスキル", () => {
   beforeAll(init)
@@ -53,11 +55,15 @@ describe("もえのスキル", () => {
     expect(state.event.length).toBe(1)
     let event = state.event[0]
     expect(event.type).toBe("skill_trigger")
-    if (event.type === "skill_trigger") {
-      expect(event.data.time).toBe(dayjs("2020-01-01T14:00:00.000").valueOf())
-      expect(event.data.step).toBe("self")
-      expect(event.data.denco.name).toBe("moe")
-    }
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(dayjs("2020-01-01T14:00:00.000").valueOf())
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("定時メンテナンス Lv.4")
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDencoState(moe)
+
     charlotte = state.formation[1]
     expect(charlotte.currentHp).toBe(charlotte.maxHp)
     moe = state.formation[0]
@@ -67,6 +73,7 @@ describe("もえのスキル", () => {
     expect(state.queue[0].type).toBe("hour_cycle")
     expect(state.queue[0].time).toBe(dayjs("2020-01-01T15:00:00.000").valueOf())
   })
+
   test("スキル発動-2", () => {
     const context = initContext("test", "test", false)
     const now = dayjs("2020-01-01T12:50:00.000").valueOf()
@@ -108,14 +115,79 @@ describe("もえのスキル", () => {
     // スキル発動のイベント
     let event = state.event[0]
     expect(event.type).toBe("skill_trigger")
-    if (event.type === "skill_trigger") {
-      expect(event.data.time).toBe(dayjs("2020-01-01T13:00:00.000").valueOf())
-      expect(event.data.step).toBe("self")
-      expect(event.data.denco.name).toBe("moe")
-    }
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(dayjs("2020-01-01T13:00:00.000").valueOf())
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("ご主人様も一緒にいかが!?")
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDencoState(state.formation[0])
+
     // check current hp
     expect(moe.currentHp).toBe(moe.maxHp)
     expect(charlotte.currentHp).toBe(Math.floor(charlotte.maxHp * 0.6) + Math.floor(charlotte.maxHp * 0.4))
     expect(sheena.currentHp).toBe(Math.floor(sheena.maxHp * 0.2) + Math.floor(sheena.maxHp * 0.4))
   })
+
+  test("スキル発動-確率補正", () => {
+    const context = initContext("test", "test", false)
+    const now = dayjs("2020-01-01T12:50:00.000").valueOf()
+    context.clock = now
+    context.random.mode = "ignore"
+
+    let moe = DencoManager.getDenco(context, "9", 50)
+    moe.film = {
+      type: "film",
+      theme: "test",
+      skill: {
+        probability: -10
+      }
+    }
+    let charlotte = DencoManager.getDenco(context, "6", 80)
+    charlotte.currentHp = Math.floor(charlotte.maxHp * 0.9)
+    let hiiru = DencoManager.getDenco(context, "34", 50)
+    let state = initUser(context, "とあるマスター", [moe, charlotte, hiiru])
+    
+    // 13:00
+    context.clock = now + 600 * 1000
+    state = refreshState(context, state)
+    // 発動なし
+    expect(state.event.length).toBe(0)
+    // 確率補正
+    context.clock = now + 60 * 60 * 1000
+    state = activateSkill(context, state, 2)
+    moe = state.formation[0]
+    
+    // 14:00
+    context.clock = now + 70 * 60 * 1000
+    state = refreshState(context, state)
+    expect(state.event.length).toBe(2)
+
+    let event = state.event[0]
+    expect(event.type).toBe("skill_trigger")
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("テンションAGEAGE↑↑ Lv.4")
+    expect(event.data.denco.carIndex).toBe(2)
+    expect(event.data.denco.who).toBe("other")
+    expect(event.data.denco).toMatchDencoState(state.formation[2])
+
+    event = state.event[1]
+    expect(event.type).toBe("skill_trigger")
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.probability).toBe(90)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("定時メンテナンス Lv.4")
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDencoState(moe)
+
+    charlotte = state.formation[1]
+    expect(charlotte.currentHp).toBe(charlotte.maxHp)
+  })
+
 })
