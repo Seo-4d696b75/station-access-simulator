@@ -3,23 +3,15 @@ import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" &&
-      self.who === "defense") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "defense") {
+      const hour = dayjs.tz(context.currentTime).hour()
       return {
-        probability: "probability",
-        recipe: (state) => {
-          const hour = dayjs.tz(context.currentTime).hour()
-          if (hour < 6 || hour >= 18) {
-            const def = self.skill.property.readNumber("DEF_night")
-            state.defendPercent += def
-            context.log.log(`夜はこれからなんよ～ DEF+${def}%`)
-          } else {
-            const def = self.skill.property.readNumber("DEF_morning")
-            state.defendPercent += def
-            context.log.log(`まだ眠いんよ～ DEF${def}%`)
-          }
-        }
+        probability: self.skill.property.readNumber("probability", 100),
+        type: "damage_def",
+        percent: (hour < 6 || hour >= 18)
+          ? self.skill.property.readNumber("DEF_night")
+          : self.skill.property.readNumber("DEF_morning")
       }
     }
   }
