@@ -219,12 +219,12 @@ function checkEventSkillTrigger(
   assert(skill.type === "possess")
 
   const state: EventSkillTriggerState = {
+    ...trigger,
     denco: {
       ...copy.Denco(denco),
       carIndex: denco.carIndex,
       who: denco.who,
     },
-    ...trigger,
     boostedProbability: 0,
     canTrigger: false,
     invalidated: false,

@@ -11,9 +11,8 @@ import { UserState } from "../user"
 /**
  * 指定した時刻にトリガーされるスキル発動型イベント
  */
-export interface SkillEventReservation {
+export interface SkillEventReservation extends EventSkillTrigger {
   denco: Denco
-  trigger: EventSkillTrigger
 }
 
 /**
@@ -37,7 +36,7 @@ export function enqueueSkillEvent(context: Context, state: ReadonlyState<UserSta
     time: time,
     data: {
       denco: denco,
-      trigger: trigger
+      ...trigger,
     }
   })
   next.queue.sort((a, b) => a.time - b.time)
@@ -62,7 +61,7 @@ export function refreshEventQueue(context: Context, state: UserState) {
     context.log.log(`待機列中のスキル評価イベントが指定時刻になりました time: ${dayjs.tz(entry.time).format(TIME_FORMAT)} type: ${entry.type}`)
     switch (entry.type) {
       case "skill": {
-        const next = triggerSkillAtEvent(context, state, entry.data.denco, entry.data.trigger)
+        const next = triggerSkillAtEvent(context, state, entry.data.denco, entry.data)
         merge.UserState(state, next)
         break
       }

@@ -467,7 +467,7 @@ const eventSkillTriggerSchema = objectSchema<EventSkillTrigger>({
 
 const skillEventReservationSchema = objectSchema<SkillEventReservation>({
   denco: dencoSchema,
-  trigger: eventSkillTriggerSchema,
+  ...eventSkillTriggerSchema.fields,
 })
 
 const copySkillEventReservation = createCopyFunc(skillEventReservationSchema)
