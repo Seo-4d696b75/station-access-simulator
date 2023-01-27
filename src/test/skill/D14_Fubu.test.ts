@@ -1,5 +1,5 @@
 import assert from "assert"
-import { activateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, getSkill, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import { testManualSkill } from "../tool/skillState"
 
@@ -33,7 +33,7 @@ describe("ふぶのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-攻撃側", () => {
@@ -59,7 +59,7 @@ describe("ふぶのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, fubu)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動あり-守備側", () => {
@@ -85,7 +85,7 @@ describe("ふぶのスキル", () => {
     const result = startAccess(context, config)
     // 基本的なダメージの確認
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(true)
     expect(result.defendPercent).toBe(19)
     expect(result.damageBase?.variable).toBe(162)
     expect(result.damageRatio).toBe(1.0)
@@ -128,7 +128,7 @@ describe("ふぶのスキル", () => {
     const result = startAccess(context, config)
     // 基本的なダメージの確認
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(true)
     expect(result.defendPercent).toBe(19)
     expect(result.damageBase?.variable).toBe(210)
     expect(result.damageRatio).toBe(1.3)
@@ -174,8 +174,14 @@ describe("ふぶのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    const trigger = getSkillTrigger(result, "defense", fubu)[0]
+    expect(trigger.probability).toBe(100)
+    expect(trigger.boostedProbability).toBe(100)
+    expect(trigger.skillName).toBe("根性入れてやるかー Lv.4")
+    expect(trigger.type).toBe("damage_def")
+    expect(trigger.triggered).toBe(true)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
     expect(result.defendPercent).toBe(19)
   })
 })
