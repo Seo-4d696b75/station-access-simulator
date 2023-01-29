@@ -1,4 +1,4 @@
-import { AccessDencoState, AccessSide, AccessState, AccessWho } from "../access"
+import { AccessDencoState, AccessSide, AccessState, AccessWho, DamageCalcState } from "../access"
 import { ScoreExpBoostPercent } from "../access/score"
 import { Context } from "../context"
 import { Denco, DencoState } from "../denco"
@@ -100,6 +100,7 @@ export type AccessSkillTriggerType =
   "exp_boost" |
   "damage_atk" |
   "damage_def" |
+  "damage_special" |
   "damage_fixed" |
   "skill_recipe"
 
@@ -111,7 +112,7 @@ export interface SkillTriggerCallbacks {
   onAccessBeforeStart?: AccessSkillTriggerCallback<AccessSkillInvalidate | AccessDamageInvalidate>
   onAccessStart?: AccessSkillTriggerCallback<AccessScoreDelivery | AccessExpDelivery | AccessScoreBoost | AccessExpBoost>
   onAccessDamagePercent?: AccessSkillTriggerCallback<AccessDamageATK | AccessDamageDEF>
-  onAccessDamageSpecial?: AccessSkillTriggerCallback<never>
+  onAccessDamageSpecial?: AccessSkillTriggerCallback<AccessDamageSpecial>
   onAccessDamageFixed?: AccessSkillTriggerCallback<AccessDamageFixed>
   onAccessAfterDamage?: AccessSkillTriggerCallback<never>
 }
@@ -127,6 +128,7 @@ export type AccessSkillTrigger =
   AccessExpBoost |
   AccessDamageATK |
   AccessDamageDEF |
+  AccessDamageSpecial |
   AccessDamageFixed |
   AccessSkillRecipe
 
@@ -169,6 +171,10 @@ export interface AccessDamageATK extends AccessSkillTriggerBase<"damage_atk"> {
 
 export interface AccessDamageDEF extends AccessSkillTriggerBase<"damage_def"> {
   percent: number
+}
+
+export interface AccessDamageSpecial extends AccessSkillTriggerBase<"damage_special"> {
+  damageCalc: DamageCalcState
 }
 
 export interface AccessDamageFixed extends AccessSkillTriggerBase<"damage_fixed"> {

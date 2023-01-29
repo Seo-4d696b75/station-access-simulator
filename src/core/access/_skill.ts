@@ -275,6 +275,10 @@ function triggerAccessSkillEffect(
       context.log.log(`DEF${formatPercent(trigger.percent)}`)
       state.defendPercent += trigger.percent
       break
+    case "damage_special":
+      context.log.log(`damage calc: ${JSON.stringify(trigger.damageCalc)}`)
+      state.damageBase = trigger.damageCalc
+      break
     case "damage_fixed":
       state.damageFixed += trigger.damage
       break

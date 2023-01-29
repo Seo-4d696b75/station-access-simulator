@@ -280,6 +280,7 @@ const accessSkillTriggerStateSchema = objectSchema<AccessSkillTriggerState>({
   scoreBoost: scoreExpPercentSchema,
   expBoost: functionSchema,
   damage: primitiveSchema,
+  damageCalc: damageCalcStateSchema,
 })
 
 export const accessSideStateSchema = objectSchema<AccessSideState>({
