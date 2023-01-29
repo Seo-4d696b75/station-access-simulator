@@ -87,31 +87,36 @@ export function triggerSkillOnSide(
   const side = (which === "offense") ? state.offense : state.defense
   if (!side) return state
 
+  const afterTrigger: AccessSkillTriggerState[] = []
+
   // 発動判定は各編成内で一括で行う
   // 同編成内の同一stepで発動するスキルは違いに干渉しない
-  const triggers = (
+  const indices = (
     carIndices ?? side.formation.map(d => d.carIndex)
-  ).map(i => side.formation[i])
-    .map(denco => {
+  )
+  indices
+    .map(i => side.formation[i])
+    .forEach(denco => {
       const trigger = invokeSkillTriggerCallback(context, state, denco, callbackKey)
-      if (trigger) {
-        return checkAccessSkillTrigger(context, denco, state.skillTriggers, trigger)
+      if (!trigger) return
+
+      // スキル発動の有無（確率・無効化）を判定
+      const t = checkAccessSkillTrigger(context, denco, state.skillTriggers, trigger)
+
+      // スキル発動による効果の反映
+      if (t.triggered) {
+        state.skillTriggers.push(t)
+        // 他スキルの発動で状態が変化する場合があるので毎度stateから参照
+        const d = getSide(state, which).formation[t.denco.carIndex]
+        state = triggerAccessSkillEffect(context, state, d, t)
       } else {
-        return null
+        // 無効化スキルなど発動対象未定の場合
+        // 同編成内で互いに干渉にしない
+        afterTrigger.push(t)
       }
-    }).filter((t): t is AccessSkillTriggerState => !!t)
+    })
 
-
-  // 同編成内の同一stepで発動するスキルは違いに干渉しない
-  // 最後にまとめて発動リスト追加
-  state.skillTriggers.push(...triggers)
-
-  // スキル発動による効果の反映
-  triggers.forEach(t => {
-    // 他スキルの発動で状態が変化する場合があるので毎度stateから参照
-    const d = getSide(state, which).formation[t.denco.carIndex]
-    state = triggerAccessSkillEffect(context, state, d, t)
-  })
+  state.skillTriggers.push(...afterTrigger)
 
   return state
 }
