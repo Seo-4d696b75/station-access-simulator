@@ -269,6 +269,7 @@ const accessSkillTriggerStateSchema = objectSchema<AccessSkillTriggerState>({
   canTrigger: primitiveSchema,
   invalidated: primitiveSchema,
   triggered: primitiveSchema,
+  sideEffect: functionSchema,
 
   // each skill trigger
   enable: primitiveSchema,

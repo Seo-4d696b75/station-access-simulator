@@ -132,7 +132,9 @@ export type AccessSkillTrigger =
   AccessDamageFixed |
   AccessSkillRecipe
 
-export type AccessSkillTriggerBase<T extends AccessSkillTriggerType> = SkillTrigger<T>
+export type AccessSkillTriggerBase<T extends AccessSkillTriggerType> = SkillTrigger<T> & {
+  sideEffect?: (state: AccessState) => void | AccessState
+}
 
 export interface AccessPinkCheck extends AccessSkillTriggerBase<"pink_check"> {
   enable: boolean

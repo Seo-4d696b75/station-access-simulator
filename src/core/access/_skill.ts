@@ -289,6 +289,11 @@ function triggerAccessSkillEffect(
       assert(false, "expected unreachable")
   }
 
+  // 付随的なスキル効果の反映
+  if (trigger.sideEffect) {
+    state = trigger.sideEffect(state) ?? state
+  }
+
   return state
 }
 
