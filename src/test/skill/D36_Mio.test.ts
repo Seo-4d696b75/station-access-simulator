@@ -1,9 +1,11 @@
+import assert from "assert"
 import { getDefense, init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { getFixedDamageDenco } from "../tool/fake"
 import { testManualSkill } from "../tool/skillState"
 
@@ -16,7 +18,7 @@ describe("ミオのスキル", () => {
     active: 1800,
     cooldown: 10800,
   })
-  
+
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"
@@ -42,7 +44,12 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
+    const t = getSkillTrigger(result, "defense", mio)[0]
+    expect(t.skillName).toBe("スタンドイン Lv.4")
+    expect(t.probability).toBe(40)
+    expect(t.boostedProbability).toBe(40)
+
     expect(result.damageBase?.variable).toBe(253)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -72,7 +79,7 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, mio)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mio)).toBe(false)
     expect(result.damageBase?.variable).toBe(253)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -102,7 +109,7 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
     expect(result.damageBase?.variable).toBe(195)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -132,7 +139,18 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
+    const t = getSkillTrigger(result, "defense", mio)[0]
+    expect(t.skillName).toBe("鉄の意思")
+    expect(t.probability).toBe(55)
+    expect(t.boostedProbability).toBe(55)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("defense")
+    expect(t.denco.who).toBe("other")
+    expect(t.denco).toMatchDenco(mio)
+
     expect(result.damageBase?.variable).toBe(1)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -145,10 +163,9 @@ describe("ミオのスキル", () => {
     expect(accessMio.hpAfter).toBe(99)
 
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      mio = result.defense.formation[1]
-      expect(mio.currentHp).toBe(99)
-    }
+    assert(result.defense)
+    mio = result.defense.formation[1]
+    expect(mio.currentHp).toBe(99)
   })
   test("発動あり-damage>HP", () => {
     const context = initContext("test", "test", false)
@@ -175,7 +192,7 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
     expect(result.damageBase?.variable).toBe(16)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -188,10 +205,10 @@ describe("ミオのスキル", () => {
     expect(accessMio.hpAfter).toBe(1)
 
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      mio = result.defense.formation[1]
-      expect(mio.currentHp).toBe(1)
-    }
+    assert(result.defense)
+    mio = result.defense.formation[1]
+    expect(mio.currentHp).toBe(1)
+
   })
   test("発動あり-ATK", () => {
     const context = initContext("test", "test", false)
@@ -219,8 +236,8 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(25)
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
     expect(result.damageBase?.variable).toBe(1)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -233,7 +250,7 @@ describe("ミオのスキル", () => {
     expect(accessMio.hpBefore).toBe(294)
     expect(accessMio.hpAfter).toBe(44)
   })
-  test("発動あり-ATK", () => {
+  test("発動あり-DEF", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let reika = DencoManager.getDenco(context, "5", 80)
@@ -259,8 +276,8 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(19)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
     expect(result.damageBase?.variable).toBe(63)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -300,9 +317,9 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(19)
     expect(result.attackPercent).toBe(45)
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
-    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
     expect(result.damageBase?.variable).toBe(157)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -340,8 +357,8 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
-    expect(hasSkillTriggered(result.defense, d)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", d)).toBe(true)
     expect(result.damageBase?.variable).toBe(1)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(-20)
@@ -379,8 +396,8 @@ describe("ミオのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(false)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(true)
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(192)
     expect(result.damageFixed).toBe(0)
@@ -416,8 +433,8 @@ describe("ミオのスキル", () => {
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
     // 編成位置よりいちほスキルが先に発動してダメージ量を決定する ミオが肩代わりするダメージ量は0
-    expect(hasSkillTriggered(result.defense, mio)).toBe(false)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(199)
     expect(result.damageFixed).toBe(0)
@@ -454,10 +471,10 @@ describe("ミオのスキル", () => {
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(45)
     // 編成位置よりミオのスキルが先に発動してダメージ量を肩代わり
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
     // しかし貫通したダメージ量が大きいと、いちほスキルが発動できる
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(199)
     expect(result.damageFixed).toBe(0)

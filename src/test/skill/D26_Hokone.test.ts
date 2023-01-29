@@ -1,8 +1,9 @@
 import { DencoManager, init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { getFixedDamageDenco } from "../tool/fake"
 import { testManualSkill } from "../tool/skillState"
 
@@ -31,7 +32,7 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-非アクティブ", () => {
@@ -53,7 +54,7 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動あり", () => {
@@ -76,7 +77,17 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    const t = getSkillTrigger(result, "offense", hokone)[0]
+    expect(t.skillName).toBe("妹愛バースト Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(hokone)
+
     expect(result.attackPercent).toBe(42)
     expect(hokone.ap).toBe(210)
     expect(result.damageBase?.variable).toBe(298)
@@ -104,7 +115,7 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-被アクセス", () => {
@@ -126,7 +137,7 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, hokone)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hokone)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動あり-ATK増加", () => {
@@ -150,8 +161,8 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
     expect(result.attackPercent).toBe(42 + 25)
     expect(hokone.ap).toBe(210)
     expect(result.damageBase?.variable).toBe(Math.floor(210 * 1.67))
@@ -179,7 +190,7 @@ describe("ほこねのスキル", () => {
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
     expect(result.attackPercent).toBe(0)
     expect(hokone.ap).toBe(210)
     // 回復の確認
@@ -225,8 +236,8 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
     expect(result.attackPercent).toBe(25)
     // 回復の確認
     expect(hokone.ap).toBe(210)
@@ -273,8 +284,8 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
-    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(true)
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(19)
     // 回復の確認
@@ -324,8 +335,8 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(0)
     // 回復の確認
@@ -357,8 +368,8 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test)).toBe(true)
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(0)
     // 回復の確認
@@ -396,8 +407,8 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test)).toBe(true)
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(0)
     // 回復の確認
@@ -439,9 +450,9 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test1)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test2)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test1)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test2)).toBe(true)
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(0)
     // 回復の確認
@@ -478,8 +489,8 @@ describe("ほこねのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hokone)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test2)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hokone)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test2)).toBe(true)
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(0)
     // 回復の確認
