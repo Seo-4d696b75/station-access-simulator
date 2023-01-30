@@ -9,6 +9,18 @@ import { WithSkill } from "./logic"
 // スキルの発動確率・発動効果を関数から返す時の型
 export interface SkillTrigger<T extends string> {
   type: T
+
+  /**
+   * スキルの発動確率[%]
+   * 
+   * 発動確率はフィルム補正の影響を受ける場合があるため、
+   * 確率値を直接指定するよりスキルプロパティから読み出す実装をおすすめします
+   * 
+   * ```js
+   * probability: self.skill.property.readNumber("key", 100),
+   * ```
+   * 
+   */
   probability: number
 }
 
@@ -18,6 +30,9 @@ export type SkillTriggerState<D extends Denco, T extends SkillTrigger<string>> =
 
   /**
    * 確率補正を考慮した発動確率[%]
+   * 
+   * 確率計算を行う場合に `probability * (1 + ${確率補正%}/100)`の値でセットされます 
+   * スキルが無効化`invalidated === true`された場合、確率計算はスキップされ初期値の`0`のままです
    */
   boostedProbability: number
 
