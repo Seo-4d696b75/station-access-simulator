@@ -181,6 +181,7 @@ function execute(
 
   // スキル発動イベントを記録
   state.skillTriggers.forEach(t => {
+    if (!t.triggered) return
     let e: SkillTriggerEvent = {
       type: "skill_trigger",
       data: {
