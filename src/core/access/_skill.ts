@@ -287,7 +287,7 @@ function triggerAccessSkillEffect(
     case "damage_fixed":
       state.damageFixed += trigger.damage
       break
-    case "skill_recipe":
+    case "after_recipe":
       state = trigger.recipe(state) ?? state
       break
     default:

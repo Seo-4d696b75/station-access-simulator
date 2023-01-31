@@ -12,7 +12,7 @@ const skill: SkillLogic = {
     ) {
       return {
         probability: self.skill.property.readNumber("probability", 100),
-        type: "skill_recipe",
+        type: "after_recipe",
         recipe: (state) => counterAttack(context, state, self)
       }
     }
