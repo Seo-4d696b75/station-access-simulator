@@ -1,4 +1,4 @@
-import { activateSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import { testAlwaysSkill } from "../tool/skillState"
 
@@ -31,7 +31,7 @@ describe("いおりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, iori)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", iori)).toBe(true)
     expect(result.defendPercent).toBe(8)
   })
   test("発動あり-守備側(被アクセス)-路線名", () => {
@@ -61,10 +61,10 @@ describe("いおりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, iori)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", iori)).toBe(true)
     expect(result.defendPercent).toBe(8)
   })
-  test("発動あり-守備側(被アクセス)-2駅", () => {
+  test("発動あり-守備側(被アクセス)-2駅（対象・非対象の混在）", () => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)
     let iori = DencoManager.getDenco(context, "35", 50, 3)
@@ -92,13 +92,13 @@ describe("いおりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, iori)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", iori)).toBe(true)
     expect(result.defendPercent).toBe(8 * 2)
   })
-  test("発動あり-守備側(被アクセス)-10駅", () => {
+  test.each([1, 2, 3, 4, 5, 6, 10, 20, 30])("発動あり-守備側(被アクセス)-%d駅", (count) => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)
-    let iori = DencoManager.getDenco(context, "35", 50, 10)
+    let iori = DencoManager.getDenco(context, "35", 50, count)
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [iori, seria])
     defense.formation[0].link.forEach(link => {
@@ -118,8 +118,8 @@ describe("いおりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, iori)).toBe(true)
-    expect(result.defendPercent).toBe(8 * 5)
+    expect(hasSkillTriggered(result, "defense", iori)).toBe(true)
+    expect(result.defendPercent).toBe(8 * Math.min(count, 5))
   })
   test("発動あり-守備側(被アクセス)-確率ブースト", () => {
     const context = initContext("test", "test", false)
@@ -143,9 +143,15 @@ describe("いおりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, iori)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", iori)).toBe(true)
     // 確率補正が効くか false
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    const t = getSkillTrigger(result, "defense", iori)[0]
+    expect(t.skillName).toBe("ビブリオフィル Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
+    expect(t.triggered).toBe(true)
+
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
     expect(result.defendPercent).toBe(8)
   })
   test("発動なし-守備側(編成内)", () => {
@@ -169,7 +175,7 @@ describe("いおりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, iori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", iori)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 
@@ -194,7 +200,7 @@ describe("いおりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, iori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", iori)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 })

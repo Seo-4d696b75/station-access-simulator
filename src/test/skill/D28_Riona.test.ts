@@ -1,5 +1,5 @@
 import { activateSkill, init, initContext, initUser, isSkillActive } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
 import { calcATK } from "../../skill/D28_Riona"
 import { testManualSkill } from "../tool/skillState"
@@ -44,7 +44,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(true)
     const atk = calcATK(55, 10)
     expect(result.attackPercent).toBe(atk)
   })
@@ -82,9 +82,13 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(true)
+    const t = getSkillTrigger(result, "offense", riona)[0]
+    expect(t.skillName).toBe("データアクセラレーター Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
     // 確率補正は効かない
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
     expect(result.attackPercent).toBe(calcATK(55, 10))
   })
   test("発動なし-攻撃側(アクセス)-非アクティブ", () => {
@@ -114,7 +118,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)-駅数差なし", () => {
@@ -147,7 +151,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)-相手なし", () => {
@@ -171,7 +175,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -205,7 +209,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -239,7 +243,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 })
