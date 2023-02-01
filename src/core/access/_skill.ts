@@ -97,23 +97,26 @@ export function triggerSkillOnSide(
   indices
     .map(i => side.formation[i])
     .forEach(denco => {
-      const trigger = invokeSkillTriggerCallback(context, state, denco, callbackKey)
-      if (!trigger) return
+      const triggers = invokeSkillTriggerCallback(context, state, denco, callbackKey)
 
-      // スキル発動の有無（確率・無効化）を判定
-      const t = checkAccessSkillTrigger(context, denco, state.skillTriggers, trigger)
+      triggers.forEach(t => {
 
-      // スキル発動による効果の反映
-      if (t.triggered) {
-        state.skillTriggers.push(t)
-        // 他スキルの発動で状態が変化する場合があるので毎度stateから参照
-        const d = getSide(state, which).formation[t.denco.carIndex]
-        state = triggerAccessSkillEffect(context, state, d, t)
-      } else {
-        // 無効化スキルなど発動対象未定の場合
-        // 同編成内で互いに干渉にしない
-        afterTrigger.push(t)
-      }
+        // スキル発動の有無（確率・無効化）を判定
+        const triggerState = checkAccessSkillTrigger(context, denco, state.skillTriggers, t)
+
+        // スキル発動による効果の反映
+        if (triggerState.triggered) {
+          state.skillTriggers.push(triggerState)
+          // 他スキルの発動で状態が変化する場合があるので毎度stateから参照
+          const d = getSide(state, which).formation[triggerState.denco.carIndex]
+          state = triggerAccessSkillEffect(context, state, d, triggerState)
+        } else {
+          // 無効化スキルなど発動対象未定の場合
+          // 同編成内で互いに干渉にしない
+          afterTrigger.push(triggerState)
+        }
+      })
+
     })
 
   state.skillTriggers.push(...afterTrigger)
@@ -126,31 +129,35 @@ function invokeSkillTriggerCallback(
   state: ReadonlyState<AccessState>,
   denco: ReadonlyState<AccessDencoState>,
   callbackKey: keyof SkillTriggerCallbacks,
-): AccessSkillTrigger | void {
+): AccessSkillTrigger[] {
   const skill = denco.skill
-  if (!isSkillActive(skill)) return
+  if (!isSkillActive(skill)) return []
   if (callbackKey === "onSkillProbabilityBoost") {
     const callback = skill.onSkillProbabilityBoost
     if (callback) {
       const d = copy.DencoState(denco)
       const s = d.skill as Skill
-      return callback(
+      const t = callback(
         context,
         withSkill(d, s, denco.carIndex),
       )
+      return t ? [t] : []
     }
   } else {
     const callback = skill[callbackKey]
     if (callback) {
       const d = copy.AccessDencoState(denco)
       const s = d.skill as Skill
-      return callback(
+      const t = callback(
         context,
         state,
         withSkill(d, s, d.carIndex)
       )
+      if (!t) return []
+      return Array.isArray(t) ? t : [t]
     }
   }
+  return []
 }
 
 
