@@ -1,6 +1,6 @@
 import { times } from "lodash"
 import { activateSkill, getSkill, init } from "../.."
-import { AccessResult, getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { AccessResult, getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { assert, Context, initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser, UserState } from "../../core/user"
@@ -45,7 +45,7 @@ describe("あたるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ataru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ataru)).toBe(true)
     expect(result.attackPercent).toBe(3 * Math.min(count, 20))
   })
 
@@ -100,7 +100,7 @@ describe("あたるのスキル", () => {
         let d = getAccessDenco(result, "offense")
         expect(d.reboot).toBe(false)
         expect(d.hpAfter).toBeLessThan(d.hpBefore)
-        expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
 
         // カウントを確認 +1
         let s = getSkill(d)
@@ -135,7 +135,7 @@ describe("あたるのスキル", () => {
         let d = getAccessDenco(result, "offense")
         expect(d.reboot).toBe(false)
         expect(d.hpAfter).toBeLessThan(d.hpBefore)
-        expect(hasSkillTriggered(result.defense, kuni)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", kuni)).toBe(true)
 
         // カウントを確認 +1
         let s = getSkill(d)
@@ -170,7 +170,7 @@ describe("あたるのスキル", () => {
         let d = getAccessDenco(result, "offense")
         expect(d.reboot).toBe(false)
         expect(d.hpAfter).toBeLessThan(d.hpBefore)
-        expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", marika)).toBe(true)
 
         // カウントを確認 +1
         let s = getSkill(d)
@@ -211,7 +211,7 @@ describe("あたるのスキル", () => {
         const result = startAccess(context, config)
         let d = getAccessDenco(result, "offense")
         expect(d.reboot).toBe(true)
-        expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
 
         // カウントを確認 10 - 2
         let s = getSkill(d)
@@ -248,7 +248,7 @@ describe("あたるのスキル", () => {
         const result = startAccess(context, config)
         let d = getAccessDenco(result, "offense")
         expect(d.reboot).toBe(true)
-        expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", marika)).toBe(true)
 
         // カウントを確認 10 - 2
         let s = getSkill(d)
@@ -290,11 +290,18 @@ describe("あたるのスキル", () => {
       let d = getAccessDenco(result, "offense")
       expect(d.reboot).toBe(true)
       // あたるのATK増加は無効化
-      expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
-      expect(hasSkillTriggered(result.defense, tesuto)).toBe(true)
-      expect(hasSkillTriggered(result.offense, ataru)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", tesuto)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", ataru)).toBe(false)
       expect(result.attackPercent).toBe(0)
-      expect(d.skillInvalidated).toBe(true)
+
+      const t = getSkillTrigger(result, "offense", ataru)[0]
+      expect(t.probability).toBe(100)
+      expect(t.boostedProbability).toBe(0)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+      expect(t.skillName).toBe("ゆずれないプライド Lv.4")
 
       // カウント増減はスキルの無効化関係なく行われる
       // カウントを確認 10 - 2

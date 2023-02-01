@@ -38,7 +38,7 @@ describe("メイのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, mei)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mei)).toBe(true)
     const def = Math.floor(71 * Math.pow((mei.currentHp - charlotte.currentHp) / mei.maxHp, 0.5))
     expect(result.defendPercent).toBe(def)
   })
@@ -64,7 +64,7 @@ describe("メイのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, mei)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mei)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動あり-守備側(被アクセス)-現在HPを参照", () => {
@@ -90,7 +90,7 @@ describe("メイのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, mei)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mei)).toBe(true)
     expect(result.defendPercent).toBeGreaterThan(0)
   })
   test("発動なし-守備側(被アクセス)-現在HPを参照", () => {
@@ -116,7 +116,7 @@ describe("メイのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, mei)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mei)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-守備側(編成内)", () => {
@@ -141,7 +141,7 @@ describe("メイのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, mei)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mei)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)", () => {
@@ -166,7 +166,7 @@ describe("メイのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mei)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mei)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 })
