@@ -1,5 +1,5 @@
 import { activateSkill, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
@@ -13,7 +13,7 @@ describe("ノアのスキル", () => {
     number: "52",
     name: "noa"
   })
-  test("発動あり-攻撃側(アクセス)-タイプx4", () => {
+  test.each([1, 2, 3, 4])("発動あり-攻撃側(アクセス)-タイプx%d", (cnt) => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let noa = DencoManager.getDenco(context, "52", 50)
@@ -22,7 +22,7 @@ describe("ノアのスキル", () => {
     let sheena = DencoManager.getDenco(context, "7", 50)
     let saya = DencoManager.getDenco(context, "8", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
-    let offense = initUser(context, "とあるマスター", [noa, seria, luna, sheena, saya])
+    let offense = initUser(context, "とあるマスター", [noa, seria, luna, sheena, saya].slice(0, cnt + 1))
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -37,89 +37,10 @@ describe("ノアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, noa)).toBe(true)
-    expect(result.attackPercent).toBe(40)
+    expect(hasSkillTriggered(result, "offense", noa)).toBe(true)
+    expect(result.attackPercent).toBe(10 * cnt)
   })
-  test("発動あり-攻撃側(アクセス)-タイプx3", () => {
-    const context = initContext("test", "test", false)
-    context.random.mode = "force"
-    let noa = DencoManager.getDenco(context, "52", 50)
-    let seria = DencoManager.getDenco(context, "1", 50)
-    let izuna = DencoManager.getDenco(context, "13", 50)
-    let luna = DencoManager.getDenco(context, "3", 50)
-    let saya = DencoManager.getDenco(context, "8", 50)
-    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
-    let offense = initUser(context, "とあるマスター", [noa, seria, izuna, luna, saya])
-    let defense = initUser(context, "とあるマスター２", [charlotte])
-    const config = {
-      offense: {
-        state: offense,
-        carIndex: 0
-      },
-      defense: {
-        state: defense,
-        carIndex: 0
-      },
-      station: charlotte.link[0],
-    }
-    const result = startAccess(context, config)
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, noa)).toBe(true)
-    expect(result.attackPercent).toBe(30)
-  })
-  test("発動あり-攻撃側(アクセス)-タイプx2", () => {
-    const context = initContext("test", "test", false)
-    context.random.mode = "force"
-    let noa = DencoManager.getDenco(context, "52", 50)
-    let seria = DencoManager.getDenco(context, "1", 50)
-    let luna = DencoManager.getDenco(context, "3", 50)
-    let izuna = DencoManager.getDenco(context, "13", 50)
-    let fubu = DencoManager.getDenco(context, "14", 50)
-    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
-    let offense = initUser(context, "とあるマスター", [noa, seria, luna, izuna, fubu])
-    let defense = initUser(context, "とあるマスター２", [charlotte])
-    const config = {
-      offense: {
-        state: offense,
-        carIndex: 0
-      },
-      defense: {
-        state: defense,
-        carIndex: 0
-      },
-      station: charlotte.link[0],
-    }
-    const result = startAccess(context, config)
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, noa)).toBe(true)
-    expect(result.attackPercent).toBe(20)
-  })
-  test("発動あり-攻撃側(アクセス)-タイプx1", () => {
-    const context = initContext("test", "test", false)
-    context.random.mode = "force"
-    let noa = DencoManager.getDenco(context, "52", 50)
-    let luna = DencoManager.getDenco(context, "3", 50)
-    let izuna = DencoManager.getDenco(context, "13", 50)
-    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
-    let offense = initUser(context, "とあるマスター", [noa, izuna, luna])
-    let defense = initUser(context, "とあるマスター２", [charlotte])
-    const config = {
-      offense: {
-        state: offense,
-        carIndex: 0
-      },
-      defense: {
-        state: defense,
-        carIndex: 0
-      },
-      station: charlotte.link[0],
-    }
-    const result = startAccess(context, config)
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, noa)).toBe(true)
-    expect(result.attackPercent).toBe(10)
-  })
-  test("発動あり-攻撃側(アクセス)-タイプx2-確率", () => {
+  test("発動あり-攻撃側(アクセス)-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let noa = DencoManager.getDenco(context, "52", 50)
@@ -143,8 +64,15 @@ describe("ノアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, noa)).toBe(true)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", noa)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    let t = getSkillTrigger(result, "offense", noa)[0]
+    expect(t.skillName).toBe("カラーオブトレイン Lv.4")
+    expect(t.probability).toBe(46)
+    expect(t.boostedProbability).toBe(46 * 1.2)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+
     expect(result.attackPercent).toBe(20)
   })
   test("発動なし-攻撃側(アクセス)-確率", () => {
@@ -171,8 +99,14 @@ describe("ノアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, noa)).toBe(false)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", noa)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    let t = getSkillTrigger(result, "offense", noa)[0]
+    expect(t.skillName).toBe("カラーオブトレイン Lv.4")
+    expect(t.probability).toBe(46)
+    expect(t.boostedProbability).toBe(46 * 1.2)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)-単独", () => {
@@ -195,7 +129,7 @@ describe("ノアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, noa)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", noa)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-守備側(被アクセス)", () => {
@@ -220,7 +154,7 @@ describe("ノアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, noa)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", noa)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 })
