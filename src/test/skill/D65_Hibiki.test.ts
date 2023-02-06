@@ -1,6 +1,6 @@
 import assert from "assert"
 import { init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -43,20 +43,32 @@ describe("ひびきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
-      expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
-      expect(hasSkillTriggered(result.defense, mio)).toBe(false)
-      expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
       // サポーターの無効化
       assert(result.defense)
-      let d = result.defense.formation[1]
-      expect(d.skillInvalidated).toBe(true)
-      d = result.defense.formation[2]
-      expect(d.skillInvalidated).toBe(true)
-      expect(result.defendPercent).toBe(0)
+      let t = getSkillTrigger(result, "defense", fubu)[0]
+      expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+      t = getSkillTrigger(result, "defense", mio)[0]
+      expect(t.skillName).toBe("スタンドイン Lv.4")
+      expect(t.probability).toBe(40)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
       // 相手編成のサポーターは無効化対象外
-      d = result.offense.formation[1]
-      expect(d.skillInvalidated).toBe(false)
+      t = getSkillTrigger(result, "offense", reika)[0]
+      expect(t.skillName).toBe("起動加速度向上 Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(false)
+      expect(t.canTrigger).toBe(true)
+      expect(t.triggered).toBe(true)
+
       expect(result.attackPercent).toBeGreaterThan(0)
     })
 
@@ -81,23 +93,26 @@ describe("ひびきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(false)
       // サポーターの無効化なし
-      assert(result.defense)
-      let d = result.defense.formation[1]
-      expect(d.skillInvalidated).toBe(false)
-      d = result.defense.formation[2]
-      expect(d.skillInvalidated).toBe(false)
+      let t = getSkillTrigger(result, "defense", fubu)
+      expect(t.length).toBe(0)
+      t = getSkillTrigger(result, "defense", mio)
+      expect(t.length).toBe(0)
+
       expect(result.defendPercent).toBe(0)
     })
     test("発動あり-守備側(被アクセス)-サポーター以外", () => {
       const context = initContext("test", "test", false)
+      context.random.mode = "force"
+      
       let seria = DencoManager.getDenco(context, "1", 50)
       let mero = DencoManager.getDenco(context, "2", 50)
       let charlotte = DencoManager.getDenco(context, "6", 50)
       let moe = DencoManager.getDenco(context, "9", 50)
       let koyoi = DencoManager.getDenco(context, "74", 50)
       let hibiki = DencoManager.getDenco(context, "65", 50, 1)
+      hibiki.currentHp = 220 // アクセス後にセリア回復対象になるよう調整
       let reika = DencoManager.getDenco(context, "5", 50)
       let defense = initUser(context, "とあるマスター", [hibiki, koyoi, seria, mero, moe])
       defense = activateSkill(context, defense, 1, 2)
@@ -116,19 +131,40 @@ describe("ひびきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
-      expect(hasSkillTriggered(result.defense, koyoi)).toBe(true)
-      // サポーターの無効化
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", koyoi)).toBe(true)
+      // コヨイ対象外
       assert(result.defense)
-      let d = result.defense.formation[1]
-      expect(d.skillInvalidated).toBe(false) // コヨイ対象外
-      d = result.defense.formation[2]
-      expect(d.skillInvalidated).toBe(true)
+      let t = getSkillTrigger(result, "defense", koyoi)[0]
+      expect(t.skillName).toBe("なきむしシンパサイザー Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(false)
+      expect(t.canTrigger).toBe(true)
+      expect(t.triggered).toBe(true)
+
       expect(result.defendPercent).toBe(10)
+
       // 相手編成のサポーターは無効化対象外
-      d = result.offense.formation[1]
-      expect(d.skillInvalidated).toBe(false)
+      t = getSkillTrigger(result, "offense", reika)[0]
+      expect(t.skillName).toBe("起動加速度向上 Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(false)
+      expect(t.canTrigger).toBe(true)
+      expect(t.triggered).toBe(true)
+
       expect(result.attackPercent).toBeGreaterThan(0)
+
+      // セリア発動の無効化
+      let d = getAccessDenco(result, "defense")
+      expect(d.reboot).toBe(false)
+      expect(d.currentHp).toBeLessThan(d.maxHp * 0.3)
+      expect(result.defense.event.length).toBe(2)
+      let e = result.defense.event[0]
+      expect(e.type).toBe("access")
+      // 編成順序の関係で自身の回復が先に発動処理される
+      e = result.defense.event[1]
+      assert(e.type === "skill_trigger")
+      expect(e.data.skillName).toBe("シンフォニックレイル Lv.4")
     })
 
     describe("他の無効化スキルとの影響", () => {
@@ -157,16 +193,32 @@ describe("ひびきのスキル", () => {
         }
         const result = startAccess(context, config)
         expect(result.defense).not.toBeUndefined()
-        expect(hasSkillTriggered(result.offense, ren)).toBe(false)
-        expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
-        expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
-        expect(hasSkillTriggered(result.defense, mio)).toBe(false)
+        expect(hasSkillTriggered(result, "offense", ren)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", hibiki)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
         // レンの無効化対象外
         assert(result.defense)
-        expect(result.defense.formation[0].skillInvalidated).toBe(false)
+        let t = getSkillTrigger(result, "defense", hibiki)[0]
+        expect(t.skillName).toBe("シンフォニックレイル Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(false)
+        expect(t.canTrigger).toBe(true)
+        expect(t.triggered).toBe(true)
         // サポーターの無効化
-        expect(result.defense.formation[1].skillInvalidated).toBe(true)
-        expect(result.defense.formation[2].skillInvalidated).toBe(true)
+        t = getSkillTrigger(result, "defense", fubu)[0]
+        expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
+        expect(t.canTrigger).toBe(false)
+        expect(t.triggered).toBe(false)
+        t = getSkillTrigger(result, "defense", mio)[0]
+        expect(t.skillName).toBe("スタンドイン Lv.4")
+        expect(t.probability).toBe(40)
+        expect(t.invalidated).toBe(true)
+        expect(t.canTrigger).toBe(false)
+        expect(t.triggered).toBe(false)
+
         expect(result.defendPercent).toBe(0)
       })
 
@@ -200,16 +252,32 @@ describe("ひびきのスキル", () => {
         expect(result.defense).not.toBeUndefined()
         // 攻撃側のecoスキル無効化が先に発動
         // ひびきの自編成サポーター無効化スキルは発動前に無効化され、発動なし
-        expect(hasSkillTriggered(result.offense, mahiru)).toBe(true)
-        expect(hasSkillTriggered(result.defense, hibiki)).toBe(false)
-        expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
-        expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+        expect(hasSkillTriggered(result, "offense", mahiru)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", hibiki)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", fubu)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
         // ひびき無効化
         assert(result.defense)
-        expect(result.defense.formation[0].skillInvalidated).toBe(true)
+        let t = getSkillTrigger(result, "defense", hibiki)[0]
+        expect(t.skillName).toBe("シンフォニックレイル Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
+        expect(t.canTrigger).toBe(false)
+        expect(t.triggered).toBe(false)
         // サポーターの無効化なし
-        expect(result.defense.formation[1].skillInvalidated).toBe(false)
-        expect(result.defense.formation[2].skillInvalidated).toBe(false)
+        t = getSkillTrigger(result, "defense", fubu)[0]
+        expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(false)
+        expect(t.canTrigger).toBe(true)
+        expect(t.triggered).toBe(true)
+        t = getSkillTrigger(result, "defense", mio)[0]
+        expect(t.skillName).toBe("スタンドイン Lv.4")
+        expect(t.probability).toBe(40)
+        expect(t.invalidated).toBe(false)
+        expect(t.canTrigger).toBe(true)
+        expect(t.triggered).toBe(true)
+
         expect(result.defendPercent).toBeGreaterThan(0)
       })
       test("自編成にまひる", () => {
@@ -239,24 +307,46 @@ describe("ひびきのスキル", () => {
         const result = startAccess(context, config)
         expect(result.defense).not.toBeUndefined()
         // 同じ編成内のスキル無効化が両方発動
-        // ひびきは無効化されるも発動済み
-        expect(hasSkillTriggered(result.offense, imura)).toBe(false)
-        expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
-        expect(hasSkillTriggered(result.defense, mahiru)).toBe(true)
-        expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
-        expect(hasSkillTriggered(result.defense, mio)).toBe(false)
+        // ひびきの無効化も発動する
+        expect(hasSkillTriggered(result, "offense", imura)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", hibiki)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", mahiru)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
         // 確率ブースト（まひる発動率100%未満）は無効化の前に発動しているはず
-        // FIXME 現行のゲームではひいる発動していない
+        // TODO 現行のゲームではひいる発動していない
         // issue: https://github.com/Seo-4d696b75/station-access-simulator/issues/16
-        expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
-        // eco無効化
+        expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
         assert(result.defense)
-        expect(result.offense.formation[0].skillInvalidated).toBe(true)
-        expect(result.defense.formation[0].skillInvalidated).toBe(true)
+        // eco無効化
+        let t = getSkillTrigger(result, "defense", hibiki)[0]
+        expect(t.skillName).toBe("シンフォニックレイル Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(false)
+        expect(t.canTrigger).toBe(true)
+        expect(t.triggered).toBe(true)
+        // ひびき発動
+        t = getSkillTrigger(result, "offense", imura)[0]
+        expect(t.skillName).toBe("紫電一閃 Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
+        expect(t.canTrigger).toBe(false)
+        expect(t.triggered).toBe(false)
         // サポーターの無効化
-        expect(result.defense.formation[2].skillInvalidated).toBe(true)
-        expect(result.defense.formation[3].skillInvalidated).toBe(true)
-        expect(result.defense.formation[4].skillInvalidated).toBe(true)
+        t = getSkillTrigger(result, "defense", fubu)[0]
+        expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
+        expect(t.canTrigger).toBe(false)
+        expect(t.triggered).toBe(false)
+        t = getSkillTrigger(result, "defense", mio)[0]
+        expect(t.skillName).toBe("スタンドイン Lv.4")
+        expect(t.probability).toBe(40)
+        expect(t.invalidated).toBe(true)
+        expect(t.canTrigger).toBe(false)
+        expect(t.triggered).toBe(false)
+
         expect(result.defendPercent).toBe(0)
       })
 
@@ -287,7 +377,7 @@ describe("ひびきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(false)
       // HP回復
       assert(result.defense)
       expect(result.defense.event.length).toBe(2)
@@ -297,8 +387,8 @@ describe("ひびきのスキル", () => {
       expect(d.reboot).toBe(false)
       expect(d.hpAfter).toBe(d.maxHp - charlotte.ap)
       expect(d.hpAfter).toBeLessThanOrEqual(d.maxHp * 0.99)
-      expect(e.data.carIndex).toBe(0)
-      expect(e.data.step).toBe("self")
+      expect(e.data.denco.carIndex).toBe(0)
+      expect(e.data.denco.who).toBe("self")
       expect(e.data.skillName).toBe("シンフォニックレイル Lv.4")
       expect(e.data.time).toBe(now)
       expect(e.data.denco).toMatchDencoState(d)
@@ -332,8 +422,8 @@ describe("ひびきのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       // アクセス中のスキル発動（サポータ無効化）は100%なのでひいる関係ない
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(true)
-      expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
       // HP回復
       assert(result.defense)
       expect(result.defense.event.length).toBe(2)
@@ -345,8 +435,8 @@ describe("ひびきのスキル", () => {
       expect(d.reboot).toBe(false)
       expect(d.hpAfter).toBe(d.maxHp - charlotte.ap)
       expect(d.hpAfter).toBeLessThanOrEqual(d.maxHp * 0.99)
-      expect(e.data.carIndex).toBe(0)
-      expect(e.data.step).toBe("self")
+      expect(e.data.denco.carIndex).toBe(0)
+      expect(e.data.denco.who).toBe("self")
       expect(e.data.skillName).toBe("シンフォニックレイル Lv.4")
       expect(e.data.time).toBe(now)
       expect(e.data.denco).toMatchDencoState(d)
@@ -375,7 +465,7 @@ describe("ひびきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(false)
       // HP回復なし
       assert(result.defense)
       expect(result.defense.event.length).toBe(1)
@@ -409,14 +499,14 @@ describe("ひびきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(false)
-      expect(hasSkillTriggered(result.offense, ren)).toBe(false)
-      expect(hasSkillTriggered(result.offense, mahiru)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", ren)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", mahiru)).toBe(true)
       // HP回復なし
       assert(result.defense)
       expect(result.defense.event.length).toBe(1)
       let d = result.defense.formation[0]
-      expect(d.skillInvalidated).toBe(true)
+
       expect(d.hpAfter).toBe(d.maxHp - Math.floor(ren.ap * 1.3))
       expect(d.reboot).toBe(false)
       expect(d.hpAfter).toBeLessThanOrEqual(d.maxHp * 0.99)
@@ -446,7 +536,7 @@ describe("ひびきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(false)
       // HP回復なし
       assert(result.defense)
       expect(result.defense.event.length).toBe(1)
@@ -481,7 +571,7 @@ describe("ひびきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hibiki)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hibiki)).toBe(false)
       // HP回復なし
       // 最大HPの99%以下でもアクセスで変化がないと発動しない
       assert(result.defense)

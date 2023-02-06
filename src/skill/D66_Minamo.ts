@@ -20,23 +20,19 @@ const skill: SkillLogic = {
         state,
         self,
         {
-          probability: "probability_activate", // 100%
-          recipe: (state) => {
-            activateSkillAt(context, state, self.carIndex)
-          }
+          probability: self.skill.property.readNumber("probability_activate"), // 100%
+          type: "skill_event",
+          recipe: (state) => activateSkillAt(context, state, self.carIndex)
         }
       )
     }
   },
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_fixed" && self.who === "offense") {
+  onAccessDamageFixed: (context, state, self) => {
+    if (self.who === "offense") {
       return {
-        probability: "probability",
-        recipe: (state) => {
-          const damage = self.skill.property.readNumber("damage_fixed")
-          state.damageFixed += damage
-          context.log.log(`みんなでがんばればそれだけ強くなる……ってステキですよね！ 固定ダメージ + ${damage}`)
-        }
+        probability: self.skill.property.readNumber("probability"),
+        type: "damage_fixed",
+        damage: self.skill.property.readNumber("damage_fixed"),
       }
     }
   }

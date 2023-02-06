@@ -38,7 +38,7 @@ describe("あけひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, akehi)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", akehi)).toBe(true)
       expect(result.attackPercent).toBe(0.21 * dist)
     })
 
@@ -66,7 +66,7 @@ describe("あけひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, akehi)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", akehi)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
 
@@ -93,7 +93,7 @@ describe("あけひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, akehi)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", akehi)).toBe(true)
       expect(result.attackPercent).toBe(0.21 * 100 + 7)
     })
 
@@ -121,7 +121,7 @@ describe("あけひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, akehi)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", akehi)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
   })
@@ -151,7 +151,7 @@ describe("あけひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, akehi)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", akehi)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
     test.each([100, 130, 150, 200, 500])("発動あり-攻撃側(編成内)-%fkm", (dist) => {
@@ -177,7 +177,7 @@ describe("あけひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, akehi)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", akehi)).toBe(true)
       expect(result.attackPercent).toBe(7)
     })
   })

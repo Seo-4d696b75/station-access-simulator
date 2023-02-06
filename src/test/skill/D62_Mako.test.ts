@@ -42,7 +42,7 @@ describe("マコのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mako)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mako)).toBe(true)
     expect(result.damageBase).not.toBeUndefined()
     expect(result.damageBase!.variable).toBe(seria.ap)
     expect(result.damageBase!.constant).toBe(0)
@@ -83,7 +83,7 @@ describe("マコのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mako)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mako)).toBe(false)
     // 固定ダメージ追加
     expect(result.damageFixed).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -115,7 +115,7 @@ describe("マコのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mako)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mako)).toBe(false)
     // 固定ダメージ追加
     expect(result.damageFixed).toBe(0)
     expect(result.attackPercent).toBe(0)
@@ -148,8 +148,8 @@ describe("マコのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mako)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mako)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test)).toBe(true)
     expect(result.damageBase).not.toBeUndefined()
     expect(result.damageBase!.variable).toBe(seria.ap)
     expect(result.damageBase!.constant).toBe(0)
@@ -190,8 +190,8 @@ describe("マコのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mako)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mako)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test)).toBe(true)
     expect(result.damageBase).not.toBeUndefined()
     expect(result.damageBase!.variable).toBe(seria.ap)
     expect(result.damageBase!.constant).toBe(0)

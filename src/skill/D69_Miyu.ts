@@ -1,31 +1,30 @@
-import { getAccessDenco, SkillLogic } from "..";
+import { SkillLogic } from "..";
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
+  onAccessStart: (context, state, self) => {
     // 移動距離1km未満は発動しない?
     const dist = state.offense.user.daily.readDistance(context)
-    if (step === "start_access"
-      && self.which === "offense"
+    if (
+      self.which === "offense"
       && state.defense
       && !state.pinkMode
-      && dist >= 1.0) {
+      && dist >= 1.0
+    ) {
+      const distMax = self.skill.property.readNumber("distMax")
+      const expMax = self.skill.property.readNumber("expMax")
+      const expDist = Math.floor(expMax * Math.min(1.0, dist / distMax))
+      const expFixed = dist >= distMax ? self.skill.property.readNumber("expFixed") : 0
+      context.log.log(`経験値付与 アクセス:${expDist}(${dist}/${distMax}km), 編成内:${expFixed}(${distMax}km以上)`)
+
       return {
-        probability: "probability",
-        recipe: (state) => {
-          const distMax = self.skill.property.readNumber("distMax")
-          const expMax = self.skill.property.readNumber("expMax")
-          const expDist = Math.floor(expMax * Math.min(1.0, dist / distMax))
-          const expFixed = dist >= distMax ? self.skill.property.readNumber("expFixed") : 0
-          const accessDenco = getAccessDenco(state, "offense")
-          accessDenco.exp.skill += expDist
-          if (expFixed > 0) {
-            state.offense.formation.forEach(d => {
-              d.exp.skill += expFixed
-            })
-          }
-          context.log.log(`経験値付与 ${accessDenco.name}:${expDist}(${dist}/${distMax}km), 編成内:${expFixed}(${distMax}km以上)`)
-        }
+        probability: self.skill.property.readNumber("probability", 100),
+        type: "exp_delivery",
+        exp: (d) => d.who === "offense"
+          ? expDist + expFixed // アクセス本人
+          : d.which === "offense"
+            ? expFixed // 編成内
+            : 0
       }
     }
   }
