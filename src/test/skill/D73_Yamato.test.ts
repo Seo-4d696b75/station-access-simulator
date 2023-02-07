@@ -37,7 +37,7 @@ describe("やまとのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, yamato)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", yamato)).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.damageFixed).toBe(-70)
   })
@@ -68,7 +68,7 @@ describe("やまとのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, yamato)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", yamato)).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.damageFixed).toBe(-70)
   })
@@ -94,7 +94,7 @@ describe("やまとのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, yamato)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", yamato)).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.damageFixed).toBe(0)
   })
@@ -120,7 +120,7 @@ describe("やまとのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, yamato)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", yamato)).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.damageFixed).toBe(0)
   })

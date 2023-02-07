@@ -25,7 +25,10 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
   }
   const config: AccessConfig = {
     offense: {
-      state: state,
+      state: {
+        ...state,
+        event: [],
+      },
       carIndex: state.carIndex
     },
     station: station
@@ -35,12 +38,16 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
   const eventSize = result.offense.event.length
   assert(
     eventSize > 0 &&
-    result.offense.event[eventSize-1].type === "access",
+    result.offense.event[eventSize - 1].type === "access",
     "access event not found"
   )
   // アクセス処理の反映
   let next = copy.SkillEventState(state)
-  // formation: UserState[], event, queueを更新
+  // eventTriggers の更新
+  next.eventTriggers.push(...result.offense.event)
+  // event は変化させない
+  result.offense.event = next.event
+  // formation: UserState[], queueを更新
   merge.UserState(next, result.offense)
   return next
 })

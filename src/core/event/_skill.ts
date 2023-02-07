@@ -9,7 +9,7 @@ import { EventSkillTrigger, EventSkillTriggerState, SkillProbabilityBoost, WithS
 import { ReadonlyState } from "../state";
 import { UserState } from "../user";
 import { refreshUserState } from "../user/refresh";
-import { SkillTriggerEvent } from "./type";
+import { Event, SkillTriggerEvent } from "./type";
 
 /**
  * スキル発動型のイベントの詳細
@@ -24,13 +24,21 @@ export interface EventTriggeredSkill {
 
 export type SkillEventDencoState = WithSkillEventPosition<DencoState>
 
+export type EventSkillTriggerStateHolder = {
+  type: "skill_trigger_state"
+  data: EventSkillTriggerState
+}
+
 export interface SkillEventState extends UserState {
   time: number
 
   formation: SkillEventDencoState[]
   carIndex: number
 
-  skillTriggers: EventSkillTriggerState[]
+  /**
+   * スキル発動処理中に新たに記録されるイベント
+   */
+  eventTriggers: (Event | EventSkillTriggerStateHolder)[]
 }
 
 export const triggerSkillAfterAccess = (
@@ -54,7 +62,7 @@ export const triggerSkillAfterAccess = (
       carIndex: idx,
     })),
     carIndex: self.carIndex,
-    skillTriggers: [],
+    eventTriggers: [],
   }
   //const result = execute(context, state, trigger)
   const result = execute(
@@ -103,7 +111,7 @@ export const triggerSkillAtEvent = (
       }
     }),
     carIndex: idx,
-    skillTriggers: [],
+    eventTriggers: [],
   }
 
   const result = execute(context, eventState, trigger)
@@ -150,18 +158,21 @@ function execute(
     const checked = checkEventSkillTrigger(
       context,
       d,
-      state.skillTriggers,
+      state.eventTriggers,
       t,
       access
     )
-    state.skillTriggers.push(checked)
+    state.eventTriggers.push({
+      type: "skill_trigger_state",
+      data: checked
+    })
   })
 
   // 本人のスキル発動
   const triggerState = checkEventSkillTrigger(
     context,
     self,
-    state.skillTriggers,
+    state.eventTriggers,
     trigger,
     access
   )
@@ -176,27 +187,36 @@ function execute(
 
   assert(triggerState.triggered)
   assert(triggerState.type === "skill_event")
-  state = triggerState.recipe(state) ?? state
-  state.skillTriggers.push(triggerState)
 
-  // スキル発動イベントを記録
-  state.skillTriggers.forEach(t => {
-    if (!t.triggered) return
-    let e: SkillTriggerEvent = {
-      type: "skill_trigger",
-      data: {
-        time: state.time.valueOf(),
-        denco: {
-          ...copy.DencoState(state.formation[t.denco.carIndex]),
-          carIndex: t.denco.carIndex,
-          who: t.denco.who,
+  // TODO　ランダムな駅アクセス発動の場合のイベント記録の順序
+  // ランダム駅アクセスのスキル発動 > 駅アクセス > (アクセス時のスキル発動) の方が自然では？
+  // 現行：(ひいる発動) > 駅アクセス > (アクセス時のスキル発動) > ランダム駅アクセスのスキル発動 時系列になっていない
+  // 特に確率補正が効く場合はひいるダイアログと離れてしまいどのスキル発動に影響しているか分かりにくい
+  state = triggerState.recipe(state) ?? state
+  state.eventTriggers.push({
+    type: "skill_trigger_state",
+    data: triggerState,
+  })
+
+  // スキル発動処理中のイベントを記録
+  state.eventTriggers.forEach(event => {
+    if (event.type === "skill_trigger_state") {
+      const t = event.data
+      if (!t.triggered) return
+      let e: SkillTriggerEvent = {
+        type: "skill_trigger",
+        data: {
+          time: state.time.valueOf(),
+          denco: t.denco,
+          skillName: t.skillName,
+          probability: t.probability,
+          boostedProbability: t.boostedProbability,
         },
-        skillName: t.skillName,
-        probability: t.probability,
-        boostedProbability: t.boostedProbability,
-      },
+      }
+      state.event.push(e)
+    } else {
+      state.event.push(event)
     }
-    state.event.push(e)
   })
 
   return state
@@ -208,7 +228,7 @@ function execute(
 function checkEventSkillTrigger(
   context: Context,
   denco: ReadonlyState<SkillEventDencoState>,
-  triggered: EventSkillTriggerState[],
+  triggered: (Event | EventSkillTriggerStateHolder)[],
   trigger: EventSkillTrigger | SkillProbabilityBoost,
   access?: {
     result: AccessResult,
@@ -222,7 +242,7 @@ function checkEventSkillTrigger(
   const state: EventSkillTriggerState = {
     ...trigger,
     denco: {
-      ...copy.Denco(denco),
+      ...copy.DencoState(denco),
       carIndex: denco.carIndex,
       who: denco.who,
     },
@@ -299,7 +319,7 @@ function checkSkillInvalidated(
 
 function checkSkillProbability(
   context: Context,
-  triggered: EventSkillTriggerState[],
+  triggered: (Event | EventSkillTriggerStateHolder)[],
   trigger: EventSkillTriggerState,
 ): boolean {
   // 発動確率の読み出し
@@ -315,6 +335,8 @@ function checkSkillProbability(
 
   // 確率補正の計算
   const boost = triggered
+    .filter((e): e is EventSkillTriggerStateHolder => e.type === "skill_trigger_state")
+    .map(e => e.data)
     .filter(t => t.canTrigger)
     .map(t => {
       if (t.type === "probability_boost") {

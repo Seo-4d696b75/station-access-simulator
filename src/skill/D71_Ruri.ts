@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import { isWeekendOrHoliday } from "../core/date";
-import { formatPercent } from "../core/format";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
@@ -10,15 +9,12 @@ const skill: SkillLogic = {
     const hour = dayjs.tz(context.currentTime).hour()
     return (7 <= hour && hour < 10) || (17 <= hour && hour < 20)
   },
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.which === "offense") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.which === "offense") {
       return {
-        probability: "probability",
-        recipe: (state) => {
-          const atk = self.skill.property.readNumber("ATK")
-          state.attackPercent += atk
-          context.log.log(`私、でんこのお仕事が大好きなんです ATK${formatPercent(atk)}`)
-        }
+        probability: self.skill.property.readNumber("probability"),
+        type: "damage_atk",
+        percent: self.skill.property.readNumber("ATK")
       }
     }
   }

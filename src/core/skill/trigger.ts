@@ -75,8 +75,8 @@ export type WithSkillEventPosition<D extends Denco> = D & {
 }
 
 export type EventSkillTriggerState = SkillTriggerState<
-  WithSkillEventPosition<Denco>,
-  EventSkillTrigger | SkillProbabilityBoost // 確率補正が付随的に発動する
+  WithSkillEventPosition<DencoState>,
+  EventSkillTrigger | SkillProbabilityBoost
 >
 
 /**
@@ -92,7 +92,6 @@ export interface SkillProbabilityBoost extends SkillTrigger<"probability_boost">
  */
 
 export type EventSkillTrigger =
-  // SkillProbabilityBoost |
   EventSkillRecipe
 
 export interface EventSkillRecipe extends SkillTrigger<"skill_event"> {

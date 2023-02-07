@@ -2,7 +2,7 @@ import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, Acc
 import { AccessScoreExpResult, AccessScoreExpState, ScoreExpBoostPercent, ScoreExpResult } from "../core/access/score"
 import { assert, SimulatorError } from "../core/context"
 import { Denco, DencoState } from "../core/denco"
-import { AccessEventData, AccessEventUser, Event, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
+import { AccessEventData, AccessEventUser, Event, EventSkillTriggerStateHolder, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
 import { FilmHolder } from "../core/film"
 import { MutableProperty, ReadableProperty, TypedMap } from "../core/property"
 import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition, SkillTransitionType } from "../core/skill"
@@ -563,8 +563,8 @@ export const accessResultSchema = objectSchema<AccessResult>({
 // skill event
 
 const eventSkillTriggerStateSchema = objectSchema<EventSkillTriggerState>({
-  denco: objectSchema<WithSkillEventPosition<Denco>>({
-    ...dencoSchema.fields,
+  denco: objectSchema<WithSkillEventPosition<DencoState>>({
+    ...dencoStateSchema.fields,
     who: primitiveSchema,
     carIndex: primitiveSchema
   }),
@@ -581,6 +581,9 @@ const eventSkillTriggerStateSchema = objectSchema<EventSkillTriggerState>({
   recipe: functionSchema,
 })
 
+const copyEventSkillTriggerState = createCopyFunc<EventSkillTriggerState>(eventSkillTriggerStateSchema as any)
+const mergeEventSkillTriggerState = createMergeFunc<EventSkillTriggerState>(eventSkillTriggerStateSchema as any)
+
 export const skillEventDencoStateSchema = objectSchema<SkillEventDencoState>({
   ...dencoStateSchema.fields,
   who: primitiveSchema,
@@ -592,5 +595,27 @@ export const skillEventStateSchema = objectSchema<SkillEventState>({
   time: primitiveSchema,
   formation: arraySchema(skillEventDencoStateSchema),
   carIndex: primitiveSchema,
-  skillTriggers: arraySchema(eventSkillTriggerStateSchema as any),
+  eventTriggers: arraySchema(
+    customSchema<Event | EventSkillTriggerStateHolder>(
+      (src) => {
+        if (src.type === "skill_trigger_state") {
+          return {
+            type: "skill_trigger_state",
+            data: copyEventSkillTriggerState(src.data)
+          }
+        } else {
+          return copyEvent(src)
+        }
+      },
+      (dst, src) => {
+        if (src.type === "skill_trigger_state") {
+          assert(dst.type === "skill_trigger_state")
+          mergeEventSkillTriggerState(dst.data, src.data)
+        } else {
+          assert(dst.type !== "skill_trigger_state")
+          mergeEvent(dst, src)
+        }
+      }
+    )
+  ),
 })
