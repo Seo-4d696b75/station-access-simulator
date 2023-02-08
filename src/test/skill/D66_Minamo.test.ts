@@ -255,8 +255,9 @@ describe("みなものスキル", () => {
 
     state = activateMinamo(context, state, 0)
     let d = state.formation[0]
+    assert(d.skill.type === "possess")
+    assert(d.skill.transitionType === "auto")
     let skill = getSkill(d)
-    expect(skill.transitionType).toBe("auto")
     expect(skill.transition.state).toBe("active")
     expect(skill.transition.data).not.toBeUndefined()
     expect(skill.transition.data).toMatchObject({
@@ -270,7 +271,18 @@ describe("みなものスキル", () => {
     let e = state.event[1]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
-    expect(e.data.denco).toMatchDencoState(d)
+    expect(e.data.denco).toMatchDencoState({
+      ...d,
+      // 有効化直前
+      skill: {
+        ...d.skill,
+        transitionType: "auto",
+        transition: {
+          data: undefined,
+          state: "unable",
+        }
+      }
+    })
     expect(e.data.denco.who).toBe("self")
     expect(e.data.denco.carIndex).toBe(0)
     expect(e.data.skillName).toBe("みんなでショウ・タイム Lv.4")

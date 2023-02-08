@@ -70,7 +70,11 @@ describe("シャルのスキル", () => {
     expect(event.data.skillName).toBe("風の吹くまま気の向くまま")
     expect(event.data.denco.carIndex).toBe(0)
     expect(event.data.denco.who).toBe("self")
-    expect(event.data.denco).toMatchDencoState(charlotte)
+    expect(event.data.denco).toMatchDencoState({
+      ...charlotte,
+      // ランダム駅アクセスの直前
+      link: []
+    })
 
   })
 
@@ -153,11 +157,6 @@ describe("シャルのスキル", () => {
     expect(state.event.length).toBe(3)
 
     let event = state.event[0]
-    expect(event.type).toBe("access")
-    assert(event.type === "access")
-    expect(event.data.time).toBe(context.currentTime)
-
-    event = state.event[1]
     expect(event.type).toBe("skill_trigger")
     assert(event.type === "skill_trigger")
     expect(event.data.time).toBe(context.currentTime)
@@ -168,6 +167,11 @@ describe("シャルのスキル", () => {
     expect(event.data.denco.who).toBe("other")
     expect(event.data.denco).toMatchDencoState(state.formation[1])
 
+    event = state.event[1]
+    expect(event.type).toBe("access")
+    assert(event.type === "access")
+    expect(event.data.time).toBe(context.currentTime)
+
     event = state.event[2]
     expect(event.type).toBe("skill_trigger")
     assert(event.type === "skill_trigger")
@@ -177,6 +181,10 @@ describe("シャルのスキル", () => {
     expect(event.data.skillName).toBe("風の吹くまま気の向くまま")
     expect(event.data.denco.carIndex).toBe(0)
     expect(event.data.denco.who).toBe("self")
-    expect(event.data.denco).toMatchDencoState(state.formation[0])
+    expect(event.data.denco).toMatchDencoState({
+      ...state.formation[0],
+      // ランダム駅アクセスの直前
+      link: []
+    })
   })
 })

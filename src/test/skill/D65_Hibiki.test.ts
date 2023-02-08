@@ -105,7 +105,7 @@ describe("ひびきのスキル", () => {
     test("発動あり-守備側(被アクセス)-サポーター以外", () => {
       const context = initContext("test", "test", false)
       context.random.mode = "force"
-      
+
       let seria = DencoManager.getDenco(context, "1", 50)
       let mero = DencoManager.getDenco(context, "2", 50)
       let charlotte = DencoManager.getDenco(context, "6", 50)
@@ -391,7 +391,11 @@ describe("ひびきのスキル", () => {
       expect(e.data.denco.who).toBe("self")
       expect(e.data.skillName).toBe("シンフォニックレイル Lv.4")
       expect(e.data.time).toBe(now)
-      expect(e.data.denco).toMatchDencoState(d)
+      expect(e.data.denco).toMatchDencoState({
+        ...d,
+        // HP回復直前
+        currentHp: d.hpAfter,
+      })
       const heal = Math.floor(d.maxHp * 0.15)
       expect(d.currentHp).toBe(d.hpAfter + heal)
     })
@@ -439,7 +443,11 @@ describe("ひびきのスキル", () => {
       expect(e.data.denco.who).toBe("self")
       expect(e.data.skillName).toBe("シンフォニックレイル Lv.4")
       expect(e.data.time).toBe(now)
-      expect(e.data.denco).toMatchDencoState(d)
+      expect(e.data.denco).toMatchDencoState({
+        ...d,
+        // HP回復直前
+        currentHp: d.hpAfter,
+      })
       const heal = Math.floor(d.maxHp * 0.15)
       expect(d.currentHp).toBe(d.hpAfter + heal)
     })
