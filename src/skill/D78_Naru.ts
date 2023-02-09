@@ -1,40 +1,47 @@
+import { getSkillTrigger, hasSkillTriggered } from "../core/access";
+import { assert } from "../core/context";
 import { formatPercent } from "../core/format";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
+  onAccessBeforeStart: (context, state, self) => {
     // フットバースでも・相手不在でも発動する
-    // before_accessで発動するため無効化の影響を受けない
-    if (step === "before_access" && self.who === "offense") {
-      // 無効化スキルの影響について
-      // - 現行の仕様
-      //   - てすと（cool属性の無効化）により無効化される（てすとの発動アイコン表示される）
-      //   - しかし、なるのスキルも発動している（獲得スコアUP or 獲得スコアDown&ATK増加の両方の場合で確認）
-      // - 実装
-      //   - なる・てすとは共にbefore_accessでスキルが発動する
-      //   - 同じ段階before_accessで発動するスキルは互いの無効化は干渉せず、すべて発動する
-      //   - なるのスキル発動（ATK増加も含む）
-      //   - てすとのスキル発動、なるを無効化
-      //   - スキルを無効化しても既に発動したスキル効果は変化しない原則に則り、ATK増加はそのまま 
-      // 他の獲得するスコアを増加させるタイプのスキルは無効化影響を受けるのでstart_accessで処理する
-      // なぜ、なるだけ特別なのかは不明
+    // 通常、獲得スコア増加スキルはstart_accessで発動し無効化の影響を受けるが
+    // なるは特別に無効化の影響を受けない（謎）
+    if (self.who === "offense") {
       return {
-        probability: "probability",
+        probability: self.skill.property.readNumber("probability"),
+        type: "skill_recipe",
         recipe: (state) => {
           const scorePercent = self.skill.property.readNumber("score_percent")
           // アクセスで獲得するスコアを増加させる
           state.offense.scorePercent.access += scorePercent
-          context.log.log(`集められる思い出がドカンとアップ！ ${formatPercent(scorePercent)}`)
+          context.log.log(`獲得スコアを増加${formatPercent(scorePercent)}`)
         },
         fallbackRecipe: (state) => {
           const scorePercent = self.skill.property.readNumber("score_percent_failure")
           state.offense.scorePercent.access += scorePercent
-          const atk = self.skill.property.readNumber("ATK")
-          state.attackPercent += atk
-          context.log.log(`たまに失敗するですが……${formatPercent(scorePercent)} ATK${formatPercent(atk)}`)
+          context.log.log(`獲得スコアを減少${formatPercent(scorePercent)}`)
         }
+      }
+    }
+  },
+  onAccessDamagePercent: (context, state, self) => {
+    // AKT増加は無効化影響を受ける
+
+    // 獲得スコアの増減を確認
+    if (!hasSkillTriggered(state, "offense", self)) return
+    const triggers = getSkillTrigger(state, "offense", self)
+    assert(triggers.length === 1)
+    const t = triggers[0]
+    assert(t.type === "skill_recipe")
+    if (t.fallbackTriggered) {
+      return {
+        probability: 100,
+        type: "damage_atk",
+        percent: self.skill.property.readNumber("ATK")
       }
     }
   }

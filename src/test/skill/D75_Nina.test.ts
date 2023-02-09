@@ -1,5 +1,5 @@
 import { init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -37,11 +37,20 @@ describe("ニナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, nina)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", nina)).toBe(true)
     expect(result.attackPercent).toBe(30)
     // 経験値追加
     let d = result.defense!.formation[0]
     expect(d.exp.skill).toBe(360)
+
+    let t = getSkillTrigger(result, "offense", nina)[0]
+    expect(t.skillName).toBe("ねっけつレッスン Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.type).toBe("exp_delivery")
+    t = getSkillTrigger(result, "offense", nina)[1]
+    expect(t.skillName).toBe("ねっけつレッスン Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.type).toBe("damage_atk")
   })
   test("発動なし-攻撃側(アクセス)-スキルidle", () => {
     const context = initContext("test", "test", false)
@@ -63,7 +72,7 @@ describe("ニナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, nina)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", nina)).toBe(false)
     expect(result.attackPercent).toBe(0)
     // 経験値追加
     let d = result.defense!.formation[0]
@@ -90,7 +99,7 @@ describe("ニナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, nina)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", nina)).toBe(false)
     expect(result.attackPercent).toBe(0)
     // 経験値追加
     let d = result.defense!.formation[0]

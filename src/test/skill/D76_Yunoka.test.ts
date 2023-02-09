@@ -1,5 +1,5 @@
 import { DencoManager, init } from "../.."
-import { getAccessDenco, getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getDefense, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
@@ -32,7 +32,7 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yunoka)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", yunoka)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-フットバース", () => {
@@ -56,7 +56,7 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yunoka)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", yunoka)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-非アクティブ", () => {
@@ -78,7 +78,7 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yunoka)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", yunoka)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動あり", () => {
@@ -102,9 +102,17 @@ describe("ゆのかのスキル", () => {
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(true)
-    expect(hasSkillTriggered(result.offense, yunoka)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", yunoka)).toBe(true)
     expect(result.attackPercent).toBe(39)
     expect(result.damageBase?.variable).toBe(346)
+
+    let t = getSkillTrigger(result, "offense", yunoka)[0]
+    expect(t.skillName).toBe("ほっと・バスタイム Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.type).toBe("damage_atk")
+    expect(t.triggered).toBe(true)
+    t = getSkillTrigger(result, "offense", yunoka)[1]
+    expect(t).toBeUndefined()
   })
   test("発動あり-回復あり-正ダメージ量", () => {
     const context = initContext("test", "test", false)
@@ -127,8 +135,8 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yunoka)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", yunoka)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test)).toBe(true)
     expect(result.attackPercent).toBe(39)
     expect(result.defendPercent).toBe(100)
     expect(yunoka.ap).toBe(192)
@@ -141,6 +149,17 @@ describe("ゆのかのスキル", () => {
     expect(d.reboot).toBe(false)
     expect(d.damage?.value).toBe(damage - heal)
     expect(d.currentHp).toBe(charlotte.maxHp - damage + heal)
+
+    let t = getSkillTrigger(result, "offense", yunoka)[0]
+    expect(t.skillName).toBe("ほっと・バスタイム Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.type).toBe("damage_atk")
+    expect(t.triggered).toBe(true)
+    t = getSkillTrigger(result, "offense", yunoka)[1]
+    expect(t.skillName).toBe("ほっと・バスタイム Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.type).toBe("skill_recipe")
+    expect(t.triggered).toBe(true)
   })
   test("発動あり-回復あり-負ダメージ量", () => {
     const context = initContext("test", "test", false)
@@ -164,8 +183,8 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yunoka)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", yunoka)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test)).toBe(true)
     expect(result.attackPercent).toBe(39)
     expect(result.defendPercent).toBe(139)
     expect(yunoka.ap).toBe(192)
@@ -200,9 +219,9 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yunoka)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test1)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test2)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", yunoka)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test1)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test2)).toBe(true)
     expect(result.attackPercent).toBe(39)
     expect(result.defendPercent).toBe(139)
     expect(result.damageFixed).toBe(-10)
@@ -238,8 +257,8 @@ describe("ゆのかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yunoka)).toBe(true)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", yunoka)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
     expect(result.attackPercent).toBe(39)
     expect(result.defendPercent).toBe(0)
     expect(yunoka.ap).toBe(192)
