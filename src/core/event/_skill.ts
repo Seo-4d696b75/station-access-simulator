@@ -178,9 +178,19 @@ function execute(
   // 発動なし
   // 確率or直前のアクセスでの無効化
   if (!triggerState.canTrigger) {
+    // fallbackの確認
+    if (!triggerState.fallbackEffect) {
       context.log.log("スキル評価イベントの終了（発動なし）")
       return
-    // TODO fallback
+    }
+    state = triggerState.fallbackEffect(state) ?? state
+
+    // スキル発動のevent記録はなし
+    state.event = [
+      ...originalEvent,
+      ...state.event,
+    ]
+    return state
   }
 
   assert(triggerState.triggered)

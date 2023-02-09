@@ -54,6 +54,11 @@ export type SkillTriggerState<D extends Denco, T extends SkillTrigger<string>> =
    * スキル効果が発動したか
    */
   triggered: boolean
+
+  /**
+   * 発動確率の判定失敗時の代替効果（fallback）が発動したか
+   */
+  fallbackTriggered: boolean
 }
 
 export type WithAccessPosition<D extends Denco> = D & {
@@ -95,7 +100,25 @@ export type EventSkillTrigger =
   EventSkillRecipe
 
 export interface EventSkillRecipe extends SkillTrigger<"skill_event"> {
+  /**
+   * スキル発動時の効果を反映させます
+   * 
+   * 確率計算（確率補正の考慮あり）・無効化スキルを考慮して発動できる場合のみ実行されます
+   * 
+   * @param state 現在の状態
+   * @returns 現在の状態に直接書き込むか新しい状態変数を返す
+   */
   recipe: (state: SkillEventState) => void | SkillEventState
+
+  /**
+   * スキル発動に失敗した時の状態変化を指定できます
+   * 
+   * 確率計算・無効化スキルの判定結果が`false`で`recipe`が実行されない場合は、
+   * - `fallbackEffect`が代わりに実行されます
+   * - スキル発動の記録は残りません
+   * 
+   */
+  fallbackEffect?: (state: SkillEventState) => void | SkillEventState
 }
 
 /*
@@ -144,9 +167,17 @@ export type AccessSkillTrigger =
   AccessDamageDEF |
   AccessDamageSpecial |
   AccessDamageFixed |
-  AccessAfterRecipe
+  AccessSkillRecipe
 
 export type AccessSkillTriggerBase<T extends AccessSkillTriggerType> = SkillTrigger<T> & {
+  /**
+   * スキル発動時の付随的な効果を指定できます
+   * 
+   * 各種スキル発動効果の本体が発動（確率判定・無効化スキルを考慮）するとき同時に実行されます
+   * 
+   * @param state 現在の状態
+   * @returns 現在の状態に直接書き込むか新しい状態変数を返す
+   */
   sideEffect?: (state: AccessState) => void | AccessState
 }
 
@@ -197,7 +228,26 @@ export interface AccessDamageFixed extends AccessSkillTriggerBase<"damage_fixed"
   damage: number
 }
 
-export interface AccessAfterRecipe extends AccessSkillTriggerBase<"after_recipe"> {
+export interface AccessSkillRecipe extends AccessSkillTriggerBase<"skill_recipe"> {
+  /**
+   * スキル発動時の効果を反映させます
+   * 
+   * 確率計算（確率補正の考慮あり）・無効化スキルを考慮して発動できる場合のみ実行されます
+   * 
+   * @param state 現在の状態
+   * @returns 現在の状態に直接書き込むか新しい状態変数を返す
+   */
   recipe: (state: AccessState) => void | AccessState
+
+  /**
+   * 発動確率の判定に失敗した時のスキル効果
+   * 
+   * 確率計算（確率補正の考慮あり）の結果が`false`でも`fallbackRecipe`が定義済みの場合は、
+   * - `fallbackRecipe`が代わりに実行されます
+   * - スキルは発動したと記録します
+   * 
+   * ただし、無効化スキルの影響を受ける場合は確率判定の如何に関わらず`fallbackRecipe`も実行されません
+   */
+  fallbackRecipe?: (state: AccessState) => void | AccessState
 }
 

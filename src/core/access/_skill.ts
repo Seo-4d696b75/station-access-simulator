@@ -187,6 +187,7 @@ function checkAccessSkillTrigger(
     canTrigger: false,
     invalidated: false,
     triggered: false,
+    fallbackTriggered: false,
     skillName: skill.name,
   }
 
@@ -200,7 +201,12 @@ function checkAccessSkillTrigger(
 
   // 発動確率の確認
   if (!checkSkillProbability(context, triggered, state)) {
-    return state
+    if (state.type === "skill_recipe" && state.fallbackRecipe) {
+      // fallbackの確認
+      state.fallbackTriggered = true
+    } else {
+      return state
+    }
   }
 
   // 発動判定をパス
@@ -294,8 +300,10 @@ function triggerAccessSkillEffect(
     case "damage_fixed":
       state.damageFixed += trigger.damage
       break
-    case "after_recipe":
-      state = trigger.recipe(state) ?? state
+    case "skill_recipe":
+      const recipe = trigger.fallbackTriggered ? trigger.fallbackRecipe : trigger.recipe
+      assert(recipe, "fallbackRecipeが見つかりません")
+      state = recipe(state) ?? state
       break
     default:
       assert(false, "expected unreachable")
