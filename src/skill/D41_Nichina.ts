@@ -22,7 +22,7 @@ const skill: SkillLogic = {
       if (dst.level > self.level) return
       return {
         probability: self.skill.property.readNumber("probability", 100),
-        type: "after_recipe",
+        type: "skill_recipe",
         recipe: (state) => {
           // 書き込み可能な移譲先を再度取得
           const formation = getFormation(state, self.which)

@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       assert(damage)
       return {
         probability: self.skill.property.readNumber("probability", 100),
-        type: "after_recipe",
+        type: "skill_recipe",
         recipe: (state) => {
           // アクセスしてきた相手、もしくはアクセスした相手
           // カウンターによるダメージの場合は攻撃側の場合もある

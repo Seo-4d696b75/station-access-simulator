@@ -25,10 +25,7 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
   }
   const config: AccessConfig = {
     offense: {
-      state: {
-        ...state,
-        event: [],
-      },
+      state: state,
       carIndex: state.carIndex
     },
     station: station
@@ -43,11 +40,7 @@ export const accessRandomStation = (context: Context, state: ReadonlyState<Skill
   )
   // アクセス処理の反映
   let next = copy.SkillEventState(state)
-  // eventTriggers の更新
-  next.eventTriggers.push(...result.offense.event)
-  // event は変化させない
-  result.offense.event = next.event
-  // formation: UserState[], queueを更新
+  // formation: UserState[], queue, eventを更新
   merge.UserState(next, result.offense)
   return next
 })

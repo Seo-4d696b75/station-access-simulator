@@ -10,7 +10,7 @@ const skill: SkillLogic = {
       if (!d.reboot && !hasSkillTriggered(state, "offense", self)) {
         return {
           probability: self.skill.property.readNumber("probability"),
-          type: "after_recipe",
+          type: "skill_recipe",
           recipe: (state) => repeatAccess(context, state)
         }
       }

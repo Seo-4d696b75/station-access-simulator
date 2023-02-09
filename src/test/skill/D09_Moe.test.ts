@@ -122,7 +122,11 @@ describe("もえのスキル", () => {
     expect(event.data.skillName).toBe("ご主人様も一緒にいかが!?")
     expect(event.data.denco.carIndex).toBe(0)
     expect(event.data.denco.who).toBe("self")
-    expect(event.data.denco).toMatchDencoState(state.formation[0])
+    expect(event.data.denco).toMatchDencoState({
+      ...state.formation[0],
+      // 回復直前の状態
+      currentHp: Math.floor(moe.maxHp * 0.9)
+    })
 
     // check current hp
     expect(moe.currentHp).toBe(moe.maxHp)

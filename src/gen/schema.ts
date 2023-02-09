@@ -2,7 +2,7 @@ import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, Acc
 import { AccessScoreExpResult, AccessScoreExpState, ScoreExpBoostPercent, ScoreExpResult } from "../core/access/score"
 import { assert, SimulatorError } from "../core/context"
 import { Denco, DencoState } from "../core/denco"
-import { AccessEventData, AccessEventUser, Event, EventSkillTriggerStateHolder, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
+import { AccessEventData, AccessEventUser, Event, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
 import { FilmHolder } from "../core/film"
 import { MutableProperty, ReadableProperty, TypedMap } from "../core/property"
 import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition, SkillTransitionType } from "../core/skill"
@@ -269,12 +269,14 @@ const accessSkillTriggerStateSchema = objectSchema<AccessSkillTriggerState>({
   canTrigger: primitiveSchema,
   invalidated: primitiveSchema,
   triggered: primitiveSchema,
+  fallbackTriggered: primitiveSchema,
   sideEffect: functionSchema,
 
   // each skill trigger
   enable: primitiveSchema,
   percent: primitiveSchema,
   recipe: functionSchema,
+  fallbackRecipe: functionSchema,
   isTarget: functionSchema,
   score: primitiveSchema,
   exp: functionSchema,
@@ -465,6 +467,7 @@ const eventSkillTriggerSchema = objectSchema<EventSkillTrigger>({
   type: primitiveSchema,
   probability: primitiveSchema,
   recipe: functionSchema,
+  fallbackEffect: functionSchema,
 })
 
 const skillEventReservationSchema = objectSchema<SkillEventReservation>({
@@ -575,14 +578,12 @@ const eventSkillTriggerStateSchema = objectSchema<EventSkillTriggerState>({
   canTrigger: primitiveSchema,
   invalidated: primitiveSchema,
   triggered: primitiveSchema,
+  fallbackTriggered: primitiveSchema,
 
   // each skill trigger
   percent: primitiveSchema,
   recipe: functionSchema,
 })
-
-const copyEventSkillTriggerState = createCopyFunc<EventSkillTriggerState>(eventSkillTriggerStateSchema as any)
-const mergeEventSkillTriggerState = createMergeFunc<EventSkillTriggerState>(eventSkillTriggerStateSchema as any)
 
 export const skillEventDencoStateSchema = objectSchema<SkillEventDencoState>({
   ...dencoStateSchema.fields,
@@ -595,27 +596,5 @@ export const skillEventStateSchema = objectSchema<SkillEventState>({
   time: primitiveSchema,
   formation: arraySchema(skillEventDencoStateSchema),
   carIndex: primitiveSchema,
-  eventTriggers: arraySchema(
-    customSchema<Event | EventSkillTriggerStateHolder>(
-      (src) => {
-        if (src.type === "skill_trigger_state") {
-          return {
-            type: "skill_trigger_state",
-            data: copyEventSkillTriggerState(src.data)
-          }
-        } else {
-          return copyEvent(src)
-        }
-      },
-      (dst, src) => {
-        if (src.type === "skill_trigger_state") {
-          assert(dst.type === "skill_trigger_state")
-          mergeEventSkillTriggerState(dst.data, src.data)
-        } else {
-          assert(dst.type !== "skill_trigger_state")
-          mergeEvent(dst, src)
-        }
-      }
-    )
-  ),
+  skillTriggers: arraySchema(eventSkillTriggerStateSchema as any),
 })

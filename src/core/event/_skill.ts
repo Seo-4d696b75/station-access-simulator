@@ -9,7 +9,7 @@ import { EventSkillTrigger, EventSkillTriggerState, SkillProbabilityBoost, WithS
 import { ReadonlyState } from "../state";
 import { UserState } from "../user";
 import { refreshUserState } from "../user/refresh";
-import { Event, SkillTriggerEvent } from "./type";
+import { SkillTriggerEvent } from "./type";
 
 /**
  * スキル発動型のイベントの詳細
@@ -35,10 +35,7 @@ export interface SkillEventState extends UserState {
   formation: SkillEventDencoState[]
   carIndex: number
 
-  /**
-   * スキル発動処理中に新たに記録されるイベント
-   */
-  eventTriggers: (Event | EventSkillTriggerStateHolder)[]
+  skillTriggers: EventSkillTriggerState[]
 }
 
 export const triggerSkillAfterAccess = (
@@ -62,7 +59,7 @@ export const triggerSkillAfterAccess = (
       carIndex: idx,
     })),
     carIndex: self.carIndex,
-    eventTriggers: [],
+    skillTriggers: [],
   }
   //const result = execute(context, state, trigger)
   const result = execute(
@@ -111,7 +108,7 @@ export const triggerSkillAtEvent = (
       }
     }),
     carIndex: idx,
-    eventTriggers: [],
+    skillTriggers: [],
   }
 
   const result = execute(context, eventState, trigger)
@@ -136,9 +133,11 @@ function execute(
   const skill = self.skill
   assert(skill.type === "possess", "スキルを保有していません")
 
-  // TODO triggerに確率ブーストは含めない
-
   context.log.log(`スキル評価イベントの開始: ${self.firstName} ${skill.name}`)
+
+  // 処理開始時のevent
+  const originalEvent = state.event
+  state.event = []
 
   // 確率補正のスキル発動
   state.formation.forEach(d => {
@@ -158,52 +157,45 @@ function execute(
     const checked = checkEventSkillTrigger(
       context,
       d,
-      state.eventTriggers,
+      state.skillTriggers,
       t,
       access
     )
-    state.eventTriggers.push({
-      type: "skill_trigger_state",
-      data: checked
-    })
+    state.skillTriggers.push(checked)
   })
 
   // 本人のスキル発動
   const triggerState = checkEventSkillTrigger(
     context,
     self,
-    state.eventTriggers,
+    state.skillTriggers,
     trigger,
     access
   )
 
+  assert(triggerState.type === "skill_event")
+
   // 発動なし
   // 確率or直前のアクセスでの無効化
   if (!triggerState.canTrigger) {
-    context.log.log("スキル評価イベントの終了（発動なし）")
-    return
+      context.log.log("スキル評価イベントの終了（発動なし）")
+      return
     // TODO fallback
   }
 
   assert(triggerState.triggered)
-  assert(triggerState.type === "skill_event")
+  state.skillTriggers.push(triggerState)
 
-  // TODO　ランダムな駅アクセス発動の場合のイベント記録の順序
-  // ランダム駅アクセスのスキル発動 > 駅アクセス > (アクセス時のスキル発動) の方が自然では？
-  // 現行：(ひいる発動) > 駅アクセス > (アクセス時のスキル発動) > ランダム駅アクセスのスキル発動 時系列になっていない
-  // 特に確率補正が効く場合はひいるダイアログと離れてしまいどのスキル発動に影響しているか分かりにくい
   state = triggerState.recipe(state) ?? state
-  state.eventTriggers.push({
-    type: "skill_trigger_state",
-    data: triggerState,
-  })
 
-  // スキル発動処理中のイベントを記録
-  state.eventTriggers.forEach(event => {
-    if (event.type === "skill_trigger_state") {
-      const t = event.data
-      if (!t.triggered) return
-      let e: SkillTriggerEvent = {
+  state.event = [
+    // 開始時のevent
+    ...originalEvent,
+
+    // スキル発動のevent
+    ...state.skillTriggers.map(t => {
+      if (!t.triggered) return undefined
+      return {
         type: "skill_trigger",
         data: {
           time: state.time.valueOf(),
@@ -213,11 +205,11 @@ function execute(
           boostedProbability: t.boostedProbability,
         },
       }
-      state.event.push(e)
-    } else {
-      state.event.push(event)
-    }
-  })
+    }).filter((t): t is SkillTriggerEvent => !!t),
+
+    // 処理中に発生したスキル発動以外のevent
+    ...state.event,
+  ]
 
   return state
 
@@ -228,7 +220,7 @@ function execute(
 function checkEventSkillTrigger(
   context: Context,
   denco: ReadonlyState<SkillEventDencoState>,
-  triggered: (Event | EventSkillTriggerStateHolder)[],
+  triggered: EventSkillTriggerState[],
   trigger: EventSkillTrigger | SkillProbabilityBoost,
   access?: {
     result: AccessResult,
@@ -250,6 +242,7 @@ function checkEventSkillTrigger(
     canTrigger: false,
     invalidated: false,
     triggered: false,
+    fallbackTriggered: false,
     skillName: skill.name,
   }
 
@@ -319,7 +312,7 @@ function checkSkillInvalidated(
 
 function checkSkillProbability(
   context: Context,
-  triggered: (Event | EventSkillTriggerStateHolder)[],
+  triggered: EventSkillTriggerState[],
   trigger: EventSkillTriggerState,
 ): boolean {
   // 発動確率の読み出し
@@ -335,8 +328,6 @@ function checkSkillProbability(
 
   // 確率補正の計算
   const boost = triggered
-    .filter((e): e is EventSkillTriggerStateHolder => e.type === "skill_trigger_state")
-    .map(e => e.data)
     .filter(t => t.canTrigger)
     .map(t => {
       if (t.type === "probability_boost") {

@@ -116,9 +116,9 @@ export type AccessSkillTriggerType =
   "damage_def" |
   "damage_special" |
   "damage_fixed" |
-  "after_recipe"
+  "skill_recipe"
 
-export type AccessSkillTriggerCallback<E extends AccessSkillTrigger> = (context: Context, state: ReadonlyState<AccessState>, self: ReadonlyState<WithSkill<AccessDencoState>>) => E | E[] | void
+export type AccessSkillTriggerCallback<E extends AccessSkillTrigger> = (context: Context, state: ReadonlyState<AccessState>, self: ReadonlyState<WithSkill<AccessDencoState>>) => E | AccessSkillRecipe | (E | AccessSkillRecipe)[] | void
 
 export interface SkillTriggerCallbacks {
   onSkillProbabilityBoost?: (context: Context, self: ReadonlyState<WithSkill<DencoState>>) => SkillProbabilityBoost | void
@@ -128,7 +128,7 @@ export interface SkillTriggerCallbacks {
   onAccessDamagePercent?: AccessSkillTriggerCallback<AccessDamageATK | AccessDamageDEF>
   onAccessDamageSpecial?: AccessSkillTriggerCallback<AccessDamageSpecial>
   onAccessDamageFixed?: AccessSkillTriggerCallback<AccessDamageFixed>
-  onAccessAfterDamage?: AccessSkillTriggerCallback<AccessAfterRecipe>
+  onAccessAfterDamage?: AccessSkillTriggerCallback<AccessSkillRecipe>
 }
 
 export type AccessSkillTrigger =

@@ -57,11 +57,6 @@ describe("シャルのスキル", () => {
     expect(state.event.length).toBe(2)
 
     let event = state.event[0]
-    expect(event.type).toBe("access")
-    assert(event.type === "access")
-    expect(event.data.time).toBe(context.currentTime)
-
-    event = state.event[1]
     expect(event.type).toBe("skill_trigger")
     assert(event.type === "skill_trigger")
     expect(event.data.time).toBe(context.currentTime)
@@ -76,6 +71,10 @@ describe("シャルのスキル", () => {
       link: []
     })
 
+    event = state.event[1]
+    expect(event.type).toBe("access")
+    assert(event.type === "access")
+    expect(event.data.time).toBe(context.currentTime)
   })
 
 
@@ -95,7 +94,7 @@ describe("シャルのスキル", () => {
     }
     expect(charlotte.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [charlotte])
-    
+
     state = activateSkill(context, state, 0)
     let entry = state.queue[0]
     expect(entry.type).toBe("hour_cycle")
@@ -132,7 +131,7 @@ describe("シャルのスキル", () => {
     }
     expect(charlotte.skill.type).toBe("possess")
     let state = initUser(context, "とあるマスター", [charlotte, hiiru])
-    
+
     state = activateSkill(context, state, 0)
     let entry = state.queue[0]
     expect(entry.type).toBe("hour_cycle")
@@ -167,12 +166,8 @@ describe("シャルのスキル", () => {
     expect(event.data.denco.who).toBe("other")
     expect(event.data.denco).toMatchDencoState(state.formation[1])
 
-    event = state.event[1]
-    expect(event.type).toBe("access")
-    assert(event.type === "access")
-    expect(event.data.time).toBe(context.currentTime)
 
-    event = state.event[2]
+    event = state.event[1]
     expect(event.type).toBe("skill_trigger")
     assert(event.type === "skill_trigger")
     expect(event.data.time).toBe(context.currentTime)
@@ -186,5 +181,10 @@ describe("シャルのスキル", () => {
       // ランダム駅アクセスの直前
       link: []
     })
+
+    event = state.event[2]
+    expect(event.type).toBe("access")
+    assert(event.type === "access")
+    expect(event.data.time).toBe(context.currentTime)
   })
 })

@@ -25,7 +25,7 @@ const skill: SkillLogic = {
         // 実装的には姉の被アクセス時に確率でカウンター、カウンターと同時にHPも回復
         return {
           probability: self.skill.property.readNumber("probability"),
-          type: "after_recipe",
+          type: "skill_recipe",
           recipe: (state) => counterAttack(context, state, self),
         }
       }
