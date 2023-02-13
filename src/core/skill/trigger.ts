@@ -151,7 +151,7 @@ export interface SkillTriggerCallbacks {
   onAccessDamagePercent?: AccessSkillTriggerCallback<AccessDamageATK | AccessDamageDEF>
   onAccessDamageSpecial?: AccessSkillTriggerCallback<AccessDamageSpecial>
   onAccessDamageFixed?: AccessSkillTriggerCallback<AccessDamageFixed>
-  onAccessAfterDamage?: AccessSkillTriggerCallback<AccessSkillRecipe>
+  onAccessAfterDamage?: AccessSkillTriggerCallback<AccessScoreDelivery | AccessExpDelivery>
 }
 
 export type AccessSkillTrigger =
