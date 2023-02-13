@@ -45,7 +45,7 @@ describe("めぐるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, meguru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", meguru)).toBe(true)
     expect(result.attackPercent).toBe(3.5 * Math.min(cnt, 20))
   })
 
@@ -74,7 +74,7 @@ describe("めぐるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(false)
-      expect(hasSkillTriggered(result.offense, meguru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", meguru)).toBe(true)
       // カウント増加なし
       let s = getSkill(result.offense.formation[0])
       expect(s.data.readNumber("link_count", 0)).toBe(cnt)
@@ -102,8 +102,8 @@ describe("めぐるのスキル", () => {
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
       expect(result.pinkMode).toBe(true)
-      expect(hasSkillTriggered(result.offense, meguru)).toBe(false)
-      // カウント増加なし
+      expect(hasSkillTriggered(result, "offense", meguru)).toBe(false)
+      // カウント増加あり
       let s = getSkill(result.offense.formation[0])
       expect(s.data.readNumber("link_count", 0)).toBe(1)
     })

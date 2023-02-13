@@ -4,34 +4,24 @@ import { NewStationType } from "../core/user/property";
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
-    // 足湯は対象外
+  onAccessAfterDamage: (context, state, self) => {
     if (
-      step === "after_damage"
-      && self.which === "offense"
+      self.which === "offense"
       && state.linkSuccess
       && !state.pinkMode
       && getAccessDenco(state, "offense").attr === "heat"
     ) {
+      const predicate = state.offense.user.history.isNewStation
+      const isNew = predicate(context, state.station) >= NewStationType.Daily
+      const exp = self.skill.property.readNumber("EXP")
+        + (isNew ? self.skill.property.readNumber("EXP_additional") : 0)
       return {
-        probability: "probability",
-        recipe: (state) => {
-          let exp = self.skill.property.readNumber("EXP")
-          context.log.log(`なんでもみんなで騒いで楽しむのがイチバン！経験値配布：${exp}`)
-          const predicate = state.offense.user.history.isNewStation
-          if (predicate(context, state.station) >= NewStationType.Daily) {
-            const additional = self.skill.property.readNumber("EXP_additional")
-            context.log.log(`  今日の新駅(${state.station.name}) 経験値追加：${additional}`)
-            exp += additional
-          }
-          state.offense.formation.forEach(d => {
-            d.exp.skill += exp
-          })
-        }
+        probability: self.skill.property.readNumber("probability"),
+        type: "exp_delivery",
+        exp: (d) => d.which === "offense" ? exp : 0,
       }
-
     }
-  }
+  },
 }
 
 export default skill

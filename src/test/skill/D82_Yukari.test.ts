@@ -38,7 +38,7 @@ describe("ゆかりのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yukari)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", yukari)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
     test("発動あり-自身先頭", () => {
@@ -62,7 +62,7 @@ describe("ゆかりのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yukari)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yukari)).toBe(true)
       expect(result.defendPercent).toBe(4)
 
     })
@@ -87,7 +87,7 @@ describe("ゆかりのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yukari)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", yukari)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
     test("発動あり-自身先頭以外", () => {
@@ -111,7 +111,7 @@ describe("ゆかりのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yukari)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yukari)).toBe(true)
       expect(result.defendPercent).toBe(4)
 
     })
@@ -147,7 +147,7 @@ describe("ゆかりのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yukari)).toBe(cnt >= 4)
+      expect(hasSkillTriggered(result, "defense", yukari)).toBe(cnt >= 4)
       expect(result.defendPercent).toBe(cnt >= 4 ? 20 : 0)
     })
     test("eco以外は対象外", () => {
@@ -179,7 +179,7 @@ describe("ゆかりのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yukari)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", yukari)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
   })
@@ -212,7 +212,7 @@ describe("ゆかりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, yukari)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", yukari)).toBe(true)
     expect(result.defendPercent).toBe(4 + 20)
   })
 })

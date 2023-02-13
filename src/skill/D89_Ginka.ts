@@ -1,22 +1,17 @@
-import { formatPercent } from "../core/format";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
+  onAccessDamagePercent: (context, state, self) => {
     if (
-      step === "damage_common"
-      && self.who === "defense"
+      self.who === "defense"
       && self.currentHp === self.maxHp
     ) {
       return {
-        probability: "probability", // 100%
-        recipe: (state) => {
-          const def = self.skill.property.readNumber("DEF")
-          state.defendPercent += def
-          context.log.log(`わたしは何もしなくとも強い！DEF${formatPercent(def)}`)
-        }
+        probability: self.skill.property.readNumber("probability"), // 100%
+        type: "damage_def",
+        percent: self.skill.property.readNumber("DEF")
       }
     }
   }

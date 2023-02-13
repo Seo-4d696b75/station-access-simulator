@@ -36,7 +36,7 @@ describe("ギンカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, ginka)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ginka)).toBe(true)
     expect(result.defendPercent).toBe(42)
   })
 
@@ -64,7 +64,7 @@ describe("ギンカのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, ginka)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", ginka)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
     test("編成内", () => {
@@ -89,7 +89,7 @@ describe("ギンカのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, ginka)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", ginka)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
   })

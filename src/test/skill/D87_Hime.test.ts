@@ -42,7 +42,7 @@ describe("ひめのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, hime)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hime)).toBe(true)
       expect(result.attackPercent).toBe(attr === "eco" ? 56 : 16)
     })
   })
@@ -68,7 +68,7 @@ describe("ひめのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, hime)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", hime)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
     test("被アクセス", () => {
@@ -91,7 +91,7 @@ describe("ひめのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hime)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hime)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
   })
