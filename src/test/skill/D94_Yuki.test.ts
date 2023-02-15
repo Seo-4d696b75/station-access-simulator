@@ -1,5 +1,5 @@
 import { activateSkill, DencoAttribute, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
@@ -40,7 +40,7 @@ describe("ゆきのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yuki)).toBe(cnt >= 14)
+    expect(hasSkillTriggered(result, "offense", yuki)).toBe(cnt >= 14)
     let d = result.offense.formation[0]
     expect(d.exp.skill).toBe(cnt >= 14 ? 120 : 0)
   })
@@ -70,7 +70,7 @@ describe("ゆきのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yuki)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", yuki)).toBe(true)
     let d = result.offense.formation[0]
     expect(d.exp.skill).toBe(120 + (attr === "cool" ? 200 : 0))
   })
@@ -102,8 +102,14 @@ describe("ゆきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, yuki)).toBe(true)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", yuki)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+      let t = getSkillTrigger(result, "offense", yuki)[0]
+      expect(t.skillName).toBe("きみにサプライズ Lv.4")
+      expect(t.probability).toBe(7)
+      expect(t.boostedProbability).toBe(7 * 1.2)
+      expect(t.triggered).toBe(true)
+
       let d = result.offense.formation[0]
       expect(d.exp.skill).toBe(120)
     })
@@ -132,8 +138,14 @@ describe("ゆきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, yuki)).toBe(true)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", yuki)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
+      let t = getSkillTrigger(result, "offense", yuki)[0]
+      expect(t.skillName).toBe("きみにサプライズ Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.boostedProbability).toBe(100)
+      expect(t.triggered).toBe(true)
+
       let d = result.offense.formation[0]
       expect(d.exp.skill).toBe(120)
     })
@@ -166,7 +178,7 @@ describe("ゆきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, yuki)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", yuki)).toBe(false)
       let d = result.offense.formation[0]
       expect(d.exp.skill).toBe(0)
     })
@@ -189,7 +201,7 @@ describe("ゆきのスキル", () => {
         station: charlotte.link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.offense, yuki)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", yuki)).toBe(false)
       let d = result.offense.formation[0]
       expect(d.exp.skill).toBe(0)
     })

@@ -1,5 +1,5 @@
 import { activateSkill, DencoType, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
@@ -46,7 +46,7 @@ describe("すばるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       const trigger = (type === "attacker" || type === "trickster")
-      expect(hasSkillTriggered(result.offense, subaru)).toBe(trigger)
+      expect(hasSkillTriggered(result, "offense", subaru)).toBe(trigger)
       expect(result.attackPercent).toBe(trigger ? 16 : 0)
       expect(result.defendPercent).toBe(0)
     })
@@ -73,7 +73,7 @@ describe("すばるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       const trigger = (type === "attacker" || type === "trickster")
-      expect(hasSkillTriggered(result.offense, subaru)).toBe(trigger)
+      expect(hasSkillTriggered(result, "offense", subaru)).toBe(trigger)
       expect(result.attackPercent).toBe(trigger ? 16 : 0)
       expect(result.defendPercent).toBe(0)
     })
@@ -99,7 +99,7 @@ describe("すばるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, subaru)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", subaru)).toBe(false)
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(0)
     })
@@ -127,8 +127,15 @@ describe("すばるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, subaru)).toBe(true)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", subaru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+      let t = getSkillTrigger(result, "offense", subaru)[0]
+      expect(t.skillName).toBe("プレアデスドライブ Lv.4")
+      expect(t.probability).toBe(38)
+      expect(t.boostedProbability).toBe(38 * 1.2)
+      expect(t.canTrigger).toBe(true)
+      expect(t.triggered).toBe(true)
+
       expect(result.attackPercent).toBe(16)
       expect(result.defendPercent).toBe(0)
     })
@@ -155,8 +162,15 @@ describe("すばるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, subaru)).toBe(false)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", subaru)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+      let t = getSkillTrigger(result, "offense", subaru)[0]
+      expect(t.skillName).toBe("プレアデスドライブ Lv.4")
+      expect(t.probability).toBe(38)
+      expect(t.boostedProbability).toBe(38 * 1.2)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(0)
     })
@@ -187,7 +201,7 @@ describe("すばるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       const trigger = (type === "supporter" || type === "defender")
-      expect(hasSkillTriggered(result.defense, subaru)).toBe(trigger)
+      expect(hasSkillTriggered(result, "defense", subaru)).toBe(trigger)
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(trigger ? 16 : 0)
     })
@@ -214,7 +228,7 @@ describe("すばるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       const trigger = (type === "supporter" || type === "defender")
-      expect(hasSkillTriggered(result.defense, subaru)).toBe(trigger)
+      expect(hasSkillTriggered(result, "defense", subaru)).toBe(trigger)
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(trigger ? 16 : 0)
     })
@@ -239,7 +253,7 @@ describe("すばるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, subaru)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", subaru)).toBe(false)
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(0)
     })
@@ -266,7 +280,7 @@ describe("すばるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, subaru)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", subaru)).toBe(false)
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(0)
     })

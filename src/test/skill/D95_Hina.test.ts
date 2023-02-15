@@ -37,7 +37,7 @@ describe("ひなのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, hina)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hina)).toBe(true)
       expect(result.attackPercent).toBe(-10.5)
       expect(result.defendPercent).toBe(0)
     })
@@ -62,7 +62,7 @@ describe("ひなのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hina)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", hina)).toBe(true)
       expect(result.attackPercent).toBe(-10.5)
       expect(result.defendPercent).toBe(0)
     })
@@ -89,7 +89,7 @@ describe("ひなのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, hina)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hina)).toBe(true)
       expect(result.attackPercent).toBe(-10.5)
       expect(result.defendPercent).toBe(0)
     })
@@ -113,7 +113,7 @@ describe("ひなのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, hina)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", hina)).toBe(true)
       expect(result.attackPercent).toBe(-10.5)
       expect(result.defendPercent).toBe(0)
     })

@@ -4889,6 +4889,7 @@
     "class": "D91_Yoshino",
     "probability_def": 100,
     "probability_exp": 100,
+    "probability_score": 100,
     "DEF_cool": 15,
     "DEF_heat": -10,
     "list": [
@@ -5267,7 +5268,7 @@
     "probability": 100,
     "cooldown": 10800,
     "active_limit": 3600,
-    "active_shorten": 60,
+    "active_shorten": -60,
     "list": [
       {
         "skill_level": 1,
