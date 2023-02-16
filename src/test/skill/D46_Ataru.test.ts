@@ -255,59 +255,6 @@ describe("あたるのスキル", () => {
         expect(s.data.readNumber("damage_count_key", 0)).toBe(8)
       })
     })
-    test("無効化の影響", () => {
-
-      const context = initContext("test", "test", false)
-      context.random.mode = "force"
-      let seria = DencoManager.getDenco(context, "1", 50)
-      let ataru = DencoManager.getDenco(context, "46", 50, 1)
-      let offense = initUser(context, "とあるマスター", [ataru, seria])
-      offense = activateSkill(context, offense, 0)
-
-      // 被アクセス
-      offense = repeatAccess(context, offense, 10)
-
-      // アクセス  
-      let sheena = DencoManager.getDenco(context, "7", 50, 1)
-      let tesuto = DencoManager.getDenco(context, "EX04", 50)
-      sheena.maxHp = 1000
-      sheena.currentHp = 1000
-      sheena.ap = 1000
-      let defense = initUser(context, "user", [sheena, tesuto])
-      defense = activateSkill(context, defense, 1)
-      const config = {
-        offense: {
-          state: offense,
-          carIndex: 0
-        },
-        defense: {
-          state: defense,
-          carIndex: 0
-        },
-        station: sheena.link[0],
-      }
-      const result = startAccess(context, config)
-      let d = getAccessDenco(result, "offense")
-      expect(d.reboot).toBe(true)
-      // あたるのATK増加は無効化
-      expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
-      expect(hasSkillTriggered(result, "defense", tesuto)).toBe(true)
-      expect(hasSkillTriggered(result, "offense", ataru)).toBe(false)
-      expect(result.attackPercent).toBe(0)
-
-      const t = getSkillTrigger(result, "offense", ataru)[0]
-      expect(t.probability).toBe(100)
-      expect(t.boostedProbability).toBe(0)
-      expect(t.invalidated).toBe(true)
-      expect(t.canTrigger).toBe(false)
-      expect(t.triggered).toBe(false)
-      expect(t.skillName).toBe("ゆずれないプライド Lv.4")
-
-      // カウント増減はスキルの無効化関係なく行われる
-      // カウントを確認 10 - 2
-      let s = getSkill(d)
-      expect(s.data.readNumber("damage_count_key", 0)).toBe(8)
-    })
     describe("ダメージ0の場合は増減なし", () => {
 
       test("足湯", () => {
@@ -387,6 +334,105 @@ describe("あたるのスキル", () => {
         let s = getSkill(d)
         expect(s.data.readNumber("damage_count_key", 0)).toBe(10)
       })
+    })
+  })
+
+  describe("無効化の影響", () => {
+
+    test("無効化の影響-てすと", () => {
+
+      const context = initContext("test", "test", false)
+      context.random.mode = "force"
+      let seria = DencoManager.getDenco(context, "1", 50)
+      let ataru = DencoManager.getDenco(context, "46", 50, 1)
+      let offense = initUser(context, "とあるマスター", [ataru, seria])
+      offense = activateSkill(context, offense, 0)
+
+      // 被アクセス
+      offense = repeatAccess(context, offense, 10)
+
+      // アクセス  
+      let sheena = DencoManager.getDenco(context, "7", 50, 1)
+      let tesuto = DencoManager.getDenco(context, "EX04", 50)
+      sheena.maxHp = 1000
+      sheena.currentHp = 1000
+      sheena.ap = 1000
+      let defense = initUser(context, "user", [sheena, tesuto])
+      defense = activateSkill(context, defense, 1)
+      const config = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: sheena.link[0],
+      }
+      const result = startAccess(context, config)
+      let d = getAccessDenco(result, "offense")
+      expect(d.reboot).toBe(true)
+      // あたるのATK増加は無効化
+      expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", tesuto)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", ataru)).toBe(false)
+      expect(result.attackPercent).toBe(0)
+
+      const t = getSkillTrigger(result, "offense", ataru)[0]
+      expect(t.probability).toBe(100)
+      expect(t.boostedProbability).toBe(0)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+      expect(t.skillName).toBe("ゆずれないプライド Lv.4")
+
+      // カウント増減はスキルの無効化関係なく行われる
+      // カウントを確認 10 - 2
+      let s = getSkill(d)
+      expect(s.data.readNumber("damage_count_key", 0)).toBe(8)
+    })
+
+    test("無効化の影響-エリア", () => {
+
+      const context = initContext("test", "test", false)
+      context.random.mode = "force"
+      let seria = DencoManager.getDenco(context, "1", 50)
+      let ataru = DencoManager.getDenco(context, "46", 50, 1)
+      let offense = initUser(context, "とあるマスター", [ataru, seria])
+      offense = activateSkill(context, offense, 0)
+
+      // 被アクセス
+      offense = repeatAccess(context, offense, 10)
+
+      // アクセス  
+      let eria = DencoManager.getDenco(context, "33", 50, 1)
+      let defense = initUser(context, "user", [eria])
+      defense = activateSkill(context, defense, 0)
+      const config = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: eria.link[0],
+      }
+      const result = startAccess(context, config)
+      // あたるのATK増加は無効化
+      expect(hasSkillTriggered(result, "defense", eria)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", ataru)).toBe(false)
+      expect(result.attackPercent).toBe(0)
+
+      const t = getSkillTrigger(result, "offense", ataru)[0]
+      expect(t.probability).toBe(100)
+      expect(t.boostedProbability).toBe(0)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+      expect(t.skillName).toBe("ゆずれないプライド Lv.4")
     })
   })
 })

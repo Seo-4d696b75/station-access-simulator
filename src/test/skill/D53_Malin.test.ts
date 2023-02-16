@@ -183,6 +183,41 @@ describe("マリンのスキル", () => {
       expect(hasSkillTriggered(result, "defense", malin)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
+
+    test("発動なし-エリア無効化", () => {
+      const context = initContext("test", "test", false)
+      context.random.mode = "force"
+      let saya = DencoManager.getDenco(context, "8", 50)
+      let imura = DencoManager.getDenco(context, "19", 50)
+      let malin = DencoManager.getDenco(context, "53", 50)
+      let eria = DencoManager.getDenco(context, "33", 50, 1)
+      let offense = initUser(context, "とあるマスター", [malin, saya, imura])
+      let defense = initUser(context, "とあるマスター２", [eria])
+      defense = activateSkill(context, defense, 0)
+      const config = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: eria.link[0],
+      }
+      const result = startAccess(context, config)
+      expect(result.defense).not.toBeUndefined()
+      expect(hasSkillTriggered(result, "offense", malin)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", eria)).toBe(true)
+      expect(result.attackPercent).toBe(0)
+
+      let t = getSkillTrigger(result, "offense", malin)[0]
+      expect(t.skillName).toBe("唯我独尊 Lv.4")
+      expect(t.probability).toBe(25)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+    })
   })
   describe("DEF増加", () => {
     test.each([1, 2, 3, 4, 5, 6])("発動あり-守備側(被アクセス)-ディフェンダーx%d", (cnt) => {

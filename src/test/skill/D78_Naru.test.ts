@@ -335,6 +335,51 @@ describe("なるのスキル", () => {
       expect(result.offense.score.link).toBe(0)
       expect(result.offense.score.skill).toBe(0)
     })
+
+    test("エリアで無効化されない", () => {
+     
+      const context = initContext("test", "test", false)
+      context.random.mode = "force"
+     
+      let naru = DencoManager.getDenco(context, "78", 50)
+      let eria = DencoManager.getDenco(context, "33", 50, 1)
+      let offense = initUser(context, "とあるマスター", [naru])
+      offense = activateSkill(context, offense, 0)
+      let defense = initUser(context, "とあるマスター２", [eria])
+      defense = activateSkill(context, defense, 0)
+      const config = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: eria.link[0],
+      }
+      const result = startAccess(context, config)
+      expect(result.defense).not.toBeUndefined()
+      expect(result.linkSuccess).toBe(true)
+
+      expect(hasSkillTriggered(result, "offense", naru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", eria)).toBe(false)
+      assert(result.defense)
+
+      // スコア増加は発動
+      let t = getSkillTrigger(result, "offense", naru)[0]
+      expect(t.skillName).toBe("恋心ばーさーく！ Lv.4")
+      expect(t.probability).toBe(31)
+      expect(t.boostedProbability).toBe(31)
+      expect(t.invalidated).toBe(false)
+      expect(t.canTrigger).toBe(true)
+      expect(t.triggered).toBe(true)
+      expect(t.fallbackTriggered).toBe(false)
+
+      // スコア増加 +750%
+      expect(result.offense.scorePercent.access).toBe(750)
+      expect(result.offense.scorePercent.link).toBe(0)
+    })
   })
 
   describe("スコアDown&ATK増加", () => {
@@ -566,6 +611,62 @@ describe("なるのスキル", () => {
       t = getSkillTrigger(result, "defense", luna)[0]
       expect(t.skillName).toBe("ナイトライダー Lv.4")
       expect(t.type).toBe("damage_def")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+
+      expect(result.attackPercent).toBe(0)
+      expect(result.defendPercent).toBe(0)
+      expect(result.offense.scorePercent.access).toBe(-50)
+      expect(result.offense.scorePercent.link).toBe(0)
+    })
+
+    test("エリアで無効化", () => {
+      // ATK増加は無効化される
+
+      const context = initContext("test", "test", false)
+      context.random.mode = "ignore"
+
+      let naru = DencoManager.getDenco(context, "78", 50)
+      let eria = DencoManager.getDenco(context, "33", 50, 1)
+      let offense = initUser(context, "とあるマスター", [naru])
+      offense = activateSkill(context, offense, 0)
+      let defense = initUser(context, "とあるマスター２", [eria])
+      defense = activateSkill(context, defense, 0)
+      const config = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: eria.link[0],
+      }
+      const result = startAccess(context, config)
+      expect(result.defense).not.toBeUndefined()
+      expect(result.linkSuccess).toBe(true)
+      expect(hasSkillTriggered(result, "offense", naru)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", eria)).toBe(true)
+      // 無効化
+      assert(result.defense)
+
+      // スコア減少
+      let t = getSkillTrigger(result, "offense", naru)[0]
+      expect(t.skillName).toBe("恋心ばーさーく！ Lv.4")
+      expect(t.probability).toBe(31)
+      expect(t.boostedProbability).toBe(31)
+      expect(t.invalidated).toBe(false)
+      expect(t.canTrigger).toBe(true)
+      expect(t.triggered).toBe(true)
+      expect(t.fallbackTriggered).toBe(true)
+
+      // 無効化
+      t = getSkillTrigger(result, "offense", naru)[1]
+      expect(t.skillName).toBe("恋心ばーさーく！ Lv.4")
+      expect(t.type).toBe("damage_atk")
       expect(t.probability).toBe(100)
       expect(t.invalidated).toBe(true)
       expect(t.canTrigger).toBe(false)

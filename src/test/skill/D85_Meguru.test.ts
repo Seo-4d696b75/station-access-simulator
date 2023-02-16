@@ -1,6 +1,6 @@
 import { times } from "lodash"
 import { activateSkill, getSkill, init } from "../.."
-import { AccessResult, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { AccessResult, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { Context, initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser, UserState } from "../../core/user"
@@ -107,6 +107,47 @@ describe("めぐるのスキル", () => {
       let s = getSkill(result.offense.formation[0])
       expect(s.data.readNumber("link_count", 0)).toBe(1)
     })
+  })
+
+  test("ATK増加-エリア無効化", () => {
+    const context = initContext("test", "test", false)
+    let meguru = DencoManager.getDenco(context, "85", 50)
+    let offense = initUser(context, "とあるマスター", [meguru])
+    offense = activateSkill(context, offense, 0)
+
+    // リンク
+    offense = repeatLink(context, offense, 1)
+
+    // カウント確認
+    let s = getSkill(offense.formation[0])
+    expect(s.data.readNumber("link_count", 0)).toBe(1)
+
+
+    let eria = DencoManager.getDenco(context, "33", 50, 1)
+    let defense = initUser(context, "とあるマスター２", [eria])
+    defense = activateSkill(context, defense, 0)
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: eria.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result, "offense", meguru)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", eria)).toBe(true)
+    expect(result.attackPercent).toBe(0)
+
+    let t = getSkillTrigger(result, "offense", meguru)[0]
+    expect(t.skillName).toBe("めぐるのバチつよ生配信♪ Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.invalidated).toBe(true)
+    expect(t.triggered).toBe(false)
   })
 })
 

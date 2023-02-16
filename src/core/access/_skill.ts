@@ -194,7 +194,7 @@ function checkAccessSkillTrigger(
   // 確率・無効化を考慮して発動有無を計算
 
   // スキル無効化の影響を確認
-  if (!checkSkillInvalidated(context, triggered, denco, skill)) {
+  if (!checkSkillInvalidated(context, triggered, state, skill)) {
     state.invalidated = true
     return state
   }
@@ -216,6 +216,7 @@ function checkAccessSkillTrigger(
   switch (state.type) {
     case "probability_boost":
     case "invalidate_skill":
+    case "invalidate_damage":
       // 対象のスキルが存在するがまだ分からない
       state.triggered = false
       break
@@ -344,18 +345,30 @@ function checkAccessDamageInvalidate(
 function checkSkillInvalidated(
   context: Context,
   triggered: AccessSkillTriggerState[],
-  d: ReadonlyState<WithAccessPosition<Denco>>,
+  state: ReadonlyState<AccessSkillTriggerState>,
   skill: ReadonlyState<Skill>,
 ): boolean {
   const invalidated = triggered
     .filter(t => t.canTrigger)
     .some(t => {
-      if (t.type === "invalidate_skill" && t.isTarget(d)) {
+      if (t.type === "invalidate_skill" && t.isTarget(state.denco)) {
         // 無効化の発動を記録
         t.triggered = true
         context.log.log(`スキル発動が無効化されました`)
         context.log.log(`  無効化スキル；${t.denco.firstName} ${t.skillName}`)
-        context.log.log(`  無効化の対象：${d.firstName} ${skill.name}`)
+        context.log.log(`  無効化の対象：${state.denco.firstName} ${skill.name}`)
+        return true
+      }
+      if (
+        (state.type === "damage_atk" || state.type === "damage_def" || state.type === "damage_fixed")
+        && t.type === "invalidate_damage"
+        && t.isTarget(state.denco, state)
+      ) {
+        // 無効化の発動を記録
+        t.triggered = true
+        context.log.log(`スキル発動(damage)が無効化されました`)
+        context.log.log(`  無効化スキル；${t.denco.firstName} ${t.skillName}`)
+        context.log.log(`  無効化の対象：${state.denco.firstName} ${skill.name}`)
         return true
       }
       return false
