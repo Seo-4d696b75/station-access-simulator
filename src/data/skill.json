@@ -5322,6 +5322,57 @@
     ]
   },
   {
+    "numbering": "98",
+    "class": "D98_Mafuyu",
+    "active": 3600,
+    "cooldown": 9000,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "遠慮がちな淡雪 Lv.1",
+        "ATK": 8
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "遠慮がちな淡雪 Lv.2",
+        "ATK": 10
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "遠慮がちな淡雪 Lv.3",
+        "ATK": 12
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "遠慮がちな淡雪 Lv.4",
+        "ATK": 14
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "遠慮がちな淡雪 Lv.5",
+        "ATK": 16
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "遠慮がちな淡雪 Lv.6",
+        "ATK": 18
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "スノーフレーク・ファインダー",
+        "ATK": 20
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
