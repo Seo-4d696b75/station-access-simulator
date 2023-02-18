@@ -55,7 +55,7 @@ describe("リトのスキル", () => {
     assert(e.type === "reboot")
     expect(e.data.time).toBe(start)
     expect(e.data.denco).toMatchDencoState({ ...d, link: [], currentExp: 0 }) // リンク解除
-    
+
     e = result.defense.event[2]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
@@ -113,7 +113,12 @@ describe("リトのスキル", () => {
     assert(e.type === "reboot")
     expect(e.data.time).toBe(start)
     expect(e.data.denco).toMatchDencoState({ ...d0, link: [], currentExp: 0 }) // リンク解除
-    // スキル発動確率の確認（ひいるスキル発動）> スキル発動（アクセスの発生）> スキル発動の記録
+
+    // TODO　ランダムな駅アクセス発動の場合のイベント記録の順序
+    // 実装：(ひいる発動) > ランダム駅アクセスのスキル発動 > 駅アクセス > (アクセス時のスキル発動) 
+    // ゲーム挙動：(ひいる発動) > 駅アクセス > (アクセス時のスキル発動) > ランダム駅アクセスのスキル発動 時系列になっていない
+    // 特に確率補正が効く場合はひいるダイアログと離れてしまいどのスキル発動に影響しているか分かりにくい
+
     e = result.defense.event[2]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
@@ -287,7 +292,7 @@ describe("リトのスキル", () => {
     let d = result.defense.formation[0]
     expect(d.reboot).toBe(true)
     expect(d.hpAfter).toBe(0)
-    
+
     expect(result.defense.event.length).toBe(2)
     let e = result.defense.event[0]
     assert(e.type === "access")
