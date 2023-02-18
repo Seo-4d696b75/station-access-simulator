@@ -1,5 +1,5 @@
 import { computeWidth } from "meaw"
-import { AccessDencoState, AccessSide, getAccessDenco, hasSkillTriggered } from "./access/index"
+import { AccessDencoState, AccessSide, getAccessDenco } from "./access/index"
 import { Context, SimulatorError } from "./context"
 import { formatDuration } from "./date"
 import { DencoAttribute } from "./denco"
@@ -368,9 +368,17 @@ function formatAccessLinkTime(station: ReadonlyState<Station>, accessTime: numbe
 
 function formatSkills(state: ReadonlyState<AccessEventData>, side?: ReadonlyState<AccessEventUser> | null): string {
   if (!side) return ""
-  const triggers = side.formation.filter(d => hasSkillTriggered(state, d.which, d))
+  const which = side.formation[0].which
+  const triggers: string[] = []
+  state
+    .skillTriggers
+    .filter(t => t.triggered && t.denco.which === which)
+    .map(t => t.denco.name)
+    .forEach(n => {
+      if (!triggers.includes(n)) triggers.push(n)
+    })
   if (triggers.length === 0) return "-"
-  return triggers.map(d => d.firstName).join(",")
+  return triggers.join(",")
 }
 
 function formatHP(state: ReadonlyState<AccessEventUser> | undefined, colored: boolean) {
