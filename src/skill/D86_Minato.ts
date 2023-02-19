@@ -1,29 +1,23 @@
-import { getAccessDenco } from "../core/access";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
+  onAccessBeforeStart: (context, state, self) => {
     // 足湯対象外
     if (
-      step === "before_access"
+      !state.pinkMode
       && state.defense
-      && !state.pinkMode
       && self.which === "offense"
-      && getAccessDenco(state, "offense").carIndex === 0
-      && getAccessDenco(state, "defense").type === "trickster"
+      && state.offense.carIndex === 0
     ) {
       return {
-        probability: "probability",
-        recipe: (state) => {
-          const d = getAccessDenco(state, "defense")
-          d.skillInvalidated = true
-          context.log.log(`私が歴史について語るとみんな真剣に聞いてくれるの スキル無効化：${d.name}`)
-        }
+        probability: self.skill.property.readNumber("probability"),
+        type: "invalidate_skill",
+        isTarget: (d) => d.who === "defense" && d.type === "trickster"
       }
     }
-  }
+  },
 }
 
 export default skill

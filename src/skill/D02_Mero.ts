@@ -2,13 +2,12 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "pink_check" && !state.pinkMode) {
+  onAccessPinkCheck: (context, state, self) => {
+    if (self.who === "offense" && !state.pinkMode) {
       return {
-        probability: "probability",
-        recipe: (state) => {
-          state.pinkMode = true
-        }
+        probability: self.skill.property.readNumber("probability"),
+        type: "pink_check",
+        enable: true,
       }
     }
   }

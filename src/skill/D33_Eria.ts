@@ -1,35 +1,28 @@
-import dayjs from "dayjs";
-import { getAccessDenco } from "../core/access";
-import { isSkillActive, SkillLogic } from "../core/skill";
+import { AccessSkillTrigger, SkillLogic } from "../core/skill";
+
+function isTargetDamage(d: AccessSkillTrigger): boolean {
+  switch (d.type) {
+    case "damage_atk":
+      return d.percent > 0
+    case "damage_fixed":
+      return d.damage > 0
+    default:
+      return false
+  }
+}
 
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
-    if (self.who === "defense" && step === "before_access") {
-      const offense = getAccessDenco(state, "offense")
-      const target = self.skill.property.readStringArray("target")
-      // 対象でんこ && スキルがアクティブ && まだ無効化されていない
-      // TODO 対象でんこをnumberingで列挙　適宜更新が必要
-      if (isSkillActive(offense.skill) && !offense.skillInvalidated && target.includes(offense.numbering)) {
-        // 一部の対象は時間帯も判定が必要
-        const hour = dayjs.tz(context.currentTime).hour()
-        if (offense.numbering === "15" && (hour < 6 || hour >= 18)) {
-          // 15 Ringo は昼間のみ対象
-          return
-        }
-        if (offense.numbering === "30" && 6 <= hour && hour < 18) {
-          // 30 Reno は夜間のみ対象
-          return
-        }
-        return {
-          probability: "probability",
-          recipe: (state) => {
-            const d = getAccessDenco(state, "offense")
-            d.skillInvalidated = true
-            context.log.log(`ほこねのいもうとあい？理解くるしむ。だから効かない？ スキルを無効化：${d.name}(${d.numbering})`)
-          }
-        }
+  onAccessBeforeStart: (context, state, self) => {
+    if (self.who === "defense") {
+      return {
+        probability: self.skill.property.readNumber("probability", 100),
+        type: "invalidate_damage",
+        isTarget: (d, damage) => d.who === "offense"
+          && isTargetDamage(damage)
+          // TODO ダメージ量増加だけで判定は可能か？
+          && self.skill.property.readStringArray("target").includes(d.numbering),
       }
     }
   },

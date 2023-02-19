@@ -36,7 +36,7 @@ describe("まりかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", marika)).toBe(true)
     // reboot
     const self = getAccessDenco(result, "defense")
     expect(self.damage).not.toBeUndefined()
@@ -71,7 +71,7 @@ describe("まりかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, marika)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", marika)).toBe(false)
     // reboot
     const self = getAccessDenco(result, "defense")
     expect(self.damage).toBeUndefined()
@@ -104,8 +104,8 @@ describe("まりかのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
-    expect(hasSkillTriggered(result.offense, marika)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", marika)).toBe(true)
     // 攻撃側まりか カウンターのダメージ
     const self = getAccessDenco(result, "offense")
     expect(self.damage).not.toBeUndefined()

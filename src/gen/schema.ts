@@ -2,12 +2,12 @@ import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, Acc
 import { AccessScoreExpResult, AccessScoreExpState, ScoreExpBoostPercent, ScoreExpResult } from "../core/access/score"
 import { assert, SimulatorError } from "../core/context"
 import { Denco, DencoState } from "../core/denco"
-import { AccessEventData, AccessEventUser, Event, EventSkillTrigger, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
+import { AccessEventData, AccessEventUser, Event, EventTriggeredSkill, LevelupDenco, SkillEventDencoState, SkillEventReservation, SkillEventState } from "../core/event"
 import { FilmHolder } from "../core/film"
 import { MutableProperty, ReadableProperty, TypedMap } from "../core/property"
 import { SkillActiveTimeout, SkillCooldownTimeout, SkillHolder, SkillTransition, SkillTransitionType } from "../core/skill"
 import { SkillPropertyReader } from "../core/skill/property"
-import { AccessSkillEffect, AccessSkillTriggerState, SkillEffectState, WithAccessPosition } from "../core/skill/trigger"
+import { AccessSkillTriggerState, EventSkillTrigger, EventSkillTriggerState, WithAccessPosition, WithSkillEventPosition } from "../core/skill/trigger"
 import { ReadonlyState } from "../core/state"
 import { Line, LinkResult, LinksResult, Station, StationLink } from "../core/station"
 import { DailyStatistics, EventQueueEntry, StationStatistics, UserProperty, UserPropertyReader, UserState } from "../core/user"
@@ -229,7 +229,7 @@ const scoreExpResultSchema = objectSchema<ScoreExpResult>({
   total: primitiveSchema
 })
 
-const scoreExpCalcStateSchema = objectSchema<ScoreExpBoostPercent>({
+const scoreExpPercentSchema = objectSchema<ScoreExpBoostPercent>({
   access: primitiveSchema,
   accessBonus: primitiveSchema,
   damageBonus: primitiveSchema,
@@ -250,30 +250,40 @@ export const accessDencoStateSchema = objectSchema<AccessDencoState>({
   reboot: primitiveSchema,
   damage: damageStateSchema,
   exp: scoreExpStateSchema,
-  expPercent: scoreExpCalcStateSchema,
+  expPercent: scoreExpPercentSchema,
 })
 
-export const accessSkillTriggerStateSchema = objectSchema<AccessSkillTriggerState>({
-  denco: objectSchema<WithAccessPosition<Denco>>({
-    ...dencoSchema.fields,
-    which: primitiveSchema,
-    who: primitiveSchema,
-    carIndex: primitiveSchema
-  }),
+const withAccessPositionDencoSchema = objectSchema<WithAccessPosition<Denco>>({
+  ...dencoSchema.fields,
+  which: primitiveSchema,
+  who: primitiveSchema,
+  carIndex: primitiveSchema
+})
+
+const accessSkillTriggerStateSchema = objectSchema<AccessSkillTriggerState>({
+  denco: withAccessPositionDencoSchema,
+  type: primitiveSchema,
+  skillName: primitiveSchema,
   probability: primitiveSchema,
   boostedProbability: primitiveSchema,
   canTrigger: primitiveSchema,
   invalidated: primitiveSchema,
-  skillName: primitiveSchema,
-  effect: arraySchema(
-    customSchema<SkillEffectState<AccessSkillEffect>>(
-      (src) => Object.assign({}, src),
-      (dst, src) => {
-        assert(dst.type === src.type)
-        Object.assign(dst, src)
-      }
-    )
-  )
+  triggered: primitiveSchema,
+  fallbackTriggered: primitiveSchema,
+  sideEffect: functionSchema,
+
+  // each skill trigger
+  enable: primitiveSchema,
+  percent: primitiveSchema,
+  recipe: functionSchema,
+  fallbackRecipe: functionSchema,
+  isTarget: functionSchema,
+  score: primitiveSchema,
+  exp: functionSchema,
+  scoreBoost: scoreExpPercentSchema,
+  expBoost: functionSchema,
+  damage: primitiveSchema,
+  damageCalc: damageCalcStateSchema,
 })
 
 export const accessSideStateSchema = objectSchema<AccessSideState>({
@@ -283,7 +293,7 @@ export const accessSideStateSchema = objectSchema<AccessSideState>({
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
   score: scoreExpStateSchema,
-  scorePercent: scoreExpCalcStateSchema,
+  scorePercent: scoreExpPercentSchema,
 })
 
 
@@ -303,7 +313,7 @@ export const accessStateSchema = objectSchema<AccessState>({
   pinkMode: primitiveSchema,
   pinkItemSet: primitiveSchema,
   pinkItemUsed: primitiveSchema,
-  skillTriggers: arraySchema(accessSkillTriggerStateSchema),
+  skillTriggers: arraySchema(accessSkillTriggerStateSchema as any),
 })
 
 // station link result
@@ -350,7 +360,7 @@ const accessEventUserSchema = objectSchema<AccessEventUser>({
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
   score: scoreExpResultSchema,
-  scorePercent: scoreExpCalcStateSchema,
+  scorePercent: scoreExpPercentSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
 })
@@ -372,7 +382,7 @@ export const accessEventDataSchema = objectSchema<AccessEventData>({
   pinkMode: primitiveSchema,
   pinkItemSet: primitiveSchema,
   pinkItemUsed: primitiveSchema,
-  skillTriggers: arraySchema(accessSkillTriggerStateSchema),
+  skillTriggers: arraySchema(accessSkillTriggerStateSchema as any),
 })
 
 const copyAccessEventData = createCopyFunc(accessEventDataSchema)
@@ -380,10 +390,14 @@ const mergeAccessEventData = createMergeFunc(accessEventDataSchema)
 
 const eventTriggeredSkillSchema = objectSchema<EventTriggeredSkill>({
   time: primitiveSchema,
-  carIndex: primitiveSchema,
-  denco: dencoStateSchema,
+  denco: objectSchema<WithSkillEventPosition<DencoState>>({
+    ...dencoStateSchema.fields,
+    who: primitiveSchema,
+    carIndex: primitiveSchema
+  }),
   skillName: primitiveSchema,
-  step: primitiveSchema,
+  probability: primitiveSchema,
+  boostedProbability: primitiveSchema,
 })
 
 const copyEventTriggerSkill = createCopyFunc(eventTriggeredSkillSchema)
@@ -450,14 +464,15 @@ export const eventSchema = customSchema(copyEvent, mergeEvent)
 // event queue
 
 const eventSkillTriggerSchema = objectSchema<EventSkillTrigger>({
+  type: primitiveSchema,
   probability: primitiveSchema,
   recipe: functionSchema,
-  fallbackRecipe: functionSchema,
+  fallbackEffect: functionSchema,
 })
 
 const skillEventReservationSchema = objectSchema<SkillEventReservation>({
   denco: dencoSchema,
-  trigger: eventSkillTriggerSchema,
+  ...eventSkillTriggerSchema.fields,
 })
 
 const copySkillEventReservation = createCopyFunc(skillEventReservationSchema)
@@ -522,7 +537,7 @@ export const accessUserResultSchema = objectSchema<AccessUserResult>({
   probabilityBoosted: primitiveSchema,
   probabilityBoostPercent: primitiveSchema,
   score: scoreExpResultSchema,
-  scorePercent: scoreExpCalcStateSchema,
+  scorePercent: scoreExpPercentSchema,
   displayedScore: primitiveSchema,
   displayedExp: primitiveSchema,
   event: arraySchema(customSchema(copyEvent, mergeEvent)),
@@ -545,23 +560,41 @@ export const accessResultSchema = objectSchema<AccessResult>({
   pinkMode: primitiveSchema,
   pinkItemSet: primitiveSchema,
   pinkItemUsed: primitiveSchema,
-  skillTriggers: arraySchema(accessSkillTriggerStateSchema),
+  skillTriggers: arraySchema(accessSkillTriggerStateSchema as any),
 })
 
 // skill event
+
+const eventSkillTriggerStateSchema = objectSchema<EventSkillTriggerState>({
+  denco: objectSchema<WithSkillEventPosition<DencoState>>({
+    ...dencoStateSchema.fields,
+    who: primitiveSchema,
+    carIndex: primitiveSchema
+  }),
+  type: primitiveSchema,
+  skillName: primitiveSchema,
+  probability: primitiveSchema,
+  boostedProbability: primitiveSchema,
+  canTrigger: primitiveSchema,
+  invalidated: primitiveSchema,
+  triggered: primitiveSchema,
+  fallbackTriggered: primitiveSchema,
+
+  // each skill trigger
+  percent: primitiveSchema,
+  recipe: functionSchema,
+})
 
 export const skillEventDencoStateSchema = objectSchema<SkillEventDencoState>({
   ...dencoStateSchema.fields,
   who: primitiveSchema,
   carIndex: primitiveSchema,
-  skillInvalidated: primitiveSchema,
 })
 
 export const skillEventStateSchema = objectSchema<SkillEventState>({
   ...userStateSchema.fields,
   time: primitiveSchema,
   formation: arraySchema(skillEventDencoStateSchema),
-  probabilityBoostPercent: primitiveSchema,
-  probabilityBoosted: primitiveSchema,
   carIndex: primitiveSchema,
+  skillTriggers: arraySchema(eventSkillTriggerStateSchema as any),
 })

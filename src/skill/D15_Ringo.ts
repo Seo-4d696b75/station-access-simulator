@@ -3,28 +3,20 @@ import { SkillLogic } from ".."
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && state.defense) {
-      const hour = dayjs.tz(context.currentTime).hour()
-      if ((hour < 6 || hour >= 18) && self.who === "defense") {
-        return {
-          probability: "probability_def",
-          recipe: (state) => {
-            const def = self.skill.property.readNumber("DEF")
-            state.defendPercent += def
-            context.log.log(`夜更かしはお肌の大敵♪ DEF ${def}%`)
-          }
-        }
+  onAccessDamagePercent: (context, state, self) => {
+    const hour = dayjs.tz(context.currentTime).hour()
+    if ((hour < 6 || hour >= 18) && self.who === "defense") {
+      return {
+        probability: self.skill.property.readNumber("probability_def", 100),
+        type: "damage_def",
+        percent: self.skill.property.readNumber("DEF")
       }
-      if ((6 <= hour && hour < 18) && self.who === "offense") {
-        return {
-          probability: "probability_atk",
-          recipe: (state) => {
-            const atk = self.skill.property.readNumber("ATK")
-            state.attackPercent += atk
-            context.log.log(`りんごちゃんは基本日中だけ頑張ります♪ ATK +${atk}%`)
-          }
-        }
+    }
+    if ((6 <= hour && hour < 18) && self.who === "offense") {
+      return {
+        probability: self.skill.property.readNumber("probability_atk", 100),
+        type: "damage_atk",
+        percent: self.skill.property.readNumber("ATK")
       }
     }
   }

@@ -1,7 +1,6 @@
 import { assert } from "../core/context";
 import { DencoAttribute } from "../core/denco";
 import { triggerSkillAtEvent } from "../core/event";
-import { formatPercent } from "../core/format";
 import { activateSkillAt, SkillLogic } from "../core/skill";
 import { copy } from "../gen/copy";
 
@@ -21,13 +20,14 @@ const skill: SkillLogic = {
         state,
         self,
         {
-          probability: "probability_activate", // 100%
+          probability: self.skill.property.readNumber("probability_activate"), // 100%
+          type: "skill_event",
           recipe: (state) => {
             // スキル有効化
             activateSkillAt(context, state, self.carIndex)
             // 属性変化
             const d = state.formation[self.carIndex]
-            context.log.log(`拙者のスキルは変化の術！ 属性の変更 ${d.attr} => ${link.attr}`)
+            context.log.log(`属性の変更 ${d.attr} => ${link.attr}`)
             d.attr = link.attr as DencoAttribute
           }
         }
@@ -41,8 +41,8 @@ const skill: SkillLogic = {
     next.formation[self.carIndex].attr = "cool"
     return next
   },
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who !== "other") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who !== "other") {
       // ATK, DEF増加両方ありえる
       const attr = self.attr
       assert(attr !== "flat")
@@ -50,20 +50,16 @@ const skill: SkillLogic = {
       const def = self.skill.property.readNumber(`DEF_${attr}`, 0)
       if (self.who === "offense" && atk > 0) {
         return {
-          probability: "probability", // 100%
-          recipe: (state) => {
-            state.attackPercent += atk
-            context.log.log(`あるじ殿のためならばたとえ火の中水の中！ ATK${formatPercent(atk)}`)
-          }
+          probability: self.skill.property.readNumber("probability"), // 100%
+          type: "damage_atk",
+          percent: atk
         }
       }
       if (self.who === "defense" && def > 0) {
         return {
-          probability: "probability", // 100%
-          recipe: (state) => {
-            state.defendPercent += def
-            context.log.log(`あるじ殿のためならばたとえ火の中水の中！ DEF${formatPercent(def)}`)
-          }
+          probability: self.skill.property.readNumber("probability"), // 100%
+          type: "damage_def",
+          percent: def
         }
       }
     }

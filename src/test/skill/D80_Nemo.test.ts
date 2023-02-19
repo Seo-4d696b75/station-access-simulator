@@ -1,6 +1,6 @@
 import assert from "assert"
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill, isSkillActive } from "../../core/skill"
@@ -34,7 +34,7 @@ describe("ねものスキル", () => {
       context.random.mode = "force"
       const result = startAccess(context, config)
       assert(result.defense)
-      expect(hasSkillTriggered(result.offense, nemo)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", nemo)).toBe(true)
       expect(result.attackPercent).toBe(0)
       expect(result.damageFixed).toBe(140)
     })
@@ -60,7 +60,7 @@ describe("ねものスキル", () => {
       context.random.mode = "force"
       const result = startAccess(context, config)
       assert(result.defense)
-      expect(hasSkillTriggered(result.offense, nemo)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", nemo)).toBe(false)
       expect(result.attackPercent).toBe(0)
       expect(result.damageFixed).toBe(0)
     })
@@ -102,8 +102,8 @@ describe("ねものスキル", () => {
       expect(e.type).toBe("access")
       e = result.offense.event[1]
       assert(e.type === "skill_trigger")
-      expect(e.data.carIndex).toBe(0)
-      expect(e.data.step).toBe("self")
+      expect(e.data.denco.who).toBe("self")
+      expect(e.data.denco.carIndex).toBe(0)
       expect(e.data.time).toBe(result.time)
       expect(e.data.skillName).toBe("蒼華一撃 Lv.4")
       let d = result.offense.formation[0]
@@ -278,8 +278,8 @@ describe("ねものスキル", () => {
         context.random.mode = "ignore"
         let result = startAccess(context, config)
         expect(result.linkSuccess).toBe(false)
-        expect(hasSkillTriggered(result.offense, nemo)).toBe(true)
-        expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+        expect(hasSkillTriggered(result, "offense", nemo)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", marika)).toBe(true)
         let d = getAccessDenco(result, "offense")
         expect(d.reboot).toBe(true)
         d = getAccessDenco(result, "defense")
@@ -323,8 +323,8 @@ describe("ねものスキル", () => {
       context.random.mode = "force"
       let result = startAccess(context, config)
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.offense, nemo)).toBe(true)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", nemo)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
       // イベント記録確認
       expect(result.offense.event.length).toBe(3)
       let e = result.offense.event[0]
@@ -332,9 +332,11 @@ describe("ねものスキル", () => {
       e = result.offense.event[1]
       assert(e.type === "skill_trigger")
       expect(e.data.denco).toMatchDenco(hiiru)
+      expect(e.data.skillName).toBe("テンションAGEAGE↑↑ Lv.4")
       e = result.offense.event[2]
       assert(e.type === "skill_trigger")
       expect(e.data.denco).toMatchDenco(nemo)
+      expect(e.data.skillName).toBe("蒼華一撃 Lv.4")
       let skill = getSkill(result.offense.formation[0])
       expect(skill.transition.state).toBe("active")
 
@@ -357,8 +359,8 @@ describe("ねものスキル", () => {
       context.random.mode = "ignore"
       result = startAccess(context, config)
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.offense, nemo)).toBe(true)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", nemo)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
       // イベント記録確認
       expect(result.offense.event.length).toBe(4)
       e = result.offense.event[3]
@@ -400,10 +402,16 @@ describe("ねものスキル", () => {
         context.random.mode = "ignore"
         let result = startAccess(context, config)
         expect(result.linkSuccess).toBe(true)
-        expect(hasSkillTriggered(result.offense, nemo)).toBe(false)
-        expect(hasSkillTriggered(result.defense, mahiru)).toBe(true)
+        expect(hasSkillTriggered(result, "offense", nemo)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", mahiru)).toBe(true)
         expect(result.damageFixed).toBe(0)
-        expect(result.offense.formation[0].skillInvalidated).toBe(true)
+
+        let t = getSkillTrigger(result, "offense", nemo)[0]
+        expect(t.skillName).toBe("蒼華一撃 Lv.4")
+        expect(t.type).toBe("damage_fixed")
+        expect(t.invalidated).toBe(true)
+        expect(t.triggered).toBe(false)
+        
         // イベント記録確認
         expect(result.offense.event.length).toBe(1)
         let e = result.offense.event[0]
@@ -436,16 +444,22 @@ describe("ねものスキル", () => {
         context.random.mode = "force"
         let result = startAccess(context, config)
         expect(result.linkSuccess).toBe(true)
-        expect(hasSkillTriggered(result.offense, nemo)).toBe(false)
-        expect(hasSkillTriggered(result.defense, mahiru)).toBe(true)
+        expect(hasSkillTriggered(result, "offense", nemo)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", mahiru)).toBe(true)
         expect(result.damageFixed).toBe(0)
-        expect(result.offense.formation[0].skillInvalidated).toBe(true)
+        let t = getSkillTrigger(result, "offense", nemo)[0]
+        expect(t.skillName).toBe("蒼華一撃 Lv.4")
+        expect(t.type).toBe("damage_fixed")
+        expect(t.invalidated).toBe(true)
+        expect(t.triggered).toBe(false)
+
         // イベント記録確認
         expect(result.offense.event.length).toBe(2)
         let e = result.offense.event[0]
         expect(e.type).toBe("access")
         e = result.offense.event[1]
-        expect(e.type).toBe("skill_trigger")
+        assert(e.type === "skill_trigger")
+        expect(e.data.skillName).toBe("蒼華一撃 Lv.4")
         // active
         let skill = getSkill(result.offense.formation[0])
         expect(skill.transition.state).toBe("active")

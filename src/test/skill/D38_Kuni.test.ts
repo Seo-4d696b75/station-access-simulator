@@ -1,5 +1,5 @@
 import assert from "assert"
-import { activateSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, getAccessDenco, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import "../../gen/matcher"
 import { testManualSkill } from "../tool/skillState"
@@ -40,9 +40,19 @@ describe("くにのスキル", () => {
     expect(d.reboot).toBe(false)
     expect(d.damage?.value).toBeGreaterThan(0)
     expect(d.hpAfter).toBeLessThan(d.maxHp * 0.3)
-    expect(hasSkillTriggered(result.defense, kuni)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", kuni)).toBe(true)
+    let t = getSkillTrigger(result, "defense", kuni)[0]
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("defense")
+    expect(t.denco.who).toBe("other")
+    expect(t.denco).toMatchDenco(kuni)
+    expect(t.skillName).toBe("シスターガード Lv.4")
+    expect(t.probability).toBe(25)
+    expect(t.boostedProbability).toBe(25)
+    expect(t.triggered).toBe(true)
+
     // カウンター発動 みことATK増加が効く
-    expect(hasSkillTriggered(result.defense, mikoto)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mikoto)).toBe(true)
     d = getAccessDenco(result, "offense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(Math.floor(180 * 1.12))
@@ -54,8 +64,13 @@ describe("くにのスキル", () => {
     assert(result.defense.event[0].type === "access")
     let e = result.defense.event[1]
     assert(e.type === "skill_trigger")
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco).toMatchDenco(kuni)
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+    expect(e.data.skillName).toBe("シスターガード Lv.4")
+    expect(e.data.probability).toBe(100) // アクセス中の発動あれば確定
+    expect(e.data.boostedProbability).toBe(100)
+
     d = getAccessDenco(result, "defense")
     // 最大HPの30%
     expect(d.currentHp).toBe(d.hpAfter + Math.floor(d.maxHp * 0.3))
@@ -88,10 +103,19 @@ describe("くにのスキル", () => {
     expect(d.damage?.value).toBeGreaterThan(0)
     expect(d.hpAfter).toBeLessThan(d.maxHp * 0.3)
     // ひいるの確率補正が効く
-    expect(hasSkillTriggered(result.defense, kuni)).toBe(true)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", kuni)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    let t = getSkillTrigger(result, "defense", kuni)[0]
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("defense")
+    expect(t.denco.who).toBe("other")
+    expect(t.denco).toMatchDenco(kuni)
+    expect(t.skillName).toBe("シスターガード Lv.4")
+    expect(t.probability).toBe(25)
+    expect(t.boostedProbability).toBe(25 * 1.2)
+    expect(t.triggered).toBe(true)
     // カウンター発動 みことATK増加が効く
-    expect(hasSkillTriggered(result.defense, mikoto)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mikoto)).toBe(true)
     d = getAccessDenco(result, "offense")
     expect(d.damage).not.toBeUndefined()
     // 回復
@@ -101,8 +125,13 @@ describe("くにのスキル", () => {
     assert(result.defense.event[0].type === "access")
     let e = result.defense.event[1]
     assert(e.type === "skill_trigger")
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco).toMatchDenco(kuni)
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+    expect(e.data.skillName).toBe("シスターガード Lv.4")
+    expect(e.data.probability).toBe(100) // アクセス中の発動あれば確定
+    expect(e.data.boostedProbability).toBe(100)
+
     d = getAccessDenco(result, "defense")
     // 最大HPの30%
     expect(d.currentHp).toBe(d.hpAfter + Math.floor(d.maxHp * 0.3))
@@ -133,8 +162,8 @@ describe("くにのスキル", () => {
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.hpAfter).toBeGreaterThan(d.maxHp * 0.3)
-    expect(hasSkillTriggered(result.defense, kuni)).toBe(false)
-    expect(hasSkillTriggered(result.defense, mikoto)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", kuni)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mikoto)).toBe(false)
     d = getAccessDenco(result, "offense")
     expect(d.damage).toBeUndefined()
   })
@@ -164,8 +193,8 @@ describe("くにのスキル", () => {
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBeGreaterThan(d.maxHp)
     expect(d.reboot).toBe(true)
-    expect(hasSkillTriggered(result.defense, kuni)).toBe(false)
-    expect(hasSkillTriggered(result.defense, mikoto)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", kuni)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mikoto)).toBe(false)
     d = getAccessDenco(result, "offense")
     expect(d.damage).toBeUndefined()
   })
@@ -202,9 +231,9 @@ describe("くにのスキル", () => {
       expect(d.reboot).toBe(false)
       expect(d.damage?.value).toBeGreaterThan(0)
       expect(d.hpAfter).toBeLessThan(d.maxHp * 0.3)
-      expect(hasSkillTriggered(result.defense, kuni)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", kuni)).toBe(true)
       // くにのカウンター発動 みことATK増加が効く
-      expect(hasSkillTriggered(result.defense, mikoto)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", mikoto)).toBe(true)
       d = getAccessDenco(result, "offense")
       expect(d.damage).not.toBeUndefined()
       const damage = Math.floor(200 * 1.12 * 1.3)
@@ -212,7 +241,7 @@ describe("くにのスキル", () => {
       expect(d.hpAfter).toBe(0)
       expect(d.reboot).toBe(true)
       // まりかカウンター発動
-      expect(hasSkillTriggered(result.offense, marika)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", marika)).toBe(true)
       assert(result.defense)
       // くににダメージ発生
       d = result.defense.formation[1]
@@ -225,8 +254,9 @@ describe("くにのスキル", () => {
       assert(result.defense.event[0].type === "access")
       let e = result.defense.event[1]
       assert(e.type === "skill_trigger")
-      expect(e.data.step).toBe("self")
-      expect(e.data.denco).toMatchDenco(kuni)
+      expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+      expect(e.data.skillName).toBe("シスターガード Lv.4")
+
       d = getAccessDenco(result, "defense")
       // 最大HPの30%
       expect(d.currentHp).toBe(d.hpAfter + Math.floor(d.maxHp * 0.3))
@@ -262,9 +292,9 @@ describe("くにのスキル", () => {
       expect(d.reboot).toBe(false)
       expect(d.damage?.value).toBeGreaterThan(0)
       expect(d.hpAfter).toBeLessThan(d.maxHp * 0.3)
-      expect(hasSkillTriggered(result.defense, kuni)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", kuni)).toBe(true)
       // くにのカウンター発動 みことATK増加が効く
-      expect(hasSkillTriggered(result.defense, mikoto)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", mikoto)).toBe(true)
       d = getAccessDenco(result, "offense")
       expect(d.damage).not.toBeUndefined()
       const damage = Math.floor(200 * 1.12 * 1.3)
@@ -272,7 +302,7 @@ describe("くにのスキル", () => {
       expect(d.hpAfter).toBe(0)
       expect(d.reboot).toBe(true)
       // まりかカウンター発動
-      expect(hasSkillTriggered(result.offense, marika)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", marika)).toBe(true)
       assert(result.defense)
       // くににダメージ発生
       d = result.defense.formation[1]
@@ -292,8 +322,9 @@ describe("くにのスキル", () => {
       expect(e.data.denco).toMatchDenco(kuni)
       e = result.defense.event[2]
       assert(e.type === "skill_trigger")
-      expect(e.data.step).toBe("self")
-      expect(e.data.denco).toMatchDenco(kuni)
+      expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+      expect(e.data.skillName).toBe("シスターガード Lv.4")
+
       d = getAccessDenco(result, "defense")
       // 最大HPの30%
       expect(d.currentHp).toBe(d.hpAfter + Math.floor(d.maxHp * 0.3))

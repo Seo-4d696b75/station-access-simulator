@@ -1,4 +1,4 @@
-import { copy } from "../";
+import { copy, getFormation } from "../";
 import { assert } from "../core/context";
 import { SkillLogic } from "../core/skill";
 
@@ -7,7 +7,7 @@ const KEY = "damage_count_key"
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  onAccessComplete: (context, state, self, access) => {
+  onAccessComplete: (context, access, self) => {
     if (!self.skill.active) return
     // 基本的にダメージはアクセスでしか発生しない
     // リブート時は逆にカウント減少
@@ -15,8 +15,8 @@ const skill: SkillLogic = {
       const current = self.skill.data.readNumber(KEY, 0)
       const max = self.skill.property.readNumber("count_max")
       // 書き込み可能な状態にコピーする
-      const next = copy.AccessUserResult(state)
-      const d = next.formation[self.carIndex]
+      const next = copy.AccessResult(access)
+      const d = getFormation(next, self.which)[self.carIndex]
       assert(d.skill.type === "possess")
       if (current < max) {
         d.skill.data.putNumber(KEY, current + 1)
@@ -43,18 +43,16 @@ const skill: SkillLogic = {
       return next
     }
   },
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense" && state.defense) {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "offense") {
+      const cnt = self.skill.data.readNumber(KEY, 0)
+      const max = self.skill.property.readNumber("count_max")
+      const atkUnit = self.skill.property.readNumber("ATK")
+      const atk = Math.floor(atkUnit * Math.min(cnt, max))
       return {
-        probability: "probability",
-        recipe: (state) => {
-          const cnt = self.skill.data.readNumber(KEY, 0)
-          const max = self.skill.property.readNumber("count_max")
-          const atkUnit = self.skill.property.readNumber("ATK")
-          const atk = Math.floor(atkUnit * Math.min(cnt, max))
-          state.attackPercent += atk
-          context.log.log(`ボク、攻撃されると悔しくなってパワー上昇するんです。回数：${cnt} ATK+${atk}%`)
-        }
+        probability: self.skill.property.readNumber("probability", 100),
+        type: "damage_atk",
+        percent: atk,
       }
     }
   },

@@ -1589,7 +1589,8 @@
       "80",
       "83",
       "85",
-      "87"
+      "87",
+      "97"
     ],
     "list": [
       {
@@ -4889,6 +4890,7 @@
     "class": "D91_Yoshino",
     "probability_def": 100,
     "probability_exp": 100,
+    "probability_score": 100,
     "DEF_cool": 15,
     "DEF_heat": -10,
     "list": [
@@ -5267,7 +5269,7 @@
     "probability": 100,
     "cooldown": 10800,
     "active_limit": 3600,
-    "active_shorten": 60,
+    "active_shorten": -60,
     "list": [
       {
         "skill_level": 1,
@@ -5317,6 +5319,57 @@
         "name": "遍く天地の美と愛よ",
         "ATK": 50,
         "active_extend": 180
+      }
+    ]
+  },
+  {
+    "numbering": "98",
+    "class": "D98_Mafuyu",
+    "active": 3600,
+    "cooldown": 9000,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "遠慮がちな淡雪 Lv.1",
+        "ATK": 8
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "遠慮がちな淡雪 Lv.2",
+        "ATK": 10
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "遠慮がちな淡雪 Lv.3",
+        "ATK": 12
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "遠慮がちな淡雪 Lv.4",
+        "ATK": 14
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "遠慮がちな淡雪 Lv.5",
+        "ATK": 16
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "遠慮がちな淡雪 Lv.6",
+        "ATK": 18
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "スノーフレーク・ファインダー",
+        "ATK": 20
       }
     ]
   },

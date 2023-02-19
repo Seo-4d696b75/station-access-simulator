@@ -1,5 +1,5 @@
 import { init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -46,7 +46,7 @@ describe("コヨイのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, koyoi)).toBe(count >= 4)
+      expect(hasSkillTriggered(result, "defense", koyoi)).toBe(count >= 4)
       expect(result.defendPercent).toBe(count >= 4 ? 10 : 0)
     })
   })
@@ -82,7 +82,7 @@ describe("コヨイのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, koyoi)).toBe(count > 0)
+      expect(hasSkillTriggered(result, "defense", koyoi)).toBe(count > 0)
       // count >= 4 で編成内効果も発動
       const selfDef = 31 * Math.min(count, 5) / 5
       const otherDef = count >= 4 ? 10 : 0
@@ -116,9 +116,15 @@ describe("コヨイのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, ren)).toBe(false)
-      expect(hasSkillTriggered(result.defense, koyoi)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", ren)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", koyoi)).toBe(true)
       expect(result.defendPercent).toBe(10)
+      let t = getSkillTrigger(result, "defense", koyoi)[0]
+      expect(t.skillName).toBe("なきむしシンパサイザー Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(false)
+      expect(t.canTrigger).toBe(true)
+      expect(t.triggered).toBe(true)
     })
     test("発動なし-守備側(被アクセス)-無効化", () => {
       const context = initContext("test", "test", false)
@@ -145,9 +151,15 @@ describe("コヨイのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, ren)).toBe(true)
-      expect(hasSkillTriggered(result.defense, koyoi)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", ren)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", koyoi)).toBe(false)
       expect(result.defendPercent).toBe(0)
+      let t = getSkillTrigger(result, "defense", koyoi)[0]
+      expect(t.skillName).toBe("なきむしシンパサイザー Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
     })
   })
 })

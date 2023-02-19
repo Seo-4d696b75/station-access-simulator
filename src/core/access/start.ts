@@ -13,7 +13,6 @@ import { runAccessDamageCalculation } from "./damage"
 import { completeDencoHP } from "./hp"
 import { completeAccess } from "./result"
 import { calcAccessBonusScoreExp, calcLinkBonusScoreExp } from "./score"
-import { checkProbabilityBoost, hasValidatedSkill } from "./skill"
 import { triggerAccessSkillAt } from "./_skill"
 /**
  * アクセス処理の入力・設定を定義します
@@ -181,7 +180,6 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
 function logAccessStart(context: Context, state: ReadonlyState<AccessState>) {
   // log active skill
   var names = state.offense.formation
-    .filter(d => hasValidatedSkill(d))
     .map(d => d.name)
     .join(",")
   context.log.log(`攻撃：${getAccessDenco(state, "offense").name}`)
@@ -190,7 +188,6 @@ function logAccessStart(context: Context, state: ReadonlyState<AccessState>) {
   if (state.defense) {
     const defense = getDefense(state)
     names = defense.formation
-      .filter(d => hasValidatedSkill(d))
       .map(d => d.name)
       .join(",")
     context.log.log(`守備：${getAccessDenco(state, "defense").name}`)
@@ -254,11 +251,6 @@ function runAccessStart(context: Context, state: AccessState): AccessState {
 function decideLinkResult(context: Context, state: AccessState) {
 
   context.log.log("最終的なアクセス結果を決定")
-  // 最後に確率ブーストの有無を判定
-  checkProbabilityBoost(state.offense)
-  if (state.defense) {
-    checkProbabilityBoost(state.defense)
-  }
 
   // 最終的なリブート有無＆変化後のHPを計算
   completeDencoHP(context, state, "offense")

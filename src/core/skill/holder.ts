@@ -1,7 +1,8 @@
 import { AccessDencoState } from "../access"
-import { SimulatorError } from "../context"
+import { assert, Context } from "../context"
 import { MutableProperty, ReadableProperty } from "../property"
 import { ReadonlyState } from "../state"
+import { UserState } from "../user"
 import { SkillLogic } from "./logic"
 import { SkillTransition, SkillTransitionType } from "./transition"
 
@@ -153,10 +154,8 @@ export type SkillHolder = Skill | SkillNotAcquired | SkillNone
  * @throws スキルを保持していない場合
  */
 export function getSkill<S extends SkillState | ReadonlyState<SkillState>>(denco: { skill: S | SkillNotAcquired | SkillNone }): S {
-  if (denco.skill.type === "possess") {
-    return denco.skill
-  }
-  throw new SimulatorError("skill not found")
+  assert(denco.skill.type === "possess", "skill not found")
+  return denco.skill
 }
 
 /**
@@ -188,4 +187,30 @@ export function canSkillInvalidated<S extends ReadonlyState<AccessDencoState>>(s
     && skill.transition.state === "active"
     && !state.skillInvalidated
     && (!!skill.triggerOnAccess || !!skill.onAccessComplete)
+}
+
+export function extendSkillActiveDuration<T extends UserState>(
+  context: Context,
+  state: T,
+  carIndex: number,
+  extendSeconds: number,
+  limitSeconds?: number,
+) {
+  assert(0 <= carIndex && carIndex < state.formation.length, "carIndex out of bounds")
+  const d = state.formation[carIndex]
+  const skill = getSkill(d)
+  assert(skill.transition.state === "active")
+  assert(skill.transition.data, "スキル時間のデータが見つかりません")
+  const data = skill.transition.data
+  assert(data.activeTimeout > context.currentTime)
+  const extend = Math.min(
+    // 現在時刻から起算して最大limitSeconds時間でactive時間延長
+    extendSeconds * 1000,
+    limitSeconds
+      ? context.currentTime + limitSeconds * 1000 - data.activeTimeout
+      : Number.MAX_SAFE_INTEGER
+  )
+  data.activeTimeout += extend
+  // クールダウン時間はそのまま
+  data.cooldownTimeout += extend
 }

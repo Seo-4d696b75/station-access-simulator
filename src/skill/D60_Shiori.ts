@@ -14,19 +14,24 @@ const skill: SkillLogic = {
     const d = state.formation[idx]
     if (d.currentExp < d.nextExp) {
       // 経験値追加できる？
-      return triggerSkillAtEvent(context, state, self, {
-        probability: "probability",
-        recipe: (state) => {
-          const d = state.formation[idx]
-          const cnt = links.link.length
-          assert(cnt > 0, "解除されたリンクが見つかりません")
-          const unit = self.skill.property.readNumber("EXP")
-          const exp = unit * cnt
-          context.log.log(`みなさんの成長はわたしがサポートしますよ！ EXP: ${unit} x ${cnt}`)
-          context.log.log(`  ${d.name} EXP: ${d.currentExp} => ${d.currentExp + exp}`)
-          d.currentExp += exp
-        }
-      })
+      return triggerSkillAtEvent(
+        context,
+        state,
+        self,
+        {
+          probability: self.skill.property.readNumber("probability"),
+          type: "skill_event",
+          recipe: (state) => {
+            const d = state.formation[idx]
+            const cnt = links.link.length
+            assert(cnt > 0, "解除されたリンクが見つかりません")
+            const unit = self.skill.property.readNumber("EXP")
+            const exp = unit * cnt
+            context.log.log(`みなさんの成長はわたしがサポートしますよ！ EXP: ${unit} x ${cnt}`)
+            context.log.log(`  ${d.name} EXP: ${d.currentExp} => ${d.currentExp + exp}`)
+            d.currentExp += exp
+          }
+        })
     }
   }
 }

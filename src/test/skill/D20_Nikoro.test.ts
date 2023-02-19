@@ -38,7 +38,7 @@ describe("にころのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.defense, nikoro)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", nikoro)).toBe(false)
     expect(result.defense?.score.total).toBe(0)
     expect(result.defense?.displayedScore).toBe(0)
     expect(result.defense?.displayedExp).toBe(0)
@@ -69,7 +69,7 @@ describe("にころのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, nikoro)).toBe(false) // アクセス後の発動
+    expect(hasSkillTriggered(result, "offense", nikoro)).toBe(false) // アクセス後の発動
     expect(result.offense.event.length).toBe(2)
     expect(result.offense.event[0].type).toBe("access")
     expect(result.offense.event[1].type).toBe("skill_trigger")
@@ -83,9 +83,12 @@ describe("にころのスキル", () => {
     let event = result.offense.event[1]
     assert(event.type === "skill_trigger")
     nikoro = getAccessDenco(result, "offense")
-    expect(nikoro).toMatchDencoState(event.data.denco)
-    expect(event.data.carIndex).toBe(0)
-    expect(event.data.step).toBe("self")
+    expect(event.data.denco).toMatchDencoState(nikoro)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("デリバリーカーゴ Lv.4")
     expect(event.data.time).toBe(result.time)
 
     let d = result.offense.formation[1]
@@ -122,7 +125,7 @@ describe("にころのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, nikoro)).toBe(false) // アクセス後の発動
+    expect(hasSkillTriggered(result, "offense", nikoro)).toBe(false) // アクセス後の発動
     expect(result.offense.event.length).toBe(2)
     expect(result.offense.event[0].type).toBe("access")
     expect(result.offense.event[1].type).toBe("skill_trigger")
@@ -136,9 +139,12 @@ describe("にころのスキル", () => {
     let event = result.offense.event[1]
     assert(event.type === "skill_trigger")
     nikoro = getAccessDenco(result, "offense")
-    expect(nikoro).toMatchDencoState(event.data.denco)
-    expect(event.data.carIndex).toBe(0)
-    expect(event.data.step).toBe("self")
+    expect(event.data.denco).toMatchDencoState(nikoro)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("一分のスキも無い配達")
     expect(event.data.time).toBe(result.time)
 
     let d = result.offense.formation[1]
@@ -177,7 +183,7 @@ describe("にころのスキル", () => {
       station: nikoro.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.defense, nikoro)).toBe(false) // アクセス後の発動
+    expect(hasSkillTriggered(result, "defense", nikoro)).toBe(false) // アクセス後の発動
     expect(result.defense).not.toBeUndefined()
     assert(result.defense)
     expect(result.defense.event.length).toBe(3)
@@ -206,11 +212,15 @@ describe("にころのスキル", () => {
     expect(d.disconnectedLink).toMatchLinksResult(reboot)
     event = result.defense.event[2]
     assert(event.type === "skill_trigger")
-    let trigger = event.data
-    expect(d).toMatchDencoState(trigger.denco)
-    expect(trigger.carIndex).toBe(0)
-    expect(trigger.step).toBe("self")
-    expect(trigger.time).toBe(result.time)
+
+    expect(event.data.denco).toMatchDencoState(d)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("デリバリーカーゴ Lv.4")
+    expect(event.data.time).toBe(result.time)
+
     d = result.defense.formation[1]
     const exp = Math.floor(reboot.exp * 0.25)
     expect(d.exp.access.total).toBe(0)
@@ -246,7 +256,7 @@ describe("にころのスキル", () => {
       usePink: true
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.defense, nikoro)).toBe(false) // アクセス後の発動
+    expect(hasSkillTriggered(result, "defense", nikoro)).toBe(false) // アクセス後の発動
     expect(result.defense).not.toBeUndefined()
     assert(result.defense)
     expect(result.defense.event.length).toBe(2)
@@ -271,13 +281,16 @@ describe("にころのスキル", () => {
     expect(result.defense.score.total).toBe(reboot.totalScore)
     expect(result.defense.displayedScore).toBe(reboot.totalScore) // 解除されたリンクのスコア・経験値
     expect(result.defense.displayedExp).toBe(reboot.exp)
-    let e = result.defense.event[1]
-    assert(e.type === "skill_trigger")
-    let trigger = e.data
-    expect(d).toMatchDencoState(trigger.denco)
-    expect(trigger.carIndex).toBe(0)
-    expect(trigger.step).toBe("self")
-    expect(trigger.time).toBe(result.time)
+    let event = result.defense.event[1]
+    assert(event.type === "skill_trigger")
+    expect(event.data.denco).toMatchDencoState(d)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("デリバリーカーゴ Lv.4")
+    expect(event.data.time).toBe(result.time)
+
     d = result.defense.formation[1]
     const exp = Math.floor(reboot.exp * 0.25)
     expect(d.exp.access.total).toBe(0)
@@ -311,7 +324,7 @@ describe("にころのスキル", () => {
       station: nikoro.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.defense, nikoro)).toBe(false) // アクセス後の発動
+    expect(hasSkillTriggered(result, "defense", nikoro)).toBe(false) // アクセス後の発動
     expect(result.defense).not.toBeUndefined()
     assert(result.defense)
     expect(result.defense.event.length).toBe(4)
@@ -345,11 +358,14 @@ describe("にころのスキル", () => {
     expect(levelup.after.level).toBe(60)
     event = result.defense.event[3]
     assert(event.type === "skill_trigger")
-    let trigger = event.data
-    expect(d).toMatchDencoState(trigger.denco)
-    expect(trigger.carIndex).toBe(0)
-    expect(trigger.step).toBe("self")
-    expect(trigger.time).toBe(result.time)
+    expect(event.data.denco).toMatchDencoState(d)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("デリバリーカーゴ Lv.5") // Lv.60　アップ後が適用
+    expect(event.data.time).toBe(result.time)
+
     d = result.defense.formation[1]
     // FIXME 現行仕様だとレベルアップ前のスキルレベルの値25%が適用されている
     // issue: https://github.com/Seo-4d696b75/station-access-simulator/issues/17
@@ -384,8 +400,8 @@ describe("にころのスキル", () => {
     const result = startAccess(context, config)
     // にころ無効化
     assert(result.defense)
-    expect(hasSkillTriggered(result.defense, nikoro)).toBe(false)
-    expect(result.defense.formation[0].skillInvalidated).toBe(true)
+    expect(hasSkillTriggered(result, "defense", nikoro)).toBe(false)
+
     expect(result.defense.event.length).toBe(2)
     expect(result.defense.event[0].type).toBe("access")
     expect(result.defense.event[1].type).toBe("reboot")
@@ -414,12 +430,13 @@ describe("にころのスキル", () => {
     // にころスキル発動(確率100%)
     // ひいるは効かない
     assert(result.defense)
-    expect(hasSkillTriggered(result.offense, nikoro)).toBe(false)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", nikoro)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
     expect(result.offense.event.length).toBe(2)
     expect(result.offense.event[0].type).toBe("access")
     let e = result.offense.event[1]
     assert(e.type === "skill_trigger")
     expect(e.data.denco).toMatchDenco(nikoro)
+    expect(e.data.skillName).toBe("一分のスキも無い配達")
   })
 })

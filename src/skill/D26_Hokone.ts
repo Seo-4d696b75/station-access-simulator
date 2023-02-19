@@ -1,40 +1,43 @@
 import { calcAccessDamage, getAccessDenco } from "../core/access/index";
+import { assert } from "../core/context";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
-    if (self.who === "offense" && state.defense) {
-      const defense = getAccessDenco(state, "defense")
-      if (step === "damage_special" && defense.numbering === "25") {
-        return {
-          probability: "probability_heal",
-          recipe: (state) => {
-            const heal = self.skill.property.readNumber("heal")
-            const base = calcAccessDamage(context, state)
-            // 通常のATK&DEF増減による計算を考慮する
-            const value = Math.floor(base * heal / 100)
-            // 回復量は負数のダメージ量として処理
-            state.damageBase = {
-              variable: 0, // variable は0以上に計算が入る
-              constant: -value + (state.damageBase?.constant ?? 0)
-            }
-            context.log.log(`うららちゃんは可愛くて思わずいい子いい子しちゃうわぁ～♪ 回復:${value} = base:${base} * ${heal}%`)
-          }
-        }
-      } else if (step === "damage_common" && defense.numbering !== "25") {
-        return {
-          probability: "probability_atk",
-          recipe: (state) => {
-            const atk = self.skill.property.readNumber("ATK")
-            state.attackPercent += atk
-            context.log.log(`今日も愛するうららちゃんをひとりじめするため、野暮な連中をふっ飛ばすわよ! ATK+${atk}%`)
-          }
-        }
+  onAccessDamagePercent: (context, state, self) => {
+    const d = getAccessDenco(state, "defense")
+    if (self.who === "offense" && d.numbering !== "25") {
+      return {
+        probability: self.skill.property.readNumber("probability_atk", 100),
+        type: "damage_atk",
+        percent: self.skill.property.readNumber("ATK")
       }
     }
   },
+  onAccessDamageSpecial: (context, state, self) => {
+    const d = getAccessDenco(state, "defense")
+    if (self.who === "offense" && d.numbering === "25") {
+      assert(state.damageBase?.constant ?? 0 === 0, "想定外のダメージ計算が既に実行されています！")
+      const heal = self.skill.property.readNumber("heal")
+      const base = calcAccessDamage(context, state)
+      // 通常のATK&DEF増減による計算を考慮する
+      const value = Math.floor(base * heal / 100)
+      return {
+        probability: self.skill.property.readNumber("probability_heal", 100),
+        type: "damage_special",
+        damageCalc: {
+          // 後続の固定ダメージ増減において、
+          // 固定ダメージ追加：ダメージが追加される（回復量が減る）
+          // 固定ダメージ軽減：変化しない
+          variable: 0,
+          // 回復量は負数のダメージ量として処理
+          constant: -value,
+        }
+      }
+    }
+
+  }
 }
 
 export default skill

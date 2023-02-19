@@ -39,7 +39,7 @@ describe("あいのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, ai)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", ai)).toBe(true)
       expect(result.defendPercent).toBe(12)
     })
     test("追加DEF", () => {
@@ -64,7 +64,7 @@ describe("あいのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, ai)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", ai)).toBe(true)
       expect(result.defendPercent).toBe(12 + 14)
     })
   })
@@ -91,7 +91,7 @@ describe("あいのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, ai)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", ai)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
     test("編成内cool以外", () => {
@@ -117,7 +117,7 @@ describe("あいのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, ai)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", ai)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
   })

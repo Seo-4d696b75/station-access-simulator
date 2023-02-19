@@ -40,7 +40,7 @@ describe("なるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.offense, you)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(true)
       checkEXP(result, 90)
     })
     test("isNewStation定義あり", () => {
@@ -70,7 +70,7 @@ describe("なるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.offense, you)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(true)
       checkEXP(result, 90)
       expect(predicate.mock.calls.length).toBe(1)
       expect(predicate.mock.calls[0][0]).toMatchStation(moe.link[0])
@@ -108,7 +108,7 @@ describe("なるのスキル", () => {
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
     expect(result.linkSuccess).toBe(true)
-    expect(hasSkillTriggered(result.offense, you)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", you)).toBe(true)
     checkEXP(result, 90 + 190)
     expect(predicate.mock.calls.length).toBe(1)
     expect(predicate.mock.calls[0][0]).toMatchStation(moe.link[0])
@@ -144,7 +144,7 @@ describe("なるのスキル", () => {
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
       expect(result.pinkMode).toBe(true)
-      expect(hasSkillTriggered(result.offense, you)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(false)
       checkEXP(result, 0)
       expect(predicate.mock.calls.length).toBe(0)
     })
@@ -175,7 +175,7 @@ describe("なるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(false)
-      expect(hasSkillTriggered(result.offense, you)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(false)
       checkEXP(result, 0)
       expect(predicate.mock.calls.length).toBe(0)
     })
@@ -204,12 +204,11 @@ describe("なるのスキル", () => {
           carIndex: 0
         },
         station: moe.link[0],
-        usePink: true,
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.offense, you)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(false)
       checkEXP(result, 0)
       expect(predicate.mock.calls.length).toBe(0)
     })

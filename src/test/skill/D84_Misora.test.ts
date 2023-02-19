@@ -47,6 +47,7 @@ describe("みそらのスキル", () => {
   describe("ATK増加", () => {
     test.each(targetList)("対象 %s", (no) => {
       const context = initContext("test", "test", false)
+      context.random.mode = "ignore" // 23 みらい不発調整
       let misora = DencoManager.getDenco(context, "84", 50)
       let test = DencoManager.getDenco(context, no, 50)
       let reika = DencoManager.getDenco(context, "5", 50, 1)
@@ -68,7 +69,7 @@ describe("みそらのスキル", () => {
         station: reika.link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.offense, misora)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", misora)).toBe(true)
       expect(result.attackPercent).toBe(7)
     })
     test.each(noTargetList)("対象外 %s", (no) => {
@@ -90,7 +91,7 @@ describe("みそらのスキル", () => {
         station: reika.link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.offense, misora)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", misora)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
 
@@ -120,7 +121,7 @@ describe("みそらのスキル", () => {
         station: test.link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.defense, misora)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", misora)).toBe(true)
       expect(result.defendPercent).toBeGreaterThanOrEqual(7)
     })
     test.each(noTargetList)("対象外 %s", (no) => {
@@ -142,7 +143,7 @@ describe("みそらのスキル", () => {
         station: test.link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.defense, misora)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", misora)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
 

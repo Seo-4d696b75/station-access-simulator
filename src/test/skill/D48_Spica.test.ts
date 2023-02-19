@@ -1,5 +1,5 @@
 import { activateSkill, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
@@ -34,7 +34,17 @@ describe("スピカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, spica)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", spica)).toBe(true)
+    const t = getSkillTrigger(result, "defense", spica)[0]
+    expect(t.skillName).toBe("ウィッシュ☆スター Lv.4")
+    expect(t.probability).toBe(19)
+    expect(t.boostedProbability).toBe(19)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("defense")
+    expect(t.denco.who).toBe("other")
+
     expect(result.defendPercent).toBe(17)
   })
 
@@ -59,7 +69,8 @@ describe("スピカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, spica)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", spica)).toBe(false)
+
     expect(result.defendPercent).toBe(0)
   })
 
@@ -87,8 +98,18 @@ describe("スピカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, spica)).toBe(true)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", spica)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    const t = getSkillTrigger(result, "defense", spica)[0]
+    expect(t.skillName).toBe("ウィッシュ☆スター Lv.4")
+    expect(t.probability).toBe(19)
+    expect(t.boostedProbability).toBe(19 * 1.2)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("defense")
+    expect(t.denco.who).toBe("other")
+
     expect(result.defendPercent).toBe(17)
   })
 
@@ -115,8 +136,18 @@ describe("スピカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, spica)).toBe(false)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", spica)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    const t = getSkillTrigger(result, "defense", spica)[0]
+    expect(t.skillName).toBe("ウィッシュ☆スター Lv.4")
+    expect(t.probability).toBe(19)
+    expect(t.boostedProbability).toBe(19 * 1.2)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("defense")
+    expect(t.denco.who).toBe("other")
+    
     expect(result.defendPercent).toBe(0)
   })
 
@@ -142,7 +173,7 @@ describe("スピカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, spica)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", spica)).toBe(true)
     expect(result.defendPercent).toBe(17)
   })
 
@@ -166,7 +197,7 @@ describe("スピカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, spica)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", spica)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-守備側(被アクセス)-対象外", () => {
@@ -191,7 +222,7 @@ describe("スピカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, spica)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", spica)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)", () => {
@@ -215,7 +246,7 @@ describe("スピカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, spica)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", spica)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 })

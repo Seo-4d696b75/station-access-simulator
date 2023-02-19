@@ -46,7 +46,7 @@ describe("みやびのスキル", () => {
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
     const trigger = attr === "heat"
-    expect(hasSkillTriggered(result.defense, miyabi)).toBe(trigger)
+    expect(hasSkillTriggered(result, "defense", miyabi)).toBe(trigger)
     expect(result.defendPercent).toBe(trigger ? 42 : 0)
   })
 
@@ -72,7 +72,7 @@ describe("みやびのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, miyabi)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", miyabi)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 })

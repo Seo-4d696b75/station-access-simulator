@@ -37,7 +37,7 @@ describe("ららのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, rara)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", rara)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動あり-守備側(被アクセス)-昼", () => {
@@ -61,7 +61,7 @@ describe("ららのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, rara)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", rara)).toBe(true)
     expect(result.defendPercent).toBe(25)
   })
   test("発動なし-守備側(編成内)-昼", () => {
@@ -85,7 +85,7 @@ describe("ららのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, rara)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", rara)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動あり-守備側(被アクセス)-夜", () => {
@@ -109,7 +109,7 @@ describe("ららのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, rara)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", rara)).toBe(true)
     expect(result.defendPercent).toBe(-30)
   })
   test("発動なし-守備側(編成内)-夜", () => {
@@ -133,7 +133,7 @@ describe("ららのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, rara)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", rara)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 

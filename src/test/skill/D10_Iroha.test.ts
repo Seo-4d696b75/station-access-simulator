@@ -1,6 +1,8 @@
+import assert from "assert"
 import dayjs from "dayjs"
 import { activateSkill, getSkill, init, initContext, initUser, refreshState } from "../.."
 import DencoManager from "../../core/dencoManager"
+import "../../gen/matcher"
 
 describe("いろはスキル", () => {
   beforeAll(init)
@@ -72,11 +74,15 @@ describe("いろはスキル", () => {
     expect(state.event.length).toBe(1)
     let event = state.event[0]
     expect(event.type).toBe("skill_trigger")
-    if (event.type === "skill_trigger") {
-      expect(event.data.denco.name).toBe("iroha")
-      expect(event.data.step).toBe("self")
-      expect(event.data.time).toBe(now)
-    }
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(now)
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("リプレイスメント Lv.4")
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDenco(state.formation[0])
+
     // スキル状態は即座に idle -> active -> wait
     iroha = state.formation[0]
     skill = getSkill(iroha)
@@ -110,11 +116,15 @@ describe("いろはスキル", () => {
     expect(state.event.length).toBe(1)
     let event = state.event[0]
     expect(event.type).toBe("skill_trigger")
-    if (event.type === "skill_trigger") {
-      expect(event.data.denco.name).toBe("iroha")
-      expect(event.data.step).toBe("self")
-      expect(event.data.time).toBe(now)
-    }
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(now)
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.skillName).toBe("リプレイスメント Lv.4")
+    expect(event.data.denco.carIndex).toBe(1)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDenco(state.formation[1])
+
     iroha = state.formation[1]
     skill = getSkill(iroha)
     expect(skill.transition.state).toBe("cooldown")

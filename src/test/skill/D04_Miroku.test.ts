@@ -1,10 +1,12 @@
+import assert from "assert"
 import dayjs from "dayjs"
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
 describe("みろくのスキル", () => {
@@ -17,6 +19,7 @@ describe("みろくのスキル", () => {
 
   test("発動なし-フットバース使用", () => {
     const context = initContext("test", "test", false)
+    context.random.mode = "force"
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [reika])
@@ -37,7 +40,7 @@ describe("みろくのスキル", () => {
     expect(result.pinkItemSet).toBe(true)
     expect(result.pinkItemUsed).toBe(true)
     expect(result.pinkMode).toBe(true)
-    expect(result.defense?.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "offense", miroku)).toBe(false)
     expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     let accessLuna = getAccessDenco(result, "defense")
@@ -45,6 +48,7 @@ describe("みろくのスキル", () => {
   })
   test("発動なし-守備側", () => {
     const context = initContext("test", "test", false)
+    context.random.mode = "force"
     let miroku = DencoManager.getDenco(context, "4", 50, 1)
     let reika = DencoManager.getDenco(context, "5", 50, 1)
     let defense = initUser(context, "とあるマスター", [miroku])
@@ -62,7 +66,7 @@ describe("みろくのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.defense?.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "defense", miroku)).toBe(false)
   })
   test("発動なし-攻撃側編成内", () => {
     const context = initContext("test", "test", false)
@@ -86,7 +90,7 @@ describe("みろくのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.offense.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "offense", miroku)).toBe(false)
   })
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
@@ -108,7 +112,13 @@ describe("みろくのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.offense.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "offense", miroku)).toBe(false)
+    let trigger = getSkillTrigger(result, "offense", miroku)[0]
+    expect(trigger.probability).toBe(3.5)
+    expect(trigger.probability).toBe(3.5)
+    expect(trigger.canTrigger).toBe(false)
+    expect(trigger.invalidated).toBe(false)
+    expect(trigger.triggered).toBe(false)
   })
   test("発動あり-Rebootなし", () => {
     // 発動の通常
@@ -132,11 +142,17 @@ describe("みろくのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.offense.triggeredSkills.length).toBe(1)
-    let trigger = result.offense.triggeredSkills[0]
-    expect(trigger.numbering).toBe("4")
-    expect(trigger.name).toBe("miroku")
-    expect(trigger.step).toBe("after_damage")
+    expect(hasSkillTriggered(result, "offense", miroku)).toBe(true)
+    let trigger = getSkillTrigger(result, "offense", miroku)[0]
+    expect(trigger.denco).toMatchDenco(miroku)
+    expect(trigger.denco.carIndex).toBe(0)
+    expect(trigger.denco.which).toBe("offense")
+    expect(trigger.denco.who).toBe("offense")
+    expect(trigger.probability).toBe(3.5)
+    expect(trigger.probability).toBe(3.5)
+    expect(trigger.canTrigger).toBe(true)
+    expect(trigger.invalidated).toBe(false)
+    expect(trigger.triggered).toBe(true)
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.damageBase?.variable).toBe(95)
@@ -170,9 +186,15 @@ describe("みろくのスキル", () => {
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
     // ひいるによる確率ブーストが乗る
-    expect(result.offense.triggeredSkills.length).toBe(2)
-    expect(hasSkillTriggered(result.offense, miroku)).toBe(true)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", miroku)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    let trigger = getSkillTrigger(result, "offense", miroku)[0]
+    assert(trigger)
+    expect(trigger.probability).toBe(3.5)
+    expect(trigger.boostedProbability).toBe(3.5 * 1.2)
+    expect(trigger.canTrigger).toBe(true)
+    expect(trigger.invalidated).toBe(false)
+    expect(trigger.triggered).toBe(true)
   })
   test("発動あり-Rebootあり", () => {
     const context = initContext("test", "test", false)
@@ -195,11 +217,7 @@ describe("みろくのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.offense.triggeredSkills.length).toBe(1)
-    let trigger = result.offense.triggeredSkills[0]
-    expect(trigger.numbering).toBe("4")
-    expect(trigger.name).toBe("miroku")
-    expect(trigger.step).toBe("after_damage")
+    expect(hasSkillTriggered(result, "offense", miroku)).toBe(true)
     expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     expect(result.damageBase?.variable).toBe(247)
@@ -232,16 +250,13 @@ describe("みろくのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.offense.triggeredSkills.length).toBe(2)
-    expect(hasSkillTriggered(result.offense, miroku)).toBe(true)
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", miroku)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", luna)).toBe(true)
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.attackPercent).toBe(25)
     expect(result.defendPercent).toBe(50)
-    if (result.defense) {
-      expect(hasSkillTriggered(result.defense, luna)).toBe(true)
-    }
     expect(result.damageBase?.variable).toBe(142)
     let accessLuna = getAccessDenco(result, "defense")
     expect(accessLuna.reboot).toBe(false)
@@ -272,13 +287,9 @@ describe("みろくのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(result.offense.triggeredSkills.length).toBe(1)
-    let trigger = result.offense.triggeredSkills[0]
-    expect(trigger.numbering).toBe("5")
-    expect(trigger.name).toBe("reika")
-    expect(trigger.step).toBe("damage_common")
     expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
+    expect(hasSkillTriggered(result, "offense", miroku)).toBe(false)
     let accessLuna = getAccessDenco(result, "defense")
     expect(accessLuna.reboot).toBe(true)
     expect(accessLuna.hpBefore).toBe(240)
