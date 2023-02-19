@@ -25,12 +25,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -63,12 +59,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(hiiru.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -99,12 +91,8 @@ describe("リオナのスキル", () => {
     let offense = initUser(context, "とあるマスター", [riona, seria])
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -132,12 +120,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 0駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 20
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -163,9 +147,7 @@ describe("リオナのスキル", () => {
     offense = activateSkill(context, offense, 0)
     riona = offense.formation[0]
     expect(isSkillActive(riona.skill)).toBe(true)
-    offense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -190,12 +172,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -224,12 +202,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
+    offense.user.getAccessCount = (s) => 20
+    defense.user.getAccessCount = (s) => 10
     const config = {
       offense: {
         state: offense,
@@ -259,12 +233,8 @@ describe("リオナのスキル", () => {
     let defense = initUser(context, "とあるマスター２", [eria])
     defense = activateSkill(context, defense, 0)
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,

@@ -20,9 +20,7 @@ describe("やちよスキル", () => {
       let charlotte = DencoManager.getDenco(context, "6", 50)
       let defense = initUser(context, "とあるマスター", [yachiyo, seria])
       const predicate = jest.fn((_) => false)
-      defense.user.history = {
-        isHomeStation: predicate,
-      }
+      defense.user.isHomeStation = predicate
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
         offense: {
@@ -54,9 +52,8 @@ describe("やちよスキル", () => {
       let defense = initUser(context, "とあるマスター", [yachiyo, seria])
       // ぜんぶ地元駅
       const predicate = jest.fn((_) => true)
-      defense.user.history = {
-        isHomeStation: predicate,
-      }
+      defense.user.isHomeStation = predicate
+
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
         offense: {
@@ -107,9 +104,8 @@ describe("やちよスキル", () => {
       let charlotte = DencoManager.getDenco(context, "6", 50)
       let defense = initUser(context, "とあるマスター", [yachiyo, hiiru])
       // ぜんぶ地元駅
-      defense.user.history = {
-        isHomeStation: (s) => true
-      }
+      defense.user.isHomeStation = (s) => true
+
       defense = activateSkill(context, defense, 1)
       hiiru = defense.formation[1]
       expect(isSkillActive(hiiru.skill)).toBe(true)
@@ -145,9 +141,8 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [yachiyo, seria])
     // ぜんぶ地元駅
-    offense.user.history = {
-      isHomeStation: (s) => true
-    }
+    offense.user.isHomeStation = (s) => true
+
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -172,9 +167,8 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [seria, yachiyo])
     // ぜんぶ地元駅
-    defense.user.history = {
-      isHomeStation: (s) => true
-    }
+    defense.user.isHomeStation = (s) => true
+
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {

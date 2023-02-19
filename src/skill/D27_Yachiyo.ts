@@ -5,7 +5,7 @@ const skill: SkillLogic = {
   transitionType: "always",
   onAccessDamagePercent: (context, state, self) => {
     if (self.who === "defense") {
-      const isHome = getDefense(state).user.history.isHomeStation(context, state.station)
+      const isHome = getDefense(state).user.isHomeStation(context, state.station)
       if (isHome) {
         return {
           probability: self.skill.property.readNumber("probability", 100),

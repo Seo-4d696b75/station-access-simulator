@@ -1,10 +1,11 @@
 import { SkillLogic } from "../core/skill";
+import { LocalDateType } from "../core/user/property";
 
 const skill: SkillLogic = {
   transitionType: "always",
   onAccessDamagePercent: (context, state, self) => {
     // 移動距離1km未満は発動しない?
-    const dist = state.offense.user.daily.readDistance(context)
+    const dist = state.offense.user.getDailyDistance(context, LocalDateType.Today)
     if (self.which !== "offense") return
     if (dist < 1) return
     let atk = 0

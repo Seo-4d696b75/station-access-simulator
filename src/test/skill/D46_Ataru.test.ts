@@ -306,10 +306,8 @@ describe("あたるのスキル", () => {
         // 被アクセス
         defense = repeatAccess(context, defense, 10)
         defense = activateSkill(context, defense, 1)
-        defense.user.daily = {
-          accessStationCount: 26
-        }
-        
+        defense.user.getDailyAccessCount = (_) => 26
+
         // アクセス  
         let sheena = DencoManager.getDenco(context, "7", 10, 1)
         let offense = initUser(context, "user", [sheena])

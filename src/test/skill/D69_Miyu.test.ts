@@ -19,7 +19,7 @@ describe("ミユのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let miyu = DencoManager.getDenco(context, "69", 50)
     const offense = initUser(context, "とあるマスター１", [reika, miyu])
-    offense.user.daily = { distance: 100 }
+    offense.user.getDailyDistance = (_) => 100
     const station = StationManager.getRandomStation(context, 1)[0]
     const config: AccessConfig = {
       offense: {
@@ -60,7 +60,7 @@ describe("ミユのスキル", () => {
     const defense = initUser(context, "とあるマスター２", [
       charlotte, miyu
     ])
-    defense.user.daily = { distance: 100 }
+    defense.user.getDailyDistance = (_) => 100
     const config: AccessConfig = {
       offense: {
         state: offense,
@@ -100,7 +100,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.daily = { distance: 100 }
+    offense.user.getDailyDistance = (_) => 100
     const defense = initUser(context, "とあるマスター２", [
       charlotte, miyu
     ])
@@ -144,7 +144,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.daily = { distance: 0.9 }
+    offense.user.getDailyDistance = (_) => 0.9
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -182,7 +182,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.daily = { distance: dist }
+    offense.user.getDailyDistance = (_) => dist
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -232,7 +232,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, seria, miyu
     ])
-    offense.user.daily = { distance: dist }
+    offense.user.getDailyDistance = (_) => dist
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])

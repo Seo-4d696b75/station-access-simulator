@@ -17,9 +17,8 @@ describe("さいかのスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [saika, seria])
     let defense = initUser(context, "とあるマスター２", [charlotte])
-    offense.user.daily = {
-      distance: 2.9
-    }
+    offense.user.getDailyDistance = (_) => 2.9
+
     const config = {
       offense: {
         state: offense,
@@ -42,9 +41,8 @@ describe("さいかのスキル", () => {
     let saika = DencoManager.getDenco(context, "44", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [saika, seria])
-    offense.user.daily = {
-      distance: 100
-    }
+    offense.user.getDailyDistance = (_) => 100
+
     const config = {
       offense: {
         state: offense,
@@ -64,9 +62,8 @@ describe("さいかのスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [saika, seria])
     let defense = initUser(context, "とあるマスター２", [charlotte])
-    offense.user.daily = {
-      distance: 100
-    }
+    offense.user.getDailyDistance = (_) => 100
+
     const config = {
       offense: {
         state: offense,
@@ -90,9 +87,8 @@ describe("さいかのスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [saika, seria])
     let defense = initUser(context, "とあるマスター２", [charlotte])
-    offense.user.daily = {
-      distance: dist
-    }
+    offense.user.getDailyDistance = (_) => dist
+
     const config = {
       offense: {
         state: offense,
@@ -121,9 +117,8 @@ describe("さいかのスキル", () => {
     let offense = initUser(context, "とあるマスター", [saika, seria])
     let defense = initUser(context, "とあるマスター２", [eria])
     defense = activateSkill(context, defense, 0)
-    offense.user.daily = {
-      distance: 100
-    }
+    offense.user.getDailyDistance = (_) => 100
+
     const config = {
       offense: {
         state: offense,

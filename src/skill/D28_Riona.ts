@@ -7,8 +7,8 @@ const skill: SkillLogic = {
   onAccessDamagePercent: (context, state, self) => {
     if (self.who === "offense") {
       // アクセス数の差
-      const diff = (getDefense(state).user.history.getStationAccessCount(context, state.station))
-        - (state.offense.user.history.getStationAccessCount(context, state.station))
+      const diff = (getDefense(state).user.getAccessCount(context, state.station))
+        - (state.offense.user.getAccessCount(context, state.station))
       if (diff > 0) {
         const max = self.skill.property.readNumber("ATK")
         const atk = calcATK(max, diff)

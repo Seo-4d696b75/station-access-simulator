@@ -11,7 +11,7 @@ const skill: SkillLogic = {
       && !state.pinkMode
       && getAccessDenco(state, "offense").attr === "heat"
     ) {
-      const predicate = state.offense.user.history.isNewStation
+      const predicate = state.offense.user.isNewStation
       const isNew = predicate(context, state.station) >= NewStationType.Daily
       const exp = self.skill.property.readNumber("EXP")
         + (isNew ? self.skill.property.readNumber("EXP_additional") : 0)

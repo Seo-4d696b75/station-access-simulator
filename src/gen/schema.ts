@@ -10,7 +10,7 @@ import { SkillPropertyReader } from "../core/skill/property"
 import { AccessSkillTriggerState, EventSkillTrigger, EventSkillTriggerState, WithAccessPosition, WithSkillEventPosition } from "../core/skill/trigger"
 import { ReadonlyState } from "../core/state"
 import { Line, LinkResult, LinksResult, Station, StationLink } from "../core/station"
-import { DailyStatistics, EventQueueEntry, StationStatistics, UserProperty, UserPropertyReader, UserState } from "../core/user"
+import { EventQueueEntry, UserProperty, UserPropertyReader, UserState } from "../core/user"
 import { arraySchema, createCopyFunc, createMergeFunc, customSchema, functionSchema, objectSchema, primitiveSchema } from "./helper"
 
 // line & station
@@ -169,28 +169,20 @@ export const dencoStateSchema = objectSchema<DencoState>({
 
 const userPropertyReaderSchema = objectSchema<UserPropertyReader>({
   name: primitiveSchema,
-  daily: objectSchema<UserPropertyReader["daily"]>({
-    readDistance: functionSchema,
-    readAccessStationCount: functionSchema,
-  }),
-  history: objectSchema<UserPropertyReader["history"]>({
-    isHomeStation: functionSchema,
-    getStationAccessCount: functionSchema,
-    isNewStation: functionSchema,
-  })
+  getDailyDistance: functionSchema,
+  getDailyAccessCount: functionSchema,
+  isHomeStation: functionSchema,
+  getAccessCount: functionSchema,
+  isNewStation: functionSchema,
 })
 
 export const userPropertySchema = objectSchema<UserProperty>({
   name: primitiveSchema,
-  daily: objectSchema<DailyStatistics>({
-    distance: primitiveSchema,
-    accessStationCount: primitiveSchema,
-  }),
-  history: objectSchema<StationStatistics>({
-    isHomeStation: functionSchema,
-    getStationAccessCount: functionSchema,
-    isNewStation: functionSchema,
-  })
+  getDailyDistance: functionSchema,
+  getDailyAccessCount: functionSchema,
+  isHomeStation: functionSchema,
+  getAccessCount: functionSchema,
+  isNewStation: functionSchema,
 })
 
 // access

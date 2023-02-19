@@ -3,6 +3,7 @@ import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from 
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
+import { LocalDateType } from "../../core/user/property"
 import "../../gen/matcher"
 
 describe("まぜのスキル", () => {
@@ -18,9 +19,9 @@ describe("まぜのスキル", () => {
       let charlotte = DencoManager.getDenco(context, "6", 50)
       charlotte.ap = 50
       let defense = initUser(context, "とあるマスター", [maze, seria])
-      defense.user.daily = {
-        accessStationCount: count
-      }
+      const reader = jest.fn((type) => count)
+      defense.user.getDailyAccessCount = reader
+
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
         offense: {
@@ -65,6 +66,9 @@ describe("まぜのスキル", () => {
       } else {
         expect(t).toBeUndefined()
       }
+
+      expect(reader.mock.calls.length).toBe(1)
+      expect(reader.mock.calls[0][0]).toBe(LocalDateType.Today)
     })
     test("発動あり-守備側(被アクセス)-10駅-確率ブースト", () => {
       const context = initContext("test", "test", false)
@@ -74,9 +78,9 @@ describe("まぜのスキル", () => {
       let maze = DencoManager.getDenco(context, "67", 50, 1)
       let charlotte = DencoManager.getDenco(context, "6", 50)
       let defense = initUser(context, "とあるマスター", [maze, hiiru])
-      defense.user.daily = {
-        accessStationCount: 10
-      }
+      const reader = jest.fn((type) => 10)
+      defense.user.getDailyAccessCount = reader
+
       defense = activateSkill(context, defense, 1)
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
@@ -112,9 +116,9 @@ describe("まぜのスキル", () => {
       let maze = DencoManager.getDenco(context, "67", 50, 1)
       let charlotte = DencoManager.getDenco(context, "6", 50)
       let defense = initUser(context, "とあるマスター", [maze, seria])
-      defense.user.daily = {
-        accessStationCount: 10
-      }
+      const reader = jest.fn((type) => 10)
+      defense.user.getDailyAccessCount = reader
+
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
         offense: {
@@ -152,9 +156,9 @@ describe("まぜのスキル", () => {
       let maze = DencoManager.getDenco(context, "67", 50, 1)
       let charlotte = DencoManager.getDenco(context, "6", 50)
       let defense = initUser(context, "とあるマスター", [maze, seria])
-      defense.user.daily = {
-        accessStationCount: 10
-      }
+      const reader = jest.fn((type) => 10)
+      defense.user.getDailyAccessCount = reader
+
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
         offense: {
@@ -186,9 +190,9 @@ describe("まぜのスキル", () => {
       let charlotte = DencoManager.getDenco(context, "6", 50)
       charlotte.ap = 50
       let defense = initUser(context, "とあるマスター", [seria, maze])
-      defense.user.daily = {
-        accessStationCount: count
-      }
+      const reader = jest.fn((type) => count)
+      defense.user.getDailyAccessCount = reader
+
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
         offense: {
@@ -232,9 +236,9 @@ describe("まぜのスキル", () => {
       let maze = DencoManager.getDenco(context, "67", 50, 1)
       let ren = DencoManager.getDenco(context, "22", 50)
       let defense = initUser(context, "とあるマスター", [seria, maze])
-      defense.user.daily = {
-        accessStationCount: 30
-      }
+      const reader = jest.fn((type) => 30)
+      defense.user.getDailyAccessCount = reader
+
       let offense = initUser(context, "とあるマスター２", [ren])
       offense = activateSkill(context, offense, 0)
       const config = {
@@ -271,9 +275,8 @@ describe("まぜのスキル", () => {
       let maze = DencoManager.getDenco(context, "67", 50, 1)
       let ren = DencoManager.getDenco(context, "22", 50)
       let defense = initUser(context, "とあるマスター", [maze, seria])
-      defense.user.daily = {
-        accessStationCount: 30
-      }
+      const reader = jest.fn((type) => 30)
+      defense.user.getDailyAccessCount = reader
       let offense = initUser(context, "とあるマスター２", [ren])
       offense = activateSkill(context, offense, 0)
       const config = {
