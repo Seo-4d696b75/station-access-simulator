@@ -1,7 +1,7 @@
 import assert from "assert"
 import dayjs from "dayjs"
 import { init } from "../.."
-import { AccessConfig, getAccessDenco, startAccess } from "../../core/access/index"
+import { AccessConfig, getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -544,9 +544,11 @@ describe("基本的なアクセス処理", () => {
     expect(d.exp.access.linkBonus).toBe(0)
     expect(d.exp.skill).toBe(0)
     expect(d.exp.link).toBe(0)
-    expect(result.offense.triggeredSkills.length).toBe(1)
-    expect(result.offense.triggeredSkills[0].name).toBe("reika")
-    expect(result.offense.triggeredSkills[0].step).toBe("damage_common")
+    let t = getSkillTrigger(result, "offense", reika)[0]
+    expect(t.skillName).toBe("起動加速度向上 Lv.3")
+    expect(t.denco.name).toBe("reika")
+    expect(t.type).toBe("damage_atk")
+
     d = getAccessDenco(result, "defense")
     expect(d.name).toBe("charlotte")
     expect(d.hpBefore).toBe(324)
@@ -601,8 +603,8 @@ describe("基本的なアクセス処理", () => {
     // ダメージ計算確認
     expect(result.damageBase?.variable).toBe(200)
     expect(result.damageFixed).toBe(0)
-    expect(result.offense.triggeredSkills.length).toBe(0)
-    expect(result.defense?.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(false)
     // スコア＆経験値
     expect(result.offense.score.total).toBe(accessScore + 200) // アクセス＋ダメージ量
     expect(result.offense.score.access.total).toBe(accessScore + 200)
@@ -667,10 +669,10 @@ describe("基本的なアクセス処理", () => {
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(0)
     // ダメージ計算確認
-    expect(result.offense.triggeredSkills.length).toBe(0)
-    expect(result.defense?.triggeredSkills.length).toBe(1)
-    expect(result.defense?.triggeredSkills[0].name).toBe("sheena")
-    expect(result.defense?.triggeredSkills[0].step).toBe("after_damage")
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+    let t = getSkillTrigger(result, "defense", sheena)[0]
+    expect(t.skillName).toBe("ディファーレ Lv.4")
     // スコア＆経験値
     expect(result.offense.score.total).toBe(accessScore + 200) // アクセス＋ダメージ量
     expect(result.offense.score.access.total).toBe(accessScore + 200)
@@ -765,10 +767,10 @@ describe("基本的なアクセス処理", () => {
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(0)
     // ダメージ計算確認
-    expect(result.offense.triggeredSkills.length).toBe(0)
-    expect(result.defense?.triggeredSkills.length).toBe(1)
-    expect(result.defense?.triggeredSkills[0].name).toBe("sheena")
-    expect(result.defense?.triggeredSkills[0].step).toBe("after_damage")
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+    let t = getSkillTrigger(result, "defense", sheena)[0]
+    expect(t.skillName).toBe("レッツトエントリヒ")
     // スコア＆経験値
     const linkScore = getAccessDenco(result, "offense").disconnectedLink?.totalScore ?? 0
     expect(linkScore).toBeGreaterThan(0)
