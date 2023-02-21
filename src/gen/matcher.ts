@@ -24,8 +24,6 @@ export const toMatchDenco = createMatcher<types.Denco>(schema.dencoSchema)
 export const toMatchDencoState = createMatcher<types.DencoState>(schema.dencoStateSchema)
 export const toMatchUserProperty = createMatcher<types.UserProperty>(schema.userPropertySchema)
 export const toMatchAccessDencoState = createMatcher<types.AccessDencoState>(schema.accessDencoStateSchema)
-export const toMatchAccessSideState = createMatcher<types.AccessSideState>(schema.accessSideStateSchema)
-export const toMatchAccessState = createMatcher<types.AccessState>(schema.accessStateSchema)
 export const toMatchLinkResult = createMatcher<types.LinkResult>(schema.linkResultSchema)
 export const toMatchLinksResult = createMatcher<types.LinksResult>(schema.linksResultSchema)
 export const toMatchAccessDencoResult = createMatcher<types.AccessDencoResult>(schema.accessDencoResultSchema)
@@ -33,6 +31,8 @@ export const toMatchAccessEventData = createMatcher<types.AccessEventData>(schem
 export const toMatchEvent = createMatcher<types.Event>(schema.eventSchema)
 export const toMatchEventQueueEntry = createMatcher<types.EventQueueEntry>(schema.eventQueueEntrySchema)
 export const toMatchUserState = createMatcher<types.UserState>(schema.userStateSchema)
+export const toMatchAccessUserState = createMatcher<types.AccessUserState>(schema.accessUserStateSchema)
+export const toMatchAccessState = createMatcher<types.AccessState>(schema.accessStateSchema)
 export const toMatchAccessUserResult = createMatcher<types.AccessUserResult>(schema.accessUserResultSchema)
 export const toMatchAccessResult = createMatcher<types.AccessResult>(schema.accessResultSchema)
 export const toMatchSkillEventDencoState = createMatcher<types.SkillEventDencoState>(schema.skillEventDencoStateSchema)
@@ -52,8 +52,6 @@ declare global {
       toMatchDencoState(expected: types.DencoState, ...mergeWithExpected: any[]): R;
       toMatchUserProperty(expected: types.UserProperty, ...mergeWithExpected: any[]): R;
       toMatchAccessDencoState(expected: types.AccessDencoState, ...mergeWithExpected: any[]): R;
-      toMatchAccessSideState(expected: types.AccessSideState, ...mergeWithExpected: any[]): R;
-      toMatchAccessState(expected: types.AccessState, ...mergeWithExpected: any[]): R;
       toMatchLinkResult(expected: types.LinkResult, ...mergeWithExpected: any[]): R;
       toMatchLinksResult(expected: types.LinksResult, ...mergeWithExpected: any[]): R;
       toMatchAccessDencoResult(expected: types.AccessDencoResult, ...mergeWithExpected: any[]): R;
@@ -61,6 +59,8 @@ declare global {
       toMatchEvent(expected: types.Event, ...mergeWithExpected: any[]): R;
       toMatchEventQueueEntry(expected: types.EventQueueEntry, ...mergeWithExpected: any[]): R;
       toMatchUserState(expected: types.UserState, ...mergeWithExpected: any[]): R;
+      toMatchAccessUserState(expected: types.AccessUserState, ...mergeWithExpected: any[]): R;
+      toMatchAccessState(expected: types.AccessState, ...mergeWithExpected: any[]): R;
       toMatchAccessUserResult(expected: types.AccessUserResult, ...mergeWithExpected: any[]): R;
       toMatchAccessResult(expected: types.AccessResult, ...mergeWithExpected: any[]): R;
       toMatchSkillEventDencoState(expected: types.SkillEventDencoState, ...mergeWithExpected: any[]): R;
@@ -78,8 +78,6 @@ declare global {
       toMatchDencoState: (expected: types.DencoState, ...mergeWithExpected: any[]) => any;
       toMatchUserProperty: (expected: types.UserProperty, ...mergeWithExpected: any[]) => any;
       toMatchAccessDencoState: (expected: types.AccessDencoState, ...mergeWithExpected: any[]) => any;
-      toMatchAccessSideState: (expected: types.AccessSideState, ...mergeWithExpected: any[]) => any;
-      toMatchAccessState: (expected: types.AccessState, ...mergeWithExpected: any[]) => any;
       toMatchLinkResult: (expected: types.LinkResult, ...mergeWithExpected: any[]) => any;
       toMatchLinksResult: (expected: types.LinksResult, ...mergeWithExpected: any[]) => any;
       toMatchAccessDencoResult: (expected: types.AccessDencoResult, ...mergeWithExpected: any[]) => any;
@@ -87,6 +85,8 @@ declare global {
       toMatchEvent: (expected: types.Event, ...mergeWithExpected: any[]) => any;
       toMatchEventQueueEntry: (expected: types.EventQueueEntry, ...mergeWithExpected: any[]) => any;
       toMatchUserState: (expected: types.UserState, ...mergeWithExpected: any[]) => any;
+      toMatchAccessUserState: (expected: types.AccessUserState, ...mergeWithExpected: any[]) => any;
+      toMatchAccessState: (expected: types.AccessState, ...mergeWithExpected: any[]) => any;
       toMatchAccessUserResult: (expected: types.AccessUserResult, ...mergeWithExpected: any[]) => any;
       toMatchAccessResult: (expected: types.AccessResult, ...mergeWithExpected: any[]) => any;
       toMatchSkillEventDencoState: (expected: types.SkillEventDencoState, ...mergeWithExpected: any[]) => any;
@@ -104,8 +104,6 @@ declare global {
       toMatchDencoState: (expected: types.DencoState, ...mergeWithExpected: any[]) => any;
       toMatchUserProperty: (expected: types.UserProperty, ...mergeWithExpected: any[]) => any;
       toMatchAccessDencoState: (expected: types.AccessDencoState, ...mergeWithExpected: any[]) => any;
-      toMatchAccessSideState: (expected: types.AccessSideState, ...mergeWithExpected: any[]) => any;
-      toMatchAccessState: (expected: types.AccessState, ...mergeWithExpected: any[]) => any;
       toMatchLinkResult: (expected: types.LinkResult, ...mergeWithExpected: any[]) => any;
       toMatchLinksResult: (expected: types.LinksResult, ...mergeWithExpected: any[]) => any;
       toMatchAccessDencoResult: (expected: types.AccessDencoResult, ...mergeWithExpected: any[]) => any;
@@ -113,6 +111,8 @@ declare global {
       toMatchEvent: (expected: types.Event, ...mergeWithExpected: any[]) => any;
       toMatchEventQueueEntry: (expected: types.EventQueueEntry, ...mergeWithExpected: any[]) => any;
       toMatchUserState: (expected: types.UserState, ...mergeWithExpected: any[]) => any;
+      toMatchAccessUserState: (expected: types.AccessUserState, ...mergeWithExpected: any[]) => any;
+      toMatchAccessState: (expected: types.AccessState, ...mergeWithExpected: any[]) => any;
       toMatchAccessUserResult: (expected: types.AccessUserResult, ...mergeWithExpected: any[]) => any;
       toMatchAccessResult: (expected: types.AccessResult, ...mergeWithExpected: any[]) => any;
       toMatchSkillEventDencoState: (expected: types.SkillEventDencoState, ...mergeWithExpected: any[]) => any;
@@ -133,8 +133,6 @@ expect.extend({
   toMatchDencoState,
   toMatchUserProperty,
   toMatchAccessDencoState,
-  toMatchAccessSideState,
-  toMatchAccessState,
   toMatchLinkResult,
   toMatchLinksResult,
   toMatchAccessDencoResult,
@@ -142,6 +140,8 @@ expect.extend({
   toMatchEvent,
   toMatchEventQueueEntry,
   toMatchUserState,
+  toMatchAccessUserState,
+  toMatchAccessState,
   toMatchAccessUserResult,
   toMatchAccessResult,
   toMatchSkillEventDencoState,

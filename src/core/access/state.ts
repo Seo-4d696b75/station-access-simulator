@@ -3,7 +3,7 @@ import { DencoState } from "../denco"
 import { AccessSkillTriggerState } from "../skill/trigger"
 import { ReadonlyState } from "../state"
 import { Station } from "../station"
-import { UserPropertyReader } from "../user"
+import { UserPropertyReader, UserState } from "../user"
 import { ScoreExpBoostPercent } from "./score"
 
 /**
@@ -166,7 +166,7 @@ export interface AccessDencoState extends DencoState {
 /**
  * アクセスの攻守ふたりの状態
  */
-export interface AccessSideState {
+export interface AccessUserState extends UserState {
   
   user: UserPropertyReader
 
@@ -228,14 +228,14 @@ export interface AccessState {
   /**
    * アクセスする側の編成状態
    */
-  offense: AccessSideState
+  offense: AccessUserState
 
   /**
    * アクセスされる側の編成状態
    * 
    * リンクしたでんこの居ない対象にアクセスした場合は`undefined`
    */
-  defense?: AccessSideState
+  defense?: AccessUserState
 
   skillTriggers: AccessSkillTriggerState[]
 

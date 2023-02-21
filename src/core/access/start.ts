@@ -1,5 +1,5 @@
 import dayjs from "dayjs"
-import { AccessDencoState, AccessResult, AccessSide, AccessSideState, AccessState, getAccessDenco, getDefense, hasDefense } from "."
+import { AccessDencoState, AccessResult, AccessSide, AccessState, AccessUserState, getAccessDenco, getDefense, hasDefense } from "."
 import { copy } from "../../"
 import { Context, withFixedClock } from "../context"
 import { TIME_FORMAT } from "../date"
@@ -113,7 +113,7 @@ export const startAccess = (context: Context, config: AccessConfig): AccessResul
   return completeAccess(context, config, state)
 })
 
-function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessSideState {
+function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessUserState {
   const tmp = copy.UserState(f)
   refreshSkillState(context, tmp)
   const formation = tmp.formation.map((e, idx) => {
@@ -174,6 +174,8 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
       linkBonus: 0,
       link: 0
     },
+    event: tmp.event,
+    queue: tmp.queue,
   }
 }
 

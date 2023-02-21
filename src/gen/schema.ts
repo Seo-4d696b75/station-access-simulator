@@ -1,4 +1,4 @@
-import { AccessDencoResult, AccessDencoState, AccessResult, AccessSideState, AccessState, AccessUserResult, DamageCalcState, DamageState, ScoreExpState } from "../core/access"
+import { AccessDencoResult, AccessDencoState, AccessResult, AccessState, AccessUserResult, AccessUserState, DamageCalcState, DamageState, ScoreExpState } from "../core/access"
 import { AccessScoreExpResult, AccessScoreExpState, ScoreExpBoostPercent, ScoreExpResult } from "../core/access/score"
 import { assert, SimulatorError } from "../core/context"
 import { Denco, DencoState } from "../core/denco"
@@ -278,36 +278,6 @@ const accessSkillTriggerStateSchema = objectSchema<AccessSkillTriggerState>({
   damageCalc: damageCalcStateSchema,
 })
 
-export const accessSideStateSchema = objectSchema<AccessSideState>({
-  user: userPropertyReaderSchema,
-  formation: arraySchema(accessDencoStateSchema),
-  carIndex: primitiveSchema,
-  probabilityBoosted: primitiveSchema,
-  probabilityBoostPercent: primitiveSchema,
-  score: scoreExpStateSchema,
-  scorePercent: scoreExpPercentSchema,
-})
-
-
-export const accessStateSchema = objectSchema<AccessState>({
-  time: primitiveSchema,
-  station: stationSchema,
-  offense: accessSideStateSchema,
-  defense: accessSideStateSchema,
-  depth: primitiveSchema,
-  damageBase: damageCalcStateSchema,
-  damageFixed: primitiveSchema,
-  attackPercent: primitiveSchema,
-  defendPercent: primitiveSchema,
-  damageRatio: primitiveSchema,
-  linkSuccess: primitiveSchema,
-  linkDisconnected: primitiveSchema,
-  pinkMode: primitiveSchema,
-  pinkItemSet: primitiveSchema,
-  pinkItemUsed: primitiveSchema,
-  skillTriggers: arraySchema(accessSkillTriggerStateSchema as any),
-})
-
 // station link result
 
 export const linkResultSchema = objectSchema<LinkResult>({
@@ -518,6 +488,40 @@ export const userStateSchema = objectSchema<UserState>({
       src.forEach(e => dst.push(copyEventQueueEntry(e)))
     }
   )
+})
+
+// access state
+
+export const accessUserStateSchema = objectSchema<AccessUserState>({
+  user: userPropertyReaderSchema,
+  formation: arraySchema(accessDencoStateSchema),
+  carIndex: primitiveSchema,
+  probabilityBoosted: primitiveSchema,
+  probabilityBoostPercent: primitiveSchema,
+  score: scoreExpStateSchema,
+  scorePercent: scoreExpPercentSchema,
+  event: arraySchema(customSchema(copyEvent, mergeEvent)),
+  queue: arraySchema(customSchema(copyEventQueueEntry, mergeEventQueueEntry)),
+})
+
+
+export const accessStateSchema = objectSchema<AccessState>({
+  time: primitiveSchema,
+  station: stationSchema,
+  offense: accessUserStateSchema,
+  defense: accessUserStateSchema,
+  depth: primitiveSchema,
+  damageBase: damageCalcStateSchema,
+  damageFixed: primitiveSchema,
+  attackPercent: primitiveSchema,
+  defendPercent: primitiveSchema,
+  damageRatio: primitiveSchema,
+  linkSuccess: primitiveSchema,
+  linkDisconnected: primitiveSchema,
+  pinkMode: primitiveSchema,
+  pinkItemSet: primitiveSchema,
+  pinkItemUsed: primitiveSchema,
+  skillTriggers: arraySchema(accessSkillTriggerStateSchema as any),
 })
 
 // access result
