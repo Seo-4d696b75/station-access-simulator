@@ -12,7 +12,7 @@ const skill: SkillLogic = {
       && getAccessDenco(state, "offense").attr === "heat"
     ) {
       const predicate = state.offense.user.isNewStation
-      const isNew = predicate(context, state.station) >= NewStationType.Daily
+      const isNew = predicate(state.station) >= NewStationType.Daily
       const exp = self.skill.property.readNumber("EXP")
         + (isNew ? self.skill.property.readNumber("EXP_additional") : 0)
       return {

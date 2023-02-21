@@ -5,7 +5,7 @@ const skill: SkillLogic = {
   transitionType: "always",
   onAccessStart: (context, state, self) => {
     // 移動距離1km未満は発動しない?
-    const dist = state.offense.user.getDailyDistance(context, LocalDateType.Today)
+    const dist = state.offense.user.getDailyDistance(LocalDateType.Today)
     if (
       self.which === "offense"
       && state.defense

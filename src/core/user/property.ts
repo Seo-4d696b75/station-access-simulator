@@ -1,4 +1,4 @@
-import { Context } from "../context"
+import { assert, Context } from "../context"
 import { ReadonlyState } from "../state"
 import { Station } from "../station"
 
@@ -7,9 +7,14 @@ import { Station } from "../station"
  * 
  * このオブジェクトのプロパティはライブラリ側からは参照のみ
  */
-export type UserProperty = {
+export type UserProperty = UserProfile & Partial<UserAccessStatistics>
+
+export interface UserProfile {
+  /**
+   * ユーザ名
+   */
   name: string
-} & Partial<UserAccessStatistics>
+}
 
 export interface UserAccessStatistics {
   /**
@@ -97,11 +102,7 @@ export enum LocalDateType {
  * 
  * 最後にバリデーションを行い有効な値のみ返します
  */
-export type UserPropertyReader = {
-  readonly name: string
-} & {
-    readonly [key in keyof UserAccessStatistics]: (context: Context, ...args: Parameters<UserAccessStatistics[key]>) => ReturnType<UserAccessStatistics[key]>
-  }
+export type UserPropertyReader = UserProfile & UserAccessStatistics
 
 export function getUserPropertyReader(property: ReadonlyState<UserProperty>): UserPropertyReader {
   return {
@@ -157,19 +158,26 @@ function initPropertyReader<T extends NonNullable<any>>(propertyName: string, pr
   }
 }
 
-function initFuncProxy<T extends NonNullable<any>, F extends (...args: any[]) => T>(funcName: string, func: F | undefined, funcDefaultReturnValue: T, validator?: (v: T) => boolean) {
-  return (context: Context, ...args: Parameters<F>): T => {
+function initFuncProxy<T extends NonNullable<any>, F extends (...args: any[]) => T>(
+  funcName: string,
+  func: F | undefined,
+  funcDefaultReturnValue: T,
+  validator?: (v: T) => boolean
+) {
+  return (...args: Parameters<F>): T => {
     let value = func?.(...args)
     if (value === undefined) {
       value = funcDefaultReturnValue
-      context.log.log(`${funcName}() 関数定義のデフォルト値を返しました : ${funcDefaultReturnValue}`)
+      // context.log.log(`${funcName}() 関数定義のデフォルト値を返しました : ${funcDefaultReturnValue}`)
     }
-    if (value === undefined) {
-      context.log.error(`関数${funcName}()を呼び出せません（関数が未定義・デフォルト値の指定なし）`)
-    }
-    if (validator?.(value) === false) {
-      context.log.error(`関数${funcName}() の返り値が不正です！ : ${value}`)
-    }
+    assert(
+      value !== undefined,
+      `関数${funcName}()を呼び出せません（関数が未定義・デフォルト値の指定なし）`
+    )
+    assert(
+      validator?.(value) !== false,
+      `関数${funcName}() の返り値が不正です！ : ${value}`,
+    )
     return value
   }
 }

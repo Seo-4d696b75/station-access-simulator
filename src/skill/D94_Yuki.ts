@@ -10,7 +10,7 @@ const skill: SkillLogic = {
       && !state.pinkMode
       && state.defense
     ) {
-      const cnt = state.offense.user.getDailyAccessCount(context, LocalDateType.Today)
+      const cnt = state.offense.user.getDailyAccessCount(LocalDateType.Today)
       const cntMax = self.skill.property.readNumber("max_access_count")
       return {
         probability: Math.floor(100 * Math.min(cnt, cntMax) / cntMax),
