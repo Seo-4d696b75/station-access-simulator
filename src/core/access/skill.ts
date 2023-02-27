@@ -212,6 +212,8 @@ function checkAccessSkillTrigger(
   // 発動判定をパス
   state.canTrigger = true
 
+  const sideName = (denco.which === "offense") ? "攻撃側" : "守備側"
+
   // 各発動効果の有無を計算
   switch (state.type) {
     case "probability_boost":
@@ -219,9 +221,11 @@ function checkAccessSkillTrigger(
     case "invalidate_damage":
       // 対象のスキルが存在するがまだ分からない
       state.triggered = false
+      context.log.log(`スキルが発動できます(${sideName}) name:${denco.firstName}(${denco.numbering}) skill:${skill.name}(type:${trigger.type})`)
       break
     default:
       state.triggered = true
+      context.log.log(`スキルが発動します(${sideName}) name:${denco.firstName}(${denco.numbering}) skill:${skill.name}(type:${trigger.type})`)
       break
   }
 
@@ -235,20 +239,12 @@ function triggerAccessSkillEffect(
   trigger: ReadonlyState<AccessSkillTriggerState>,
 ): AccessState {
 
-  const sideName = (d.which === "offense") ? "攻撃側" : "守備側"
   const skill = d.skill
   assert(skill.type === "possess")
 
-  if (!trigger.triggered) {
-    if (trigger.canTrigger) {
-      context.log.log(`スキルが発動できます(${sideName}) name:${d.firstName}(${d.numbering}) skill:${skill.name}(type:${trigger.type})`)
-    }
-    return state
-  }
+  assert(trigger.triggered)
 
   // 各発動効果の反映
-  context.log.log(`スキルが発動します(${sideName}) name:${d.firstName}(${d.numbering}) skill:${skill.name}(type:${trigger.type})`)
-
   switch (trigger.type) {
     case "pink_check":
       context.log.log(`フットバース状態を有効化します`)
