@@ -1,52 +1,44 @@
 import { getAccessDenco } from "../core/access";
-import { formatPercent } from "../core/format";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
-    // DEFの増減
-    if (step === "damage_common" && self.who === "defense") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "defense") {
       const d = getAccessDenco(state, "offense")
       if (d.attr === "cool") {
         return {
-          probability: "probability_def", // 100%
-          recipe: (state) => {
-            const def = self.skill.property.readNumber("DEF_cool")
-            state.defendPercent += def
-            context.log.log(`寒いのにはとても強いんです DEF${formatPercent(def)}`)
-          }
+          probability: self.skill.property.readNumber("probability_def"), // 100%
+          type: "damage_def",
+          percent: self.skill.property.readNumber("DEF_cool")
         }
       } else if (d.attr === "heat") {
         return {
-          probability: "probability_def", // 100%
-          recipe: (state) => {
-            const def = self.skill.property.readNumber("DEF_heat")
-            state.defendPercent += def
-            context.log.log(`暑いのだけはどうにも苦手で DEF${formatPercent(def)}`)
-          }
+          probability: self.skill.property.readNumber("probability_def"), // 100%
+          type: "damage_def",
+          percent: self.skill.property.readNumber("DEF_heat")
         }
       }
     }
+  },
+  onAccessAfterDamage: (context, state, self) => {
     // 被アクセス時のスコア・経験値追加
-    if (
-      step === "after_damage"
-      && self.who === "defense"
-      && !self.reboot
-    ) {
-      return {
-        probability: "probability_exp",
-        recipe: (state) => {
-          const exp = self.skill.property.readNumber("exp")
-          const score = self.skill.property.readNumber("score")
-          context.log.log(`被アクセスでリブートしませんでした exp+${exp} score+${score}`)
-          const user = state.defense!
-          const d = user.formation[self.carIndex]
-          d.exp.skill += exp
-          user.score.skill += score
+    if (self.who === "defense" && !self.reboot) {
+      return [
+        {
+          probability: self.skill.property.readNumber("probability_exp"), // 100%
+          type: "exp_delivery",
+          exp: (d) => d.who === "defense"
+            ? self.skill.property.readNumber("exp")
+            : 0
+        },
+        {
+          probability: self.skill.property.readNumber("probability_score"), // 100%
+          type: "score_delivery",
+          score: self.skill.property.readNumber("score")
         }
-      }
+      ]
     }
   }
 }

@@ -1,5 +1,5 @@
 import assert from "assert"
-import { activateSkill, init } from "../.."
+import { activateSkill, DencoAttribute, init } from "../.."
 import { hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
@@ -17,9 +17,10 @@ describe("よしののスキル", () => {
   })
 
   describe("DEF増減", () => {
-    test("heat", () => {
+    test.each(["heat", "cool", "eco", "flat"])("属性：%s", (attr) => {
       const context = initContext("test", "test", false)
       let reika = DencoManager.getDenco(context, "5", 50)
+      reika.attr = attr as DencoAttribute
       let offense = initUser(context, "とあるマスター", [reika])
       let yoshino = DencoManager.getDenco(context, "91", 50, 1)
       yoshino.currentHp = 1
@@ -39,58 +40,16 @@ describe("よしののスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkDisconnected).toBe(true)
-      expect(hasSkillTriggered(result.defense, yoshino)).toBe(true)
-      expect(result.defendPercent).toBe(-10)
-    })
-    test("cool", () => {
-      const context = initContext("test", "test", false)
-      let saya = DencoManager.getDenco(context, "8", 50)
-      let offense = initUser(context, "とあるマスター", [saya])
-      let yoshino = DencoManager.getDenco(context, "91", 50, 1)
-      yoshino.currentHp = 1
-      let defense = initUser(context, "とあるマスター２", [yoshino])
-      defense = activateSkill(context, defense, 0)
-      const config = {
-        offense: {
-          state: offense,
-          carIndex: 0
-        },
-        defense: {
-          state: defense,
-          carIndex: 0
-        },
-        station: yoshino.link[0],
-      }
-      const result = startAccess(context, config)
-      expect(result.defense).not.toBeUndefined()
-      expect(result.linkDisconnected).toBe(true)
-      expect(hasSkillTriggered(result.defense, yoshino)).toBe(true)
-      expect(result.defendPercent).toBe(15)
-    })
-    test("eco", () => {
-      const context = initContext("test", "test", false)
-      let charlotte = DencoManager.getDenco(context, "6", 50)
-      let offense = initUser(context, "とあるマスター", [charlotte])
-      let yoshino = DencoManager.getDenco(context, "91", 50, 1)
-      yoshino.currentHp = 1
-      let defense = initUser(context, "とあるマスター２", [yoshino])
-      defense = activateSkill(context, defense, 0)
-      const config = {
-        offense: {
-          state: offense,
-          carIndex: 0
-        },
-        defense: {
-          state: defense,
-          carIndex: 0
-        },
-        station: yoshino.link[0],
-      }
-      const result = startAccess(context, config)
-      expect(result.defense).not.toBeUndefined()
-      expect(result.linkDisconnected).toBe(true)
-      expect(hasSkillTriggered(result.defense, yoshino)).toBe(false)
-      expect(result.defendPercent).toBe(0)
+      expect(hasSkillTriggered(result, "defense", yoshino)).toBe(
+        attr === "heat" || attr === "cool"
+      )
+      expect(result.defendPercent).toBe(
+        attr === "heat"
+          ? -10
+          : attr === "cool"
+            ? 15
+            : 0
+      )
     })
   })
 
@@ -118,7 +77,7 @@ describe("よしののスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkDisconnected).toBe(false)
-      expect(hasSkillTriggered(result.defense, yoshino)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yoshino)).toBe(true)
       expect(result.defendPercent).toBe(0) // DEF変化なし
       assert(result.defense)
       // 経験値
@@ -157,7 +116,7 @@ describe("よしののスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkDisconnected).toBe(true)
-      expect(hasSkillTriggered(result.defense, yoshino)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yoshino)).toBe(true)
       expect(result.defendPercent).toBe(0) // DEF変化なし
       assert(result.defense)
       // リンク解除してもリブートしなければOK
@@ -174,6 +133,44 @@ describe("よしののスキル", () => {
       expect(result.defense.score.link).toBeGreaterThan(0)
       expect(result.defense.score.access.total).toBe(0)
       expect(result.defense.score.total).toBe(320 + result.defense.score.link)
+    })
+    test("リブート", () => {
+      const context = initContext("test", "test", false)
+      let charlotte = DencoManager.getDenco(context, "6", 50)
+      charlotte.ap = 300
+      let offense = initUser(context, "とあるマスター", [charlotte])
+      let yoshino = DencoManager.getDenco(context, "91", 50, 1)
+      let defense = initUser(context, "とあるマスター２", [yoshino])
+      defense = activateSkill(context, defense, 0)
+      const config = {
+        offense: {
+          state: offense,
+          carIndex: 0
+        },
+        defense: {
+          state: defense,
+          carIndex: 0
+        },
+        station: yoshino.link[0],
+      }
+      const result = startAccess(context, config)
+      expect(result.defense).not.toBeUndefined()
+      expect(result.linkDisconnected).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yoshino)).toBe(false)
+      expect(result.defendPercent).toBe(0) // DEF変化なし
+      assert(result.defense)
+      // 経験値
+      let d = result.defense.formation[0]
+      expect(d.reboot).toBe(true)
+      expect(d.damage?.value).toBeGreaterThan(0)
+      expect(d.exp.skill).toBe(0)
+      expect(d.exp.link).toBeGreaterThan(0)
+      expect(d.exp.access.total).toBe(0)
+
+      // スコア
+      expect(result.defense.score.skill).toBe(0)
+      expect(result.defense.score.link).toBeGreaterThan(0)
+      expect(result.defense.score.access.total).toBe(0)
     })
   })
 })

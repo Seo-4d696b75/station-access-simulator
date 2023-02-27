@@ -1,4 +1,4 @@
-import { AccessConfig } from "."
+import { AccessConfig, getSide } from "."
 import { copy, merge } from "../../"
 import { assert, Context } from "../context"
 import { withSkill } from "../skill/property"
@@ -118,8 +118,8 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   callbackLinkDisconnect(context, result, "offense")
   callbackLinkDisconnect(context, result, "defense")
   callbackLinkStarted(context, result)
-  callbackAfterAccess(context, result, "offense")
-  callbackAfterAccess(context, result, "defense")
+  result = callbackAfterAccess(context, result, "offense")
+  result = callbackAfterAccess(context, result, "defense")
   checkSKillState(context, result)
 
 
@@ -142,17 +142,19 @@ function initUserResult(context: Context, state: ReadonlyState<UserState>, acces
     event: [],
     queue: before.queue,
     user: before.user,
-    formation: after.formation.map(d => ({
-      ...d,
-      exp: {
-        ...d.exp,
-        total: 0,
-        access: {
-          ...d.exp.access,
+    formation: after.formation.map(d => {
+      return {
+        ...d,
+        exp: {
+          ...d.exp,
           total: 0,
-        }
+          access: {
+            ...d.exp.access,
+            total: 0,
+          }
+        },
       }
-    })),
+    }),
     displayedScore: 0,
     displayedExp: 0,
     score: {
@@ -398,31 +400,25 @@ function callbackLinkStarted(context: Context, state: AccessResult) {
     })
 }
 
-function callbackAfterAccess(context: Context, state: AccessResult, which: AccessSide) {
+function callbackAfterAccess(context: Context, state: AccessResult, which: AccessSide): AccessResult {
   const side = (which === "offense") ? state.offense : state.defense
-  if (!side) return
-  let formation = side
+  if (!side) return state
+
   side.formation
     .filter(d => d.skill.type === "possess") // 保有スキルすべてにコールバック
     .map(d => d.carIndex)
     .forEach(idx => {
       // スキル発動による状態変更を考慮して評価直前にコピー
-      const d = copy.AccessDencoResult(formation.formation[idx])
+      const d = copy.AccessDencoResult(getSide(state, which).formation[idx])
       const skill = d.skill
       if (skill.type !== "possess") {
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
       if (skill && skill.onAccessComplete) {
         const active = withSkill(d, skill, idx)
-        const next = skill.onAccessComplete(context, formation, active, state)
-        if (next) {
-          formation = next
-        }
+        state = skill.onAccessComplete(context, state, active) ?? state
       }
     })
-  if (which === "offense") {
-    state.offense = formation
-  } else {
-    state.defense = formation
-  }
+
+  return state
 }

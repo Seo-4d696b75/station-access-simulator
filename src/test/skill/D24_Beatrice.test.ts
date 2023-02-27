@@ -34,7 +34,7 @@ describe("ベアトリスのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, beatrice)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", beatrice)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動あり", () => {
@@ -59,8 +59,8 @@ describe("ベアトリスのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
-    expect(hasSkillTriggered(result.defense, beatrice)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", beatrice)).toBe(true)
     expect(getSkill(beatrice).property.readNumber("DEF")).toBe(75)
     expect(result.defendPercent).toBe(Math.floor(75 * (saya.ap - beatrice.ap) / saya.ap))
     expect(result.attackPercent).toBe(25)
@@ -86,7 +86,7 @@ describe("ベアトリスのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, beatrice)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", beatrice)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-攻撃側", () => {
@@ -109,7 +109,7 @@ describe("ベアトリスのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, beatrice)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", beatrice)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-守備側編成内", () => {
@@ -133,7 +133,7 @@ describe("ベアトリスのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, beatrice)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", beatrice)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 })

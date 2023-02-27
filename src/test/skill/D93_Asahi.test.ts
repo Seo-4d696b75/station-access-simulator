@@ -37,7 +37,7 @@ describe("あさひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, asahi)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", asahi)).toBe(true)
       expect(result.defendPercent).toBe(14)
     })
     test("発動なし-編成内", () => {
@@ -61,7 +61,7 @@ describe("あさひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, asahi)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", asahi)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
   })
@@ -94,7 +94,7 @@ describe("あさひのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, asahi)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", asahi)).toBe(true)
       expect(result.defendPercent).toBe(14 + (cnt >= 4 ? 35 : 0))
     })
   })

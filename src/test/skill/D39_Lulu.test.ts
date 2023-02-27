@@ -1,5 +1,6 @@
-import { activateSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, getAccessDenco, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import "../../gen/matcher"
 import { getFixedDamageDenco } from "../tool/fake"
 import { testAlwaysSkill } from "../tool/skillState"
 
@@ -32,7 +33,16 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(true)
+    const t = getSkillTrigger(result, "defense", lulu)[0]
+    expect(t.skillName).toBe("るるだけのお時間♪ Lv.4")
+    expect(t.probability).toBe(21)
+    expect(t.boostedProbability).toBe(21)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("defense")
+    expect(t.denco).toMatchDenco(lulu)
+
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(0)
@@ -59,8 +69,17 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(true)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    const t = getSkillTrigger(result, "defense", lulu)[0]
+    expect(t.skillName).toBe("るるだけのお時間♪ Lv.4")
+    expect(t.probability).toBe(21)
+    expect(t.boostedProbability).toBe(21 * 1.2)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("defense")
+    expect(t.denco).toMatchDenco(lulu)
+
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(0)
@@ -87,8 +106,18 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(false)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    const t = getSkillTrigger(result, "defense", lulu)[0]
+    expect(t.skillName).toBe("るるだけのお時間♪ Lv.4")
+    expect(t.probability).toBe(21)
+    expect(t.boostedProbability).toBe(21 * 1.2)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("defense")
+    expect(t.denco).toMatchDenco(lulu)
+
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBeGreaterThan(0)
@@ -116,8 +145,8 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(false)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBeGreaterThan(0)
@@ -143,8 +172,8 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(false)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBeGreaterThan(0)
@@ -172,8 +201,8 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test)).toBe(true)
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(10)
@@ -202,9 +231,9 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test1)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test2)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test1)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test2)).toBe(true)
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(0)
@@ -232,12 +261,22 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(false)
-    expect(hasSkillTriggered(result.offense, ren)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", ren)).toBe(true)
+    const t = getSkillTrigger(result, "defense", lulu)[0]
+    expect(t.skillName).toBe("るるだけのお時間♪ Lv.4")
+    expect(t.probability).toBe(21)
+    expect(t.invalidated).toBe(true)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("defense")
+    expect(t.denco).toMatchDenco(lulu)
+
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBeGreaterThan(0)
-    expect(d.skillInvalidated).toBe(true)
+    
   })
   test("発動あり-守備側(被アクセス)-チコ相手", () => {
     const context = initContext("test", "test", false)
@@ -261,8 +300,8 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(true)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(true)
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(d.maxHp)
@@ -291,9 +330,9 @@ describe("るるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, lulu)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test)).toBe(true)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", lulu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(true)
     let d = getAccessDenco(result, "defense")
     expect(d.damage).not.toBeUndefined()
     expect(d.damage?.value).toBe(d.maxHp)

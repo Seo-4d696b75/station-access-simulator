@@ -49,7 +49,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mizuho)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", mizuho)).toBe(true)
       expect(result.attackPercent).toBe(12.5)
     })
     test("発動あり-攻撃側(アクセス)-フィルムあり", () => {
@@ -74,7 +74,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mizuho)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", mizuho)).toBe(true)
       expect(result.attackPercent).toBe(12.5)
     })
     test("発動あり-攻撃側(編成内)-フィルムなし", () => {
@@ -98,7 +98,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mizuho)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", mizuho)).toBe(true)
       expect(result.attackPercent).toBe(12.5)
     })
     test("発動あり-攻撃側(編成内)-フィルムあり", () => {
@@ -124,7 +124,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mizuho)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", mizuho)).toBe(true)
       expect(result.attackPercent).toBe(12.5)
     })
     test("発動なし-攻撃側(編成内)-フィルム異なる", () => {
@@ -150,7 +150,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mizuho)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", mizuho)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
   })
@@ -177,7 +177,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, mizuho)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", mizuho)).toBe(true)
       expect(result.defendPercent).toBe(12.5)
     })
     test("発動あり-守備側(被アクセス)-フィルムあり", () => {
@@ -203,7 +203,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, mizuho)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", mizuho)).toBe(true)
       expect(result.defendPercent).toBe(12.5)
     })
     test("発動あり-守備側(編成内)-フィルムなし", () => {
@@ -227,7 +227,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, mizuho)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", mizuho)).toBe(true)
       expect(result.defendPercent).toBe(12.5)
     })
     test("発動あり-守備側(編成内)-フィルムあり", () => {
@@ -253,7 +253,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, mizuho)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", mizuho)).toBe(true)
       expect(result.defendPercent).toBe(12.5)
     })
     test("発動なし-守備側(編成内)-フィルム異なる", () => {
@@ -279,7 +279,7 @@ describe("みづほのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, mizuho)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", mizuho)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
   })

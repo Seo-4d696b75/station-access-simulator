@@ -1,10 +1,11 @@
 import assert from "assert"
 import { Context, copy, getSkill, init, ReadonlyState } from "../.."
-import { getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { AccessUserResult, getDefense, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser, UserState } from "../../core/user"
 import { refreshEXPState } from "../../core/user/refresh"
+import "../../gen/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
 const DEFAULT_EXP = 100
@@ -39,7 +40,7 @@ describe("なよりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, nayori)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", nayori)).toBe(false)
 
     let events = result.offense.event
     expect(events.length).toBe(1)
@@ -67,7 +68,7 @@ describe("なよりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, nayori)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", nayori)).toBe(false)
     expect(result.linkSuccess).toBe(false)
     let events = result.offense.event
     expect(events.length).toBe(2)
@@ -75,9 +76,13 @@ describe("なよりのスキル", () => {
     expect(events[1].type).toBe("skill_trigger")
     let event = events[1]
     assert(event.type === "skill_trigger")
-    expect(event.data.denco.name).toBe("nayori")
-    expect(event.data.step).toBe("self")
     expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.skillName).toBe("お便りなの♪ Lv.4")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDencoState(result.offense.formation[0])
 
     // 経験値配布
     let dNayori = result.offense.formation[0]
@@ -85,6 +90,7 @@ describe("なよりのスキル", () => {
     let dCharlotte = getDefense(result).formation[0]
     // セリアに配布
     const exp = Math.floor(dNayori.exp.access.total * 0.08)
+    expect(dSeria.exp.total).toBe(0)
     expect(dSeria.currentExp).toBe(exp)
     // 自身には配布しない
     expect(dNayori.exp.access.accessBonus).toBe(DEFAULT_EXP)
@@ -99,6 +105,7 @@ describe("なよりのスキル", () => {
 
   test("発動あり-攻撃側(アクセス)-リンク成功", () => {
     const context = initContext("test", "test", false)
+    context.clock = context.currentTime
 
     let seria = DencoManager.getDenco(context, "1", 50)
     let mero = DencoManager.getDenco(context, "2", 50)
@@ -122,12 +129,18 @@ describe("なよりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, nayori)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", nayori)).toBe(false)
     expect(result.linkSuccess).toBe(true)
 
     let event = result.offense.event[1]
     assert(event.type === "skill_trigger")
-    expect(event.data.denco.name).toBe("nayori")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.skillName).toBe("お便りなの♪ Lv.4")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.denco.carIndex).toBe(5)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDenco(result.offense.formation[5])
 
     // 経験値配布
     let dNayori = result.offense.formation[5]
@@ -174,18 +187,28 @@ describe("なよりのスキル", () => {
       station: nayori.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, nayori)).toBe(false)
+    assert(result.defense)
+    expect(hasSkillTriggered(result, "defense", nayori)).toBe(false)
     expect(result.linkSuccess).toBe(true)
     expect(result.linkDisconnected).toBe(true)
 
     let events = result.defense!.event
     expect(events.length).toBe(3)
     assert(events[0].type === "access")
-    assert(events[1].type === "reboot")
-    expect(events[1].data.denco.name).toBe("nayori")
-    assert(events[2].type === "skill_trigger")
-    expect(events[2].data.denco.name).toBe("nayori")
+    let event = events[1]
+    assert(event.type === "reboot")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.denco).toMatchDenco(result.defense.formation[0])
+
+    event = events[2]
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.skillName).toBe("お便りなの♪ Lv.4")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDencoState(result.defense.formation[0])
 
     // 経験値配布
     let dNayori = result.defense!.formation[0]
@@ -223,7 +246,7 @@ describe("なよりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, nayori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", nayori)).toBe(false)
     expect(result.linkSuccess).toBe(false)
     expect(result.linkDisconnected).toBe(false)
 
@@ -252,7 +275,7 @@ describe("なよりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, nayori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", nayori)).toBe(false)
     expect(result.linkSuccess).toBe(true)
     expect(result.linkDisconnected).toBe(true)
 
@@ -283,7 +306,7 @@ describe("なよりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, nayori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", nayori)).toBe(false)
     expect(result.linkSuccess).toBe(true)
     expect(result.linkDisconnected).toBe(true)
 
@@ -317,20 +340,32 @@ describe("なよりのスキル", () => {
       station: nayori.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, nayori)).toBe(false)
+    assert(result.defense)
+    expect(hasSkillTriggered(result, "defense", nayori)).toBe(false)
     expect(result.linkSuccess).toBe(true)
     expect(result.linkDisconnected).toBe(true)
 
     let events = result.defense!.event
     expect(events.length).toBe(4)
     expect(events[0].type).toBe("access")
-    assert(events[1].type === "reboot")
-    expect(events[1].data.denco.name).toBe("nayori")
-    assert(events[2].type === "skill_trigger")
-    expect(events[2].data.denco.name).toBe("nayori")
-    assert(events[3].type === "levelup")
-    let d = events[3].data.after
+    let event = events[1]
+    assert(event.type === "reboot")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.denco).toMatchDenco(result.defense.formation[0])
+
+    event = events[2]
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.skillName).toBe("お便りなの♪ Lv.4")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDencoState(result.defense.formation[0])
+
+    event = events[3]
+    assert(event.type === "levelup")
+    let d = event.data.after
     expect(d.name).toBe("seria")
     expect(d.level).toBe(51)
     expect(d.currentExp).toBe(7)
@@ -373,28 +408,42 @@ describe("なよりのスキル", () => {
       station: nayori.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, nayori)).toBe(false)
+    assert(result.defense)
+    expect(hasSkillTriggered(result, "defense", nayori)).toBe(false)
     expect(result.linkSuccess).toBe(true)
     expect(result.linkDisconnected).toBe(true)
 
     let events = result.defense!.event
     expect(events.length).toBe(4)
     expect(events[0].type).toBe("access")
-    assert(events[1].type === "reboot")
-    expect(events[1].data.denco.name).toBe("nayori")
+
+    let event = events[1]
+    assert(event.type === "reboot")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.denco).toMatchDenco(result.defense.formation[0])
+
     // スキルレベルも上がっている
-    assert(events[2].type === "levelup")
-    let before = events[2].data.before
-    let after = events[2].data.after
+    event = events[2]
+    assert(event.type === "levelup")
+    let before = event.data.before
+    let after = event.data.after
     expect(before.name).toBe("nayori")
     expect(before.level).toBe(59)
     expect(getSkill(before).level).toBe(4)
     expect(after.level).toBe(60)
     expect(getSkill(after).level).toBe(5)
     expect(after.currentExp).toBe(100 - 1)
-    assert(events[3].type === "skill_trigger")
-    expect(events[3].data.denco.name).toBe("nayori")
+
+    event = events[3]
+    assert(event.type === "skill_trigger")
+    expect(event.data.time).toBe(context.currentTime)
+    expect(event.data.skillName).toBe("お便りなの♪ Lv.5")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDencoState(result.defense.formation[0])
+
 
     // 経験値配布
     let dNayori = result.defense!.formation[0]
@@ -406,8 +455,8 @@ describe("なよりのスキル", () => {
     expect(dNayori.exp.skill).toBe(0)
     expect(dNayori.exp.total).toBe(dNayori.exp.link)
     expect(dNayori.currentExp).toBe(99)
-    // FIXME 実際のゲームの動作では 「なよりのリブート」→「スキルレベル3→4」→「スキルレベル3発動」
-    // 現在の実装ではスキルレベル４で発動してしまう
+    // FIXME 実際のゲームの動作では 「なよりのリブート」→「スキルレベル4→5」→「スキルレベル4発動」
+    // 現在の実装ではスキルレベル5で発動してしまう
     // でもダイアログの表示順的にはこっちのほうが自然では？
     // issue: https://github.com/Seo-4d696b75/station-access-simulator/issues/17
     const exp = Math.floor(100 * 0.12)
@@ -415,7 +464,12 @@ describe("なよりのスキル", () => {
   })
 })
 
-function checkExp(context: Context, before: ReadonlyState<UserState>, after: ReadonlyState<UserState>, indices: number[], exp: number) {
+function checkExp(context: Context, before: ReadonlyState<UserState>, after: ReadonlyState<AccessUserResult>, indices: number[], exp: number) {
+  // 経験値追加の確認
+  indices.forEach(i => {
+    const d = after.formation[i]
+    expect(d.exp.total).toBe(0)
+  })
   // 経験値を加算
   let state = copy.UserState(before)
   indices.forEach(i => state.formation[i].currentExp += exp)

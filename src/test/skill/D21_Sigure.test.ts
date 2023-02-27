@@ -1,8 +1,9 @@
 import { DencoManager, init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import { activateSkill, getSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
 describe("しぐれのスキル", () => {
@@ -35,7 +36,7 @@ describe("しぐれのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, sigure)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", sigure)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-守備側-被アクセス", () => {
@@ -60,7 +61,7 @@ describe("しぐれのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, sigure)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", sigure)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-確率", () => {
@@ -86,8 +87,17 @@ describe("しぐれのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, sigure)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", sigure)).toBe(false)
     expect(result.defendPercent).toBe(0)
+    const t = getSkillTrigger(result, "defense", sigure)[0]
+    expect(t.skillName).toBe("加圧式シールド Lv.4")
+    expect(t.probability).toBe(55)
+    expect(t.boostedProbability).toBe(55)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.who).toBe("other")
+    expect(t.denco).toMatchDenco(sigure)
   })
   test("発動あり", () => {
     const context = initContext("test", "test", false)
@@ -112,7 +122,7 @@ describe("しぐれのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, sigure)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", sigure)).toBe(true)
     expect(result.defendPercent).toBe(17)
     let accessSaya = getAccessDenco(result, "defense")
     expect(accessSaya.damage).not.toBeUndefined()
@@ -145,7 +155,7 @@ describe("しぐれのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, sigure)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", sigure)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動あり-確率補正あり", () => {
@@ -173,8 +183,18 @@ describe("しぐれのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
-    expect(hasSkillTriggered(result.defense, sigure)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", sigure)).toBe(true)
+    const t = getSkillTrigger(result, "defense", sigure)[0]
+    expect(t.skillName).toBe("加圧式シールド Lv.4")
+    expect(t.probability).toBe(55)
+    expect(t.boostedProbability).toBe(55 * 1.2)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.who).toBe("other")
+    expect(t.denco).toMatchDenco(sigure)
+    
     expect(result.defendPercent).toBe(17)
     expect(result.damageBase).not.toBeUndefined()
     expect(result.damageBase?.constant).toBe(0)
@@ -205,8 +225,8 @@ describe("しぐれのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
-    expect(hasSkillTriggered(result.defense, sigure)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", sigure)).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.damageBase).not.toBeUndefined()
     expect(result.damageBase?.constant).toBe(0)

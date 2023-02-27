@@ -1,6 +1,5 @@
-import assert from "assert"
 import { init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill, isSkillActive } from "../../core/skill"
@@ -41,13 +40,22 @@ describe("まひるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mahiru)).toBe(true)
-      expect(hasSkillTriggered(result.offense, imura)).toBe(false)
-      expect(hasSkillTriggered(result.defense, siira)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", mahiru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", imura)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", siira)).toBe(false)
       // 無効化
-      assert(result.defense)
-      expect(result.offense.formation[0].skillInvalidated).toBe(true)
-      expect(result.defense.formation[0].skillInvalidated).toBe(true)
+      let t = getSkillTrigger(result, "offense", imura)[0]
+      expect(t.skillName).toBe("紫電一閃 Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+      t = getSkillTrigger(result, "defense", siira)[0]
+      expect(t.skillName).toBe("ジョイフルガード")
+      expect(t.probability).toBe(30)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
     })
 
     describe("攻守による無効化順序", () => {
@@ -78,13 +86,22 @@ describe("まひるのスキル", () => {
         expect(result.defense).not.toBeUndefined()
         // 攻撃側のまひるが先に発動
         // 守備側のちとせは発動前に無効化される・レイカは無効化されない
-        expect(hasSkillTriggered(result.offense, mahiru)).toBe(true)
-        expect(hasSkillTriggered(result.offense, reika)).toBe(true)
-        expect(hasSkillTriggered(result.defense, chitose)).toBe(false)
-        // 無効化
-        assert(result.defense)
-        expect(result.offense.formation[0].skillInvalidated).toBe(false)
-        expect(result.defense.formation[0].skillInvalidated).toBe(true)
+        expect(hasSkillTriggered(result, "offense", mahiru)).toBe(true)
+        expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", chitose)).toBe(false)
+        // 無効化確認
+        let t = getSkillTrigger(result, "offense", reika)[0]
+        expect(t.skillName).toBe("起動加速度向上 Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(false)
+        expect(t.canTrigger).toBe(true)
+        expect(t.triggered).toBe(true)
+        t = getSkillTrigger(result, "defense", chitose)[0]
+        expect(t.skillName).toBe("見果てぬ景色")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
+        expect(t.canTrigger).toBe(false)
+        expect(t.triggered).toBe(false)
       })
       test("守備側-攻撃側にちとせ", () => {
         const context = initContext("test", "test", false)
@@ -110,14 +127,23 @@ describe("まひるのスキル", () => {
         const result = startAccess(context, config)
         expect(result.defense).not.toBeUndefined()
         // 攻撃側のちとせが先に発動・ふぶは無効化される
-        // 守備側のまひるが発動してちとせ無効化するも、既に無効化されたふぶはそのまま
-        expect(hasSkillTriggered(result.defense, mahiru)).toBe(true)
-        expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
-        expect(hasSkillTriggered(result.offense, chitose)).toBe(true)
-        // 無効化
-        assert(result.defense)
-        expect(result.offense.formation[0].skillInvalidated).toBe(true)
-        expect(result.defense.formation[1].skillInvalidated).toBe(true)
+        // 守備側のまひるは無効化対象なし
+        expect(hasSkillTriggered(result, "defense", mahiru)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
+        expect(hasSkillTriggered(result, "offense", chitose)).toBe(true)
+        // 無効化確認
+        let t = getSkillTrigger(result, "defense", fubu)[0]
+        expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
+        expect(t.canTrigger).toBe(false)
+        expect(t.triggered).toBe(false)
+        t = getSkillTrigger(result, "offense", chitose)[0]
+        expect(t.skillName).toBe("見果てぬ景色")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(false)
+        expect(t.canTrigger).toBe(true)
+        expect(t.triggered).toBe(true)
       })
     })
 
@@ -148,13 +174,15 @@ describe("まひるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mahiru)).toBe(false)
-      expect(hasSkillTriggered(result.offense, imura)).toBe(false)
-      expect(hasSkillTriggered(result.defense, siira)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", mahiru)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", imura)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", siira)).toBe(false)
       // 無効化なし
-      assert(result.defense)
-      expect(result.offense.formation[0].skillInvalidated).toBe(false)
-      expect(result.defense.formation[0].skillInvalidated).toBe(false)
+      let t = getSkillTrigger(result, "offense", imura)
+      expect(t.length).toBe(0)
+      t = getSkillTrigger(result, "defense", siira)
+      expect(t.length).toBe(0)
+
     })
     test("相手不在", () => {
       const context = initContext("test", "test", false)
@@ -174,10 +202,11 @@ describe("まひるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mahiru)).toBe(false)
-      expect(hasSkillTriggered(result.offense, imura)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", mahiru)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", imura)).toBe(false)
       // 無効化なし
-      expect(result.offense.formation[0].skillInvalidated).toBe(false)
+      let t = getSkillTrigger(result, "offense", imura)
+      expect(t.length).toBe(0)
     })
 
     test("アクセス時に影響しないecoスキル", () => {
@@ -211,15 +240,13 @@ describe("まひるのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, mahiru)).toBe(true)
-      expect(hasSkillTriggered(result.defense, siira)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", mahiru)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", siira)).toBe(false)
       // 無効化
-      assert(result.defense)
-      expect(result.defense.formation[0].skillInvalidated).toBe(true)
-      // アクセス処理に関わらないもえのスキルは対象外
-      expect(result.defense.formation[1].skillInvalidated).toBe(false)
-      expect(result.offense.formation[1].skillInvalidated).toBe(false)
-      expect(result.offense.formation[3].skillInvalidated).toBe(false)
+      let t = getSkillTrigger(result, "defense", siira)[0]
+      expect(t.skillName).toBe("ジョイフルガード")
+      expect(t.probability).toBe(30)
+      expect(t.invalidated).toBe(true)
     })
 
   })

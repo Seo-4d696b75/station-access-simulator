@@ -1,8 +1,8 @@
-import { activateSkill, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, getAccessDenco, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import StationManager from "../..//core/stationManager"
 import DencoManager from "../../core/dencoManager"
+import "../../gen/matcher"
 import { testManualSkill } from "../tool/skillState"
-
 
 describe("イムラのスキル", () => {
   beforeAll(init)
@@ -34,7 +34,7 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, imura)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", imura)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-守備側", () => {
@@ -58,7 +58,7 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, imura)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", imura)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃編成内", () => {
@@ -82,7 +82,7 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, imura)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", imura)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-相手不在", () => {
@@ -100,7 +100,7 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).toBeUndefined()
-    expect(hasSkillTriggered(result.offense, imura)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", imura)).toBe(false)
   })
   test("発動なし-フットバース", () => {
     const context = initContext("test", "test", false)
@@ -124,7 +124,7 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, imura)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", imura)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動あり", () => {
@@ -148,7 +148,16 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, imura)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", imura)).toBe(true)
+    const t = getSkillTrigger(result, "offense", imura)[0]
+    expect(t.skillName).toBe("紫電一閃 Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(imura)
+
     expect(result.attackPercent).toBe(35)
     let d = getAccessDenco(result, "offense")
     expect(d.damage).toBeUndefined() // ダメージ扱いしない
@@ -184,9 +193,9 @@ describe("イムラのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, imura)).toBe(true)
-    expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", imura)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
     expect(result.attackPercent).toBe(50)
     expect(result.defendPercent).toBe(0)
     let d = getAccessDenco(result, "defense")

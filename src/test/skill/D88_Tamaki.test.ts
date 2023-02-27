@@ -105,9 +105,9 @@ describe("たまきのスキル", () => {
       let events = result.offense.event
       let e = events[events.length - 1]
       assert(e.type === "skill_trigger")
-      expect(e.data.carIndex).toBe(0)
-      expect(e.data.denco).toMatchDencoState(result.offense.formation[0])
-      expect(e.data.step).toBe("self")
+      expect(e.data.denco.carIndex).toBe(0)
+      expect(e.data.denco).toMatchDenco(result.offense.formation[0])
+      expect(e.data.denco.who).toBe("self")
       expect(e.data.time).toBe(start)
       expect(e.data.skillName).toBe("エンドレス・ビート Lv.4")
     }
@@ -246,10 +246,8 @@ describe("たまきのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.defense, susugu)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", susugu)).toBe(true)
       expectActiveNotExtend(result, start)
-      let d = result.offense.formation[0]
-      expect(d.skillInvalidated).toBe(true)
     })
     test("延長なし-カウンター被弾-リンク失敗", () => {
 
@@ -305,7 +303,7 @@ describe("たまきのスキル", () => {
         station: reika.link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.offense, tamaki)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", tamaki)).toBe(true)
       expect(result.attackPercent).toBe(9)
     })
     test("発動なし - 自身", () => {
@@ -328,7 +326,7 @@ describe("たまきのスキル", () => {
         station: reika.link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.offense, tamaki)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", tamaki)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
   })

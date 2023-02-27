@@ -1,5 +1,6 @@
 import assert from "assert"
 import { activateSkill, init, initContext, initUser, startAccess } from "../.."
+import { getSkillTrigger, hasSkillTriggered } from "../../core/access/"
 import DencoManager from "../../core/dencoManager"
 import { testAlwaysSkill } from "../tool/skillState"
 
@@ -29,7 +30,7 @@ describe("しいらのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.offense.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "offense", siira)).toBe(false)
   })
   test("発動なし-自身以外が被アクセス", () => {
     const context = initContext("test", "test", false)
@@ -52,7 +53,7 @@ describe("しいらのスキル", () => {
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
     assert(result.defense)
-    expect(result.defense.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "defense", siira)).toBe(false)
   })
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
@@ -76,7 +77,12 @@ describe("しいらのスキル", () => {
     const result = startAccess(context, config)
     // 基本的なダメージの確認
     expect(result.defense).not.toBeUndefined()
-    expect(result.defense?.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "defense", siira)).toBe(false)
+    let t = getSkillTrigger(result, "defense", siira)[0]
+    expect(t.probability).toBe(25)
+    expect(t.boostedProbability).toBe(25)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.damageBase?.variable).toBe(260)
     expect(result.damageRatio).toBe(1.3)
@@ -134,10 +140,13 @@ describe("しいらのスキル", () => {
     expect(result.damageRatio).toBe(1.3)
     assert(result.defense)
     // 確率補正の確認
-    expect(result.defense.triggeredSkills.length).toBe(1)
-    let trigger = result.defense.triggeredSkills[0]
-    expect(trigger.name).toBe(hiiru.name)
-    expect(trigger.step).toBe("probability_check")
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", siira)).toBe(false)
+    let t = getSkillTrigger(result, "defense", siira)[0]
+    expect(t.probability).toBe(25)
+    expect(t.boostedProbability).toBe(25 * 1.2)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
 
     expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
@@ -169,10 +178,12 @@ describe("しいらのスキル", () => {
     expect(result.damageRatio).toBe(1.3)
     assert(result.defense)
     // アクセス中の状態の確認
-    expect(result.defense.triggeredSkills.length).toBe(1)
-    let trigger = result.defense.triggeredSkills[0]
-    expect(trigger.name).toBe(siira.name)
-    expect(trigger.step).toBe("damage_common")
+    expect(hasSkillTriggered(result, "defense", siira)).toBe(true)
+    let t = getSkillTrigger(result, "defense", siira)[0]
+    expect(t.probability).toBe(25)
+    expect(t.boostedProbability).toBe(25)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
     let accessSiira = result.defense.formation[1]
     expect(accessSiira.damage).not.toBeUndefined()
     expect(accessSiira.damage?.value).toBe(195)
@@ -214,13 +225,13 @@ describe("しいらのスキル", () => {
     expect(result.damageRatio).toBe(1.3)
     assert(result.defense)
     // アクセス中の状態の確認
-    expect(result.defense.triggeredSkills.length).toBe(2)
-    let trigger = result.defense.triggeredSkills[0]
-    expect(trigger.name).toBe(hiiru.name)
-    expect(trigger.step).toBe("probability_check")
-    trigger = result.defense.triggeredSkills[1]
-    expect(trigger.name).toBe(siira.name)
-    expect(trigger.step).toBe("damage_common")
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", siira)).toBe(true)
+    let t = getSkillTrigger(result, "defense", siira)[0]
+    expect(t.probability).toBe(25)
+    expect(t.boostedProbability).toBe(25 * 1.2)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
 
     expect(result.linkDisconnected).toBe(false)
     expect(result.linkSuccess).toBe(false)

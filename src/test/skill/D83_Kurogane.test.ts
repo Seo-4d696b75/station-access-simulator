@@ -51,9 +51,22 @@ describe("くろがねのスキル", () => {
       expect(e.type).toBe("access")
       e = result.offense.event[1]
       assert(e.type === "skill_trigger")
-      expect(e.data.denco).toMatchDencoState(d)
-      expect(e.data.carIndex).toBe(0)
-      expect(e.data.step).toBe("self")
+      assert(d.skill.type === "possess")
+      assert(d.skill.transitionType === "auto")
+      expect(e.data.denco).toMatchDencoState({
+        ...d,
+        // スキル発動直前の状態
+        attr: "cool",
+        skill: {
+          ...d.skill,
+          transition: {
+            data: undefined,
+            state: "unable",
+          }
+        }
+      })
+      expect(e.data.denco.carIndex).toBe(0)
+      expect(e.data.denco.who).toBe("self")
       expect(e.data.time).toBe(start)
       expect(e.data.skillName).toBe("くろがね忍法・変化の術！ Lv.4")
       // スキル状態
@@ -183,7 +196,7 @@ describe("くろがねのスキル", () => {
         station: miroku.link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.offense, kurogane)).toBe(param.atk > 0)
+      expect(hasSkillTriggered(result, "offense", kurogane)).toBe(param.atk > 0)
       expect(result.attackPercent).toBe(param.atk)
       expect(result.defendPercent).toBe(0)
       expect(result.offense.formation[0].attr).toBe(param.attr)
@@ -210,7 +223,7 @@ describe("くろがねのスキル", () => {
         station: defense.formation[0].link[0],
       }
       const result = startAccess(context, config)
-      expect(hasSkillTriggered(result.defense, kurogane)).toBe(param.def > 0)
+      expect(hasSkillTriggered(result, "defense", kurogane)).toBe(param.def > 0)
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(param.def)
       expect(result.defense!.formation[0].attr).toBe(param.attr)

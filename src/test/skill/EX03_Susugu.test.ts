@@ -1,6 +1,6 @@
 import assert from "assert"
 import { dayjs, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -44,13 +44,22 @@ describe("すすぐのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, susugu)).toBe(true)
-      expect(hasSkillTriggered(result.offense, ringo)).toBe(false)
-      expect(hasSkillTriggered(result.defense, rara)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", susugu)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", ringo)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", rara)).toBe(false)
       // 無効化
-      assert(result.defense)
-      expect(result.offense.formation[0].skillInvalidated).toBe(true)
-      expect(result.defense.formation[0].skillInvalidated).toBe(true)
+      let t = getSkillTrigger(result, "offense", ringo)[0]
+      expect(t.skillName).toBe("夜更かしはお肌の敵 Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+      t = getSkillTrigger(result, "defense", rara)[0]
+      expect(t.skillName).toBe("ウチの本気見せたるわ♪")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
     })
 
     test("確率ブースト", () => {
@@ -78,24 +87,25 @@ describe("すすぐのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, ringo)).toBe(false)
-      expect(hasSkillTriggered(result.defense, susugu)).toBe(true)
-      // ひいるは無効化スキルの前に発動済み
-      expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", ringo)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", susugu)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
       // 無効化
-      assert(result.defense)
-      expect(result.offense.formation[0].skillInvalidated).toBe(true)
-      // セリアは無効化対象外
-      expect(result.defense.formation[1].skillInvalidated).toBe(false)
-      // ひいるは無効化される
-      expect(result.defense.formation[2].skillInvalidated).toBe(true)
+      let t = getSkillTrigger(result, "offense", ringo)[0]
+      expect(t.skillName).toBe("夜更かしはお肌の敵 Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
       // アクセス直後に発動するセリアのスキル発動確率ブーストはしない
       assert(result.defense)
       expect(result.defense.event.length).toBe(2)
       let e = result.defense.event[1]
       assert(e.type === "skill_trigger")
-      expect(e.data.step).toBe("self")
+      expect(e.data.denco.who).toBe("self")
+      expect(e.data.denco.carIndex).toBe(1)
       expect(e.data.denco).toMatchDenco(seria)
+      expect(e.data.skillName).toBe("検測開始しま～す♡ Lv.4")
     })
     describe("攻守による無効化の順序", () => {
       test("攻撃側のレンを守備側のすすぐでは発動防げない", () => {
@@ -124,17 +134,20 @@ describe("すすぐのスキル", () => {
         const result = startAccess(context, config)
         expect(result.defense).not.toBeUndefined()
         // 攻撃側のレンが先に発動する
-        // 守備側のすすぐが発動してレンのスキル無効化されるも発動済み
         // レイカは無効化され発動しない
-        expect(hasSkillTriggered(result.offense, ren)).toBe(true)
-        expect(hasSkillTriggered(result.offense, reika)).toBe(false)
-        expect(hasSkillTriggered(result.defense, luna)).toBe(false)
-        expect(hasSkillTriggered(result.defense, susugu)).toBe(true)
+        expect(hasSkillTriggered(result, "offense", ren)).toBe(true)
+        expect(hasSkillTriggered(result, "offense", reika)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", susugu)).toBe(true)
         // 無効化
-        assert(result.defense)
-        expect(result.offense.formation[0].skillInvalidated).toBe(true)
-        expect(result.offense.formation[1].skillInvalidated).toBe(true)
-        expect(result.defense.formation[0].skillInvalidated).toBe(true)
+        let t = getSkillTrigger(result, "offense", reika)[0]
+        expect(t.skillName).toBe("起動加速度向上 Lv.4")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
+        t = getSkillTrigger(result, "defense", luna)[0]
+        expect(t.skillName).toBe("ナイトエクスプレス")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
       })
       test("攻撃側のてすとで守備側のすすぐが無効化され発動しない", () => {
         const context = initContext("test", "test", false)
@@ -164,15 +177,19 @@ describe("すすぐのスキル", () => {
         // 攻撃側のてすとが先に発動する
         // 守備側のすすぐ&ルナが発動前に無効化され発動しない
         // レイカはすすぐに無効化されず発動する
-        expect(hasSkillTriggered(result.offense, tesuto)).toBe(true)
-        expect(hasSkillTriggered(result.offense, reika)).toBe(true)
-        expect(hasSkillTriggered(result.defense, luna)).toBe(false)
-        expect(hasSkillTriggered(result.defense, susugu)).toBe(false)
+        expect(hasSkillTriggered(result, "offense", tesuto)).toBe(true)
+        expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
+        expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
+        expect(hasSkillTriggered(result, "defense", susugu)).toBe(false)
         // 無効化
-        assert(result.defense)
-        expect(result.offense.formation[0].skillInvalidated).toBe(false)
-        expect(result.defense.formation[0].skillInvalidated).toBe(true)
-        expect(result.defense.formation[1].skillInvalidated).toBe(true)
+        let t = getSkillTrigger(result, "defense", susugu)[0]
+        expect(t.skillName).toBe("お片付けしちゃいましょ！ Lv.4")
+        expect(t.probability).toBe(85)
+        expect(t.invalidated).toBe(true)
+        t = getSkillTrigger(result, "defense", luna)[0]
+        expect(t.skillName).toBe("ナイトエクスプレス")
+        expect(t.probability).toBe(100)
+        expect(t.invalidated).toBe(true)
 
       })
     })
@@ -206,13 +223,14 @@ describe("すすぐのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, susugu)).toBe(false)
-      expect(hasSkillTriggered(result.offense, ringo)).toBe(false)
-      expect(hasSkillTriggered(result.defense, rara)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", susugu)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", ringo)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", rara)).toBe(false)
       // 無効化なし
-      assert(result.defense)
-      expect(result.offense.formation[0].skillInvalidated).toBe(false)
-      expect(result.defense.formation[0].skillInvalidated).toBe(false)
+      let t = getSkillTrigger(result, "offense", ringo)
+      expect(t.length).toBe(0)
+      t = getSkillTrigger(result, "defense", rara)
+      expect(t.length).toBe(0)
     })
     test("相手不在", () => {
       const context = initContext("test", "test", false)
@@ -232,10 +250,11 @@ describe("すすぐのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).toBeUndefined()
-      expect(hasSkillTriggered(result.offense, susugu)).toBe(false)
-      expect(hasSkillTriggered(result.offense, ringo)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", susugu)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", ringo)).toBe(false)
       // 無効化なし
-      expect(result.offense.formation[0].skillInvalidated).toBe(false)
+      let t = getSkillTrigger(result, "offense", ringo)
+      expect(t.length).toBe(0)
     })
   })
 })

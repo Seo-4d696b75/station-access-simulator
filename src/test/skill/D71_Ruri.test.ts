@@ -1,6 +1,6 @@
 import dayjs from "dayjs"
 import { init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, getSkill } from "../../core/skill"
@@ -83,7 +83,14 @@ describe("るりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ruri)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ruri)).toBe(true)
+    let t = getSkillTrigger(result, "offense", ruri)[0]
+    expect(t.skillName).toBe("こつこつワーキング Lv.4")
+    expect(t.probability).toBe(75)
+    expect(t.boostedProbability).toBe(75)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+
     expect(result.attackPercent).toBe(14)
   })
   test("発動あり-攻撃側(編成内)", () => {
@@ -109,7 +116,14 @@ describe("るりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ruri)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ruri)).toBe(true)
+    let t = getSkillTrigger(result, "offense", ruri)[0]
+    expect(t.skillName).toBe("こつこつワーキング Lv.4")
+    expect(t.probability).toBe(75)
+    expect(t.boostedProbability).toBe(75)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+
     expect(result.attackPercent).toBe(14)
   })
   test("発動なし-攻撃側(編成内)-確率", () => {
@@ -137,8 +151,15 @@ describe("るりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ruri)).toBe(false)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ruri)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    let t = getSkillTrigger(result, "offense", ruri)[0]
+    expect(t.skillName).toBe("こつこつワーキング Lv.4")
+    expect(t.probability).toBe(75)
+    expect(t.boostedProbability).toBe(75 * 1.2)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+
     expect(result.attackPercent).toBe(0)
   })
   test("発動あり-攻撃側(編成内)-確率ブースト", () => {
@@ -166,8 +187,15 @@ describe("るりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
-    expect(hasSkillTriggered(result.offense, ruri)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ruri)).toBe(true)
+    let t = getSkillTrigger(result, "offense", ruri)[0]
+    expect(t.skillName).toBe("こつこつワーキング Lv.4")
+    expect(t.probability).toBe(75)
+    expect(t.boostedProbability).toBe(75 * 1.2)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+
     expect(result.attackPercent).toBe(14)
   })
   test("発動あり-攻撃側(編成内)-確率ブースト(Lv.80)", () => {
@@ -195,8 +223,15 @@ describe("るりのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
-    expect(hasSkillTriggered(result.offense, ruri)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ruri)).toBe(true)
+    let t = getSkillTrigger(result, "offense", ruri)[0]
+    expect(t.skillName).toBe("ビューティフル・デイズ")
+    expect(t.probability).toBe(90)
+    expect(t.boostedProbability).toBe(100)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+
     expect(result.attackPercent).toBe(20)
   })
 })

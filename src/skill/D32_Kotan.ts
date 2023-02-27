@@ -2,18 +2,16 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense" && state.defense) {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "offense") {
       const count = state.offense.user.daily.readAccessStationCount(context)
+      const maxATK = self.skill.property.readNumber("ATK")
+      const maxStation = self.skill.property.readNumber("max_station")
+      const atk = Math.floor(maxATK * Math.min(count, maxStation) / maxStation)
       return {
-        probability: "probability",
-        recipe: (state) => {
-          const maxATK = self.skill.property.readNumber("ATK")
-          const maxStation = self.skill.property.readNumber("max_station")
-          const atk = Math.floor(maxATK * Math.min(count, maxStation) / maxStation)
-          state.attackPercent += atk
-          context.log.log(`駅を巡れば巡るほど心が燃え上がって力が湧いてくるぞぉぉ！！ ATK+${atk}%`)
-        }
+        probability: self.skill.property.readNumber("probability", 100),
+        type: "damage_atk",
+        percent: atk,
       }
     }
   }

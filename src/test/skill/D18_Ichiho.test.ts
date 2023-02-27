@@ -1,9 +1,11 @@
+import assert from "assert"
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { getFixedDamageDenco } from "../tool/fake"
 import { testAlwaysSkill } from "../tool/skillState"
 
@@ -38,7 +40,7 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(199)
     expect(result.damageFixed).toBe(0)
@@ -49,11 +51,11 @@ describe("いちほのスキル", () => {
     expect(d.damage?.value).toBe(199)
     expect(d.damage?.attr).toBe(true)
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      ichiho = result.defense.formation[0]
-      expect(ichiho.currentHp).toBe(1)
-      expect(ichiho.link.length).toBe(1)
-    }
+    assert(result.defense)
+    ichiho = result.defense.formation[0]
+    expect(ichiho.currentHp).toBe(1)
+    expect(ichiho.link.length).toBe(1)
+
   })
   test("発動あり-確率補正あり", () => {
     const context = initContext("test", "test", false)
@@ -80,8 +82,17 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    const trigger = getSkillTrigger(result, "defense", ichiho)[0]
+    expect(trigger.skillName).toBe("根性だけが取り柄ですぅ Lv.4")
+    expect(trigger.probability).toBe(25)
+    expect(trigger.boostedProbability).toBe(25 * 1.2)
+    expect(trigger.triggered).toBe(true)
+    expect(trigger.denco.carIndex).toBe(0)
+    expect(trigger.denco.who).toBe("defense")
+    expect(trigger.denco).toMatchDenco(defense.formation[0])
+
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(199)
     expect(result.damageFixed).toBe(0)
@@ -117,12 +128,12 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(false)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
     expect(result.damageBase?.variable).toBe(260)
     expect(result.damageBase?.constant).toBe(0)
   })
-  test("発動なし-確率-補正あり", () => {
+  test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "ignore"
     let ichiho = DencoManager.getDenco(context, "18", 50, 1)
@@ -145,7 +156,13 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(false)
+    const trigger = getSkillTrigger(result, "defense", ichiho)[0]
+    expect(trigger.skillName).toBe("根性だけが取り柄ですぅ Lv.4")
+    expect(trigger.probability).toBe(25)
+    expect(trigger.boostedProbability).toBe(25)
+    expect(trigger.canTrigger).toBe(false)
+    expect(trigger.triggered).toBe(false)
     expect(result.damageBase?.variable).toBe(260)
     expect(result.damageBase?.constant).toBe(0)
   })
@@ -170,7 +187,7 @@ describe("いちほのスキル", () => {
     const result = startAccess(context, config)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, ichiho)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", ichiho)).toBe(false)
   })
   test("発動なし-守備側編成内", () => {
     const context = initContext("test", "test", false)
@@ -195,8 +212,8 @@ describe("いちほのスキル", () => {
     const result = startAccess(context, config)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(false)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
   })
   test("発動あり-攻撃側-シーナ反撃", () => {
     const context = initContext("test", "test", false)
@@ -228,9 +245,9 @@ describe("いちほのスキル", () => {
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
     // 発動スキル（カウンターも含む)
-    expect(hasSkillTriggered(result.offense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
-    expect(hasSkillTriggered(result.defense, reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", reika)).toBe(true)
     let accessSheena = getAccessDenco(result, "defense")
     expect(accessSheena.reboot).toBe(false)
     expect(accessSheena.hpBefore).toBe(264)
@@ -245,7 +262,7 @@ describe("いちほのスキル", () => {
     expect(accessIchiho.damage?.value).toBe(199)
     expect(accessIchiho.damage?.attr).toBe(true)
   })
-  test("発動あり-ちこ", () => {
+  test("発動あり-チコ", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let ichiho = DencoManager.getDenco(context, "18", 50, 1)
@@ -269,8 +286,8 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
     /* `damage_special` の同一段階で発動スキルどうしの場合は
       守備側のいちほが後に評価されたダメージ量を上書きする
     */
@@ -309,9 +326,9 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(25)
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test)).toBe(true)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
     // 固定ダメージで貫通
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(199)
@@ -323,7 +340,7 @@ describe("いちほのスキル", () => {
     expect(d.damage?.value).toBe(209)
     expect(d.damage?.attr).toBe(true)
   })
-  test("発動あり-ちこ-固定ダメージ追加", () => {
+  test("発動あり-チコ-固定ダメージ追加", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let ichiho = DencoManager.getDenco(context, "18", 50, 1)
@@ -348,9 +365,9 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test)).toBe(true)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
     // 固定ダメージで貫通
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(199)
@@ -386,8 +403,8 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(result.defense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", test)).toBe(true)
     // 固定ダメージ軽減は damageBase.constant には効かない
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(199)
@@ -424,9 +441,9 @@ describe("いちほのスキル", () => {
     expect(result.linkSuccess).toBe(false)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.defense, ichiho)).toBe(true)
-    expect(hasSkillTriggered(result.defense, cut)).toBe(true)
-    expect(hasSkillTriggered(result.offense, add)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", ichiho)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", cut)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", add)).toBe(true)
     // 固定ダメージ増減は damageBase.variable にのみ作用して負数は0に固定
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(199)

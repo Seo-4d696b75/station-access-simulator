@@ -2,6 +2,7 @@ import assert from "assert"
 import dayjs from "dayjs"
 import { activateSkill, changeFormation, deactivateSkill, getSkill, init, initContext, initUser, isSkillActive, refreshState } from "../.."
 import DencoManager from "../../core/dencoManager"
+import "../../gen/matcher"
 
 // $SKILL_COOLDOWN_TIME CoolDownの時間(sec)
 const SKILL_COOLDOWN_TIME = 9000
@@ -70,6 +71,18 @@ describe("アサのスキル", () => {
     assert(skill.transition.state === "cooldown")
     assert(skill.transitionType === "manual-condition")
     assert(skill.transition.data)
+
+    // 発動イベントの記録
+    expect(state.event.length).toBe(1)
+    let e = state.event[0]
+    assert(e.type === "skill_trigger")
+    expect(e.data.skillName).toBe("一心精進 Lv.4")
+    expect(e.data.time).toBe(now)
+    expect(e.data.probability).toBe(100)
+    expect(e.data.boostedProbability).toBe(100)
+    expect(e.data.denco.carIndex).toBe(0)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.denco).toMatchDenco(state.formation[0])
 
     let data = skill.transition.data
     expect(data.cooldownTimeout).toBe(now + SKILL_COOLDOWN_TIME * 1000)

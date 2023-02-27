@@ -1,6 +1,6 @@
 import assert from "assert"
 import { activateSkill, DencoType, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { initUser } from "../../core/user"
@@ -41,8 +41,8 @@ describe("ミナトのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, minato)).toBe(true)
-      expect(hasSkillTriggered(result.defense, marika)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", marika)).toBe(false)
       expect(result.linkSuccess).toBe(true)
       expect(result.linkDisconnected).toBe(true)
       // カウンターなし
@@ -50,9 +50,12 @@ describe("ミナトのスキル", () => {
       expect(d.reboot).toBe(false)
       expect(d.damage).toBeUndefined()
       // 無効化
-      assert(result.defense)
-      d = result.defense.formation[0]
-      expect(d.skillInvalidated).toBe(true)
+      let t = getSkillTrigger(result, "defense", marika)[0]
+      expect(t.skillName).toBe("ファム・ファタール Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
     })
     test("自身先頭", () => {
       const context = initContext("test", "test", false)
@@ -77,11 +80,15 @@ describe("ミナトのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, minato)).toBe(true)
-      expect(hasSkillTriggered(result.defense, marika)).toBe(false)
-      assert(result.defense)
-      let d = result.defense.formation[0]
-      expect(d.skillInvalidated).toBe(true)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", marika)).toBe(false)
+      // 無効化
+      let t = getSkillTrigger(result, "defense", marika)[0]
+      expect(t.skillName).toBe("ファム・ファタール Lv.1")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
     })
 
     test("確率補正", () => {
@@ -108,15 +115,24 @@ describe("ミナトのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, minato)).toBe(true)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
-      expect(hasSkillTriggered(result.defense, marika)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", marika)).toBe(false)
       expect(result.linkSuccess).toBe(true)
       expect(result.linkDisconnected).toBe(true)
+      // 確率補正
+      let t = getSkillTrigger(result, "offense", minato)[0]
+      expect(t.skillName).toBe("ヒストリートーク Lv.4")
+      expect(t.probability).toBe(70)
+      expect(t.boostedProbability).toBe(70 * 1.2)
+      expect(t.triggered).toBe(true)
       // 無効化
-      assert(result.defense)
-      let d = result.defense.formation[0]
-      expect(d.skillInvalidated).toBe(true)
+      t = getSkillTrigger(result, "defense", marika)[0]
+      expect(t.skillName).toBe("ファム・ファタール Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
     })
     test("確率補正なし Lv.80", () => {
       const context = initContext("test", "test", false)
@@ -142,15 +158,24 @@ describe("ミナトのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, minato)).toBe(true)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
-      expect(hasSkillTriggered(result.defense, marika)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", marika)).toBe(false)
       expect(result.linkSuccess).toBe(true)
       expect(result.linkDisconnected).toBe(true)
+      // 確率補正
+      let t = getSkillTrigger(result, "offense", minato)[0]
+      expect(t.skillName).toBe("水底の記憶")
+      expect(t.probability).toBe(100)
+      expect(t.boostedProbability).toBe(100)
+      expect(t.triggered).toBe(true)
       // 無効化
-      assert(result.defense)
-      let d = result.defense.formation[0]
-      expect(d.skillInvalidated).toBe(true)
+      t = getSkillTrigger(result, "defense", marika)[0]
+      expect(t.skillName).toBe("ファム・ファタール Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
     })
 
     test("てすと併用", () => {
@@ -183,15 +208,24 @@ describe("ミナトのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       // 同編成内の無効化スキル同士は干渉せず全員発動する
-      expect(hasSkillTriggered(result.offense, minato)).toBe(true)
-      expect(hasSkillTriggered(result.offense, tesuto)).toBe(true)
-      expect(hasSkillTriggered(result.defense, yachiyo)).toBe(false)
-      expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", tesuto)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yachiyo)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
       expect(result.defendPercent).toBe(0)
       // 無効化
-      assert(result.defense)
-      expect(result.defense.formation[0].skillInvalidated).toBe(true)
-      expect(result.defense.formation[1].skillInvalidated).toBe(true)
+      let t = getSkillTrigger(result, "defense", yachiyo)[0]
+      expect(t.skillName).toBe("ラブホームズ Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
+      t = getSkillTrigger(result, "defense", fubu)[0]
+      expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.invalidated).toBe(true)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
     })
     test("にころ無効化", () => {
       const context = initContext("test", "test", false)
@@ -217,11 +251,10 @@ describe("ミナトのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkDisconnected).toBe(true)
-      expect(hasSkillTriggered(result.offense, minato)).toBe(true)
-      expect(hasSkillTriggered(result.defense, nikoro)).toBe(false)
-      // 無効化
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", nikoro)).toBe(false)
+
       assert(result.defense)
-      expect(result.defense.formation[0].skillInvalidated).toBe(true)
       // アクセス直後に発動するスキルも無効化される
       // 経験値配布なし
       expect(result.defense.event.length).toBe(2)
@@ -255,11 +288,18 @@ describe("ミナトのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, minato)).toBe(false)
-      expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
-      expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", marika)).toBe(true)
       expect(result.linkSuccess).toBe(false)
       expect(result.linkDisconnected).toBe(true)
+      // 無効化なし
+      let t = getSkillTrigger(result, "offense", minato)[0]
+      expect(t.skillName).toBe("ヒストリートーク Lv.4")
+      expect(t.probability).toBe(70)
+      expect(t.boostedProbability).toBe(70 * 1.2)
+      expect(t.canTrigger).toBe(false)
+      expect(t.triggered).toBe(false)
       // カウンターあり
       let d = result.offense.formation[0]
       expect(d.reboot).toBe(true)
@@ -288,8 +328,8 @@ describe("ミナトのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, minato)).toBe(false)
-      expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", marika)).toBe(true)
       expect(result.linkSuccess).toBe(false)
       expect(result.linkDisconnected).toBe(true)
       // カウンターあり
@@ -321,8 +361,8 @@ describe("ミナトのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, minato)).toBe(false)
-      expect(hasSkillTriggered(result.defense, marika)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", marika)).toBe(false)
       expect(result.linkSuccess).toBe(true)
       expect(result.linkDisconnected).toBe(true)
     })
@@ -350,8 +390,8 @@ describe("ミナトのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, minato)).toBe(false)
-      expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", minato)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", marika)).toBe(true)
       expect(result.linkSuccess).toBe(false)
       expect(result.linkDisconnected).toBe(true)
     })

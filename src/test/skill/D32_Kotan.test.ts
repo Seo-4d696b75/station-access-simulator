@@ -1,4 +1,4 @@
-import { activateSkill, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
+import { activateSkill, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import StationManager from "../../core/stationManager"
 import { testAlwaysSkill } from "../tool/skillState"
@@ -34,7 +34,7 @@ describe("コタンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, kotan)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", kotan)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -61,7 +61,7 @@ describe("コタンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kotan)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", kotan)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -82,17 +82,17 @@ describe("コタンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kotan)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", kotan)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
-  test("発動あり-攻撃側(アクセス)-20駅", () => {
+  test.each([1, 2, 5, 10, 20, 50, 100])("発動あり-攻撃側(アクセス)-%d駅", (count) => {
     const context = initContext("test", "test", false)
     let seria = DencoManager.getDenco(context, "1", 50)
     let kotan = DencoManager.getDenco(context, "32", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [kotan, seria])
     offense.user.daily = {
-      accessStationCount: 20
+      accessStationCount: count
     }
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
@@ -108,62 +108,11 @@ describe("コタンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kotan)).toBe(true)
-    const atk = Math.floor(50 * 20 / 50)
+    expect(hasSkillTriggered(result, "offense", kotan)).toBe(true)
+    const atk = Math.floor(50 * Math.min(50, count) / 50)
     expect(result.attackPercent).toBe(atk)
   })
-  test("発動あり-攻撃側(アクセス)-50駅", () => {
-    const context = initContext("test", "test", false)
-    let seria = DencoManager.getDenco(context, "1", 50)
-    let kotan = DencoManager.getDenco(context, "32", 50)
-    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
-    let offense = initUser(context, "とあるマスター", [kotan, seria])
-    offense.user.daily = {
-      accessStationCount: 50
-    }
-    let defense = initUser(context, "とあるマスター２", [charlotte])
-    const config = {
-      offense: {
-        state: offense,
-        carIndex: 0
-      },
-      defense: {
-        state: defense,
-        carIndex: 0
-      },
-      station: charlotte.link[0],
-    }
-    const result = startAccess(context, config)
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kotan)).toBe(true)
-    expect(result.attackPercent).toBe(50)
-  })
-  test("発動あり-攻撃側(アクセス)-100駅", () => {
-    const context = initContext("test", "test", false)
-    let seria = DencoManager.getDenco(context, "1", 50)
-    let kotan = DencoManager.getDenco(context, "32", 50)
-    let charlotte = DencoManager.getDenco(context, "6", 50, 1)
-    let offense = initUser(context, "とあるマスター", [kotan, seria])
-    offense.user.daily = {
-      accessStationCount: 100
-    }
-    let defense = initUser(context, "とあるマスター２", [charlotte])
-    const config = {
-      offense: {
-        state: offense,
-        carIndex: 0
-      },
-      defense: {
-        state: defense,
-        carIndex: 0
-      },
-      station: charlotte.link[0],
-    }
-    const result = startAccess(context, config)
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kotan)).toBe(true)
-    expect(result.attackPercent).toBe(50)
-  })
+
   test("発動あり-攻撃側(アクセス)-確率ブースト", () => {
     const context = initContext("test", "test", false)
     let hiiru = DencoManager.getDenco(context, "34", 50)
@@ -190,9 +139,50 @@ describe("コタンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kotan)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", kotan)).toBe(true)
     // 確率補正は効かない
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+    const t = getSkillTrigger(result, "offense", kotan)[0]
+    expect(t.skillName).toBe("ボイラー出力上昇 Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
+    expect(t.triggered).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
     expect(result.attackPercent).toBeGreaterThan(0)
+  })
+
+  test("発動なし-エリア無効化", () => {
+    const context = initContext("test", "test", false)
+    let kotan = DencoManager.getDenco(context, "32", 50)
+    let eria = DencoManager.getDenco(context, "33", 50, 1)
+    let offense = initUser(context, "とあるマスター", [kotan])
+    offense.user.daily = {
+      accessStationCount: 20
+    }
+    let defense = initUser(context, "とあるマスター２", [eria])
+    defense = activateSkill(context, defense, 0)
+
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: eria.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result, "offense", kotan)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", eria)).toBe(true)
+    // 無効化
+    const t = getSkillTrigger(result, "offense", kotan)[0]
+    expect(t.skillName).toBe("ボイラー出力上昇 Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.invalidated).toBe(true)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(result.attackPercent).toBe(0)
   })
 })

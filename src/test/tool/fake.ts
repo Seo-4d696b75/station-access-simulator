@@ -1,4 +1,3 @@
-import { assert } from "../../core/context";
 import { DencoState } from "../../core/denco";
 import { TypedMap } from "../../core/property";
 
@@ -32,13 +31,12 @@ export function getDefPercentDenco(def: number): DencoState {
         state: "active",
         data: undefined
       },
-      triggerOnAccess: (context, state, step, self) => {
-        if (step === "damage_common" && self.which === "defense") {
+      onAccessDamagePercent: (context, state, self) => {
+        if (self.which === "defense") {
           return {
-            probability: "probability",
-            recipe: (state) => {
-              state.defendPercent += def
-            }
+            probability: 100,
+            type: "damage_def",
+            percent: def,
           }
         }
       }
@@ -78,13 +76,12 @@ export function getFixedDamageDenco(damage: number): DencoState {
         state: "active",
         data: undefined
       },
-      triggerOnAccess: (context, state, step, self) => {
-        if (step === "damage_fixed" && self.which === which) {
+      onAccessDamageFixed: (context, state, self) => {
+        if (self.which === which) {
           return {
-            probability: "probability",
-            recipe: (state) => {
-              state.damageFixed += damage
-            }
+            probability: 100,
+            type: "damage_fixed",
+            damage: damage
           }
         }
       }
@@ -119,24 +116,12 @@ export function skillInvalidateDenco(targetNumber: string): DencoState {
         state: "active",
         data: undefined
       },
-      triggerOnAccess: (context, state, step, self) => {
-        if (step === "before_access" && state.defense) {
-          const idx = [
-            ...state.offense.formation,
-            ...state.defense!.formation,
-          ].findIndex(d => d.numbering === targetNumber)
-          if (idx >= 0) {
-            return {
-              probability: "probability",
-              recipe: (state) => {
-                const target = [
-                  ...state.offense.formation,
-                  ...state.defense!.formation,
-                ][idx]
-                assert(target)
-                target.skillInvalidated = true
-              }
-            }
+      onAccessBeforeStart: (context, state, self) => {
+        if (state.defense) {
+          return {
+            probability: 100,
+            type: "invalidate_skill",
+            isTarget: (d) => d.numbering === targetNumber,
           }
         }
       }

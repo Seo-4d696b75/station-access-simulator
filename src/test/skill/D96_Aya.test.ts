@@ -45,7 +45,7 @@ describe("アヤのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, aya)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", aya)).toBe(true)
     expect(result.attackPercent).toBe(
       Math.floor(34 * Math.pow(cnt / 7, 2) * 100) / 100,
     )
@@ -73,7 +73,7 @@ describe("アヤのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, aya)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", aya)).toBe(false)
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(0)
     })
@@ -99,7 +99,7 @@ describe("アヤのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, aya)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", aya)).toBe(false)
       expect(result.attackPercent).toBe(0)
       expect(result.defendPercent).toBe(0)
     })
