@@ -1,7 +1,6 @@
-import { getSide, hasSkillTriggered } from "../core/access";
+import { getSide } from "../core/access";
 import { activateSkill, deactivateSkillAt, SkillLogic } from "../core/skill";
 import { LocalDateType } from "../core/user/property";
-import { copy } from "../gen/copy";
 
 const skill: SkillLogic = {
   transitionType: "auto",
@@ -25,18 +24,12 @@ const skill: SkillLogic = {
         return {
           probability: self.skill.property.readNumber("probability"),
           type: "exp_delivery",
-          exp: (d) => d.who === "offense" ? exp : 0
+          exp: (d) => d.who === "offense" ? exp : 0,
+          sideEffect: (state) => {
+            deactivateSkillAt(context, state.offense, self.carIndex)
+          }
         }
       }
-    }
-  },
-  onAccessComplete(context, access, self) {
-    // スキル発動したらcooldown
-    if (hasSkillTriggered(access, "offense", self)) {
-      // スキル発動のモーダルは表示しない
-      const next = copy.AccessResult(access)
-      deactivateSkillAt(context, next.offense, self.carIndex)
-      return next
     }
   }
 }
