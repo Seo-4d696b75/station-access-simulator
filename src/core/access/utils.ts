@@ -1,4 +1,4 @@
-import { AccessSide, AccessSideState, AccessState } from "."
+import { AccessSide, AccessState, AccessUserState } from "."
 import { assert } from "../context"
 
 /**
@@ -11,7 +11,7 @@ export function hasDefense(state: AccessState): state is AccessStateWithDefense 
 }
 
 export interface AccessStateWithDefense extends AccessState {
-  defense: AccessSideState
+  defense: AccessUserState
 }
 
 /**

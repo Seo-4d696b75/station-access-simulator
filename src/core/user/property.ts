@@ -1,4 +1,4 @@
-import { Context } from "../context"
+import { assert, Context } from "../context"
 import { ReadonlyState } from "../state"
 import { Station } from "../station"
 
@@ -7,26 +7,16 @@ import { Station } from "../station"
  * 
  * このオブジェクトのプロパティはライブラリ側からは参照のみ
  */
-export interface UserProperty {
-  name: string
-  /**
-   * ユーザがその日にアクセスした駅の情報
-   * 
-   * 各プロパティはPartialです.
-   * `undefined`の場合の挙動は各プロパティの説明を参照してください
-   */
-  daily?: Partial<DailyStatistics>
+export type UserProperty = UserProfile & Partial<UserAccessStatistics>
 
+export interface UserProfile {
   /**
-   * ユーザがこれまでアクセスした駅の情報
-   * 
-   * 各プロパティはPartialです.
-   * `undefined`の場合の挙動は各プロパティの説明を参照してください
+   * ユーザ名
    */
-  history?: Partial<StationStatistics>
+  name: string
 }
 
-export interface DailyStatistics {
+export interface UserAccessStatistics {
   /**
    * その日に移動した距離（単位：km） 
    * 
@@ -36,7 +26,8 @@ export interface DailyStatistics {
    * **有効な値** 0以上の実数  
    * **デフォルト値** このプロパティが`undefined`の場合は0kmとして扱います
    */
-  distance: number
+  getDailyDistance(date: LocalDateType): number
+
   /**
    * その日にアクセスした駅数  
    * 
@@ -46,26 +37,8 @@ export interface DailyStatistics {
    * **有効な値** 0以上の整数
    * **デフォルト値** このプロパティが`undefined`の場合は0として扱います
    */
-  accessStationCount: number
-}
+  getDailyAccessCount(date: LocalDateType): number
 
-/**
- * - `None` : いずれの新駅でもない
- * - `Daily` : 今日の新駅
- * - `Monthly` : 今月の新駅（黄色新駅）
- * - `New` : 赤新駅 
- */
-export enum NewStationType {
-  None = 0,
-  Daily = 1,
-  Monthly = 2,
-  New = 4,
-}
-
-/**
- * ユーザがこれまでアクセスした駅の情報
- */
-export interface StationStatistics {
   /**
    * やちよ(D27 Yachiyo)のスキル対象の駅か判定する述語を指定できます
    * 
@@ -86,7 +59,7 @@ export interface StationStatistics {
    * @param station
    * @return これまでに駅にアクセスした回数（０以上の整数）
    */
-  getStationAccessCount: (station: ReadonlyState<Station>) => number
+  getAccessCount: (station: ReadonlyState<Station>) => number
 
   /**
    * 指定した駅が新駅か判定する
@@ -97,88 +70,71 @@ export interface StationStatistics {
    * @returns 新駅のタイプ
    */
   isNewStation: (station: ReadonlyState<Station>) => NewStationType
+}
 
+/**
+ * - `None` : いずれの新駅でもない
+ * - `Daily` : 今日の新駅
+ * - `Monthly` : 今月の新駅（黄色新駅）
+ * - `New` : 赤新駅 
+ */
+export enum NewStationType {
+  None = 0,
+  Daily = 1,
+  Monthly = 2,
+  New = 4,
+}
+
+// TODO 現状ではスキルに関連する情報は今日と昨日だけで十分
+export enum LocalDateType {
+  Today = "today",
+  Yesterday = "yesterday",
 }
 
 /**
  * ユーザの状態・アクセス駅情報を読み出す方法を定義します
+ * 
+ * ### アクセス情報の読み出し
+ * ユーザがアクセスした駅の情報を読み出す関数を定義します
+ * 
+ * 1. {@link UserProperty}に関数が定義されている場合はその関数を呼び出します
+ * 2. 関数が未定義の場合はデフォルトの返り値
+ * 
+ * 最後にバリデーションを行い有効な値のみ返します
  */
-export interface UserPropertyReader {
-  readonly name: string
-  /**
-   * ユーザがその日にアクセスした駅の情報を読み出す関数を定義します
-   * 
-     * {@link DailyStatistics}の各プロパティのバリデーション・デフォルト値を考慮して読み出します
-     * 
-     * 各デフォルト値を考慮した返り値の決定方法は、
-     * 1. {@link DailyStatistics}に定義されている場合はその値
-     * 2. 関数の引数`defaultValue`が渡された場合はその値
-     * 3. 各プロパティ定義のデフォルト値
-     * 
-     * 最後にバリデーションを行い有効な値のみ返します
-     * 
-     * @param context
-     * @param defaultValue 呼び出し側からデフォルト値を指定できます
-     * @throws バリエーションを通らない不正な値の場合
-   */
-  readonly daily: {
-    readonly [key in keyof DailyStatistics as `read${Capitalize<key>}`]: (context: Context, defaultValue?: DailyStatistics[key]) => DailyStatistics[key]
-  }
-
-  /**
-   * ユーザがこれまでアクセスした駅の情報を読み出す関数を定義します
-     * {@link StationStatistics}の各関数の返り値のバリデーション・デフォルト値を考慮して読み出します
-     * 
-     * 各デフォルト値を考慮した返り値の決定方法は、
-     * 1. {@link StationStatistics}に定義されている場合はその関数を呼び出します
-     * 3. 各関数定義のデフォルトの返り値
-     * 
-     * 最後にバリデーションを行い有効な値のみ返します
-     * 
-     * @param context
-     * @param args 各関数の引数
-     * @throws バリエーションを通らない不正な値の場合
-   */
-  readonly history: {
-    readonly [key in keyof StationStatistics]: (context: Context, ...args: Parameters<StationStatistics[key]>) => ReturnType<StationStatistics[key]>
-  }
-}
+export type UserPropertyReader = UserProfile & UserAccessStatistics
 
 export function getUserPropertyReader(property: ReadonlyState<UserProperty>): UserPropertyReader {
   return {
     name: property.name,
-    daily: {
-      readDistance: initPropertyReader(
-        "daily.distance",
-        property.daily?.distance,
-        0,
-        (value) => value >= 0,
-      ),
-      readAccessStationCount: initPropertyReader(
-        "daily.accessStationCount",
-        property.daily?.accessStationCount,
-        0,
-        (value) => Number.isInteger(value) && value >= 0,
-      ),
-    },
-    history: {
-      isHomeStation: initFuncProxy<boolean, (s: ReadonlyState<Station>) => boolean>(
-        "history.isHomeStation",
-        property.history?.isHomeStation,
-        true,
-      ),
-      getStationAccessCount: initFuncProxy(
-        "history.getStationAccessCount",
-        property.history?.getStationAccessCount,
-        0 as number,
-        (value) => Number.isInteger(value) && value >= 0,
-      ),
-      isNewStation: initFuncProxy<NewStationType, (s: ReadonlyState<Station>) => NewStationType>(
-        "history.isNewStation",
-        property.history?.isNewStation,
-        NewStationType.None,
-      )
-    }
+    getDailyDistance: initFuncProxy(
+      "getDailyDistance",
+      property.getDailyDistance,
+      0,
+      (value) => value >= 0,
+    ),
+    getDailyAccessCount: initFuncProxy(
+      "getDailyAccessCount",
+      property.getDailyAccessCount,
+      0,
+      (value) => Number.isInteger(value) && value >= 0,
+    ),
+    isHomeStation: initFuncProxy<boolean, (s: ReadonlyState<Station>) => boolean>(
+      "isHomeStation",
+      property.isHomeStation,
+      true,
+    ),
+    getAccessCount: initFuncProxy(
+      "getAccessCount",
+      property.getAccessCount,
+      0,
+      (value) => Number.isInteger(value) && value >= 0,
+    ),
+    isNewStation: initFuncProxy(
+      "isNewStation",
+      property.isNewStation,
+      NewStationType.None as NewStationType,
+    )
   }
 }
 
@@ -202,19 +158,26 @@ function initPropertyReader<T extends NonNullable<any>>(propertyName: string, pr
   }
 }
 
-function initFuncProxy<T extends NonNullable<any>, F extends (...args: any[]) => T>(funcName: string, func: F | undefined, funcDefaultReturnValue: T, validator?: (v: T) => boolean) {
-  return (context: Context, ...args: Parameters<F>): T => {
+function initFuncProxy<T extends NonNullable<any>, F extends (...args: any[]) => T>(
+  funcName: string,
+  func: F | undefined,
+  funcDefaultReturnValue: T,
+  validator?: (v: T) => boolean
+) {
+  return (...args: Parameters<F>): T => {
     let value = func?.(...args)
     if (value === undefined) {
       value = funcDefaultReturnValue
-      context.log.log(`${funcName}() 関数定義のデフォルト値を返しました : ${funcDefaultReturnValue}`)
+      // context.log.log(`${funcName}() 関数定義のデフォルト値を返しました : ${funcDefaultReturnValue}`)
     }
-    if (value === undefined) {
-      context.log.error(`関数${funcName}()を呼び出せません（関数が未定義・デフォルト値の指定なし）`)
-    }
-    if (validator?.(value) === false) {
-      context.log.error(`関数${funcName}() の返り値が不正です！ : ${value}`)
-    }
+    assert(
+      value !== undefined,
+      `関数${funcName}()を呼び出せません（関数が未定義・デフォルト値の指定なし）`
+    )
+    assert(
+      validator?.(value) !== false,
+      `関数${funcName}() の返り値が不正です！ : ${value}`,
+    )
     return value
   }
 }

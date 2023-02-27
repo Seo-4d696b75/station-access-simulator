@@ -191,9 +191,8 @@ describe("ミナトのスキル", () => {
       let defense = initUser(context, "とあるマスター２", [yachiyo, fubu])
       defense = activateSkill(context, defense, 1)
       const predicate = jest.fn((_) => true)
-      offense.user.history = {
-        isHomeStation: predicate
-      }
+      offense.user.isHomeStation = predicate
+
       const config = {
         offense: {
           state: offense,

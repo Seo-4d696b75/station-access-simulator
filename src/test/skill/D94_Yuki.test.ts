@@ -22,9 +22,7 @@ describe("ゆきのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let yuki = DencoManager.getDenco(context, "94", 50)
     let offense = initUser(context, "とあるマスター", [reika, yuki])
-    offense.user.daily = {
-      accessStationCount: cnt
-    }
+    offense.user.getDailyAccessCount = (_) => cnt
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
@@ -52,9 +50,7 @@ describe("ゆきのスキル", () => {
     reika.attr = attr as DencoAttribute
     let yuki = DencoManager.getDenco(context, "94", 50)
     let offense = initUser(context, "とあるマスター", [reika, yuki])
-    offense.user.daily = {
-      accessStationCount: 10
-    }
+    offense.user.getDailyAccessCount = (_) => 10
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
@@ -84,9 +80,7 @@ describe("ゆきのスキル", () => {
       let hiiru = DencoManager.getDenco(context, "34", 50)
       let offense = initUser(context, "とあるマスター", [reika, yuki, hiiru])
       offense = activateSkill(context, offense, 2)
-      offense.user.daily = {
-        accessStationCount: 1
-      }
+      offense.user.getDailyAccessCount = (_) => 1
       let charlotte = DencoManager.getDenco(context, "6", 50, 1)
       let defense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
@@ -120,9 +114,7 @@ describe("ゆきのスキル", () => {
       let hiiru = DencoManager.getDenco(context, "34", 50)
       let offense = initUser(context, "とあるマスター", [reika, yuki, hiiru])
       offense = activateSkill(context, offense, 2)
-      offense.user.daily = {
-        accessStationCount: 20
-      }
+      offense.user.getDailyAccessCount = (_) => 20
       let charlotte = DencoManager.getDenco(context, "6", 50, 1)
       let defense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
@@ -159,9 +151,7 @@ describe("ゆきのスキル", () => {
       let reika = DencoManager.getDenco(context, "5", 50)
       let yuki = DencoManager.getDenco(context, "94", 50)
       let offense = initUser(context, "とあるマスター", [reika, yuki])
-      offense.user.daily = {
-        accessStationCount: 20
-      }
+      offense.user.getDailyAccessCount = (_) => 20
       let charlotte = DencoManager.getDenco(context, "6", 50, 1)
       let defense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
@@ -188,9 +178,7 @@ describe("ゆきのスキル", () => {
       let reika = DencoManager.getDenco(context, "5", 50)
       let yuki = DencoManager.getDenco(context, "94", 50)
       let offense = initUser(context, "とあるマスター", [reika, yuki])
-      offense.user.daily = {
-        accessStationCount: 20
-      }
+      offense.user.getDailyAccessCount = (_) => 20
       let charlotte = DencoManager.getDenco(context, "6", 50, 1)
       const config = {
         offense: {

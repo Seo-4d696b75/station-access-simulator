@@ -52,9 +52,7 @@ describe("なるのスキル", () => {
       let moe = DencoManager.getDenco(context, "9", 10, 1)
       let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
       const predicate = jest.fn((_) => NewStationType.None)
-      offense.user.history = {
-        isNewStation: predicate
-      }
+      offense.user.isNewStation = predicate
       let defense = initUser(context, "とあるマスター２", [moe])
       const config = {
         offense: {
@@ -90,9 +88,7 @@ describe("なるのスキル", () => {
     let moe = DencoManager.getDenco(context, "9", 10, 1)
     let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
     const predicate = jest.fn((_) => type)
-    offense.user.history = {
-      isNewStation: predicate
-    }
+    offense.user.isNewStation = predicate
     let defense = initUser(context, "とあるマスター２", [moe])
     const config = {
       offense: {
@@ -124,9 +120,7 @@ describe("なるのスキル", () => {
       let moe = DencoManager.getDenco(context, "9", 10, 1)
       let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
       const predicate = jest.fn((_) => NewStationType.Daily)
-      offense.user.history = {
-        isNewStation: predicate
-      }
+      offense.user.isNewStation = predicate
       let defense = initUser(context, "とあるマスター２", [moe])
       const config = {
         offense: {
@@ -157,9 +151,7 @@ describe("なるのスキル", () => {
       let moe = DencoManager.getDenco(context, "9", 80, 1)
       let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
       const predicate = jest.fn((_) => NewStationType.Daily)
-      offense.user.history = {
-        isNewStation: predicate
-      }
+      offense.user.isNewStation = predicate
       let defense = initUser(context, "とあるマスター２", [moe])
       const config = {
         offense: {
@@ -190,9 +182,7 @@ describe("なるのスキル", () => {
       let moe = DencoManager.getDenco(context, "9", 10, 1)
       let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
       const predicate = jest.fn((_) => NewStationType.Daily)
-      offense.user.history = {
-        isNewStation: predicate
-      }
+      offense.user.isNewStation = predicate
       let defense = initUser(context, "とあるマスター２", [moe])
       const config = {
         offense: {

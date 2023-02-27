@@ -1,12 +1,13 @@
 import { getDefense } from "../core/access";
 import { AccessDamageFixed, SkillLogic } from "../core/skill";
+import { LocalDateType } from "../core/user/property";
 
 const skill: SkillLogic = {
   transitionType: "always",
   onAccessDamageFixed: (context, state, self) => {
     if (self.which === "defense") {
       const triggers: AccessDamageFixed[] = []
-      const stationCount = getDefense(state).user.daily.readAccessStationCount(context)
+      const stationCount = getDefense(state).user.getDailyAccessCount(LocalDateType.Today)
       if (self.who === "defense") {
         const countSelfTh = self.skill.property.readNumber("station_count_self")
         const unit = self.skill.property.readNumber("damage_fixed_self")

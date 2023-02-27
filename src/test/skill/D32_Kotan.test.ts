@@ -17,9 +17,8 @@ describe("コタンのスキル", () => {
     let kotan = DencoManager.getDenco(context, "32", 50, 1)
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [kotan, seria])
-    defense.user.daily = {
-      accessStationCount: 20
-    }
+    defense.user.getDailyAccessCount = (_) => 20
+
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -44,9 +43,8 @@ describe("コタンのスキル", () => {
     let kotan = DencoManager.getDenco(context, "32", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [seria, kotan])
-    offense.user.daily = {
-      accessStationCount: 20
-    }
+    offense.user.getDailyAccessCount = (_) => 20
+
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -70,9 +68,8 @@ describe("コタンのスキル", () => {
     let seria = DencoManager.getDenco(context, "1", 50)
     let kotan = DencoManager.getDenco(context, "32", 50)
     let offense = initUser(context, "とあるマスター", [kotan, seria])
-    offense.user.daily = {
-      accessStationCount: 20
-    }
+    offense.user.getDailyAccessCount = (_) => 20
+
     const config = {
       offense: {
         state: offense,
@@ -91,9 +88,8 @@ describe("コタンのスキル", () => {
     let kotan = DencoManager.getDenco(context, "32", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [kotan, seria])
-    offense.user.daily = {
-      accessStationCount: count
-    }
+    offense.user.getDailyAccessCount = (_) => count
+
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -119,9 +115,8 @@ describe("コタンのスキル", () => {
     let kotan = DencoManager.getDenco(context, "32", 50)
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [kotan, hiiru])
-    offense.user.daily = {
-      accessStationCount: 20
-    }
+    offense.user.getDailyAccessCount = (_) => 20
+
     offense = activateSkill(context, offense, 1)
     hiiru = offense.formation[1]
     expect(isSkillActive(hiiru.skill)).toBe(true)
@@ -155,9 +150,7 @@ describe("コタンのスキル", () => {
     let kotan = DencoManager.getDenco(context, "32", 50)
     let eria = DencoManager.getDenco(context, "33", 50, 1)
     let offense = initUser(context, "とあるマスター", [kotan])
-    offense.user.daily = {
-      accessStationCount: 20
-    }
+    offense.user.getDailyAccessCount = (_) => 20
     let defense = initUser(context, "とあるマスター２", [eria])
     defense = activateSkill(context, defense, 0)
 

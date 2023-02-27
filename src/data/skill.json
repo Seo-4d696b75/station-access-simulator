@@ -5374,6 +5374,57 @@
     ]
   },
   {
+    "numbering": "99",
+    "class": "D99_Otome",
+    "max_access_count": 70,
+    "probability": 100,
+    "cooldown": 3600,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "おとめのスーパーびっくり箱 Lv.1",
+        "EXP_max": 700
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "おとめのスーパーびっくり箱 Lv.2",
+        "EXP_max": 950
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "おとめのスーパーびっくり箱 Lv.3",
+        "EXP_max": 1200
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "おとめのスーパーびっくり箱 Lv.4",
+        "EXP_max": 1450
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "おとめのスーパーびっくり箱 Lv.5",
+        "EXP_max": 1800
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "おとめのスーパーびっくり箱 Lv.6",
+        "EXP_max": 2150
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "きみに捧げるたまて箱",
+        "EXP_max": 2500
+      }
+    ]
+  },
+  {
     "numbering": "EX02",
     "class": "EX02_Mahiru",
     "list": [
