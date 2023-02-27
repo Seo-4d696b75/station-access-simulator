@@ -276,7 +276,7 @@ describe("なるのスキル", () => {
 
       const context = initContext("test", "test", false)
       context.random.mode = "force"
-      context.clock = dayjs("2020-01-01T23:00:00").valueOf()
+      context.clock = dayjs("2020-01-01T23:00:00+0900").valueOf()
       let tesuto = DencoManager.getDenco(context, "EX04", 50)
       let naru = DencoManager.getDenco(context, "78", 50)
       let luna = DencoManager.getDenco(context, "3", 50, 1)
@@ -556,7 +556,7 @@ describe("なるのスキル", () => {
 
       const context = initContext("test", "test", false)
       context.random.mode = "ignore"
-      context.clock = dayjs("2020-01-01T23:00:00").valueOf()
+      context.clock = dayjs("2020-01-01T23:00:00+0900").valueOf()
       let tesuto = DencoManager.getDenco(context, "EX04", 50)
       tesuto.film = {
         type: "film",
