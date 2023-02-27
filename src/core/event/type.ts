@@ -1,7 +1,7 @@
 import { AccessResult, AccessSide, AccessUserResult } from "../access"
 import { DencoState } from "../denco"
 import { LinksResult } from "../station"
-import { EventTriggeredSkill } from "./_skill"
+import { EventTriggeredSkill } from "./skill"
 
 export type EventType =
   "access" |

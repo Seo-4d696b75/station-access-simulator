@@ -5,7 +5,7 @@ import { ReadonlyState } from "../state"
 import { triggerSkillAfterDamage } from "./afterDamage"
 import { updateDencoHP } from "./hp"
 import { calcDamageBonusScoreExp } from "./score"
-import { triggerAccessSkillAt } from "./_skill"
+import { triggerAccessSkillAt } from "./skill"
 /**
  * アクセス中に各でんこに発生したダメージ
  * 

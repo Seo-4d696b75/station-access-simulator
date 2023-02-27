@@ -1,4 +1,4 @@
-import { copy, Denco, formatPercent, getSide, random } from "../../";
+import { copy, Denco, formatPercent, getSide, random } from "../..";
 import { assert, Context } from "../context";
 import { isSkillActive, Skill } from "../skill";
 import { withSkill } from "../skill/property";

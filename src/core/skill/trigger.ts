@@ -2,7 +2,7 @@ import { AccessDencoState, AccessSide, AccessState, AccessWho, DamageCalcState }
 import { ScoreExpBoostPercent } from "../access/score"
 import { Context } from "../context"
 import { Denco, DencoState } from "../denco"
-import { SkillEventState } from "../event/_skill"
+import { SkillEventState } from "../event/skill"
 import { ReadonlyState } from "../state"
 import { WithSkill } from "./logic"
 

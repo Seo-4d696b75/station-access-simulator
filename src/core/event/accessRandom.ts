@@ -3,7 +3,7 @@ import { AccessConfig, startAccess } from "../access"
 import { assert, Context, withFixedClock } from "../context"
 import { ReadonlyState } from "../state"
 import { Station } from "../station"
-import { SkillEventState } from "./_skill"
+import { SkillEventState } from "./skill"
 
 /**
  * ランダムな駅にアクセスする

@@ -13,7 +13,7 @@ import { runAccessDamageCalculation } from "./damage"
 import { completeDencoHP } from "./hp"
 import { completeAccess } from "./result"
 import { calcAccessBonusScoreExp, calcLinkBonusScoreExp } from "./score"
-import { triggerAccessSkillAt } from "./_skill"
+import { triggerAccessSkillAt } from "./skill"
 /**
  * アクセス処理の入力・設定を定義します
  */
