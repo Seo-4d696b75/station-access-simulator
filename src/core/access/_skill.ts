@@ -2,7 +2,7 @@ import { copy, Denco, formatPercent, getSide, random } from "../../";
 import { assert, Context } from "../context";
 import { isSkillActive, Skill } from "../skill";
 import { withSkill } from "../skill/property";
-import { AccessDamageATK, AccessDamageDEF, AccessDamageFixed, AccessSkillTrigger, AccessSkillTriggerState, SkillTriggerCallbacks, WithAccessPosition } from "../skill/trigger";
+import { AccessSkillTrigger, AccessSkillTriggerState, SkillTriggerCallbacks } from "../skill/trigger";
 import { ReadonlyState } from "../state";
 import { addScoreExpBoost } from "./score";
 import { AccessDencoState, AccessSide, AccessState } from "./state";
@@ -220,14 +220,6 @@ function checkAccessSkillTrigger(
       // 対象のスキルが存在するがまだ分からない
       state.triggered = false
       break
-    case "damage_atk":
-    case "damage_def":
-    case "damage_fixed":
-      // ダメージの増減（のスキル効果）が無効化される場合もある
-      const canTrigger = checkAccessDamageInvalidate(context, triggered, state, denco, skill)
-      state.triggered = canTrigger
-      state.invalidated = !canTrigger
-      break
     default:
       state.triggered = true
       break
@@ -247,10 +239,15 @@ function triggerAccessSkillEffect(
   const skill = d.skill
   assert(skill.type === "possess")
 
-  if (!trigger.triggered) return state
+  if (!trigger.triggered) {
+    if (trigger.canTrigger) {
+      context.log.log(`スキルが発動できます(${sideName}) name:${d.firstName}(${d.numbering}) skill:${skill.name}(type:${trigger.type})`)
+    }
+    return state
+  }
 
   // 各発動効果の反映
-  context.log.log(`スキル効果が発動(${sideName}) name:${d.firstName}(${d.numbering}) skill:${skill.name}(type:${trigger.type})`)
+  context.log.log(`スキルが発動します(${sideName}) name:${d.firstName}(${d.numbering}) skill:${skill.name}(type:${trigger.type})`)
 
   switch (trigger.type) {
     case "pink_check":
@@ -318,30 +315,6 @@ function triggerAccessSkillEffect(
   return state
 }
 
-function checkAccessDamageInvalidate(
-  context: Context,
-  triggered: AccessSkillTriggerState[],
-  trigger: ReadonlyState<AccessDamageATK | AccessDamageDEF | AccessDamageFixed>,
-  d: ReadonlyState<WithAccessPosition<Denco>>,
-  skill: ReadonlyState<Skill>,
-): boolean {
-
-  const invalidated = triggered
-    .filter(t => t.canTrigger)
-    .some(t => {
-      if (t.type === "invalidate_damage" && t.isTarget(d, trigger)) {
-        t.triggered = true
-        context.log.log(`スキル効果（ダメージ増減）が無効化されました`)
-        context.log.log(`  無効化スキル；${t.denco.firstName} ${t.skillName}`)
-        context.log.log(`  無効化の対象：${d.firstName} ${skill.name}`)
-        return true
-      }
-      return false
-    })
-
-  return !invalidated
-}
-
 function checkSkillInvalidated(
   context: Context,
   triggered: AccessSkillTriggerState[],
@@ -366,7 +339,7 @@ function checkSkillInvalidated(
       ) {
         // 無効化の発動を記録
         t.triggered = true
-        context.log.log(`スキル発動(damage)が無効化されました`)
+        context.log.log(`スキル発動(ダメージの増減)が無効化されました`)
         context.log.log(`  無効化スキル；${t.denco.firstName} ${t.skillName}`)
         context.log.log(`  無効化の対象：${state.denco.firstName} ${skill.name}`)
         return true
