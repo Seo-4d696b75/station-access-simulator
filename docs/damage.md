@@ -25,14 +25,14 @@ interface DamageCalcState {
   - アクセスするでんこが着用するフィルムのATK増減
   - アクセスを受けるでんこが着用するフィルムのDEF増減
   - フィルム未着用の場合は+0％で計算
-- スキル`damage_common` 
+- スキル`damage_atk, damage_def` 
   - ATK, DEFの増減
   - ATK, DEFを一旦すべて加算し、最後にAPに乗算されます
 - スキル`damage_special` 
   - 特殊なダメージ処理を行います
   - ダメージの肩代わりや上書きができます
 
-`damage_common, damage_special`のスキル処理後のタイミングで基本ダメージがまだ計算されていない場合、後述の式で計算した値がセットされます.
+`damage_atk, damage_def, damage_special`のスキル処理後のタイミングで基本ダメージがまだ計算されていない場合、後述の式で計算した値がセットされます.
 
 #### 特殊なスキル
 
@@ -47,7 +47,7 @@ interface DamageCalcState {
 基本ダメージは次の式で計算します
 
 - AP: アクセスするでんこのAP
-- ATK, DEF: `damage_common`で発動した各スキルの値の総和（%）
+- ATK, DEF: 発動した各スキルの値の総和（%）
 - damageRatio: アクセス・被アクセスでんこの属性による補正値（1.0 または 1.3）
 
 ```js
