@@ -89,6 +89,11 @@ export type EventSkillTriggerState = SkillTriggerState<
  */
 
 export interface SkillProbabilityBoost extends SkillTrigger<"probability_boost"> {
+  /**
+   * 増減させる量を[%]単位で指定
+   * 
+   * 補正後の確率[%] = 補正前の確率[%] * (1 + percent / 100)
+   */
   percent: number
 }
 
@@ -144,13 +149,52 @@ export type AccessSkillTriggerType =
 export type AccessSkillTriggerCallback<E extends AccessSkillTrigger> = (context: Context, state: ReadonlyState<AccessState>, self: ReadonlyState<WithSkill<AccessDencoState>>) => E | AccessSkillRecipe | (E | AccessSkillRecipe)[] | void
 
 export interface SkillTriggerCallbacks {
+  /**
+   * 他のスキルの発動確率を補正する効果をもつスキル発動
+   * 
+   * @param context  同一のアクセス・イベント処理中は同一のオブジェクトが使用されます
+   * @param self 自身の状態
+   * @returns 確率補正
+   */
   onSkillProbabilityBoost?: (context: Context, self: ReadonlyState<WithSkill<DencoState>>) => SkillProbabilityBoost | void
+
+  /**
+   * 相手をフットバース状態に変更するスキル発動
+   * 
+   * このスキルの発動確率は他スキルの補正を受けません
+   */
   onAccessPinkCheck?: AccessSkillTriggerCallback<AccessPinkCheck>
+
+  /**
+   * 主に他のスキルを無効化するスキル発動
+   * 
+   * 無効化の対象を指定する関数`isTarget`を返します
+   */
   onAccessBeforeStart?: AccessSkillTriggerCallback<AccessSkillInvalidate | AccessDamageInvalidate>
+
+  /**
+   * スコア・経験値の増減などアクセス結果と無関係なスキル発動
+   */
   onAccessStart?: AccessSkillTriggerCallback<AccessScoreDelivery | AccessExpDelivery | AccessScoreBoost | AccessExpBoost>
+
+  /**
+   * ダメージ計算においてATK,DEFを増減させるスキル発動
+   */
   onAccessDamagePercent?: AccessSkillTriggerCallback<AccessDamageATK | AccessDamageDEF>
+
+  /**
+   * 特殊なダメージ計算を行うスキル発動
+   */
   onAccessDamageSpecial?: AccessSkillTriggerCallback<AccessDamageSpecial>
+
+  /**
+   * 固定ダメージを増減させるスキル発動
+   */
   onAccessDamageFixed?: AccessSkillTriggerCallback<AccessDamageFixed>
+
+  /**
+   * ダメージ計算・リンク結果が決定した後でないと発動できないタイプのスキル発動
+   */
   onAccessAfterDamage?: AccessSkillTriggerCallback<AccessScoreDelivery | AccessExpDelivery>
 }
 

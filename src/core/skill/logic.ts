@@ -1,14 +1,13 @@
-import { AccessDencoResult, AccessDencoState, AccessResult, AccessSkillStep, AccessState } from "../access"
+import { AccessDencoResult, AccessResult } from "../access"
 import { Context } from "../context"
 import { DencoState } from "../denco"
-import { SkillEventDencoState, SkillEventState } from "../event"
 import { ReadonlyState } from "../state"
 import { LinksResult, StationLinkStart } from "../station"
 import { UserState } from "../user"
 import { Skill, SkillState } from "./holder"
 import { SkillProperty } from "./property"
 import { SkillDeactivateStrategy, SkillTransitionType } from "./transition"
-import { EventSkillTrigger, SkillTriggerCallbacks } from "./trigger"
+import { SkillTriggerCallbacks } from "./trigger"
 
 /**
 * スキルの発動確率を百分率で表現
@@ -177,16 +176,6 @@ interface SkillCooldownCallback {
   onCooldown?: (context: Context, state: ReadonlyState<UserState>, self: ReadonlyState<WithSkill<DencoState>>) => void | UserState
 }
 
-// TODO remove
-
-type AccessSkillRecipe = (state: AccessState) => void | AccessState;
-export type AccessSkillTriggers = AccessSkillTrigger | AccessSkillTrigger[]
-type AccessSkillTrigger = {
-  probability: number | string
-  recipe: AccessSkillRecipe
-  fallbackRecipe?: AccessSkillRecipe
-}
-
 // スキル状態遷移のタイプに依存しない、共通のコールバック定義
 interface BaseSkillLogic<T extends SkillTransitionType> extends SkillTriggerCallbacks {
 
@@ -198,52 +187,6 @@ interface BaseSkillLogic<T extends SkillTransitionType> extends SkillTriggerCall
    * {@link SkillTransitionType}
    */
   transitionType: T
-
-  // TODO remove it
-  /**
-   * アクセス時の各段階においてスキル発動の判定とスキル発動処理を定義します
-   * 
-   * ### アクセス処理でコールバックされる条件
-   * - このスキルの状態が`active`である
-   * - 他の無効化スキルの影響を受けていない
-   * 
-   * @param context 同一のアクセス処理中は同一のオブジェクトが使用されます
-   * @param state アクセス全般の状態  
-   * **Readonly** この関数呼び出しの段階ではスキル発動が確定していないため状態は更新できません. スキルを発動の判定・状態の更新方法は関数の返り値で指定できます.
-   * @param step アクセス中の段階 １回のアクセス処理で各段階は決められた順序で最大１回のみ呼び出されます（場合によっては呼び出されない段階もあります）
-   * @param self このスキルを保持するでんこ自身 HPやATKなどのでんこの基本状態に加え、スキルのレベルや効果量などスキルの状態も参照できます.  
-   * **Readonly** このスキルが発動する直前の状態をキャプチャしています
-   * 
-   * @return スキル発動の判定方法・発動時の処理を返り値で指定できます  
-   * - void: スキルは発動しません. 確率計算に依存せず発動しないことが明白な場合に適切です.
-   * - AccessSkillTriggers: 指定された`probabilityKey`で発動確率[%]をスキルプロパティから読み出して
-   * スキル発動有無を判定し、発動する場合は`recipe`で状態を更新します 
-   * 
-   */
-  triggerOnAccess?: (context: Context, state: ReadonlyState<AccessState>, step: AccessSkillStep, self: ReadonlyState<WithSkill<AccessDencoState>>) => void | AccessSkillTriggers;
-
-
-  /**
-   * アクセス時以外のスキル評価において付随的に発動するスキルの発動判定と処理を定義します
-   * 
-   * **注意** 現状ではひいるの確率補正のみ
-   * 
-   * ### イベント処理でコールバックされる条件
-   * - このスキルの状態が`active`である
-   * - 他の無効化スキルの影響を受けていない（直前のアクセス処理の影響を受ける場合のみ）
-   * 
-   * @param context 同一のイベント処理中は同一のオブジェクトが使用されます
-   * @param state スキル発動型のイベント全般の状態  
-   * **Readonly** この関数呼び出しの段階ではスキル発動が確定していないため状態は更新できません. スキルを発動の判定・状態の更新方法は関数の返り値で指定できます.
-   * @param self このスキルを保持するでんこ自身 HPやATKなどのでんこの基本状態に加え、スキルのレベルや効果量などスキルの状態も参照できます.  
-   * **Readonly** このスキルが発動する直前の状態をキャプチャしています
-   * 
-   * @return スキル発動の判定方法・発動時の処理を返り値で指定できます  
-   * - void: スキルは発動しません. 確率計算に依存せず発動しないことが明白な場合に適切です.
-   * - EventSkillTrigger: 指定された確率`probability`でスキル発動有無を判定し、発動する場合は`recipe`で状態を更新します
-   * 
-   */
-  triggerOnEvent?: (context: Context, state: ReadonlyState<SkillEventState>, self: ReadonlyState<WithSkill<SkillEventDencoState>>) => void | EventSkillTrigger
 
   /**
    * アクセス処理が完了した直後に呼ばれます

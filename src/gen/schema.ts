@@ -121,8 +121,6 @@ export const skillHolderSchema = objectSchema<SkillHolder>({
   canEnabled: functionSchema,
   canActivated: functionSchema,
   onActivated: functionSchema,
-  triggerOnAccess: functionSchema,
-  triggerOnEvent: functionSchema,
   onAccessComplete: functionSchema,
   onDencoReboot: functionSchema,
   onLinkDisconnected: functionSchema,
