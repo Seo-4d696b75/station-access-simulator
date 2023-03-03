@@ -437,3 +437,124 @@ HP確定 mahiru 224 > 0 reboot:true
 経験値詳細 access:0 skill:0 link:22496
 ```
 </details>
+
+<a name="case5"></a>
+
+## Case 5. 同編成内の無効化スキルどうしの影響
+
+同じ編成内の無効化スキルどうしは互いの発動を阻害しません.  
+例えば相手の属性に応じた無効化スキルを持つまひる・てすと・すすぐの３人が同じ編成内にいても、無効化の対象さえ存在すれば３人全員が発動します.
+
+```js
+import { AccessConfig, dayjs, abctivateSkill, DencoManager, init, initContext, initUser, printEvents, startAccess } from "ekimemo-access-simulator";
+
+init().then(() => {
+  const context = initContext("this is test", "random seed", true)
+  context.random.mode = "force"
+
+  // 昼の時間帯に設定
+  context.clock = dayjs("2022-01-01T12:00:00+0900").valueOf()
+
+  let saya = DencoManager.getDenco(context, "8", 50)
+  let mahiru = DencoManager.getDenco(context, "EX02", 50)
+  let susugu = DencoManager.getDenco(context, "EX03", 50)
+  let tesuto = DencoManager.getDenco(context, "EX04", 50)
+  let rara = DencoManager.getDenco(context, "56", 80, 1)
+  let fubu = DencoManager.getDenco(context, "14", 50)
+  let mizuho = DencoManager.getDenco(context, "57", 50)
+  let offense = initUser(context, "とあるマスター", [saya, mahiru, susugu, tesuto])
+  offense = activateSkill(context, offense, 1, 2, 3)
+  let defense = initUser(context, "とあるマスター２", [rara, fubu, mizuho])
+  defense = activateSkill(context, defense, 1, 2)
+  const config = {
+    offense: {
+      state: offense,
+      carIndex: 0
+    },
+    defense: {
+      state: defense,
+      carIndex: 0
+    },
+    station: rara.link[0],
+  }
+  const result = startAccess(context, config)
+
+  printEvents(context, result.offense, true)
+});
+```
+
+### Console Output
+
+![image](https://user-images.githubusercontent.com/25225028/222692686-cf8a27ac-cef0-458c-94eb-07fc12fb3b3d.png)
+
+
+<details>
+<summary>ログ詳細</summary>
+
+```txt
+ライブラリを初期化しました
+ランダムに駅を選出：池袋
+編成を変更します [] -> [saya,mahiru,susugu,tesuto]
+スキル状態の変更：mahiru idle -> active
+スキル状態の変更：susugu idle -> active
+スキル状態の変更：tesuto idle -> active
+編成を変更します [] -> [rara,fubu,mizuho]
+スキル状態の変更：fubu idle -> active
+スキル状態の変更：mizuho idle -> active
+アクセス処理の開始 12:00:00.000
+攻撃：saya
+アクティブなスキル(攻撃側): saya,mahiru,susugu,tesuto
+守備：rara
+アクティブなスキル(守備側): rara,fubu,mizuho
+スキルを評価：フットバースの確認
+アクセスによる追加 saya score:100 exp:100
+スキルを評価：確率ブーストの確認
+スキルを評価：アクセス開始前
+確率計算は無視されます mode: force
+スキルが発動できます mahiru 確率:85%
+スキルが発動できます(攻撃側) name:まひる(EX02) skill:ゴーイングマイレール Lv.4(type:invalidate_skill)
+確率計算は無視されます mode: force
+スキルが発動できます susugu 確率:85%
+スキルが発動できます(攻撃側) name:すすぐ(EX03) skill:お片付けしちゃいましょ！ Lv.4(type:invalidate_skill)
+確率計算は無視されます mode: force
+スキルが発動できます tesuto 確率:85%
+スキルが発動できます(攻撃側) name:てすと(EX04) skill:徹底点検安全確認 Lv.4(type:invalidate_skill)
+スキルを評価：アクセス開始
+攻守のダメージ計算を開始
+攻守の属性によるダメージ補正が適用：1.3
+フィルムによるダメージ計算の補正
+スキルを評価：ATK&DEFの増減
+スキル発動が無効化されました
+  無効化スキル；すすぐ お片付けしちゃいましょ！ Lv.4
+  無効化の対象：らら ウチの本気見せたるわ♪
+スキル発動が無効化されました
+  無効化スキル；てすと 徹底点検安全確認 Lv.4
+  無効化の対象：ふぶ 根性入れてやるかー Lv.4
+スキル発動が無効化されました
+  無効化スキル；まひる ゴーイングマイレール Lv.4
+  無効化の対象：みづほ 風のように水のように Lv.4
+スキルを評価：特殊なダメージ計算
+基本ダメージを計算 AP:300 ATK:0% DEF:0% DamageBase:390 = 300 * 100% * 1.3
+スキルを評価：固定ダメージ
+固定ダメージの計算：0
+ダメージ量による追加 saya score:390 exp:390
+ダメージ計算が終了：390
+守備の結果 HP: 342 > 0 reboot:true
+アクセス結果を仮決定
+攻撃側のリンク成果：true
+守備側のリンク解除：true
+スキルを評価：ダメージ計算完了後
+最終的なアクセス結果を決定
+HP確定 saya 120 > 120 reboot:false
+HP確定 rara 342 > 0 reboot:true
+攻撃側のリンク成果：true
+守備側のリンク解除：true
+リンク成功による追加 saya score:100 exp:100
+アクセス処理の終了
+経験値追加 saya 0(current) + 590 -> 590
+経験値詳細 access:590 skill:0 link:0
+経験値追加 rara 68000(current) + 22496 -> 90496
+経験値詳細 access:0 skill:0 link:22496
+```
+
+</details>
