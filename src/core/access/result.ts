@@ -107,11 +107,6 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   // レベルアップ処理
   checkLevelup(context, result)
 
-  // アクセスイベントを追加
-  addAccessEvent(context, access.offense, result, "offense")
-  addAccessEvent(context, access.defense, result, "defense")
-
-
   // アクセス直後のスキル発動イベント
   checkSKillState(context, result)
   callbackReboot(context, result, "offense")
@@ -121,6 +116,11 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   callbackLinkStarted(context, result)
   result = callbackAfterAccess(context, result, "offense")
   result = callbackAfterAccess(context, result, "defense")
+
+  // アクセスイベントを追加
+  addAccessEvent(context, access.offense, result, "offense")
+  addAccessEvent(context, access.defense, result, "defense")
+
   checkSKillState(context, result)
 
 
@@ -139,7 +139,7 @@ function initUserResult(context: Context, property: ReadonlyState<UserProperty>,
 
   return {
     ...after,
-    // イベントの順番: access > (reboot) > (levelup)
+    // イベントの順番: access > (reboot) > (levelup) > (その他コールバック)
     // ただしaccessイベントの記録にreboot,levelup後の状態を反映させるので
     // reboot,levelup処理終わるまで記録を待機
     event: [],
