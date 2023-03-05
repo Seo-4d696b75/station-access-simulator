@@ -527,7 +527,6 @@ describe("アクセス処理のフィルム補正", () => {
       context.clock = start + 1800 * 1000
       state = refreshState(context, state)
 
-      // TODO イベント順番
       expect(state.event.length).toBe(3)
 
       let e = state.event[0]
@@ -535,11 +534,11 @@ describe("アクセス処理のフィルム補正", () => {
       expect(e.data.denco.who).toBe("other")
       expect(e.data.denco).toMatchDenco(hiiru)
       e = state.event[1]
+      assert(e.type === "access")
+      e = state.event[2]
       assert(e.type === "skill_trigger")
       expect(e.data.denco.who).toBe("self")
       expect(e.data.denco).toMatchDenco(charlotte)
-      e = state.event[2]
-      assert(e.type === "access")
 
     })
     test("シャルロッテ-発動なし", () => {

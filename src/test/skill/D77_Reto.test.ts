@@ -57,6 +57,11 @@ describe("リトのスキル", () => {
     expect(e.data.denco).toMatchDencoState({ ...d, link: [], currentExp: 0 }) // リンク解除
 
     e = result.defense.event[2]
+    assert(e.type === "access")
+    expect(e.data.time).toBe(start)
+    expect(e.data.which).toBe("offense")
+
+    e = result.defense.event[3]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
     expect(e.data.denco.carIndex).toBe(0)
@@ -67,11 +72,6 @@ describe("リトのスキル", () => {
       currentExp: d.currentExp - 200, // ランダムなアクセスの直前
       link: []
     })
-
-    e = result.defense.event[3]
-    assert(e.type === "access")
-    expect(e.data.time).toBe(start)
-    expect(e.data.which).toBe("offense")
   })
   test("発動あり-確率ブースト", () => {
     const context = initContext("test", "test", false)
@@ -114,11 +114,6 @@ describe("リトのスキル", () => {
     expect(e.data.time).toBe(start)
     expect(e.data.denco).toMatchDencoState({ ...d0, link: [], currentExp: 0 }) // リンク解除
 
-    // TODO　ランダムな駅アクセス発動の場合のイベント記録の順序
-    // 実装：(ひいる発動) > ランダム駅アクセスのスキル発動 > 駅アクセス > (アクセス時のスキル発動) 
-    // ゲーム挙動：(ひいる発動) > 駅アクセス > (アクセス時のスキル発動) > ランダム駅アクセスのスキル発動 時系列になっていない
-    // 特に確率補正が効く場合はひいるダイアログと離れてしまいどのスキル発動に影響しているか分かりにくい
-
     e = result.defense.event[2]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
@@ -128,6 +123,11 @@ describe("リトのスキル", () => {
     expect(e.data.denco).toMatchDencoState(d1)
 
     e = result.defense.event[3]
+    assert(e.type === "access")
+    expect(e.data.time).toBe(start)
+    expect(e.data.which).toBe("offense")
+
+    e = result.defense.event[4]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
     expect(e.data.denco.carIndex).toBe(0)
@@ -138,11 +138,6 @@ describe("リトのスキル", () => {
       currentExp: d0.currentExp - 200, // ランダムなアクセスの直前
       link: []
     })
-
-    e = result.defense.event[4]
-    assert(e.type === "access")
-    expect(e.data.time).toBe(start)
-    expect(e.data.which).toBe("offense")
   })
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)

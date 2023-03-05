@@ -135,10 +135,6 @@ function execute(
 
   context.log.log(`スキル評価イベントの開始: ${self.firstName} ${skill.name}`)
 
-  // 処理開始時のevent
-  const originalEvent = state.event
-  state.event = []
-
   // 確率補正のスキル発動
   state.formation.forEach(d => {
     const s = d.skill
@@ -184,28 +180,29 @@ function execute(
       return
     }
     state = triggerState.fallbackEffect(state) ?? state
-
-    // スキル発動のevent記録はなし
-    state.event = [
-      ...originalEvent,
-      ...state.event,
-    ]
     return state
   }
 
   assert(triggerState.triggered)
   state.skillTriggers.push(triggerState)
 
-  state = triggerState.recipe(state) ?? state
+  // スキル発動のイベント発動に伴い別イベントが発生する場合の記録順序
+  // 1. 確率補正
+  // 2. スキル発動（本人）に伴う別イベント
+  // 3. 本人のスキル発動記録
+  // 例：リト・シャルロッテなどランダム駅へアクセスするスキル
+  // (ひいる発動) > 駅アクセス > (アクセス時のスキル発動) > ランダム駅アクセスのスキル発動
 
-  state.event = [
-    // 開始時のevent
-    ...originalEvent,
+  // TODO 確率補正（ひいる）が発動する場合、イベント記録の順序が時系列になっていない
+  // スキル本人とひいるダイアログと離れてしまいどのスキル発動に影響しているか分かりにくい
+  // 現行ゲームの動作なので特に対応はしない
 
-    // スキル発動のevent
-    ...state.skillTriggers.map(t => {
-      if (!t.triggered) return undefined
-      return {
+  // スキル発動のイベントを記録（本人以外）
+  state
+    .skillTriggers
+    .filter(t => t.triggered && t.denco.who !== "self")
+    .forEach(t => {
+      let e: SkillTriggerEvent = {
         type: "skill_trigger",
         data: {
           time: state.time.valueOf(),
@@ -215,11 +212,30 @@ function execute(
           boostedProbability: t.boostedProbability,
         },
       }
-    }).filter((t): t is SkillTriggerEvent => !!t),
+      state.event.push(e)  
+  })
 
-    // 処理中に発生したスキル発動以外のevent
-    ...state.event,
-  ]
+  // スキル発動（本人）による状態変化
+  // 新たにイベント記録の追加もあり（ランダムな駅のアクセスなど）
+  state = triggerState.recipe(state) ?? state
+
+  // スキル発動のイベントを記録（本人）
+  state
+    .skillTriggers
+    .filter(t => t.triggered && t.denco.who === "self")
+    .forEach(t => {
+      let e: SkillTriggerEvent = {
+        type: "skill_trigger",
+        data: {
+          time: state.time.valueOf(),
+          denco: t.denco,
+          skillName: t.skillName,
+          probability: t.probability,
+          boostedProbability: t.boostedProbability,
+        },
+      }
+      state.event.push(e)  
+  })
 
   return state
 
