@@ -1,5 +1,5 @@
 import dayjs from "dayjs"
-import { AccessDencoState, AccessResult, AccessSide, AccessSideState, AccessState, getAccessDenco, getDefense, hasDefense } from "."
+import { AccessDencoState, AccessResult, AccessSide, AccessState, AccessUserState, getAccessDenco, getDefense, hasDefense } from "."
 import { copy } from "../../"
 import { Context, withFixedClock } from "../context"
 import { TIME_FORMAT } from "../date"
@@ -13,7 +13,7 @@ import { runAccessDamageCalculation } from "./damage"
 import { completeDencoHP } from "./hp"
 import { completeAccess } from "./result"
 import { calcAccessBonusScoreExp, calcLinkBonusScoreExp } from "./score"
-import { checkProbabilityBoost, hasValidatedSkill, triggerSkillAt } from "./skill"
+import { triggerAccessSkillAt } from "./skill"
 /**
  * アクセス処理の入力・設定を定義します
  */
@@ -60,6 +60,7 @@ export const startAccess = (context: Context, config: AccessConfig): AccessResul
     pinkItemSet: !!config.usePink,
     pinkItemUsed: false,
     depth: 0,
+    skillTriggers: [],
   }
 
   // アクセス駅とリンクの確認
@@ -112,7 +113,7 @@ export const startAccess = (context: Context, config: AccessConfig): AccessResul
   return completeAccess(context, config, state)
 })
 
-function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessSideState {
+function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, carIndex: number, which: AccessSide): AccessUserState {
   const tmp = copy.UserState(f)
   refreshSkillState(context, tmp)
   const formation = tmp.formation.map((e, idx) => {
@@ -155,7 +156,6 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
     user: getUserPropertyReader(f.user),
     carIndex: carIndex,
     formation: formation,
-    triggeredSkills: [],
     probabilityBoostPercent: 0,
     probabilityBoosted: false,
     score: {
@@ -174,13 +174,14 @@ function initAccessDencoState(context: Context, f: ReadonlyState<UserState>, car
       linkBonus: 0,
       link: 0
     },
+    event: tmp.event,
+    queue: tmp.queue,
   }
 }
 
 function logAccessStart(context: Context, state: ReadonlyState<AccessState>) {
   // log active skill
   var names = state.offense.formation
-    .filter(d => hasValidatedSkill(d))
     .map(d => d.name)
     .join(",")
   context.log.log(`攻撃：${getAccessDenco(state, "offense").name}`)
@@ -189,7 +190,6 @@ function logAccessStart(context: Context, state: ReadonlyState<AccessState>) {
   if (state.defense) {
     const defense = getDefense(state)
     names = defense.formation
-      .filter(d => hasValidatedSkill(d))
       .map(d => d.name)
       .join(",")
     context.log.log(`守備：${getAccessDenco(state, "defense").name}`)
@@ -212,7 +212,7 @@ function checkPink(context: Context, state: AccessState): AccessState {
       // PROBABILITY_CHECK の前に評価する
       // 現状メロしか存在せずこの実装でもよいだろう
       context.log.log("スキルを評価：フットバースの確認")
-      state = triggerSkillAt(context, state, "pink_check")
+      state = triggerAccessSkillAt(context, state, "onAccessPinkCheck")
     }
   }
   if (state.pinkMode) context.log.log("フットバースが発動！")
@@ -239,13 +239,13 @@ function runAccessStart(context: Context, state: AccessState): AccessState {
 
   // 確率補正の可能性 とりあえず発動させて後で調整
   context.log.log("スキルを評価：確率ブーストの確認")
-  state = triggerSkillAt(context, state, "probability_check")
+  state = triggerAccessSkillAt(context, state, "onSkillProbabilityBoost")
   // 基本的に他スキルを無効化するスキル
   context.log.log("スキルを評価：アクセス開始前")
-  state = triggerSkillAt(context, state, "before_access")
+  state = triggerAccessSkillAt(context, state, "onAccessBeforeStart")
   // 経験値追加・スコア追加などのスキル
   context.log.log("スキルを評価：アクセス開始")
-  state = triggerSkillAt(context, state, "start_access")
+  state = triggerAccessSkillAt(context, state, "onAccessStart")
 
   return state
 }
@@ -253,11 +253,6 @@ function runAccessStart(context: Context, state: AccessState): AccessState {
 function decideLinkResult(context: Context, state: AccessState) {
 
   context.log.log("最終的なアクセス結果を決定")
-  // 最後に確率ブーストの有無を判定
-  checkProbabilityBoost(state.offense)
-  if (state.defense) {
-    checkProbabilityBoost(state.defense)
-  }
 
   // 最終的なリブート有無＆変化後のHPを計算
   completeDencoHP(context, state, "offense")

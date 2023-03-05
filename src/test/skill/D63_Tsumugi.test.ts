@@ -58,7 +58,7 @@ describe("つむぎのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, tsumugi)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", tsumugi)).toBe(true)
       expect(result.attackPercent).toBe(4 * cnt)
     })
 
@@ -92,7 +92,7 @@ describe("つむぎのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, tsumugi)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", tsumugi)).toBe(true)
       expect(result.attackPercent).toBe(4 * cnt)
     })
 
@@ -125,7 +125,7 @@ describe("つむぎのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, tsumugi)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", tsumugi)).toBe(false)
       expect(result.attackPercent).toBe(0)
     })
   })
@@ -162,7 +162,7 @@ describe("つむぎのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, tsumugi)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", tsumugi)).toBe(true)
       expect(result.defendPercent).toBe(4 * cnt)
     })
 
@@ -196,7 +196,7 @@ describe("つむぎのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, tsumugi)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", tsumugi)).toBe(true)
       expect(result.defendPercent).toBe(4 * cnt)
     })
 
@@ -229,7 +229,7 @@ describe("つむぎのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, tsumugi)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", tsumugi)).toBe(false)
       expect(result.defendPercent).toBe(0)
     })
   })

@@ -1,6 +1,5 @@
-import assert from "assert"
 import { dayjs, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -23,7 +22,7 @@ describe("てすとのスキル", () => {
     test("基本", () => {
       const context = initContext("test", "test", false)
       context.random.mode = "force"
-      context.clock = dayjs("2022-01-01T23:00:00").valueOf()
+      context.clock = dayjs("2022-01-01T23:00:00+0900").valueOf()
       let hokone = DencoManager.getDenco(context, "26", 50)
       let tesuto = DencoManager.getDenco(context, "EX04", 50)
       let luna = DencoManager.getDenco(context, "3", 80, 1)
@@ -46,23 +45,30 @@ describe("てすとのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, tesuto)).toBe(true)
-      expect(hasSkillTriggered(result.offense, hokone)).toBe(false)
-      expect(hasSkillTriggered(result.defense, luna)).toBe(false)
-      expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
-      expect(hasSkillTriggered(result.defense, mio)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", tesuto)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", hokone)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", mio)).toBe(false)
       // 無効化
-      assert(result.defense)
-      expect(result.offense.formation[0].skillInvalidated).toBe(true)
-      expect(result.defense.formation[0].skillInvalidated).toBe(true)
-      expect(result.defense.formation[1].skillInvalidated).toBe(true)
-      expect(result.defense.formation[2].skillInvalidated).toBe(true)
+      let t = getSkillTrigger(result, "offense", hokone)[0]
+      expect(t.skillName).toBe("妹愛バースト Lv.4")
+      expect(t.invalidated).toBe(true)
+      t = getSkillTrigger(result, "defense", luna)[0]
+      expect(t.skillName).toBe("ナイトエクスプレス")
+      expect(t.invalidated).toBe(true)
+      t = getSkillTrigger(result, "defense", fubu)[0]
+      expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+      expect(t.invalidated).toBe(true)
+      t = getSkillTrigger(result, "defense", mio)[0]
+      expect(t.skillName).toBe("スタンドイン Lv.4")
+      expect(t.invalidated).toBe(true)
     })
 
     test("同編成内の無効化スキルは全部発動する", () => {
       const context = initContext("test", "test", false)
       context.random.mode = "force"
-      context.clock = dayjs("2022-01-01T12:00:00").valueOf()
+      context.clock = dayjs("2022-01-01T12:00:00+0900").valueOf()
       let saya = DencoManager.getDenco(context, "8", 50)
       let mahiru = DencoManager.getDenco(context, "EX02", 50)
       let susugu = DencoManager.getDenco(context, "EX03", 50)
@@ -88,20 +94,22 @@ describe("てすとのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       // 同編成内の無効化スキルが互いに無効化してもすでに発動済み
-      expect(hasSkillTriggered(result.offense, mahiru)).toBe(true)
-      expect(hasSkillTriggered(result.offense, susugu)).toBe(true)
-      expect(hasSkillTriggered(result.offense, tesuto)).toBe(true)
-      expect(hasSkillTriggered(result.defense, rara)).toBe(false)
-      expect(hasSkillTriggered(result.defense, fubu)).toBe(false)
-      expect(hasSkillTriggered(result.defense, mizuho)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", mahiru)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", susugu)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", tesuto)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", rara)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", fubu)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", mizuho)).toBe(false)
       // 無効化
-      assert(result.defense)
-      expect(result.offense.formation[1].skillInvalidated).toBe(true)
-      expect(result.offense.formation[2].skillInvalidated).toBe(true)
-      expect(result.offense.formation[3].skillInvalidated).toBe(true)
-      expect(result.defense.formation[0].skillInvalidated).toBe(true)
-      expect(result.defense.formation[1].skillInvalidated).toBe(true)
-      expect(result.defense.formation[2].skillInvalidated).toBe(true)
+      let t = getSkillTrigger(result, "defense", rara)[0]
+      expect(t.skillName).toBe("ウチの本気見せたるわ♪")
+      expect(t.invalidated).toBe(true)
+      t = getSkillTrigger(result, "defense", fubu)[0]
+      expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+      expect(t.invalidated).toBe(true)
+      t = getSkillTrigger(result, "defense", mizuho)[0]
+      expect(t.skillName).toBe("風のように水のように Lv.4")
+      expect(t.invalidated).toBe(true)
     })
   })
 
@@ -110,7 +118,7 @@ describe("てすとのスキル", () => {
     test("足湯", () => {
       const context = initContext("test", "test", false)
       context.random.mode = "force"
-      context.clock = dayjs("2022-01-01T23:00:00").valueOf()
+      context.clock = dayjs("2022-01-01T23:00:00+0900").valueOf()
       let hokone = DencoManager.getDenco(context, "26", 50)
       let tesuto = DencoManager.getDenco(context, "EX04", 50)
       let luna = DencoManager.getDenco(context, "3", 80, 1)
@@ -131,18 +139,14 @@ describe("てすとのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, tesuto)).toBe(false)
-      expect(hasSkillTriggered(result.offense, hokone)).toBe(false)
-      expect(hasSkillTriggered(result.defense, luna)).toBe(false)
-      // 無効化なし
-      assert(result.defense)
-      expect(result.offense.formation[0].skillInvalidated).toBe(false)
-      expect(result.defense.formation[0].skillInvalidated).toBe(false)
+      expect(hasSkillTriggered(result, "offense", tesuto)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", hokone)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
     })
     test("相手不在", () => {
       const context = initContext("test", "test", false)
       context.random.mode = "force"
-      context.clock = dayjs("2022-01-01T23:00:00").valueOf()
+      context.clock = dayjs("2022-01-01T23:00:00+0900").valueOf()
       let hokone = DencoManager.getDenco(context, "26", 50)
       let tesuto = DencoManager.getDenco(context, "EX04", 50)
       let luna = DencoManager.getDenco(context, "3", 80, 1)
@@ -158,10 +162,8 @@ describe("てすとのスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).toBeUndefined()
-      expect(hasSkillTriggered(result.offense, tesuto)).toBe(false)
-      expect(hasSkillTriggered(result.offense, hokone)).toBe(false)
-      // 無効化なし
-      expect(result.offense.formation[0].skillInvalidated).toBe(false)
+      expect(hasSkillTriggered(result, "offense", tesuto)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", hokone)).toBe(false)
     })
   })
 })

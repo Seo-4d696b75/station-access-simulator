@@ -1,6 +1,6 @@
 import assert from "assert"
 import { init } from "../.."
-import { getAccessDenco, startAccess } from "../../core/access/index"
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -45,6 +45,7 @@ describe("セリアのスキル", () => {
     expect(d.hpAfter).toBeGreaterThan(d.maxHp * 0.3)
     expect(d.hpAfter).toBe(d.currentHp)
     expect(result.defense.event.length).toBe(1)
+    expect(hasSkillTriggered(result, "defense", seria)).toBe(false)
   })
   test("発動なし-HP変化なし", () => {
     const context = initContext("test", "test", false)
@@ -74,6 +75,7 @@ describe("セリアのスキル", () => {
     expect(d.hpAfter).toBeLessThanOrEqual(d.maxHp * 0.3)
     expect(d.currentHp).toBe(d.hpAfter)
     expect(result.defense.event.length).toBe(1)
+    expect(hasSkillTriggered(result, "defense", seria)).toBe(false)
   })
   test("発動なし-Reboot", () => {
     const context = initContext("test", "test", false)
@@ -101,6 +103,7 @@ describe("セリアのスキル", () => {
     expect(d.currentHp).toBe(d.maxHp)
     assert(result.defense)
     expect(result.defense.event.length).toBe(2)
+    expect(hasSkillTriggered(result, "defense", seria)).toBe(false)
   })
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
@@ -129,6 +132,7 @@ describe("セリアのスキル", () => {
     expect(d.currentHp).toBeLessThanOrEqual(d.maxHp * 0.3)
     assert(result.defense)
     expect(result.defense.event.length).toBe(1)
+    expect(hasSkillTriggered(result, "defense", seria)).toBe(false)
   })
   test("発動あり-守備側（編成内）", () => {
     const context = initContext("test", "test", false)
@@ -159,13 +163,17 @@ describe("セリアのスキル", () => {
     const heal = Math.floor(d.maxHp * 0.45)
     expect(d.currentHp).toBe(d.hpAfter + heal)
     expect(result.defense.event.length).toBe(2)
+    expect(hasSkillTriggered(result, "defense", seria)).toBe(false)
+    // イベント発動記録
     const e = result.defense.event[1]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(result.time)
-    expect(e.data.carIndex).toBe(1)
     expect(e.data.skillName).toBe("検測開始しま～す♡ Lv.4")
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+    expect(e.data.probability).toBe(35)
+    expect(e.data.boostedProbability).toBe(35)
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.denco).toMatchDenco(seria)
   })
   test("発動あり-守備側（編成内）-確率ブースト", () => {
     const context = initContext("test", "test", false)
@@ -200,17 +208,21 @@ describe("セリアのスキル", () => {
     let e = result.defense.event[1]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(result.time)
-    expect(e.data.carIndex).toBe(2)
     expect(e.data.skillName).toBe("テンションAGEAGE↑↑ Lv.4")
-    expect(e.data.step).toBe("probability_check")
-    expect(e.data.denco).toMatchDencoState(result.defense.formation[2])
+    expect(e.data.probability).toBe(100)
+    expect(e.data.boostedProbability).toBe(100)
+    expect(e.data.denco.carIndex).toBe(2)
+    expect(e.data.denco.who).toBe("other")
+    expect(e.data.denco).toMatchDenco(hiiru)
     e = result.defense.event[2]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(result.time)
-    expect(e.data.carIndex).toBe(1)
     expect(e.data.skillName).toBe("検測開始しま～す♡ Lv.4")
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+    expect(e.data.probability).toBe(35)
+    expect(e.data.boostedProbability).toBe(35 * 1.2)
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.denco).toMatchDenco(seria)
   })
   test("発動なし-守備側（編成内）-無効化", () => {
     const context = initContext("test", "test", false)
@@ -241,8 +253,7 @@ describe("セリアのスキル", () => {
     expect(d.hpAfter).toBeLessThanOrEqual(d.maxHp * 0.3)
     assert(result.defense)
     expect(d.currentHp).toBe(d.hpAfter)
-    d = result.defense.formation[1]
-    expect(d.skillInvalidated).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chitose)).toBe(true)
     expect(result.defense.event.length).toBe(1)
   })
   test("発動あり-攻撃側（編成内）-カウンターあり", () => {
@@ -275,10 +286,11 @@ describe("セリアのスキル", () => {
     expect(result.offense.event.length).toBe(2)
     const e = result.offense.event[1]
     assert(e.type === "skill_trigger")
-    expect(e.data.time).toBe(result.time)
-    expect(e.data.carIndex).toBe(1)
     expect(e.data.skillName).toBe("検測開始しま～す♡ Lv.4")
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco).toMatchDencoState(result.offense.formation[1])
+    expect(e.data.probability).toBe(35)
+    expect(e.data.boostedProbability).toBe(35)
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.denco).toMatchDenco(seria)
   })
 })

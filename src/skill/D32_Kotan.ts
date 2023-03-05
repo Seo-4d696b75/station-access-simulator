@@ -1,19 +1,18 @@
 import { SkillLogic } from "../core/skill";
+import { LocalDateType } from "../core/user/property";
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense" && state.defense) {
-      const count = state.offense.user.daily.readAccessStationCount(context)
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "offense") {
+      const count = state.offense.user.getDailyAccessCount(LocalDateType.Today)
+      const maxATK = self.skill.property.readNumber("ATK")
+      const maxStation = self.skill.property.readNumber("max_station")
+      const atk = Math.floor(maxATK * Math.min(count, maxStation) / maxStation)
       return {
-        probabilityKey: "probability",
-        recipe: (state) => {
-          const maxATK = self.skill.property.readNumber("ATK")
-          const maxStation = self.skill.property.readNumber("max_station")
-          const atk = Math.floor(maxATK * Math.min(count, maxStation) / maxStation)
-          state.attackPercent += atk
-          context.log.log(`駅を巡れば巡るほど心が燃え上がって力が湧いてくるぞぉぉ！！ ATK+${atk}%`)
-        }
+        probability: self.skill.property.readNumber("probability", 100),
+        type: "damage_atk",
+        percent: atk,
       }
     }
   }

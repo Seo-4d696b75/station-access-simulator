@@ -4,25 +4,22 @@ import { SkillLogic } from "../core/skill";
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense" && state.defense) {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "offense") {
       // アクセス数の差
-      const diff = (getDefense(state).user.history.getStationAccessCount(context, state.station))
-        - (state.offense.user.history.getStationAccessCount(context, state.station))
+      const diff = (getDefense(state).user.getAccessCount(state.station))
+        - (state.offense.user.getAccessCount(state.station))
       if (diff > 0) {
+        const max = self.skill.property.readNumber("ATK")
+        const atk = calcATK(max, diff)
         return {
-          probabilityKey: "probability",
-          recipe: (state) => {
-            // 最大ATK上昇量
-            const max = self.skill.property.readNumber("ATK")
-            const atk = calcATK(max, diff)
-            context.log.log(`わたしのスキルは相手がデータを蓄積しているほど有利に働きます。ATK+${atk}%`)
-            state.attackPercent += atk
-          }
+          probability: self.skill.property.readNumber("probability", 100),
+          type: "damage_atk",
+          percent: atk
         }
       }
     }
-  },
+  }
 }
 
 export const calcATK = (max: number, diff: number): number => {

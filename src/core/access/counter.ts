@@ -1,4 +1,4 @@
-import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "."
+import { AccessDencoState, AccessSide, AccessState, AccessUserState, getSide, invertAccessSide } from "."
 import { copy } from "../../"
 import { assert, Context } from "../context"
 import { Denco } from "../denco"
@@ -44,6 +44,7 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
     pinkItemSet: false,
     pinkItemUsed: false,
     depth: state.depth + 1,
+    skillTriggers: [],
   }
 
   // カウンター実行
@@ -55,11 +56,22 @@ export function counterAttack(context: Context, current: ReadonlyState<AccessSta
   // カウンター攻撃によるでんこ状態の反映 AccessDencoState[]
   state.offense = turnSide(result.defense, "defense", state.offense.carIndex)
   state.defense = turnSide(result.offense, "offense", state.defense.carIndex)
+  // 発動スキルの継承
+  result.skillTriggers.forEach(t => {
+    const which = invertAccessSide(t.denco.which)
+    const accessIdx = getSide(state, which).carIndex
+    t.denco = {
+      ...t.denco,
+      which: which,
+      who: t.denco.carIndex === accessIdx ? which : "other"
+    }
+    state.skillTriggers.push(t)
+  })
   return state
 }
 
-function turnSide(state: AccessSideState, currentSide: AccessSide, nextAccessIdx: number): AccessSideState {
-  const nextSide = currentSide === "defense" ? "offense" : "defense"
+function turnSide(state: AccessUserState, currentSide: AccessSide, nextAccessIdx: number): AccessUserState {
+  const nextSide = invertAccessSide(currentSide)
   const nextFormation = state.formation.map(s => {
     var next: AccessDencoState = {
       ...s,

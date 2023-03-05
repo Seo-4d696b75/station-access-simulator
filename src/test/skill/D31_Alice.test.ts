@@ -1,6 +1,6 @@
 import dayjs from "dayjs"
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, deactivateSkill, getSkill } from "../../core/skill"
@@ -55,7 +55,7 @@ describe("ありすのスキル", () => {
     expect(result.pinkItemSet).toBe(true)
     expect(result.pinkItemUsed).toBe(true)
     expect(result.pinkMode).toBe(true)
-    expect(hasSkillTriggered(result.defense, alice)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", alice)).toBe(false)
     expect(result.defendPercent).toBe(0)
     let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(false)
@@ -80,7 +80,7 @@ describe("ありすのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(hasSkillTriggered(result.offense, alice)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", alice)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 
@@ -105,7 +105,7 @@ describe("ありすのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, alice)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", alice)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 
@@ -131,7 +131,13 @@ describe("ありすのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(hasSkillTriggered(result.defense, alice)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", alice)).toBe(false)
+    const t = getSkillTrigger(result, "defense", alice)[0]
+    expect(t.skillName).toBe("ハッピーホリデイ Lv.4")
+    expect(t.probability).toBe(85)
+    expect(t.boostedProbability).toBe(85)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 
@@ -157,7 +163,7 @@ describe("ありすのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(hasSkillTriggered(result.defense, alice)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", alice)).toBe(true)
     expect(result.defendPercent).toBe(25)
   })
   test("発動あり-土日(祝日以外)", () => {
@@ -182,7 +188,7 @@ describe("ありすのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(hasSkillTriggered(result.defense, alice)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", alice)).toBe(true)
     expect(result.defendPercent).toBe(25)
   })
   test("発動あり-土日(祝日以外)-確率補正あり", () => {
@@ -209,8 +215,14 @@ describe("ありすのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.pinkMode).toBe(false)
-    expect(hasSkillTriggered(result.defense, alice)).toBe(true)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", alice)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    const t = getSkillTrigger(result, "defense", alice)[0]
+    expect(t.skillName).toBe("ハッピーホリデイ Lv.4")
+    expect(t.probability).toBe(85)
+    expect(t.boostedProbability).toBe(100)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
     expect(result.defendPercent).toBe(25)
   })
 })

@@ -30,7 +30,7 @@ describe("いずなのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(result.offense.triggeredSkills.length).toBe(0)
+    expect(result.skillTriggers.length).toBe(0)
   })
   test("発動なし-自身以外が被アクセス", () => {
     const context = initContext("test", "test", false)
@@ -52,136 +52,9 @@ describe("いずなのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      expect(result.defense.triggeredSkills.length).toBe(0)
-    }
+    expect(result.skillTriggers.length).toBe(0)
   })
-  test("発動あり-ディフェンダー1", () => {
-    const context = initContext("test", "test", false)
-    let izuna = DencoManager.getDenco(context, "13", 50, 1)
-    let reika = DencoManager.getDenco(context, "5", 50)
-    let offense = initUser(context, "とあるマスター", [reika])
-    let defense = initUser(context, "とあるマスター２", [izuna])
-    const config = {
-      offense: {
-        state: offense,
-        carIndex: 0
-      },
-      defense: {
-        state: defense,
-        carIndex: 0
-      },
-      station: izuna.link[0],
-    }
-    const result = startAccess(context, config)
-    // 基本的なダメージの確認
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, izuna)).toBe(true)
-    expect(result.defendPercent).toBe(4)
-    expect(result.damageBase?.variable).toBe(192)
-    expect(result.damageRatio).toBe(1.0)
-    assert(result.defense)
-    // アクセス中の状態の確認
-    let accessIzuna = result.defense.formation[0]
-    expect(accessIzuna.damage).not.toBeUndefined()
-    expect(accessIzuna.damage?.value).toBe(192)
-    expect(accessIzuna.damage?.attr).toBe(false)
-    expect(accessIzuna.hpBefore).toBe(216)
-    expect(accessIzuna.hpAfter).toBe(24)
-    expect(accessIzuna.reboot).toBe(false)
-    expect(accessIzuna.exp.total).toBe(0)
-    expect(result.defense.displayedExp).toBe(0)
-
-    expect(result.linkDisconnected).toBe(false)
-    expect(result.linkSuccess).toBe(false)
-
-    // リブート確認
-    defense = result.defense
-    izuna = defense.formation[0]
-    expect(izuna.currentHp).toBe(24)
-  })
-  test("発動あり-ディフェンダー2", () => {
-    const context = initContext("test", "test", false)
-    let izuna = DencoManager.getDenco(context, "13", 50, 1)
-    let luna = DencoManager.getDenco(context, "3", 50)
-    let reika = DencoManager.getDenco(context, "5", 50)
-    let offense = initUser(context, "とあるマスター", [reika])
-    let defense = initUser(context, "とあるマスター２", [izuna, luna])
-    const config = {
-      offense: {
-        state: offense,
-        carIndex: 0
-      },
-      defense: {
-        state: defense,
-        carIndex: 0
-      },
-      station: izuna.link[0],
-    }
-    const result = startAccess(context, config)
-    // 基本的なダメージの確認
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, izuna)).toBe(true)
-    expect(result.defendPercent).toBe(8)
-    expect(result.damageBase?.variable).toBe(184)
-    expect(result.damageRatio).toBe(1.0)
-    assert(result.defense)
-    // アクセス中の状態の確認
-    let accessIzuna = result.defense.formation[0]
-    expect(accessIzuna.damage).not.toBeUndefined()
-    expect(accessIzuna.damage?.value).toBe(184)
-    expect(accessIzuna.damage?.attr).toBe(false)
-    expect(accessIzuna.hpBefore).toBe(216)
-    expect(accessIzuna.hpAfter).toBe(32)
-    expect(accessIzuna.reboot).toBe(false)
-    expect(accessIzuna.exp.total).toBe(0)
-    expect(result.defense.displayedExp).toBe(0)
-
-    expect(result.linkDisconnected).toBe(false)
-    expect(result.linkSuccess).toBe(false)
-  })
-  test("発動あり-ディフェンダー3", () => {
-    const context = initContext("test", "test", false)
-    let izuna = DencoManager.getDenco(context, "13", 60, 1)
-    let luna = DencoManager.getDenco(context, "3", 50)
-    let siira = DencoManager.getDenco(context, "11", 50)
-    let reika = DencoManager.getDenco(context, "5", 50)
-    let offense = initUser(context, "とあるマスター", [reika])
-    let defense = initUser(context, "とあるマスター２", [izuna, luna, siira])
-    const config = {
-      offense: {
-        state: offense,
-        carIndex: 0
-      },
-      defense: {
-        state: defense,
-        carIndex: 0
-      },
-      station: izuna.link[0],
-    }
-    const result = startAccess(context, config)
-    // 基本的なダメージの確認
-    expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, izuna)).toBe(true)
-    expect(result.defendPercent).toBe(15)
-    expect(result.damageBase?.variable).toBe(170)
-    expect(result.damageRatio).toBe(1.0)
-    assert(result.defense)
-    // アクセス中の状態の確認
-    let accessIzuna = result.defense.formation[0]
-    expect(accessIzuna.damage).not.toBeUndefined()
-    expect(accessIzuna.damage?.value).toBe(170)
-    expect(accessIzuna.damage?.attr).toBe(false)
-    expect(accessIzuna.hpBefore).toBe(256)
-    expect(accessIzuna.hpAfter).toBe(86)
-    expect(accessIzuna.reboot).toBe(false)
-    expect(accessIzuna.exp.total).toBe(0)
-    expect(result.defense.displayedExp).toBe(0)
-
-    expect(result.linkDisconnected).toBe(false)
-    expect(result.linkSuccess).toBe(false)
-  })
-  test("発動あり-ディフェンダー4", () => {
+  test.each([1, 2, 3, 4])("発動あり-ディフェンダーx%d", (cnt) => {
     const context = initContext("test", "test", false)
     let izuna = DencoManager.getDenco(context, "13", 80, 1)
     let luna = DencoManager.getDenco(context, "3", 50)
@@ -189,7 +62,7 @@ describe("いずなのスキル", () => {
     let mobo = DencoManager.getDenco(context, "12", 50)
     let reika = DencoManager.getDenco(context, "5", 50)
     let offense = initUser(context, "とあるマスター", [reika])
-    let defense = initUser(context, "とあるマスター２", [izuna, luna, siira, mobo])
+    let defense = initUser(context, "とあるマスター２", [izuna, luna, siira, mobo].slice(0, cnt))
     const config = {
       offense: {
         state: offense,
@@ -204,18 +77,20 @@ describe("いずなのスキル", () => {
     const result = startAccess(context, config)
     // 基本的なダメージの確認
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, izuna)).toBe(true)
-    expect(result.defendPercent).toBe(28)
-    expect(result.damageBase?.variable).toBe(144)
+    expect(hasSkillTriggered(result, "defense", izuna)).toBe(true)
+    const def = 7 * cnt
+    expect(result.defendPercent).toBe(def)
+    const damage = Math.floor(reika.ap * (100 - def) / 100)
+    expect(result.damageBase?.variable).toBe(damage)
     expect(result.damageRatio).toBe(1.0)
     assert(result.defense)
     // アクセス中の状態の確認
     let accessIzuna = result.defense.formation[0]
     expect(accessIzuna.damage).not.toBeUndefined()
-    expect(accessIzuna.damage?.value).toBe(144)
+    expect(accessIzuna.damage?.value).toBe(damage)
     expect(accessIzuna.damage?.attr).toBe(false)
     expect(accessIzuna.hpBefore).toBe(336)
-    expect(accessIzuna.hpAfter).toBe(192)
+    expect(accessIzuna.hpAfter).toBe(336 - damage)
     expect(accessIzuna.reboot).toBe(false)
     expect(accessIzuna.exp.total).toBe(0)
     expect(result.defense.displayedExp).toBe(0)

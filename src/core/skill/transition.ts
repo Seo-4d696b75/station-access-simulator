@@ -43,9 +43,14 @@ export interface SkillTransitionBase<State extends SkillTransitionState, D = und
 */
 export interface SkillCooldownTimeout {
   /**
-   * スキル状態`cooldown`が終了する時刻 [ms]
+   * スキル状態`cooldown`が終了する時刻 UnixTimestamp [ms]
    */
   cooldownTimeout: number
+
+  /**
+   * スキル状態が`cooldown`である時間 [ms]
+   */
+  cooldownDuration: number
 }
 
 /**
@@ -54,15 +59,26 @@ export interface SkillCooldownTimeout {
 export interface SkillActiveTimeout extends SkillCooldownTimeout {
 
   /**
-   * スキルが発動した時刻 [ms]
+   * スキルが発動した時刻 UnixTimestamp [ms]
    */
   activatedAt: number
 
   /**
-   * スキル状態が`active > cooldown`へ遷移する時刻 [ms]
-   * activated <= activeTimeout
+   * スキル状態が`active > cooldown`へ遷移する時刻 UnixTimestamp [ms]
+   * 
+   * `activated <= activeTimeout`  
+   * スキルを有効化したとき、`activatedAt + activeDuration`で初期化されます  
+   * 他スキルにより`active`時間が延長さると変化する場合があります
    */
   activeTimeout: number
+
+  /**
+   * スキル状態が`active`である時間 [ms]
+   * 
+   * スキルを有効化したときスキルプロパティから読み出される時間です  
+   * 他スキルにより`active`時間が延長されても変化しません
+   */
+  activeDuration: number
 }
 
 export type SkillDeactivateStrategy = "default_timeout" | "self_deactivate"

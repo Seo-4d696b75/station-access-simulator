@@ -4,22 +4,20 @@ import { SkillLogic } from "../core/skill";
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "defense") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "defense") {
       const offense = getAccessDenco(state, "offense")
       if (offense.ap > self.ap) {
+        const maxDEF = self.skill.property.readNumber("DEF")
+        const def = Math.floor(maxDEF * (offense.ap - self.ap) / offense.ap)
         return {
-          probabilityKey: "probability",
-          recipe: (state) => {
-            const maxDEF = self.skill.property.readNumber("DEF")
-            const def = Math.floor(maxDEF * (offense.ap - self.ap) / offense.ap)
-            state.defendPercent += def
-            context.log.log(`DEF:${def}% = Max:${maxDEF}% * (offenseAP:${offense.ap} - selfAP:${self.ap}) / ${offense.ap}`)
-          }
+          probability: self.skill.property.readNumber("probability", 100),
+          type: "damage_def",
+          percent: def,
         }
       }
     }
-  },
+  }
 }
 
 export default skill

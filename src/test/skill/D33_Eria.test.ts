@@ -1,11 +1,23 @@
 import dayjs from "dayjs"
-import { activateSkill, DencoState, getAccessDenco, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
+import { activateSkill, DencoState, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, isSkillActive, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import { testManualSkill } from "../tool/skillState"
 
-// TODO D78 なるの対応
-// とりあえずテスト対象外にする
-const targetList = ["15", "19", "26", "28", "30", "32", "42", "44", "46", "53", "59", "64", "66", "68", "72", "75", "76", "80", "83", "85", "87"]
+
+const targetList = ["15", "19", "26", "30", "42", "59", "66", "68", "72", "76", "80", "83", "87", "97"]
+/*
+  特定条件でないとダメージ増加スキルが発動しない
+  とりあえず個別にテストする
+  28 Riona 駅アクセス数の差
+  32 Kotan アクセス駅数
+  44 Saika 移動距離
+  46 Ataru 被アクセス数
+  53 Malin 編成
+  64 Akehi 移動距離
+  75 Nina 経験値付与は発動する
+  78 Naru 確率でスコア増加orATK増加
+  85 Meguru アクセス回数
+*/
 
 describe("エリアのスキル", () => {
   beforeAll(init)
@@ -62,9 +74,17 @@ describe("エリアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, eria)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test)).toBe(false)
-    expect(getAccessDenco(result, "offense").skillInvalidated).toBe(true)
+    expect(hasSkillTriggered(result, "defense", eria)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test)).toBe(false)
+    // 無効化の確認
+    let t = getSkillTrigger(result, "offense", test)[0]
+    expect(t.invalidated).toBe(true)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    t = getSkillTrigger(result, "defense", eria)[0]
+    expect(t.skillName).toBe("天真爛漫 Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.triggered).toBe(true)
   })
 
   test("発動あり-守備側(被アクセス)-確率ブースト", () => {
@@ -89,8 +109,13 @@ describe("エリアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, eria)).toBe(true)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", eria)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
+    let t = getSkillTrigger(result, "defense", eria)[0]
+    expect(t.skillName).toBe("天真爛漫 Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
+    expect(t.triggered).toBe(true)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -120,8 +145,8 @@ describe("エリアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, eria)).toBe(false)
-    expect(hasSkillTriggered(result.offense, imura)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", eria)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", imura)).toBe(true)
     expect(result.attackPercent).toBeGreaterThan(0)
   })
   test("発動なし-守備側(被アクセス)-レーの相手-昼間", () => {
@@ -148,8 +173,8 @@ describe("エリアのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, eria)).toBe(false)
-    expect(hasSkillTriggered(result.offense, reno)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", eria)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", reno)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 })

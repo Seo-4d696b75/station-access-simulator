@@ -37,7 +37,7 @@ describe("みつるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mitsuru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mitsuru)).toBe(true)
     expect(result.attackPercent).toBe(49)
   })
   test("発動あり-攻撃側(アクセス)-最大HP未満", () => {
@@ -62,7 +62,7 @@ describe("みつるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mitsuru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mitsuru)).toBe(true)
     expect(result.attackPercent).toBe(16)
   })
   test("発動なし-攻撃側(編成内)", () => {
@@ -86,7 +86,7 @@ describe("みつるのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mitsuru)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mitsuru)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 })

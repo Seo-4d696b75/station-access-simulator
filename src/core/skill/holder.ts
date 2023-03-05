@@ -1,7 +1,7 @@
-import { AccessDencoState } from "../access"
-import { SimulatorError } from "../context"
+import { assert, Context } from "../context"
 import { MutableProperty, ReadableProperty } from "../property"
 import { ReadonlyState } from "../state"
+import { UserState } from "../user"
 import { SkillLogic } from "./logic"
 import { SkillTransition, SkillTransitionType } from "./transition"
 
@@ -153,10 +153,8 @@ export type SkillHolder = Skill | SkillNotAcquired | SkillNone
  * @throws スキルを保持していない場合
  */
 export function getSkill<S extends SkillState | ReadonlyState<SkillState>>(denco: { skill: S | SkillNotAcquired | SkillNone }): S {
-  if (denco.skill.type === "possess") {
-    return denco.skill
-  }
-  throw new SimulatorError("skill not found")
+  assert(denco.skill.type === "possess", "skill not found")
+  return denco.skill
 }
 
 /**
@@ -168,24 +166,28 @@ export function isSkillActive<S extends SkillState | ReadonlyState<SkillState>>(
   return skill.type === "possess" && skill.transition.state === "active"
 }
 
-/**
- * アクセス開始時においてスキル無効化の対象となるか判定する
- * 
- * 以下の条件を全て満たす場合のみ`true`  
- * - スキルを保有している
- * - スキル状態が`active`である
- * - まだ無効化の影響を受けていない
- * - アクセス時に影響を受けるスキルである  
- *   「アクセス時に影響を受けないスキルに関しては無効化されません」と説明されており、実装では
- *   アクセス処理のコールバック `triggerOnAccess, onAccessComplete`のいずれも未定義の場合と判断する
- * 
- * @param state アクセス処理中の状態 
- * @returns 
- */
-export function canSkillInvalidated<S extends ReadonlyState<AccessDencoState>>(state: S): boolean {
-  const skill = state.skill
-  return skill.type === "possess"
-    && skill.transition.state === "active"
-    && !state.skillInvalidated
-    && (!!skill.triggerOnAccess || !!skill.onAccessComplete)
+export function extendSkillActiveDuration<T extends UserState>(
+  context: Context,
+  state: T,
+  carIndex: number,
+  extendSeconds: number,
+  limitSeconds?: number,
+) {
+  assert(0 <= carIndex && carIndex < state.formation.length, "carIndex out of bounds")
+  const d = state.formation[carIndex]
+  const skill = getSkill(d)
+  assert(skill.transition.state === "active")
+  assert(skill.transition.data, "スキル時間のデータが見つかりません")
+  const data = skill.transition.data
+  assert(data.activeTimeout > context.currentTime)
+  const extend = Math.min(
+    // 現在時刻から起算して最大limitSeconds時間でactive時間延長
+    extendSeconds * 1000,
+    limitSeconds
+      ? context.currentTime + limitSeconds * 1000 - data.activeTimeout
+      : Number.MAX_SAFE_INTEGER
+  )
+  data.activeTimeout += extend
+  // クールダウン時間はそのまま
+  data.cooldownTimeout += extend
 }

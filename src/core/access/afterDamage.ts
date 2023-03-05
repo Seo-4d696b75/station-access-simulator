@@ -1,7 +1,7 @@
 import { AccessSide, AccessState, getFormation, getSide } from "."
 import { Context } from "../context"
 import { updateDencoHP } from "./hp"
-import { filterValidatedSkill, triggerSkillOnSide } from "./skill"
+import { hasSkillTriggered, triggerSkillOnSide } from "./skill"
 
 
 interface AfterDamageSkillEntry {
@@ -30,16 +30,16 @@ function _triggerSkillAfterDamage(
   if (!queue) {
     const formation = getFormation(state, which)
     // 初期化（編成内全員を確認）
-    queue = filterValidatedSkill(state, which).map(idx => ({
-      carIndex: idx,
-      hp: formation[idx].hpAfter,
+    queue = formation.map(d => ({
+      carIndex: d.carIndex,
+      hp: d.hpAfter
     }))
   } else if (queue.length > 0) {
     const side = getSide(state, which)
     // 前回の発動判定時と比べて まだ発動していない＆HPの変化があった
     queue = queue.filter(e => {
       let self = side.formation[e.carIndex]
-      let hasTriggered = side.triggeredSkills.some(t => t.numbering === self.numbering && t.step === "after_damage")
+      let hasTriggered = hasSkillTriggered(state, self.which, self)
       let hpChanged = (e.hp !== self.hpAfter)
       return !hasTriggered && hpChanged
     })
@@ -62,9 +62,9 @@ function _triggerSkillAfterDamage(
     state = triggerSkillOnSide(
       context,
       state,
-      "after_damage",
       which,
-      queue.map(e => e.carIndex),
+      "onAccessAfterDamage",
+      queue.map(e => e.carIndex)
     )
     // HPの決定 & HP0 になったらリブート
     // 全員確認する

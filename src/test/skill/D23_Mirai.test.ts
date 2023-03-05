@@ -1,9 +1,10 @@
 import { DencoManager, init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
-import { Random, RandomMode } from "../../core/random"
+import { RandomMode } from "../../core/random"
 import { activateSkill, getSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
 describe("みらいのスキル", () => {
@@ -33,10 +34,20 @@ describe("みらいのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, mirai)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mirai)).toBe(false)
+    const t = getSkillTrigger(result, "offense", mirai)[0]
+    expect(t.skillName).toBe("ランブルアタック Lv.4")
+    expect(t.probability).toBe(80)
+    expect(t.boostedProbability).toBe(80)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(mirai)
+
     expect(result.attackPercent).toBe(0)
   })
-  test("発動なし-確率", () => {
+  test("発動なし-不在", () => {
     const context = initContext("test", "test", false)
     context.random.mode = "force"
     let mirai = DencoManager.getDenco(context, "23", 50)
@@ -50,7 +61,7 @@ describe("みらいのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, mirai)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mirai)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-確率補正あり", () => {
@@ -74,8 +85,18 @@ describe("みらいのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
-    expect(hasSkillTriggered(result.offense, mirai)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mirai)).toBe(false)
+    const t = getSkillTrigger(result, "offense", mirai)[0]
+    expect(t.skillName).toBe("ランブルアタック Lv.4")
+    expect(t.probability).toBe(80)
+    expect(t.boostedProbability).toBe(80 * 1.2)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(mirai)
+
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃編成内", () => {
@@ -98,8 +119,8 @@ describe("みらいのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
-    expect(hasSkillTriggered(result.offense, mirai)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mirai)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-被アクセス", () => {
@@ -121,7 +142,7 @@ describe("みらいのスキル", () => {
       station: mirai.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.defense, mirai)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mirai)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動あり", () => {
@@ -148,13 +169,20 @@ describe("みらいのスキル", () => {
       station: charlotte.link[0],
     }
     const mockRandomFun = jest.fn(() => 0.5)
-    const mockRandom = jest.fn<Random, []>(() =>
-      Object.assign(mockRandomFun, { mode: "force" as RandomMode })
-    )
-    context.random = mockRandom()
+    context.random = Object.assign(mockRandomFun, { mode: "force" as RandomMode })
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
-    expect(hasSkillTriggered(result.offense, mirai)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mirai)).toBe(true)
+    const t = getSkillTrigger(result, "offense", mirai)[0]
+    expect(t.skillName).toBe("ランブルアタック Lv.4")
+    expect(t.probability).toBe(80)
+    expect(t.boostedProbability).toBe(80)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(mirai)
+
     expect(result.attackPercent).toBe(-39 + Math.floor(99 * 0.5))
     expect(mockRandomFun).toBeCalledTimes(1)
     expect(mockRandomFun.mock.results[0].value).toBe(0.5)
@@ -179,13 +207,21 @@ describe("みらいのスキル", () => {
       station: charlotte.link[0],
     }
     const mockRandomFun = jest.fn(() => 0.8)
-    const mockRandom = jest.fn<Random, []>(() =>
-      Object.assign(mockRandomFun, { mode: "force" as RandomMode })
-    )
-    context.random = mockRandom()
+    context.random = Object.assign(mockRandomFun, { mode: "force" as RandomMode })
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
-    expect(hasSkillTriggered(result.offense, mirai)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mirai)).toBe(true)
+    const t = getSkillTrigger(result, "offense", mirai)[0]
+    expect(t.skillName).toBe("ランブルアタック Lv.4")
+    expect(t.probability).toBe(80)
+    expect(t.boostedProbability).toBe(80 * 1.2)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(mirai)
+
+  
     expect(result.attackPercent).toBe(-39 + Math.floor(99 * 0.8))
     expect(mockRandomFun).toBeCalledTimes(1)
     expect(mockRandomFun.mock.results[0].value).toBe(0.8)
@@ -210,13 +246,10 @@ describe("みらいのスキル", () => {
     }
     const r = 39.5 / (39 + 60)
     const mockRandomFun = jest.fn(() => r)
-    const mockRandom = jest.fn<Random, []>(() =>
-      Object.assign(mockRandomFun, { mode: "force" as RandomMode })
-    )
-    context.random = mockRandom()
+    context.random = Object.assign(mockRandomFun, { mode: "force" as RandomMode })
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
-    expect(hasSkillTriggered(result.offense, mirai)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mirai)).toBe(true)
     expect(result.attackPercent).toBe(0)
     expect(mockRandomFun).toBeCalledTimes(1)
     expect(mockRandomFun.mock.results[0].value).toBe(r)

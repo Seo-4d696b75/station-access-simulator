@@ -3,18 +3,17 @@ import { SkillLogic } from "../core/skill"
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
+  onAccessAfterDamage: (context, state, self) => {
     // リブートしていない、かつリンク保持継続している
-    if (step === "after_damage" &&
-      self.who === "defense" &&
-      !self.reboot &&
-      !state.linkDisconnected) {
+    if (
+      self.who === "defense"
+      && !self.reboot
+      && !state.linkDisconnected
+    ) {
       return {
-        probabilityKey: "probability",
-        recipe: (state) => {
-          context.log.log(`あら、誰か来たみたい♪ カウンター攻撃`)
-          return counterAttack(context, state, self)
-        }
+        probability: self.skill.property.readNumber("probability", 100),
+        type: "skill_recipe",
+        recipe: (state) => counterAttack(context, state, self)
       }
     }
   }

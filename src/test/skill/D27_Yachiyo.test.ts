@@ -1,5 +1,5 @@
 import { activateSkill, init, initContext, initUser, isSkillActive } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
 import "../../gen/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
@@ -20,9 +20,7 @@ describe("やちよスキル", () => {
       let charlotte = DencoManager.getDenco(context, "6", 50)
       let defense = initUser(context, "とあるマスター", [yachiyo, seria])
       const predicate = jest.fn((_) => false)
-      defense.user.history = {
-        isHomeStation: predicate,
-      }
+      defense.user.isHomeStation = predicate
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
         offense: {
@@ -37,7 +35,7 @@ describe("やちよスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yachiyo)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", yachiyo)).toBe(false)
       expect(result.defendPercent).toBe(0)
       expect(predicate.mock.calls.length).toBe(1)
       expect(predicate.mock.calls[0][0]).toMatchStation(yachiyo.link[0])
@@ -54,9 +52,8 @@ describe("やちよスキル", () => {
       let defense = initUser(context, "とあるマスター", [yachiyo, seria])
       // ぜんぶ地元駅
       const predicate = jest.fn((_) => true)
-      defense.user.history = {
-        isHomeStation: predicate,
-      }
+      defense.user.isHomeStation = predicate
+
       let offense = initUser(context, "とあるマスター２", [charlotte])
       const config = {
         offense: {
@@ -71,7 +68,7 @@ describe("やちよスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yachiyo)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yachiyo)).toBe(true)
       expect(result.defendPercent).toBe(24)
       expect(predicate.mock.calls.length).toBe(1)
       expect(predicate.mock.calls[0][0]).toMatchStation(yachiyo.link[0])
@@ -97,7 +94,7 @@ describe("やちよスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yachiyo)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yachiyo)).toBe(true)
       expect(result.defendPercent).toBe(24)
     })
     test("発動あり-守備側(被アクセス)-確率ブースト", () => {
@@ -107,9 +104,8 @@ describe("やちよスキル", () => {
       let charlotte = DencoManager.getDenco(context, "6", 50)
       let defense = initUser(context, "とあるマスター", [yachiyo, hiiru])
       // ぜんぶ地元駅
-      defense.user.history = {
-        isHomeStation: (s) => true
-      }
+      defense.user.isHomeStation = (s) => true
+
       defense = activateSkill(context, defense, 1)
       hiiru = defense.formation[1]
       expect(isSkillActive(hiiru.skill)).toBe(true)
@@ -127,9 +123,13 @@ describe("やちよスキル", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, yachiyo)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", yachiyo)).toBe(true)
+      const t = getSkillTrigger(result, "defense", yachiyo)[0]
+      expect(t.skillName).toBe("ラブホームズ Lv.4")
+      expect(t.probability).toBe(100)
+      expect(t.boostedProbability).toBe(100)
       // 確率補正は効かない
-      expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
       expect(result.defendPercent).toBe(24)
     })
   })
@@ -141,9 +141,8 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50, 1)
     let offense = initUser(context, "とあるマスター", [yachiyo, seria])
     // ぜんぶ地元駅
-    offense.user.history = {
-      isHomeStation: (s) => true
-    }
+    offense.user.isHomeStation = (s) => true
+
     let defense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -158,7 +157,7 @@ describe("やちよスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, yachiyo)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", yachiyo)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-守備側(編成内)", () => {
@@ -168,9 +167,8 @@ describe("やちよスキル", () => {
     let charlotte = DencoManager.getDenco(context, "6", 50)
     let defense = initUser(context, "とあるマスター", [seria, yachiyo])
     // ぜんぶ地元駅
-    defense.user.history = {
-      isHomeStation: (s) => true
-    }
+    defense.user.isHomeStation = (s) => true
+
     let offense = initUser(context, "とあるマスター２", [charlotte])
     const config = {
       offense: {
@@ -185,7 +183,7 @@ describe("やちよスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, yachiyo)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", yachiyo)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 

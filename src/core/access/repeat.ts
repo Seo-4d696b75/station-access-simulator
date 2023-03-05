@@ -13,10 +13,7 @@ import { runAccessDamageCalculation } from "./damage"
 export function repeatAccess(context: Context, state: ReadonlyState<AccessState>): AccessState {
   context.log.log(`アクセス処理を再度実行 #${state.depth + 1}`)
   const next: AccessState = {
-    time: state.time,
-    station: state.station,
-    offense: copy.AccessSideState(state.offense),
-    defense: state.defense ? copy.AccessSideState(state.defense) : undefined,
+    ...copy.AccessState(state),
     // ダメージ計算に関わる状態は初期化する！
     // 公式お知らせ -【不具合】特定のスキルが同時に発動した際、意図しない挙動となる
     // https://ekimemo.com/news/20220922121500_1

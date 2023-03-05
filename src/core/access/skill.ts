@@ -1,63 +1,12 @@
-import { copy } from "../../";
-import { Context } from "../context";
-import { Denco } from "../denco";
-import { random } from "../random";
-import { canSkillInvalidated } from "../skill";
-import { SkillProperty, withSkill } from "../skill/property";
+import { copy, Denco, formatPercent, getSide, random } from "../..";
+import { assert, Context } from "../context";
+import { isSkillActive, Skill } from "../skill";
+import { withSkill } from "../skill/property";
+import { AccessSkillTrigger, AccessSkillTriggerState, SkillTriggerCallbacks } from "../skill/trigger";
 import { ReadonlyState } from "../state";
-import { AccessDencoState, AccessSide, AccessSideState, AccessSkillStep, AccessState, AccessTriggeredSkill } from "./state";
+import { addScoreExpBoost } from "./score";
+import { AccessDencoState, AccessSide, AccessState } from "./state";
 
-/**
- * アクセス時に発動したスキル効果の処理
- *
- * @param state 可変(mutable)です. スキル効果による状態変化を直接書き込めます.
- * @return `AccessState`を返す場合は返り値で状態を更新します.
- *   `undefined`を返す場合は引数`state`を次の状態として扱います.
- */
-
-export type AccessSkillRecipe = (state: AccessState) => void | AccessState;
-
-/**
- * スキル発動の確率計算の方法・発動時の処理を定義します
- * 
- * ### 複数の発動処理
- * スキル発動の確率計算・発動効果が複数ある場合は配列でも指定できます  
- * 
- */
-export type AccessSkillTriggers = AccessSkillTrigger | AccessSkillTrigger[]
-
-/**
- * スキル発動の確率計算の方法・発動時の処理を定義します
- * 
- */
-export type AccessSkillTrigger = {
-  /**
-   * スキルプロパティから発動確率[%]を読み出します  
-   * ```js
-   * readNumber(probabilityKey, 100)
-   * ```
-   * 
-   * - スキルプロパティに未定義の場合はデフォルト値100[%]を使用します. 
-   * - **フィルム補正が影響します！** `probabilityKey`で定義されたスキル補正により
-   * 読み出す発動確率の値[%]が変化する場合があります.
-   */
-  probabilityKey: string
-  /**
-   * スキルが発動した場合の処理を関数として指定します.  
-   * {@link probabilityKey}で指定した確率[%]で判定が成功した場合のみ実行されます.
-   * 
-   * 指定した関数には現在の状態が引数として渡されるので、関数内に状態を更新する処理を定義してください
-   */
-  recipe: AccessSkillRecipe
-
-  /**
-   * {@link probabilityKey}で指定した確率[%]で判定が失敗したときの処理
-   * 
-   * 判定失敗時の処理が定義されている場合は{@link recipe}, {@link fallbackRecipe}のどちらか必ず発動し、
-   * いずれの場合でも**スキルは発動した扱いで記録されます**
-   */
-  fallbackRecipe?: AccessSkillRecipe
-}
 
 /**
  * 指定したでんこのスキルが発動済みか確認する
@@ -67,59 +16,37 @@ export type AccessSkillTrigger = {
  * @param step `undefined`の場合は`denco`の一致でのみ検索する
  * @returns true if has been triggered
  */
-export function hasSkillTriggered(state: { readonly triggeredSkills: readonly AccessTriggeredSkill[] } | undefined, denco: Denco, step?: AccessSkillStep): boolean {
-  if (!state) return false
-  return state.triggeredSkills.findIndex(t => {
-    return t.numbering === denco.numbering && (!step || step === t.step)
-  }) >= 0
+export function hasSkillTriggered(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
+  return getSkillTrigger(state, which, denco).some(e => e.triggered)
 }
 
-/**
- * アクセス中のスキル無効化の影響も考慮してアクティブなスキルか判定
- * 
- * - スキルを保有する
- * - 保有するスキルがactive
- * - 無効化の影響を受けていない
- * - アクセス時に影響を受けるスキルである  
- * 
- * {@link canSkillInvalidated}と同様の実装
- * 
- * @param d 
- * @returns 
- */
-export function hasValidatedSkill(d: ReadonlyState<AccessDencoState>): boolean {
-  return canSkillInvalidated(d)
+export function hasSkillInvalidated(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): boolean {
+  return getSkillTrigger(state, which, denco).some(e => e.invalidated)
 }
 
-/**
- * アクセス処理中のスキル発動判定の対象となるスキルを選択
- * 
- * see {@link hasValidatedSkill}
- * 
- * @param state 現在の状態
- * @param which 守備・攻撃側どちらか
- * @returns 対象のスキルを保有するでんこの編成内の位置
- */
-export function filterValidatedSkill(state: ReadonlyState<AccessState>, which: AccessSide): number[] {
-  if (which === "defense" && !state.defense) return []
-  const formation = (which === "offense") ?
-    state.offense.formation : state.defense!.formation
-  return formation.filter(d => {
-    return hasValidatedSkill(d)
-  }).map(d => d.carIndex)
+export function getSkillTrigger(state: ReadonlyState<{ skillTriggers: AccessSkillTriggerState[] }>, which: AccessSide, denco: ReadonlyState<Denco> | string): AccessSkillTriggerState[] {
+  const predicate = (d: ReadonlyState<Denco>) => {
+    return typeof denco === "object"
+      ? d.numbering === denco.numbering
+      : denco.match(/^[a-z]+$/)
+        ? d.name === denco
+        : d.numbering === denco
+  }
+  return state.skillTriggers
+    .filter(t => t.denco.which === which && predicate(t.denco))
 }
 
 /**
  * 各段階でスキルを評価する
  * @param context 
  * @param current 現在の状態
- * @param step どの段階を評価するか
+ * @param callbackKey どの段階を評価するか
  * @returns 新しい状態
  */
-export function triggerSkillAt(
+export function triggerAccessSkillAt(
   context: Context,
   current: ReadonlyState<AccessState>,
-  step: AccessSkillStep,
+  callbackKey: keyof SkillTriggerCallbacks,
 ): AccessState {
   let state = copy.AccessState(current)
 
@@ -129,16 +56,14 @@ export function triggerSkillAt(
   state = triggerSkillOnSide(
     context,
     state,
-    step,
     "offense",
-    filterValidatedSkill(state, "offense"),
+    callbackKey,
   )
   state = triggerSkillOnSide(
     context,
     state,
-    step,
     "defense",
-    filterValidatedSkill(state, "defense"),
+    callbackKey,
   )
   return state
 }
@@ -148,122 +73,325 @@ export function triggerSkillAt(
  * 各段階でスキルを評価する **破壊的**
  * @param context 
  * @param state 現在の状態
- * @param step どの段階を評価するか
  * @param which 攻撃・守備側どちらか
- * @param indices スキルの発動判定の対象 スキル無効化の影響などで対象外の場合はindicesに含めない
+ * @param callbackKey どのコールバックを呼び出すか
  * @returns 新しい状態
  */
 export function triggerSkillOnSide(
   context: Context,
   state: AccessState,
-  step: AccessSkillStep,
   which: AccessSide,
-  indices: number[],
+  callbackKey: keyof SkillTriggerCallbacks,
+  carIndices?: number[]
 ): AccessState {
-  const sideName = (which === "offense") ? "攻撃側" : "守備側"
   const side = (which === "offense") ? state.offense : state.defense
   if (!side) return state
-  indices.forEach(idx => {
-    // 他スキルの発動で状態が変化する場合があるので毎度参照してからコピーする
-    const d = copy.AccessDencoState(side.formation[idx])
-    const skill = d.skill
-    if (skill.type !== "possess") {
-      context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
-    }
-    if (skill.triggerOnAccess) {
-      // 状態に依存するスキル発動有無の判定は毎度行う
-      const active = withSkill(d, skill, idx)
-      const result = skill.triggerOnAccess(context, state, step, active)
-      const recipes = getTargetRecipes(context, state, step, d, result, active.skill.property)
-      recipes.forEach(recipe => {
-        markTriggerSkill(side, step, d)
-        context.log.log(`スキルが発動(${sideName}) name:${d.name}(${d.numbering}) skill:${skill.name}`)
-        state = recipe(state) ?? state
+
+  const afterTrigger: AccessSkillTriggerState[] = []
+
+  // 発動判定は各編成内で一括で行う
+  // 同編成内の同一stepで発動するスキルは違いに干渉しない
+  const indices = (
+    carIndices ?? side.formation.map(d => d.carIndex)
+  )
+  indices
+    .map(i => side.formation[i])
+    .forEach(denco => {
+      const triggers = invokeSkillTriggerCallback(context, state, denco, callbackKey)
+
+      triggers.forEach(t => {
+
+        // スキル発動の有無（確率・無効化）を判定
+        const triggerState = checkAccessSkillTrigger(context, denco, state.skillTriggers, t)
+
+        // スキル発動による効果の反映
+        if (triggerState.triggered) {
+          state.skillTriggers.push(triggerState)
+          // 他スキルの発動で状態が変化する場合があるので毎度stateから参照
+          const d = getSide(state, which).formation[triggerState.denco.carIndex]
+          state = triggerAccessSkillEffect(context, state, d, triggerState)
+        } else {
+          // 無効化スキルなど発動対象未定の場合
+          // 同編成内で互いに干渉にしない
+          afterTrigger.push(triggerState)
+        }
       })
-    }
-  })
+
+    })
+
+  state.skillTriggers.push(...afterTrigger)
+
   return state
 }
 
-function getTargetRecipes(context: Context, state: AccessState, step: AccessSkillStep, d: ReadonlyState<AccessDencoState>, result: void | AccessSkillTriggers, property: SkillProperty): AccessSkillRecipe[] {
-  if (typeof result === "undefined") return []
-  const list = Array.isArray(result) ? result : [result]
-  const recipe: AccessSkillRecipe[] = []
-  list.forEach(trigger => {
-    const r = canTriggerSkill(context, state, d, trigger, property)
-    if (r) recipe.push(r)
-  })
-  return recipe
-}
-
-/**
- * スキルのロジックと発動確率まで総合して発動有無を判定する
- * 
- * 確率計算が発生する場合は確率補正の有無を記録する（破壊的）
- * 
- * @param state 
- * @param d 発動する可能性があるアクティブなスキル
- * @returns 
- */
-function canTriggerSkill(context: Context, state: AccessState, d: ReadonlyState<AccessDencoState>, trigger: AccessSkillTrigger, property: SkillProperty): AccessSkillRecipe | null {
-  let percent = property.readNumber(trigger.probabilityKey, 100)
-  percent = Math.min(percent, 100)
-  percent = Math.max(percent, 0)
-  if (percent >= 100) return trigger.recipe
-  if (percent <= 0) return canTriggerOnFailure(context, trigger)
-  // 上記までは確率に依存せず決定可能
-
-  const boost = d.which === "offense" ? state.offense.probabilityBoostPercent : state.defense?.probabilityBoostPercent
-  if (!boost && boost !== 0) {
-    context.log.error("存在しない守備側の確率補正計算を実行しようとしました")
-  }
-  if (boost !== 0) {
-    const v = percent * (1 + boost / 100.0)
-    context.log.log(`確率補正: +${boost}% ${percent}% > ${v}%`)
-    percent = Math.min(v, 100)
-    // 発動の如何を問わず確率補正のスキルは発動した扱いになる
-    const defense = state.defense
-    if (d.which === "offense") {
-      state.offense.probabilityBoosted = true
-    } else if (defense) {
-      defense.probabilityBoosted = true
+function invokeSkillTriggerCallback(
+  context: Context,
+  state: ReadonlyState<AccessState>,
+  denco: ReadonlyState<AccessDencoState>,
+  callbackKey: keyof SkillTriggerCallbacks,
+): AccessSkillTrigger[] {
+  const skill = denco.skill
+  if (!isSkillActive(skill)) return []
+  if (callbackKey === "onSkillProbabilityBoost") {
+    const callback = skill.onSkillProbabilityBoost
+    if (callback) {
+      const d = copy.DencoState(denco)
+      const s = d.skill as Skill
+      const t = callback(
+        context,
+        withSkill(d, s, denco.carIndex),
+      )
+      return t ? [t] : []
+    }
+  } else {
+    const callback = skill[callbackKey]
+    if (callback) {
+      const d = copy.AccessDencoState(denco)
+      const s = d.skill as Skill
+      const t = callback(
+        context,
+        state,
+        withSkill(d, s, d.carIndex)
+      )
+      if (!t) return []
+      return Array.isArray(t) ? t : [t]
     }
   }
-  if (random(context, percent)) {
-    context.log.log(`スキルが発動できます ${d.name} 確率:${percent}%`)
-    return trigger.recipe
-  } else {
-    context.log.log(`スキルが発動しませんでした ${d.name} 確率:${percent}%`)
-    return canTriggerOnFailure(context, trigger)
-  }
+  return []
 }
 
-function canTriggerOnFailure(context: Context, trigger: AccessSkillTrigger): AccessSkillRecipe | null {
-  if (trigger.fallbackRecipe) {
-    context.log.log(`スキル不発時の処理があります`)
-    return trigger.fallbackRecipe
+
+function checkAccessSkillTrigger(
+  context: Context,
+  denco: ReadonlyState<AccessDencoState>,
+  triggered: AccessSkillTriggerState[],
+  trigger: AccessSkillTrigger,
+): AccessSkillTriggerState {
+
+  //const d = copy.AccessDencoState(denco)
+  //const skill = d.skill
+  //assert(skill.type === "possess")
+  //const active = withSkill(d, skill, denco.carIndex)
+  const skill = denco.skill
+  assert(skill.type === "possess")
+
+  const state: AccessSkillTriggerState = {
+    denco: {
+      ...copy.Denco(denco),
+      carIndex: denco.carIndex,
+      who: denco.who,
+      which: denco.which,
+    },
+    ...trigger,
+    boostedProbability: 0,
+    canTrigger: false,
+    invalidated: false,
+    triggered: false,
+    fallbackTriggered: false,
+    skillName: skill.name,
   }
-  return null
+
+  // 確率・無効化を考慮して発動有無を計算
+
+  // スキル無効化の影響を確認
+  if (!checkSkillInvalidated(context, triggered, state, skill)) {
+    state.invalidated = true
+    return state
+  }
+
+  // 発動確率の確認
+  if (!checkSkillProbability(context, triggered, state)) {
+    if (state.type === "skill_recipe" && state.fallbackRecipe) {
+      // fallbackの確認
+      state.fallbackTriggered = true
+    } else {
+      return state
+    }
+  }
+
+  // 発動判定をパス
+  state.canTrigger = true
+
+  const sideName = (denco.which === "offense") ? "攻撃側" : "守備側"
+
+  // 各発動効果の有無を計算
+  switch (state.type) {
+    case "probability_boost":
+    case "invalidate_skill":
+    case "invalidate_damage":
+      // 対象のスキルが存在するがまだ分からない
+      state.triggered = false
+      context.log.log(`スキルが発動できます(${sideName}) name:${denco.firstName}(${denco.numbering}) skill:${skill.name}(type:${trigger.type})`)
+      break
+    default:
+      state.triggered = true
+      context.log.log(`スキルが発動します(${sideName}) name:${denco.firstName}(${denco.numbering}) skill:${skill.name}(type:${trigger.type})`)
+      break
+  }
+
+  return state
 }
 
-function markTriggerSkill(state: AccessSideState, step: AccessSkillStep, denco: Denco) {
-  const list = state.triggeredSkills
-  const idx = list.findIndex(d => d.numbering === denco.numbering)
-  if (idx < 0) {
-    list.push({
-      ...denco,
-      step: step
+function triggerAccessSkillEffect(
+  context: Context,
+  state: AccessState,
+  d: ReadonlyState<AccessDencoState>,
+  trigger: ReadonlyState<AccessSkillTriggerState>,
+): AccessState {
+
+  const skill = d.skill
+  assert(skill.type === "possess")
+
+  assert(trigger.triggered)
+
+  // 各発動効果の反映
+  switch (trigger.type) {
+    case "pink_check":
+      context.log.log(`フットバース状態を有効化します`)
+      state.pinkMode = state.pinkMode || trigger.enable
+      break
+    case "score_delivery":
+      getSide(state, d.which).score.skill += trigger.score
+      break
+    case "exp_delivery":
+      // 両編成を全員確認
+      [
+        ...state.offense.formation,
+        ...(state.defense?.formation ?? [])
+      ].forEach(d => {
+        const exp = trigger.exp(d)
+        d.exp.skill += exp
+      })
+      break
+    case "score_boost":
+      const dst = getSide(state, d.which).scorePercent
+      addScoreExpBoost(dst, trigger.scoreBoost)
+      break
+    case "exp_boost":
+      // 両編成を全員確認
+      [
+        ...state.offense.formation,
+        ...(state.defense?.formation ?? [])
+      ].forEach(d => {
+        const boost = trigger.expBoost(d)
+        if (boost) {
+          addScoreExpBoost(d.expPercent, boost)
+        }
+      })
+      break
+    case "damage_atk":
+      context.log.log(`ATK${formatPercent(trigger.percent)}`)
+      state.attackPercent += trigger.percent
+      break
+    case "damage_def":
+      context.log.log(`DEF${formatPercent(trigger.percent)}`)
+      state.defendPercent += trigger.percent
+      break
+    case "damage_special":
+      context.log.log(`damage calc: ${JSON.stringify(trigger.damageCalc)}`)
+      state.damageBase = trigger.damageCalc
+      break
+    case "damage_fixed":
+      state.damageFixed += trigger.damage
+      break
+    case "skill_recipe":
+      const recipe = trigger.fallbackTriggered ? trigger.fallbackRecipe : trigger.recipe
+      assert(recipe, "fallbackRecipeが見つかりません")
+      state = recipe(state) ?? state
+      break
+    default:
+      assert(false, "expected unreachable")
+  }
+
+  // 付随的なスキル効果の反映
+  if (trigger.sideEffect) {
+    state = trigger.sideEffect(state) ?? state
+  }
+
+  return state
+}
+
+function checkSkillInvalidated(
+  context: Context,
+  triggered: AccessSkillTriggerState[],
+  state: ReadonlyState<AccessSkillTriggerState>,
+  skill: ReadonlyState<Skill>,
+): boolean {
+  const invalidated = triggered
+    .filter(t => t.canTrigger)
+    .some(t => {
+      if (t.type === "invalidate_skill" && t.isTarget(state.denco)) {
+        // 無効化の発動を記録
+        t.triggered = true
+        context.log.log(`スキル発動が無効化されました`)
+        context.log.log(`  無効化スキル；${t.denco.firstName} ${t.skillName}`)
+        context.log.log(`  無効化の対象：${state.denco.firstName} ${skill.name}`)
+        return true
+      }
+      if (
+        (state.type === "damage_atk" || state.type === "damage_def" || state.type === "damage_fixed")
+        && t.type === "invalidate_damage"
+        && t.isTarget(state.denco, state)
+      ) {
+        // 無効化の発動を記録
+        t.triggered = true
+        context.log.log(`スキル発動(ダメージの増減)が無効化されました`)
+        context.log.log(`  無効化スキル；${t.denco.firstName} ${t.skillName}`)
+        context.log.log(`  無効化の対象：${state.denco.firstName} ${skill.name}`)
+        return true
+      }
+      return false
     })
-  }
+  return !invalidated
 }
 
-/**
- * 発動したものの影響がなかった確率ブーストのスキルを発動しなかったことにする（破壊的）
- * 
- * @param d アクセス終了後の状態
- */
-export function checkProbabilityBoost(d: AccessSideState) {
-  if (!d.probabilityBoosted && d.probabilityBoostPercent !== 0) {
-    d.triggeredSkills = d.triggeredSkills.filter(s => s.step !== "probability_check")
+
+
+function checkSkillProbability(
+  context: Context,
+  triggered: AccessSkillTriggerState[],
+  trigger: AccessSkillTriggerState,
+): boolean {
+  // 発動確率の読み出し
+  let percent = Math.max(0, Math.min(trigger.probability, 100))
+  trigger.boostedProbability = percent
+
+
+  // 確率補正のスキル自体の発動確率は100%を前提
+  assert(trigger.type !== "probability_boost" || percent === 100)
+
+  // 確率補正不要な場合
+  if (percent >= 100) return true
+  if (percent <= 0) return false
+
+  // 確率補正の計算
+  const boost = triggered
+    .filter(t => t.canTrigger && t.denco.which === trigger.denco.which)
+    .map(t => {
+      if (t.type === "probability_boost") {
+        assert(t.percent > 0)
+        context.log.log(`確率補正：+${t.percent}% by ${t.denco.firstName} ${t.skillName}`)
+        // 補正相手の発動の如何を問わず確率補正のスキル効果は発動した扱いになる
+        t.triggered = true
+        return t.percent
+      }
+      return 0
+    })
+    .reduce((a, b) => a + b, 0)
+
+  if (boost > 0) {
+    const percentBoosted = Math.min(percent * (1 + boost / 100.0), 100)
+    context.log.log(`確率補正（合計）: +${boost}% ${percent}% > ${percentBoosted}%`)
+    percent = percentBoosted
+    trigger.boostedProbability = percentBoosted
+  }
+
+  // 乱数計算
+  if (random(context, percent)) {
+    context.log.log(`スキルが発動できます ${trigger.denco.name} 確率:${percent}%`)
+    return true
+  } else {
+    context.log.log(`スキルが発動しませんでした ${trigger.denco.name} 確率:${percent}%`)
+    return false
   }
 }

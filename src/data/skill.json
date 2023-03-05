@@ -1589,7 +1589,8 @@
       "80",
       "83",
       "85",
-      "87"
+      "87",
+      "97"
     ],
     "list": [
       {
@@ -4568,6 +4569,858 @@
         "denco_level": 80,
         "name": "スターリング・リング",
         "ATK_max": 100
+      }
+    ]
+  },
+  {
+    "numbering": "86",
+    "class": "D86_Minato",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ヒストリートーク Lv.1",
+        "active": 720,
+        "cooldown": 11880,
+        "probability": 40
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ヒストリートーク Lv.2",
+        "active": 900,
+        "cooldown": 11700,
+        "probability": 50
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ヒストリートーク Lv.3",
+        "active": 1080,
+        "cooldown": 11520,
+        "probability": 60
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ヒストリートーク Lv.4",
+        "active": 1260,
+        "cooldown": 11340,
+        "probability": 70
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ヒストリートーク Lv.5",
+        "active": 1440,
+        "cooldown": 11160,
+        "probability": 80
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ヒストリートーク Lv.6",
+        "active": 1620,
+        "cooldown": 10980,
+        "probability": 90
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "水底の記憶",
+        "active": 1800,
+        "cooldown": 10800,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "numbering": "87",
+    "class": "D87_Hime",
+    "active": 900,
+    "cooldown": 5400,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "わ～るず・もすと！ Lv.1",
+        "ATK": 7,
+        "ATK_eco": 25
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "わ～るず・もすと！ Lv.2",
+        "ATK": 10,
+        "ATK_eco": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "わ～るず・もすと！ Lv.3",
+        "ATK": 13,
+        "ATK_eco": 35
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "わ～るず・もすと！ Lv.4",
+        "ATK": 16,
+        "ATK_eco": 40
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "わ～るず・もすと！ Lv.5",
+        "ATK": 19,
+        "ATK_eco": 45
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "わ～るず・もすと！ Lv.6",
+        "ATK": 22,
+        "ATK_eco": 50
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "やっぱりひめが一番でしょ？",
+        "ATK": 25,
+        "ATK_eco": 55
+      }
+    ]
+  },
+  {
+    "numbering": "88",
+    "class": "D88_Tamaki",
+    "active": 900,
+    "active_limit": 3600,
+    "cooldown": 5400,
+    "probability": 100,
+    "probability_extend": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "エンドレス・ビート Lv.1",
+        "ATK": 9,
+        "active_extend": 120
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "エンドレス・ビート Lv.2",
+        "ATK": 9,
+        "active_extend": 180
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "エンドレス・ビート Lv.3",
+        "ATK": 9,
+        "active_extend": 240
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "エンドレス・ビート Lv.4",
+        "ATK": 9,
+        "active_extend": 300
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "エンドレス・ビート Lv.5",
+        "ATK": 11,
+        "active_extend": 360
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "エンドレス・ビート Lv.6",
+        "ATK": 13,
+        "active_extend": 420
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "夜明けまではそばにいて",
+        "ATK": 15,
+        "active_extend": 480
+      }
+    ]
+  },
+  {
+    "numbering": "89",
+    "class": "D89_Ginka",
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "しろかねの盾 Lv.1",
+        "active": 1800,
+        "cooldown": 9000,
+        "DEF": 24
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "しろかねの盾 Lv.2",
+        "active": 2100,
+        "cooldown": 8700,
+        "DEF": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "しろかねの盾 Lv.3",
+        "active": 2400,
+        "cooldown": 8400,
+        "DEF": 36
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "しろかねの盾 Lv.4",
+        "active": 2700,
+        "cooldown": 8100,
+        "DEF": 42
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "しろかねの盾 Lv.5",
+        "active": 3000,
+        "cooldown": 7800,
+        "DEF": 48
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "しろかねの盾 Lv.6",
+        "active": 3300,
+        "cooldown": 7500,
+        "DEF": 54
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "かそけき銀の楼閣",
+        "active": 3600,
+        "cooldown": 7200,
+        "DEF": 60
+      }
+    ]
+  },
+  {
+    "numbering": "90",
+    "class": "D90_Ai",
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "夢と希望とド根性っ！ Lv.1",
+        "active": 1800,
+        "cooldown": 12600,
+        "DEF": 9,
+        "DEF_heat": 8
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "夢と希望とド根性っ！ Lv.2",
+        "active": 2100,
+        "cooldown": 12300,
+        "DEF": 10,
+        "DEF_heat": 10
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "夢と希望とド根性っ！ Lv.3",
+        "active": 2400,
+        "cooldown": 12000,
+        "DEF": 11,
+        "DEF_heat": 12
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "夢と希望とド根性っ！ Lv.4",
+        "active": 2700,
+        "cooldown": 11700,
+        "DEF": 12,
+        "DEF_heat": 14
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "夢と希望とド根性っ！ Lv.5",
+        "active": 3000,
+        "cooldown": 11400,
+        "DEF": 13,
+        "DEF_heat": 16
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "夢と希望とド根性っ！ Lv.6",
+        "active": 3300,
+        "cooldown": 11100,
+        "DEF": 14,
+        "DEF_heat": 18
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "藍より青く相を愛して",
+        "active": 3600,
+        "cooldown": 10800,
+        "DEF": 15,
+        "DEF_heat": 20
+      }
+    ]
+  },
+  {
+    "numbering": "91",
+    "class": "D91_Yoshino",
+    "probability_def": 100,
+    "probability_exp": 100,
+    "probability_score": 100,
+    "DEF_cool": 15,
+    "DEF_heat": -10,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "暑がり克服修行中 Lv.1",
+        "active": 1800,
+        "cooldown": 9000,
+        "exp": 100,
+        "score": 140
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "暑がり克服修行中 Lv.2",
+        "active": 2100,
+        "cooldown": 8700,
+        "exp": 150,
+        "score": 200
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "暑がり克服修行中 Lv.3",
+        "active": 2400,
+        "cooldown": 8400,
+        "exp": 200,
+        "score": 260
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "暑がり克服修行中 Lv.4",
+        "active": 2700,
+        "cooldown": 8100,
+        "exp": 250,
+        "score": 320
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "暑がり克服修行中 Lv.5",
+        "active": 3000,
+        "cooldown": 7800,
+        "exp": 300,
+        "score": 380
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "暑がり克服修行中 Lv.6",
+        "active": 3300,
+        "cooldown": 7500,
+        "exp": 350,
+        "score": 440
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "冬来りなば春遠からじ",
+        "active": 3600,
+        "cooldown": 7200,
+        "exp": 400,
+        "score": 500
+      }
+    ]
+  },
+  {
+    "numbering": "92",
+    "class": "D92_Subaru",
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "プレアデスドライブ Lv.1",
+        "ATK": 10,
+        "DEF": 10,
+        "probability": 26
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "プレアデスドライブ Lv.2",
+        "ATK": 12,
+        "DEF": 12,
+        "probability": 30
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "プレアデスドライブ Lv.3",
+        "ATK": 14,
+        "DEF": 14,
+        "probability": 34
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "プレアデスドライブ Lv.4",
+        "ATK": 16,
+        "DEF": 16,
+        "probability": 38
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "プレアデスドライブ Lv.5",
+        "ATK": 18,
+        "DEF": 18,
+        "probability": 42
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "プレアデスドライブ Lv.6",
+        "ATK": 20,
+        "DEF": 20,
+        "probability": 46
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "天の光はすべて星",
+        "ATK": 22,
+        "DEF": 22,
+        "probability": 50
+      }
+    ]
+  },
+  {
+    "numbering": "93",
+    "class": "D93_Asahi",
+    "active": 3600,
+    "cooldown": 10800,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "エンパサイズフィールド Lv.1",
+        "DEF": 8,
+        "DEF_additional": 20
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "エンパサイズフィールド Lv.2",
+        "DEF": 10,
+        "DEF_additional": 25
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "エンパサイズフィールド Lv.3",
+        "DEF": 12,
+        "DEF_additional": 30
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "エンパサイズフィールド Lv.4",
+        "DEF": 14,
+        "DEF_additional": 35
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "エンパサイズフィールド Lv.5",
+        "DEF": 16,
+        "DEF_additional": 40
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "エンパサイズフィールド Lv.6",
+        "DEF": 18,
+        "DEF_additional": 45
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "それは優しくきらめく朝陽",
+        "DEF": 20,
+        "DEF_additional": 50
+      }
+    ]
+  },
+  {
+    "numbering": "94",
+    "class": "D94_Yuki",
+    "max_access_count": 14,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "きみにサプライズ Lv.1",
+        "exp": 60,
+        "exp_cool": 110
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "きみにサプライズ Lv.2",
+        "exp": 80,
+        "exp_cool": 140
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "きみにサプライズ Lv.3",
+        "exp": 100,
+        "exp_cool": 170
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "きみにサプライズ Lv.4",
+        "exp": 120,
+        "exp_cool": 200
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "きみにサプライズ Lv.5",
+        "exp": 130,
+        "exp_cool": 250
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "きみにサプライズ Lv.6",
+        "exp": 140,
+        "exp_cool": 300
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "きみと、サプライズ",
+        "exp": 150,
+        "exp_cool": 350
+      }
+    ]
+  },
+  {
+    "numbering": "95",
+    "class": "D95_Hina",
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "ヤバンなことはやめるのよ！ Lv.1",
+        "ATK": -6,
+        "active": 1800,
+        "cooldown": 10800
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "ヤバンなことはやめるのよ！ Lv.2",
+        "ATK": -7.5,
+        "active": 2400,
+        "cooldown": 10200
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "ヤバンなことはやめるのよ！ Lv.3",
+        "ATK": -9,
+        "active": 3000,
+        "cooldown": 9600
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "ヤバンなことはやめるのよ！ Lv.4",
+        "ATK": -10.5,
+        "active": 3600,
+        "cooldown": 9000
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "ヤバンなことはやめるのよ！ Lv.5",
+        "ATK": -12,
+        "active": 4200,
+        "cooldown": 8400
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "ヤバンなことはやめるのよ！ Lv.6",
+        "ATK": -13.5,
+        "active": 4800,
+        "cooldown": 7800
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "リトルレディ・リトルプライド",
+        "ATK": -15,
+        "active": 5400,
+        "cooldown": 7200
+      }
+    ]
+  },
+  {
+    "numbering": "96",
+    "class": "D96_Aya",
+    "probability": 100,
+    "active_count_max": 7,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "エナジーセーブスイッチ Lv.1",
+        "ATK_max": 13,
+        "active": 1800,
+        "cooldown": 9000
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "エナジーセーブスイッチ Lv.2",
+        "ATK_max": 20,
+        "active": 2100,
+        "cooldown": 8700
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "エナジーセーブスイッチ Lv.3",
+        "ATK_max": 27,
+        "active": 2400,
+        "cooldown": 8400
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "エナジーセーブスイッチ Lv.4",
+        "ATK_max": 34,
+        "active": 2700,
+        "cooldown": 8100
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "エナジーセーブスイッチ Lv.5",
+        "ATK_max": 41,
+        "active": 3000,
+        "cooldown": 7800
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "エナジーセーブスイッチ Lv.6",
+        "ATK_max": 48,
+        "active": 3300,
+        "cooldown": 7500
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "私の『得意なこと』",
+        "ATK_max": 55,
+        "active": 3600,
+        "cooldown": 7200
+      }
+    ]
+  },
+  {
+    "numbering": "97",
+    "class": "D97_Amane",
+    "active": 900,
+    "probability": 100,
+    "cooldown": 10800,
+    "active_limit": 3600,
+    "active_shorten": -60,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "絶好調ナルシズム Lv.1",
+        "ATK": 14,
+        "active_extend": 120
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "絶好調ナルシズム Lv.2",
+        "ATK": 20,
+        "active_extend": 130
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "絶好調ナルシズム Lv.3",
+        "ATK": 26,
+        "active_extend": 140
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "絶好調ナルシズム Lv.4",
+        "ATK": 32,
+        "active_extend": 150
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "絶好調ナルシズム Lv.5",
+        "ATK": 38,
+        "active_extend": 160
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "絶好調ナルシズム Lv.6",
+        "ATK": 44,
+        "active_extend": 170
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "遍く天地の美と愛よ",
+        "ATK": 50,
+        "active_extend": 180
+      }
+    ]
+  },
+  {
+    "numbering": "98",
+    "class": "D98_Mafuyu",
+    "active": 3600,
+    "cooldown": 9000,
+    "probability": 100,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "遠慮がちな淡雪 Lv.1",
+        "ATK": 8
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "遠慮がちな淡雪 Lv.2",
+        "ATK": 10
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "遠慮がちな淡雪 Lv.3",
+        "ATK": 12
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "遠慮がちな淡雪 Lv.4",
+        "ATK": 14
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "遠慮がちな淡雪 Lv.5",
+        "ATK": 16
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "遠慮がちな淡雪 Lv.6",
+        "ATK": 18
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "スノーフレーク・ファインダー",
+        "ATK": 20
+      }
+    ]
+  },
+  {
+    "numbering": "99",
+    "class": "D99_Otome",
+    "max_access_count": 70,
+    "probability": 100,
+    "cooldown": 3600,
+    "list": [
+      {
+        "skill_level": 1,
+        "denco_level": 5,
+        "name": "おとめのスーパーびっくり箱 Lv.1",
+        "EXP_max": 700
+      },
+      {
+        "skill_level": 2,
+        "denco_level": 15,
+        "name": "おとめのスーパーびっくり箱 Lv.2",
+        "EXP_max": 950
+      },
+      {
+        "skill_level": 3,
+        "denco_level": 30,
+        "name": "おとめのスーパーびっくり箱 Lv.3",
+        "EXP_max": 1200
+      },
+      {
+        "skill_level": 4,
+        "denco_level": 50,
+        "name": "おとめのスーパーびっくり箱 Lv.4",
+        "EXP_max": 1450
+      },
+      {
+        "skill_level": 5,
+        "denco_level": 60,
+        "name": "おとめのスーパーびっくり箱 Lv.5",
+        "EXP_max": 1800
+      },
+      {
+        "skill_level": 6,
+        "denco_level": 70,
+        "name": "おとめのスーパーびっくり箱 Lv.6",
+        "EXP_max": 2150
+      },
+      {
+        "skill_level": 7,
+        "denco_level": 80,
+        "name": "きみに捧げるたまて箱",
+        "EXP_max": 2500
       }
     ]
   },

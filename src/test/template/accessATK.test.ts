@@ -25,7 +25,7 @@ test("発動なし-攻撃側(アクセス)", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.offense, denco_name)).toBe(false)
+  expect(hasSkillTriggered(result, "offense", denco_name)).toBe(false)
   // TODO ATK%
   expect(result.attackPercent).toBe(0)
 })
@@ -47,7 +47,7 @@ test("発動なし-攻撃側(アクセス)-相手無し", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.offense, denco_name)).toBe(false)
+  expect(hasSkillTriggered(result, "offense", denco_name)).toBe(false)
   // TODO ATK%
   expect(result.attackPercent).toBe(0)
 })
@@ -72,7 +72,7 @@ test("発動なし-攻撃側(編成内)", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.offense, denco_name)).toBe(false)
+  expect(hasSkillTriggered(result, "offense", denco_name)).toBe(false)
   // TODO ATK%
   expect(result.attackPercent).toBe(0)
 })
@@ -101,7 +101,7 @@ test("発動なし-守備側(被アクセス)", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.defense, denco_name)).toBe(false)
+  expect(hasSkillTriggered(result, "defense", denco_name)).toBe(false)
   // TODO ATK%
   expect(result.attackPercent).toBe(0)
 })
@@ -130,7 +130,7 @@ test("発動なし-守備側(編成内)", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.defense, denco_name)).toBe(false)
+  expect(hasSkillTriggered(result, "defense", denco_name)).toBe(false)
   // TODO ATK%
   expect(result.attackPercent).toBe(0)
 })
@@ -159,7 +159,7 @@ test("発動あり-攻撃側(アクセス)", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.offense, denco_name)).toBe(true)
+  expect(hasSkillTriggered(result, "offense", denco_name)).toBe(true)
   // TODO ATK%
   expect(result.attackPercent).toBe(0)
 })
@@ -191,9 +191,9 @@ test("発動あり-攻撃側(アクセス)-確率ブースト", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.offense, denco_name)).toBe(true)
+  expect(hasSkillTriggered(result, "offense", denco_name)).toBe(true)
   // 確率補正が効くか true/false
-  expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+  expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
   // TODO ATK%
   expect(result.attackPercent).toBe(0)
 })
@@ -222,7 +222,7 @@ test("発動あり-攻撃側(編成内)", () => {
   }
   const result = startAccess(context, config)
   expect(result.defense).not.toBeUndefined()
-  expect(hasSkillTriggered(result.offense, denco_name)).toBe(true)
+  expect(hasSkillTriggered(result, "offense", denco_name)).toBe(true)
   // TODO ATK%
   expect(result.attackPercent).toBe(0)
 })

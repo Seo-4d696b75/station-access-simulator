@@ -1,9 +1,10 @@
 import dayjs from "dayjs"
 import { DencoManager, init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { testManualSkill } from "../tool/skillState"
 
 describe("レンのスキル", () => {
@@ -36,8 +37,8 @@ describe("レンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ren)).toBe(false)
-    expect(hasSkillTriggered(result.defense, luna)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ren)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", luna)).toBe(true)
     let d = getAccessDenco(result, "defense")
     expect(d.skillInvalidated).toBe(false)
     expect(result.defendPercent).toBe(25)
@@ -63,10 +64,19 @@ describe("レンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ren)).toBe(true)
-    expect(hasSkillTriggered(result.defense, luna)).toBe(false)
-    let d = getAccessDenco(result, "defense")
-    expect(d.skillInvalidated).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ren)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
+
+    const t = getSkillTrigger(result, "defense", luna)[0]
+    expect(t.skillName).toBe("ナイトライダー Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.canTrigger).toBe(false)
+    expect(t.invalidated).toBe(true)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("defense")
+    expect(t.denco).toMatchDenco(luna)
+
     expect(result.defendPercent).toBe(0)
   })
   test("発動あり-マイナス効果も無効化", () => {
@@ -90,10 +100,18 @@ describe("レンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ren)).toBe(true)
-    expect(hasSkillTriggered(result.defense, luna)).toBe(false)
-    let d = getAccessDenco(result, "defense")
-    expect(d.skillInvalidated).toBe(true)
+    expect(hasSkillTriggered(result, "offense", ren)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
+    const t = getSkillTrigger(result, "defense", luna)[0]
+    expect(t.skillName).toBe("ナイトライダー Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.canTrigger).toBe(false)
+    expect(t.invalidated).toBe(true)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("defense")
+    expect(t.denco).toMatchDenco(luna)
+
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-対象外", () => {
@@ -117,10 +135,20 @@ describe("レンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ren)).toBe(false)
-    expect(hasSkillTriggered(result.defense, fubu)).toBe(true)
-    let d = getAccessDenco(result, "defense")
-    expect(d.skillInvalidated).toBe(false)
+    expect(hasSkillTriggered(result, "offense", ren)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", fubu)).toBe(true)
+
+    const t = getSkillTrigger(result, "defense", fubu)[0]
+    expect(t.skillName).toBe("根性入れてやるかー Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
+    expect(t.canTrigger).toBe(true)
+    expect(t.invalidated).toBe(false)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("defense")
+    expect(t.denco).toMatchDenco(fubu)
+
     expect(result.defendPercent).toBe(19)
   })
   test("発動なし-相手編成内", () => {
@@ -144,13 +172,9 @@ describe("レンのスキル", () => {
       station: reika.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, ren)).toBe(false)
-    expect(hasSkillTriggered(result.defense, luna)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", ren)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
     expect(result.defense).not.toBeUndefined()
-    if (result.defense) {
-      let d = result.defense.formation[1]
-      expect(d.skillInvalidated).toBe(false)
-    }
   })
   test("発動なし-攻撃編成内", () => {
     const context = initContext("test", "test", false)
@@ -174,10 +198,8 @@ describe("レンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ren)).toBe(false)
-    expect(hasSkillTriggered(result.defense, luna)).toBe(true)
-    let d = getAccessDenco(result, "defense")
-    expect(d.skillInvalidated).toBe(false)
+    expect(hasSkillTriggered(result, "offense", ren)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", luna)).toBe(true)
     expect(result.defendPercent).toBe(25)
   })
   test("発動なし-被アクセス", () => {
@@ -201,10 +223,8 @@ describe("レンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, ren)).toBe(false)
-    expect(hasSkillTriggered(result.offense, luna)).toBe(false)
-    let d = getAccessDenco(result, "offense")
-    expect(d.skillInvalidated).toBe(false)
+    expect(hasSkillTriggered(result, "defense", ren)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", luna)).toBe(false)
   })
   test("発動なし-フットバース", () => {
     const context = initContext("test", "test", false)
@@ -228,10 +248,8 @@ describe("レンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, ren)).toBe(false)
-    expect(hasSkillTriggered(result.defense, luna)).toBe(false)
-    let d = getAccessDenco(result, "defense")
-    expect(d.skillInvalidated).toBe(false)
+    expect(hasSkillTriggered(result, "offense", ren)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 })

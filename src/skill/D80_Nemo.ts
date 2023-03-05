@@ -4,15 +4,12 @@ import { activateSkill, deactivateSkillAt, SkillLogic } from "../core/skill";
 const skill: SkillLogic = {
   transitionType: "auto",
   deactivate: "self_deactivate", // active => cooldownのタイミングはスキル側で制御
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_fixed" && self.who === "offense") {
+  onAccessDamageFixed: (context, state, self) => {
+    if (self.who === "offense") {
       return {
-        probabilityKey: "probability",
-        recipe: (state) => {
-          const damage = self.skill.property.readNumber("damage_fixed")
-          state.damageFixed += damage
-          context.log.log(`年の功というやつで、腕には自信がある 固定ダメージ+${damage}`)
-        }
+        probability: self.skill.property.readNumber("damage_fixed"),
+        type: "damage_fixed",
+        damage: self.skill.property.readNumber("damage_fixed")
       }
     }
   },
@@ -29,12 +26,13 @@ const skill: SkillLogic = {
       state,
       self,
       {
-        probabilityKey: "probability_skill",
+        probability: self.skill.property.readNumber("probability_skill"),
+        type: "skill_event",
         recipe: (_) => {
           // 確率の判定が成功したらそのままactive
           context.log.log(`ねものスキル状態がactiveで継続します`)
         },
-        fallbackRecipe: (state) => {
+        fallbackEffect: (state) => {
           // active終了
           context.log.log(`ねものスキルのactive状態継続に失敗しました`)
           deactivateSkillAt(context, state, self.carIndex)

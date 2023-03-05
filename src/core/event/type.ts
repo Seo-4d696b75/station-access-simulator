@@ -1,7 +1,7 @@
-import { EventTriggeredSkill } from "."
 import { AccessResult, AccessSide, AccessUserResult } from "../access"
 import { DencoState } from "../denco"
 import { LinksResult } from "../station"
+import { EventTriggeredSkill } from "./skill"
 
 export type EventType =
   "access" |
@@ -32,6 +32,7 @@ export type AccessEventUser = Omit<AccessUserResult, "event" | "queue">
  * - アクセスによるリンクの解除は反映済
  * - 解除されたリンクスコア・経験値は追加済み
  * - 追加された経験値によるレベルアップ済み
+ * - その他アクセス直後のコールバックによる状態の更新も反映済み
  */
 export interface AccessEventData extends Omit<AccessResult, "offense" | "defense"> {
 

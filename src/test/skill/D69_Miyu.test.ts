@@ -1,4 +1,4 @@
-import { AccessConfig, DencoManager, getAccessDenco, hasSkillTriggered, init, initContext, initUser, startAccess, StationManager } from "../.."
+import { AccessConfig, DencoManager, getAccessDenco, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, startAccess, StationManager } from "../.."
 import { testAlwaysSkill } from "../tool/skillState"
 
 
@@ -19,7 +19,7 @@ describe("ミユのスキル", () => {
     let reika = DencoManager.getDenco(context, "5", 50)
     let miyu = DencoManager.getDenco(context, "69", 50)
     const offense = initUser(context, "とあるマスター１", [reika, miyu])
-    offense.user.daily = { distance: 100 }
+    offense.user.getDailyDistance = (_) => 100
     const station = StationManager.getRandomStation(context, 1)[0]
     const config: AccessConfig = {
       offense: {
@@ -39,7 +39,7 @@ describe("ミユのスキル", () => {
     expect(result.offense.score.total).toBe(accessScore + linkSuccessScore)
     expect(result.offense.displayedScore).toBe(accessScore + linkSuccessScore)
     expect(result.offense.displayedExp).toBe(accessScore + linkSuccessScore)
-    expect(hasSkillTriggered(result.offense, miyu)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", miyu)).toBe(false)
     let d = getAccessDenco(result, "offense")
     expect(d.exp.access.accessBonus).toBe(accessScore)
     expect(d.exp.access.damageBonus).toBe(0)
@@ -60,7 +60,7 @@ describe("ミユのスキル", () => {
     const defense = initUser(context, "とあるマスター２", [
       charlotte, miyu
     ])
-    defense.user.daily = { distance: 100 }
+    defense.user.getDailyDistance = (_) => 100
     const config: AccessConfig = {
       offense: {
         state: offense,
@@ -83,7 +83,7 @@ describe("ミユのスキル", () => {
     expect(result.offense.displayedScore).toBe(accessScore + 260)
     expect(result.offense.displayedExp).toBe(accessScore + 260)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, miyu)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", miyu)).toBe(false)
     expect(result.defense?.score.total).toBe(0)
     expect(result.defense?.displayedScore).toBe(0)
     expect(result.defense?.displayedExp).toBe(0)
@@ -100,7 +100,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.daily = { distance: 100 }
+    offense.user.getDailyDistance = (_) => 100
     const defense = initUser(context, "とあるマスター２", [
       charlotte, miyu
     ])
@@ -126,7 +126,7 @@ describe("ミユのスキル", () => {
     expect(result.offense.score.total).toBe(accessScore + linkSuccessScore)
     expect(result.offense.displayedScore).toBe(accessScore + linkSuccessScore)
     expect(result.offense.displayedExp).toBe(accessScore + linkSuccessScore)
-    expect(hasSkillTriggered(result.offense, miyu)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", miyu)).toBe(false)
     let d = getAccessDenco(result, "offense")
     expect(d.exp.access.accessBonus).toBe(accessScore)
     expect(d.exp.access.damageBonus).toBe(0)
@@ -144,7 +144,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.daily = { distance: 0.9 }
+    offense.user.getDailyDistance = (_) => 0.9
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -164,7 +164,7 @@ describe("ミユのスキル", () => {
     expect(result.offense.score.access.total).toBe(accessScore + 260)
     expect(result.offense.displayedScore).toBe(accessScore + 260)
     expect(result.offense.displayedExp).toBe(accessScore + 260)
-    expect(hasSkillTriggered(result.offense, miyu)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", miyu)).toBe(false)
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.score.total).toBe(0)
     expect(result.defense?.displayedScore).toBe(0)
@@ -174,7 +174,7 @@ describe("ミユのスキル", () => {
     expect(d.exp.skill).toBe(0)
     expect(d.exp.link).toBe(0)
   })
-  test("発動あり-移動距離100km未満", () => {
+  test.each([1, 2, 5, 10, 20, 50, 80, 99])("発動あり-移動距離100km未満: %dkm", (dist) => {
     const context = initContext("test", "test", false)
     let miyu = DencoManager.getDenco(context, "69", 50)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -182,7 +182,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, miyu
     ])
-    offense.user.daily = { distance: 50 }
+    offense.user.getDailyDistance = (_) => dist
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -198,26 +198,32 @@ describe("ミユのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
+    const damageScore = 260
+    const skillScore = Math.floor(150 * dist / 100)
     expect(result.linkSuccess).toBe(false)
-    expect(result.offense.score.access.total).toBe(accessScore + 260)
-    expect(result.offense.score.total).toBe(accessScore + 260)
-    expect(result.offense.displayedScore).toBe(accessScore + 260)
-    expect(result.offense.displayedExp).toBe(accessScore + 260 + 75)
-    expect(hasSkillTriggered(result.offense, miyu)).toBe(true)
+    expect(result.offense.score.access.total).toBe(accessScore + damageScore)
+    expect(result.offense.score.total).toBe(accessScore + damageScore)
+    expect(result.offense.displayedScore).toBe(accessScore + damageScore)
+    expect(result.offense.displayedExp).toBe(accessScore + damageScore + skillScore)
+    expect(hasSkillTriggered(result, "offense", miyu)).toBe(true)
+    let t = getSkillTrigger(result, "offense", miyu)[0]
+    expect(t.skillName).toBe("きらきらリスペクト Lv.4")
+    expect(t.triggered).toBe(true)
+
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.score.total).toBe(0)
     expect(result.defense?.displayedScore).toBe(0)
     expect(result.defense?.displayedExp).toBe(0)
     let d = getAccessDenco(result, "offense")
     expect(d.exp.access.accessBonus).toBe(accessScore)
-    expect(d.exp.access.damageBonus).toBe(260)
+    expect(d.exp.access.damageBonus).toBe(damageScore)
     expect(d.exp.access.linkBonus).toBe(0)
-    expect(d.exp.access.total).toBe(accessScore + 260)
-    expect(d.exp.skill).toBe(75)
+    expect(d.exp.access.total).toBe(accessScore + damageScore)
+    expect(d.exp.skill).toBe(skillScore)
     expect(d.exp.link).toBe(0)
-    expect(d.exp.total).toBe(accessScore + 260 + 75)
+    expect(d.exp.total).toBe(accessScore + damageScore + skillScore)
   })
-  test("発動あり-移動距離100km以上", () => {
+  test.each([100, 101, 110, 150, 200])("発動あり-移動距離100km以上: %dkm", (dist) => {
     const context = initContext("test", "test", false)
     let miyu = DencoManager.getDenco(context, "69", 50)
     let reika = DencoManager.getDenco(context, "5", 50)
@@ -226,7 +232,7 @@ describe("ミユのスキル", () => {
     const offense = initUser(context, "とあるマスター１", [
       reika, seria, miyu
     ])
-    offense.user.daily = { distance: 120 }
+    offense.user.getDailyDistance = (_) => dist
     const defense = initUser(context, "とあるマスター２", [
       charlotte
     ])
@@ -249,7 +255,11 @@ describe("ミユのスキル", () => {
     expect(result.offense.score.total).toBe(accessScore + 260)
     expect(result.offense.displayedScore).toBe(accessScore + 260)
     expect(result.offense.displayedExp).toBe(accessScore + 260 + 150 + 140)
-    expect(hasSkillTriggered(result.offense, miyu)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", miyu)).toBe(true)
+    let t = getSkillTrigger(result, "offense", miyu)[0]
+    expect(t.skillName).toBe("きらきらリスペクト Lv.4")
+    expect(t.triggered).toBe(true)
+
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.score.total).toBe(0)
     expect(result.defense?.displayedScore).toBe(0)

@@ -18,6 +18,10 @@ init().then(() => {
   context.clock = dayjs('2022-01-01T12:00:00+0900').valueOf()
   context.setClock('2022-01-01T12:00:00+0900') // どっちでもOK
 
+  // 夜の時間帯に指定
+  // context.clock = dayjs('2022-01-01T20:00:00+0900').valueOf()
+  // context.setClock('2022-01-01T20:00:00+0900') // どっちでもOK
+
   let reika = DencoManager.getDenco(context, "5", 80);
   let master1 = initUser(context, "master1", [reika]);
 
@@ -36,7 +40,12 @@ init().then(() => {
 ```
 
 #### Console Output
+昼の時間帯  
 ![image](https://user-images.githubusercontent.com/25225028/201916070-143297c8-28ea-4c0b-8cdf-6bd6257f3500.png)
+
+夜の時間帯  
+![image](https://user-images.githubusercontent.com/25225028/222688107-0f504db0-af9f-4886-ae4a-239627b100df.png)
+
 
 <details>
 <summary>ログ詳細</summary>
@@ -46,9 +55,9 @@ init().then(() => {
 編成を変更します [] -> [reika]
 ランダムに駅を選出：池袋,西日暮里,高輪ゲートウェイ
 編成を変更します [] -> [luna]
-アクセス処理の開始 2022-01-01 12:00:00.000
+アクセス処理の開始 12:00:00.000
 攻撃：reika
-アクティブなスキル(攻撃側): 
+アクティブなスキル(攻撃側): reika
 守備：luna
 アクティブなスキル(守備側): luna
 スキルを評価：フットバースの確認
@@ -57,10 +66,10 @@ init().then(() => {
 スキルを評価：アクセス開始前
 スキルを評価：アクセス開始
 攻守のダメージ計算を開始
-フィルムによる補正をスキップ
+フィルムによるダメージ計算の補正
 スキルを評価：ATK&DEFの増減
-スキルが発動(守備側) name:luna(3) skill:ナイトエクスプレス
-まだ眠いんよ～ DEF-30%
+スキルが発動します(守備側) name:ルナ(3) skill:ナイトエクスプレス(type:damage_def)
+DEF-30%
 スキルを評価：特殊なダメージ計算
 基本ダメージを計算 AP:260 ATK:0% DEF:-30% DamageBase:338 = 260 * 130% * 1
 スキルを評価：固定ダメージ
@@ -78,9 +87,9 @@ HP確定 luna 360 > 22 reboot:false
 攻撃側のリンク成果：false
 守備側のリンク解除：false
 アクセス処理の終了
-経験値追加 reika 0(current) + 438 -> 438
+経験値追加 reika 68000(current) + 438 -> 68438
 経験値詳細 access:438 skill:0 link:0
-経験値追加 luna 0(current) + 0 -> 0
+経験値追加 luna 68000(current) + 0 -> 68000
 経験値詳細 access:0 skill:0 link:0
 ```
 </details>
@@ -163,13 +172,11 @@ init().then(() => {
 ```txt
 ライブラリを初期化しました
 編成を変更します [] -> [reika,moe]
-スキル状態の変更：moe unable -> active
+スキル状態の変更：moe not_init -> active
 待機列中のスキル評価イベントが指定時刻になりました time: 13:00:00.000 type: hour_cycle
-スキル評価イベントの開始
-moe 定時メンテナンス Lv.4
+スキル評価イベントの開始: もえ 定時メンテナンス Lv.4
 編成内のみなさまのHPを回復いたしますよ♪ +25%
 HPの回復 reika 10 > 88
-スキル評価イベントの終了
 ```
 </details>
 
@@ -217,11 +224,10 @@ init().then(() => {
 スキル状態の変更：charlotte cooldown -> idle (timeout:13:30:00.000)
 待機列中のスキル評価イベントが指定時刻になりました time: 13:00:00.000 type: hour_cycle
 待機列中のスキル評価イベントが指定時刻になりました time: 13:30:00.000 type: skill
-スキル評価イベントの開始
-charlotte 風の吹くまま気の向くまま
-アクセス処理の開始 2022-01-01 13:30:00.000
+スキル評価イベントの開始: シャルロッテ 風の吹くまま気の向くまま
+アクセス処理の開始 13:30:00.000
 攻撃：charlotte
-アクティブなスキル(攻撃側): 
+アクティブなスキル(攻撃側): charlotte
 守備側はいません
 アクセスによる追加 charlotte score:100 exp:100
 スキルを評価：確率ブーストの確認
@@ -229,7 +235,7 @@ charlotte 風の吹くまま気の向くまま
 スキルを評価：アクセス開始
 アクセス結果を仮決定
 攻撃側のリンク成果：true
-守備側のリンク解除：false
+守備側のリンク解除：不在
 スキルを評価：ダメージ計算完了後
 最終的なアクセス結果を決定
 HP確定 charlotte 324 > 324 reboot:false
@@ -237,8 +243,7 @@ HP確定 charlotte 324 > 324 reboot:false
 守備側のリンク解除：false
 リンク成功による追加 charlotte score:100 exp:100
 アクセス処理の終了
-経験値追加 charlotte 0(current) + 200 -> 200
+経験値追加 charlotte 68000(current) + 200 -> 68200
 経験値詳細 access:200 skill:0 link:0
-スキル評価イベントの終了
 ```
 </details>

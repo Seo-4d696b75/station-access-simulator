@@ -2,15 +2,12 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "defense") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "defense") {
       return {
-        probabilityKey: "probability",
-        recipe: (state) => {
-          const def = self.skill.property.readNumber("DEF")
-          state.defendPercent += def
-          context.log.log(`わ、わたしのスキルでアクセスされた時にダメージを軽減できます DEF+${def}%`)
-        },
+        probability: self.skill.property.readNumber("probability"),
+        type: "damage_def",
+        percent: self.skill.property.readNumber("DEF")
       }
     }
   }

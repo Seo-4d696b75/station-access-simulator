@@ -1,7 +1,8 @@
 import dayjs from "dayjs"
-import { activateSkill, deactivateSkill, getSkill, hasSkillTriggered, init, initContext, initUser, isSkillActive, refreshState, startAccess } from "../.."
+import { activateSkill, deactivateSkill, getSkill, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, isSkillActive, refreshState, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
 import StationManager from "../../core/stationManager"
+import "../../gen/matcher"
 
 describe("そらのスキル", () => {
   beforeAll(init)
@@ -78,7 +79,16 @@ describe("そらのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, sora)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", sora)).toBe(true)
+    const t = getSkillTrigger(result, "offense", sora)[0]
+    expect(t.skillName).toBe("タイムフォーワーク Lv.4")
+    expect(t.probability).toBe(70)
+    expect(t.boostedProbability).toBe(70)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(sora)
+
     expect(result.attackPercent).toBe(40)
   })
   test("発動なし-攻撃側(編成内)", () => {
@@ -103,7 +113,7 @@ describe("そらのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, sora)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", sora)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)-確率", () => {
@@ -128,7 +138,17 @@ describe("そらのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, sora)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", sora)).toBe(false)
+    const t = getSkillTrigger(result, "offense", sora)[0]
+    expect(t.skillName).toBe("タイムフォーワーク Lv.4")
+    expect(t.probability).toBe(70)
+    expect(t.boostedProbability).toBe(70)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(sora)
+
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)-時間外", () => {
@@ -153,7 +173,7 @@ describe("そらのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, sora)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", sora)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -181,8 +201,17 @@ describe("そらのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, sora)).toBe(true)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", sora)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    const t = getSkillTrigger(result, "offense", sora)[0]
+    expect(t.skillName).toBe("タイムフォーワーク Lv.4")
+    expect(t.probability).toBe(70)
+    expect(t.boostedProbability).toBe(70 * 1.2)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+    expect(t.denco).toMatchDenco(sora)
+
     expect(result.attackPercent).toBe(40)
   })
 
@@ -208,7 +237,7 @@ describe("そらのスキル", () => {
       station: charlotte.link[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, sora)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", sora)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -235,7 +264,7 @@ describe("そらのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, sora)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", sora)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)-相手無し", () => {
@@ -254,7 +283,7 @@ describe("そらのスキル", () => {
       station: StationManager.getRandomStation(context, 1)[0],
     }
     const result = startAccess(context, config)
-    expect(hasSkillTriggered(result.offense, sora)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", sora)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 })

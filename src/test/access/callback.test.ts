@@ -51,7 +51,7 @@ describe("アクセス処理中のSkillコールバック", () => {
   test("onAccessComplete", () => {
     const context = initContext("test", "test", false)
 
-    const onAccessComplete = jest.fn((_, state, self, access) => undefined)
+    const onAccessComplete = jest.fn((_, access, self) => undefined)
 
     const skill = initSkill()
     skill.onAccessComplete = onAccessComplete

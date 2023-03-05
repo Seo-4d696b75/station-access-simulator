@@ -2,24 +2,45 @@
 
 ここで言及するコールバック関数はすべてスキルの処理を担う`SkillLogic`に定義されたものです.  
 
-## Overview
-すべてのアクセス処理は関数`startAccess`から開始します
+## スキル発動効果の種類と順番
 
-
-アクセス処理中はスキルのコールバック関数`triggerOnAccess`が各段階で呼ばれ、  
-段階の種類は`AccessSkillStep`の通りです.
-
+スキル発動効果の内容に応じた種類が定義されています.
 ```ts
-type AccessSkillStep =
-  "pink_check" |
-  "probability_check" |
-  "before_access" |
-  "start_access" |
-  "damage_common" |
-  "damage_special" |
-  "damage_fixed" |
-  "after_damage"
+type AccessSkillTriggerType =
+  "pink_check" |        // 相手をフットバース
+  "probability_boost" | // 編成内のスキル発動確率を補正する
+  "invalidate_skill" |  // 他スキルを無効化する
+  "invalidate_damage" | // 他スキルのダメージを増減させる効果を無効化する
+  "score_delivery" |    // スコアを配布する
+  "exp_delivery" |      // 経験値を配布する
+  "score_boost" |       // 獲得できるスコアを比率で増減させる
+  "exp_boost" |         // 獲得できる経験値を比率で増減させる
+  "damage_atk" |        // ATKの増減
+  "damage_def" |        // DEFの増減
+  "damage_special" |    // 特殊なダメージ計算
+  "damage_fixed" |      // 固定値のダメージ
+  "skill_recipe"        // その他の効果
 ```
+
+アクセス処理中はスキルの各コールバック関数が次の順に呼ばれます（一部は呼ばれない場合もあります）
+
+|コールバック|発動可能な効果|  
+|:--:|:--|  
+|onSkillProbabilityBoost| `probability_boost`|  
+|onAccessPinkCheck| `pink_check, skill_recipe` |
+|onAccessBeforeStart| `invalidate_*, skill_recipe` |  
+|onAccessStart| `score_*, exp_*, skill_recipe` |  
+|onAccessDamagePercent| `damage_atk, damage_def, skill_recipe` |
+|onAccessDamageSpecial| `damage_special, skill_recipe` |
+|onAccessDamageFixed| `damage_fixed, skill_recipe` |
+|onAccessAfterDamage| `*_delivery, skill_recipe` |
+
+**注意** `skill_recipe`の利用  
+onSkillProbabilityBoost以外のコールバックで利用できる`skill_recipe`型のスキル発動効果は効果の内容を自由に実装できますが、他のスキル発動に予期せぬ影響を与えないよう注意してください.  
+onAccessAfterDamageコールバックではカウンターやリンクの受け渡しなど特殊なスキルの効果を実現するため多用されますが、他のコールバックでの使用は原則として推奨されません.
+
+## フローの概要
+すべてのアクセス処理は関数`startAccess`から開始します
 
 下にアクセス処理概要のフローチャートを示します  
 
@@ -31,23 +52,23 @@ type AccessSkillStep =
   相手不在の確認やフットバース使用状態を確認します.  
   相手をフットバースするタイプのスキルを処理します.  
 
-  発動するスキル：`pink_check`
+  コールバック：onAccessPinkCheck
 
 #### 2. アクセスの開始処理  
   アクセスによるスコア・経験値の加算や、
   相手の不在に関わらず発動するタイプのスキルを処理します.  
 
-発動するスキル：`probability_check, before_access, start_access`
+コールバック：onSkillProbabilityBoost, onAccessBeforeStart, onAccessStart
 
 #### 3. ダメージ計算  
   アクセスするでんこのAPを基に、スキルの効果を反映しながらダメージ量を計算します.  
 
-  発動するスキル：`damage_common, damage_special, damage_fixed`
+  コールバック：onAccessDamage*
 
 #### 4. ダメージ計算後の処理
 スキルにはダメージ量が決定しないと発動を判定できないタイプが一部存在します.  
 
-発動するスキル：`after_damage`
+コールバック：onAccessAfterDamage
 
 #### 5. アクセス結果の確定
 ダメージ計算・スキル効果すべてを考慮して最終的な結果を計算します.  
@@ -66,7 +87,7 @@ Overviewで説明した２つのStepを詳説します
 1. アクセスの準備処理
 2. アクセスの開始処理
 
-<img src="https://user-images.githubusercontent.com/25225028/201469910-5beef1bc-260f-4177-a7ed-c13a768afda0.png" width="500">
+<img src="https://user-images.githubusercontent.com/25225028/222707011-ce0ee54a-0051-4c12-92c5-af0ffbfbcbcb.png" width="500">
 
 フローチャートの順に、
 
@@ -74,19 +95,20 @@ Overviewで説明した２つのStepを詳説します
   - 不在の場合はフットバースは発動しないため、後続の準備処理はスキップします.
 - フットバース（アイテム）の使用を確認
   - アイテムを使用する場合はスキルによるフットバースは発動しません.
-- 相手をフットバーすスキル`pink_check`を処理  
+- 相手をフットバーすスキルの発動効果`pink_check`を処理  
   - スキルが発動するとアイテム不使用でも相手をフットバーします.
 - スコア・経験値を加算  
-  - アクセスによるスコア・経験値は相手が不在でも、フットバース状態でも加算されます.  
-  - 相手に与えたダメージ量やリンク成功によるスコア・経験値とは異なります.
+  - アクセスによるスコア・経験値は相手が不在でも、フットバース状態でも加算されます. 
+  - フィルムによる獲得経験値の増加を反映します
+  - 新駅アクセスによるボーナスも含みます（相手に与えたダメージ量やリンク成功によるスコア・経験値は含みません）
 - 他スキルの発動確率をブーストするスキル`probability_check`を処理  
   - 他スキルに影響するため最初に発動します.  
-- アクセス開始前のスキル`before_access`を処理
-  - 基本的に他スキルを無効化するスキルがここで発動します
-  - 同じ`before_access`の段階で発動するスキルの無効化は互いに影響しません、すべての無効化スキルが発動します
-- アクセス開始時のスキル`start_access`を処理  
-  - アクセス結果に関わらず経験値を配布するスキルなどが発動します
-  - この段階以降は`before_access`の影響（スキル無効化）を受けます
+- アクセス開始前のスキルを処理
+  - 基本的に他スキルを無効化するスキル`invalidate_*`がここで発動します
+- アクセス開始時のスキルを処理  
+  - アクセス結果に関わらず経験値・スコアを配布するスキル`score_delivery, exp_delivery`が発動します
+  - 獲得できる経験値・スコアを比率で増加させるスキル`score_boost, exp_boost`が発動します
+  - この段階以降はスキル無効化の影響を受けます
 
 ## ダメージ計算以降の処理
 
@@ -97,7 +119,7 @@ Overviewで説明した３つのStepを詳説します
 4. ダメージ計算後の処理
 5. アクセス結果の確定
 
-<img src="https://user-images.githubusercontent.com/25225028/209692592-908a102c-c093-4436-9768-fac2c2bd3201.png" width="800">
+<img src="https://user-images.githubusercontent.com/25225028/222706767-6159b707-c595-413c-9d70-70cb26154d24.png" width="600">
 
 #### ダメージ計算の方法
 ダメージ計算に関わるスキル処理を行いながらダメージを計算し、でんこのHPとリブートの有無を決定します.
@@ -107,7 +129,11 @@ Overviewで説明した３つのStepを詳説します
 
 #### ダメージ計算後の処理
 
-一部のスキル`after_damage`はダメージ量やリブートの有無に依存するため、ダメージ計算が終了するまで処理できません. 一部のスキルではカウンターや追加アクセスを行うものがあります. 追加ダメージ計算の処理は順に、
+一部のスキル（onAccessAfterDamageコールバック）はダメージ量やリブートの有無に依存するため、ダメージ計算が終了するまで処理できません. 
+
+（例）：カウンターや追加アクセスを行う
+
+追加ダメージ計算の処理は順に、
 
 - ダメージ計算に影響する状態を初期化する
   - ATK, DEFの総和 => 0%
@@ -119,7 +145,7 @@ Overviewで説明した３つのStepを詳説します
 - 追加で計算されたダメージを元の値に加算する
 - 追加計算の呼び出し元に戻る
 
-スキル`after_damage`はダメージ量やリブートの有無に依存しますが、スキル`after_damage`自身が編成内のでんこのダメージ量を変化させる場合があります. あるスキルがダメージ計算終了時点では発動の条件を満たさなかったが、別のスキルが発動した影響で発動条件が満たされる、という状況が発生し得ます. このとき、スキル処理の順番によっては正しく発動しないおそれがあるため、必要に応じてスキル処理を繰り返します.
+onAccessAfterDamageで発動するスキルはダメージ量やリブートの有無に依存しますが、同じくonAccessAfterDamageで発動する別スキルが編成内のでんこのダメージ量を変化させる場合があります. あるスキルがダメージ計算終了時点では発動の条件を満たさなかったが、別のスキルが発動した影響で発動条件が満たされる、という状況が発生し得ます. このとき、スキル処理の順番によっては正しく発動しないおそれがあるため、必要に応じてスキル処理を繰り返します.
 
 #### アクセス処理の終了
 ダメージ計算・すべてのスキル処理が終了したら最終的なアクセスの結果を確定します. 

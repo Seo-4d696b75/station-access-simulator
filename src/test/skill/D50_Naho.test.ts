@@ -37,7 +37,7 @@ describe("なほのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, naho)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", naho)).toBe(true)
     expect(result.defendPercent).toBe(67)
   })
   test("発動なし-守備側(編成内)", () => {
@@ -61,7 +61,7 @@ describe("なほのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, naho)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", naho)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)", () => {
@@ -85,7 +85,7 @@ describe("なほのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, naho)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", naho)).toBe(false)
     expect(result.defendPercent).toBe(0)
   })
 })

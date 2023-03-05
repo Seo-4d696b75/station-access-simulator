@@ -1,5 +1,5 @@
 import { activateSkill, init, initContext, initUser, isSkillActive } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import DencoManager from "../../core/dencoManager"
 import { calcATK } from "../../skill/D28_Riona"
 import { testManualSkill } from "../tool/skillState"
@@ -25,12 +25,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -44,7 +40,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(true)
     const atk = calcATK(55, 10)
     expect(result.attackPercent).toBe(atk)
   })
@@ -63,12 +59,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(hiiru.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -82,9 +74,13 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(true)
+    const t = getSkillTrigger(result, "offense", riona)[0]
+    expect(t.skillName).toBe("データアクセラレーター Lv.4")
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
     // 確率補正は効かない
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
     expect(result.attackPercent).toBe(calcATK(55, 10))
   })
   test("発動なし-攻撃側(アクセス)-非アクティブ", () => {
@@ -95,12 +91,8 @@ describe("リオナのスキル", () => {
     let offense = initUser(context, "とあるマスター", [riona, seria])
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -114,7 +106,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)-駅数差なし", () => {
@@ -128,12 +120,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 0駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 20
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -147,7 +135,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)-相手なし", () => {
@@ -159,9 +147,7 @@ describe("リオナのスキル", () => {
     offense = activateSkill(context, offense, 0)
     riona = offense.formation[0]
     expect(isSkillActive(riona.skill)).toBe(true)
-    offense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -171,7 +157,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -186,12 +172,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let defense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
     const config = {
       offense: {
         state: offense,
@@ -205,7 +187,7 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -220,12 +202,8 @@ describe("リオナのスキル", () => {
     expect(isSkillActive(riona.skill)).toBe(true)
     let offense = initUser(context, "とあるマスター２", [charlotte])
     // 10駅差
-    offense.user.history = {
-      getStationAccessCount: (s) => 20
-    }
-    defense.user.history = {
-      getStationAccessCount: (s) => 10
-    }
+    offense.user.getAccessCount = (s) => 20
+    defense.user.getAccessCount = (s) => 10
     const config = {
       offense: {
         state: offense,
@@ -239,7 +217,45 @@ describe("リオナのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, riona)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", riona)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
+
+
+
+  test("発動なし-エリア無効化", () => {
+    const context = initContext("test", "test", false)
+    let seria = DencoManager.getDenco(context, "1", 50)
+    let riona = DencoManager.getDenco(context, "28", 50)
+    let eria = DencoManager.getDenco(context, "33", 50, 1)
+    let offense = initUser(context, "とあるマスター", [riona, seria])
+    offense = activateSkill(context, offense, 0)
+    let defense = initUser(context, "とあるマスター２", [eria])
+    defense = activateSkill(context, defense, 0)
+    // 10駅差
+    offense.user.getAccessCount = (s) => 10
+    defense.user.getAccessCount = (s) => 20
+    const config = {
+      offense: {
+        state: offense,
+        carIndex: 0
+      },
+      defense: {
+        state: defense,
+        carIndex: 0
+      },
+      station: eria.link[0],
+    }
+    const result = startAccess(context, config)
+    expect(result.defense).not.toBeUndefined()
+    expect(hasSkillTriggered(result, "offense", riona)).toBe(false)
+    expect(result.attackPercent).toBe(0)
+
+    let t = getSkillTrigger(result, "offense", riona)[0]
+    expect(t.skillName).toBe("データアクセラレーター Lv.4")
+    expect(t.canTrigger).toBe(false)
+    expect(t.invalidated).toBe(true)
+    expect(t.triggered).toBe(false)
+  })
+
 })

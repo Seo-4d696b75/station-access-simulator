@@ -1,9 +1,10 @@
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { getFixedDamageDenco } from "../tool/fake"
 import { testManualSkill } from "../tool/skillState"
 
@@ -41,7 +42,7 @@ describe("チコのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(true)
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(192)
     expect(result.damageFixed).toBe(0)
@@ -76,7 +77,7 @@ describe("チコのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(false)
     expect(result.damageBase?.variable).toBe(253)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -112,8 +113,19 @@ describe("チコのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    const t = getSkillTrigger(result, "offense", chiko)[0]
+    expect(t.probability).toBe(21)
+    expect(t.boostedProbability).toBe(21 * 1.2)
+    expect(t.skillName).toBe("ラッシュアワー Lv.4")
+    expect(t.triggered).toBe(true)
+    expect(t.canTrigger).toBe(true)
+    expect(t.invalidated).toBe(false)
+    expect(t.denco).toMatchDenco(chiko)
+    expect(t.denco.carIndex).toBe(0)
+    expect(t.denco.who).toBe("offense")
+
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(192)
     expect(result.damageFixed).toBe(0)
@@ -149,8 +161,16 @@ describe("チコのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(false)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
+    const t = getSkillTrigger(result, "offense", chiko)[0]
+    expect(t.probability).toBe(21)
+    expect(t.boostedProbability).toBe(21 * 1.2)
+    expect(t.skillName).toBe("ラッシュアワー Lv.4")
+    expect(t.triggered).toBe(false)
+    expect(t.canTrigger).toBe(false)
+    expect(t.invalidated).toBe(false)
+
     expect(result.damageBase?.variable).toBe(253)
     expect(result.damageBase?.constant).toBe(0)
     expect(result.damageFixed).toBe(0)
@@ -186,8 +206,8 @@ describe("チコのスキル", () => {
     expect(result.linkSuccess).toBe(true)
     expect(result.defendPercent).toBe(0)
     expect(result.attackPercent).toBe(0)
-    expect(hasSkillTriggered(result.offense, chiko)).toBe(true)
-    expect(hasSkillTriggered(result.offense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", chiko)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test)).toBe(true)
     expect(result.damageBase?.variable).toBe(0)
     expect(result.damageBase?.constant).toBe(192)
     expect(result.damageFixed).toBe(10)

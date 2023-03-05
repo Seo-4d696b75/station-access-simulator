@@ -40,7 +40,7 @@ describe("なるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.offense, you)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(true)
       checkEXP(result, 90)
     })
     test("isNewStation定義あり", () => {
@@ -52,9 +52,7 @@ describe("なるのスキル", () => {
       let moe = DencoManager.getDenco(context, "9", 10, 1)
       let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
       const predicate = jest.fn((_) => NewStationType.None)
-      offense.user.history = {
-        isNewStation: predicate
-      }
+      offense.user.isNewStation = predicate
       let defense = initUser(context, "とあるマスター２", [moe])
       const config = {
         offense: {
@@ -70,7 +68,7 @@ describe("なるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.offense, you)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(true)
       checkEXP(result, 90)
       expect(predicate.mock.calls.length).toBe(1)
       expect(predicate.mock.calls[0][0]).toMatchStation(moe.link[0])
@@ -90,9 +88,7 @@ describe("なるのスキル", () => {
     let moe = DencoManager.getDenco(context, "9", 10, 1)
     let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
     const predicate = jest.fn((_) => type)
-    offense.user.history = {
-      isNewStation: predicate
-    }
+    offense.user.isNewStation = predicate
     let defense = initUser(context, "とあるマスター２", [moe])
     const config = {
       offense: {
@@ -108,7 +104,7 @@ describe("なるのスキル", () => {
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
     expect(result.linkSuccess).toBe(true)
-    expect(hasSkillTriggered(result.offense, you)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", you)).toBe(true)
     checkEXP(result, 90 + 190)
     expect(predicate.mock.calls.length).toBe(1)
     expect(predicate.mock.calls[0][0]).toMatchStation(moe.link[0])
@@ -124,9 +120,7 @@ describe("なるのスキル", () => {
       let moe = DencoManager.getDenco(context, "9", 10, 1)
       let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
       const predicate = jest.fn((_) => NewStationType.Daily)
-      offense.user.history = {
-        isNewStation: predicate
-      }
+      offense.user.isNewStation = predicate
       let defense = initUser(context, "とあるマスター２", [moe])
       const config = {
         offense: {
@@ -144,7 +138,7 @@ describe("なるのスキル", () => {
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
       expect(result.pinkMode).toBe(true)
-      expect(hasSkillTriggered(result.offense, you)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(false)
       checkEXP(result, 0)
       expect(predicate.mock.calls.length).toBe(0)
     })
@@ -157,9 +151,7 @@ describe("なるのスキル", () => {
       let moe = DencoManager.getDenco(context, "9", 80, 1)
       let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
       const predicate = jest.fn((_) => NewStationType.Daily)
-      offense.user.history = {
-        isNewStation: predicate
-      }
+      offense.user.isNewStation = predicate
       let defense = initUser(context, "とあるマスター２", [moe])
       const config = {
         offense: {
@@ -175,7 +167,7 @@ describe("なるのスキル", () => {
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(false)
-      expect(hasSkillTriggered(result.offense, you)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(false)
       checkEXP(result, 0)
       expect(predicate.mock.calls.length).toBe(0)
     })
@@ -190,9 +182,7 @@ describe("なるのスキル", () => {
       let moe = DencoManager.getDenco(context, "9", 10, 1)
       let offense = initUser(context, "とあるマスター", [reika, you, miroku, siira])
       const predicate = jest.fn((_) => NewStationType.Daily)
-      offense.user.history = {
-        isNewStation: predicate
-      }
+      offense.user.isNewStation = predicate
       let defense = initUser(context, "とあるマスター２", [moe])
       const config = {
         offense: {
@@ -204,12 +194,11 @@ describe("なるのスキル", () => {
           carIndex: 0
         },
         station: moe.link[0],
-        usePink: true,
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
       expect(result.linkSuccess).toBe(true)
-      expect(hasSkillTriggered(result.offense, you)).toBe(false)
+      expect(hasSkillTriggered(result, "offense", you)).toBe(false)
       checkEXP(result, 0)
       expect(predicate.mock.calls.length).toBe(0)
     })

@@ -49,7 +49,7 @@ describe("ナギサのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, nagisa)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", nagisa)).toBe(true)
     expect(result.attackPercent).toBe(0)
     expect(result.damageFixed).toBe(Math.floor(210 * Math.pow(count / 14, 2)))
   })
@@ -76,7 +76,7 @@ describe("ナギサのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, nagisa)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", nagisa)).toBe(false)
     expect(result.attackPercent).toBe(0)
     expect(result.damageFixed).toBe(0)
   })

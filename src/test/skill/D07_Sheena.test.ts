@@ -1,6 +1,6 @@
 import assert from "assert"
 import { init } from "../.."
-import { AccessConfig, getAccessDenco, getDefense, startAccess } from "../../core/access/index"
+import { AccessConfig, getAccessDenco, getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -42,7 +42,9 @@ describe("シーナのスキル", () => {
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.event.length).toBe(1)
     // 発動なし
-    expect(result.offense.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "offense", sheena)).toBe(false)
+    let t = getSkillTrigger(result, "defense", sheena)
+    expect(t.length).toBe(0)
     // ダメージ計算
     let d = getAccessDenco(result, "defense")
     expect(d.damage?.value).toBe(208)
@@ -95,7 +97,14 @@ describe("シーナのスキル", () => {
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.event.length).toBe(1)
     // 発動なし
-    expect(result.defense?.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(false)
+    let t = getSkillTrigger(result, "defense", sheena)[0]
+    assert(t)
+    expect(t.probability).toBe(6.5)
+    expect(t.boostedProbability).toBe(6.5)
+    expect(t.canTrigger).toBe(false)
+    expect(t.invalidated).toBe(false)
+    expect(t.triggered).toBe(false)
     // ダメージ計算
     let d = getAccessDenco(result, "defense")
     expect(d.damage?.value).toBe(170)
@@ -139,7 +148,9 @@ describe("シーナのスキル", () => {
     expect(result.defense.event[1].type).toBe("reboot")
 
     // 発動なし
-    expect(result.defense?.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(false)
+    let t = getSkillTrigger(result, "defense", sheena)
+    expect(t.length).toBe(0)
     // ダメージ計算
     let d = getAccessDenco(result, "defense")
     expect(d.damage?.value).toBe(270)
@@ -197,12 +208,13 @@ describe("シーナのスキル", () => {
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.event.length).toBe(1)
     // 発動あり
-    let side = getDefense(result)
-    expect(side.triggeredSkills.length).toBe(1)
-    expect(side.triggeredSkills[0].name).toBe("sheena")
-    expect(side.triggeredSkills[0].step).toBe("after_damage")
-    side = result.offense
-    expect(side.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+    let t = getSkillTrigger(result, "defense", sheena)[0]
+    assert(t)
+    expect(t.probability).toBe(6.5)
+    expect(t.boostedProbability).toBe(6.5)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
     // ダメージ計算
     let d = getAccessDenco(result, "defense")
     expect(d.damage?.value).toBe(170)
@@ -272,16 +284,12 @@ describe("シーナのスキル", () => {
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.event.length).toBe(1)
     // 発動あり
-    let side = getDefense(result)
-    expect(side.triggeredSkills.length).toBe(2)
-    expect(side.triggeredSkills[0].name).toBe("sheena")
-    expect(side.triggeredSkills[0].step).toBe("after_damage")
-    expect(side.triggeredSkills[1].name).toBe("reika")
-    expect(side.triggeredSkills[1].step).toBe("damage_common")
-    side = result.offense
-    expect(side.triggeredSkills.length).toBe(1)
-    expect(side.triggeredSkills[0].name).toBe("fubu")
-    expect(side.triggeredSkills[0].step).toBe("damage_common")
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", fubu)).toBe(true)
+    // 反撃時のATK,DEFは反映されていない
+    expect(result.attackPercent).toBe(0)
+    expect(result.defendPercent).toBe(0)
     // ダメージ計算
     let d = getAccessDenco(result, "defense")
     expect(d.damage?.value).toBe(170)
@@ -331,14 +339,14 @@ describe("シーナのスキル", () => {
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.event.length).toBe(1)
     // 発動あり
-    let side = getDefense(result)
-    expect(side.triggeredSkills.length).toBe(2)
-    expect(side.triggeredSkills[0].name).toBe("hiiru")
-    expect(side.triggeredSkills[0].step).toBe("probability_check")
-    expect(side.triggeredSkills[1].name).toBe("sheena")
-    expect(side.triggeredSkills[1].step).toBe("after_damage")
-    side = result.offense
-    expect(side.triggeredSkills.length).toBe(0)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    let t = getSkillTrigger(result, "defense", sheena)[0]
+    assert(t)
+    expect(t.probability).toBe(6.5)
+    expect(t.boostedProbability).toBe(6.5 * 1.2)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
     // ダメージ計算
     let d = getAccessDenco(result, "defense")
     expect(d.damage?.value).toBe(170)
@@ -387,9 +395,14 @@ describe("シーナのスキル", () => {
     expect(result.defense).not.toBeUndefined()
     expect(result.defense?.event.length).toBe(1)
     // 発動なし ただし確率補正は発動
-    expect(result.defense?.triggeredSkills.length).toBe(1)
-    expect(result.defense?.triggeredSkills[0].name).toBe("hiiru")
-    expect(result.defense?.triggeredSkills[0].step).toBe("probability_check")
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
+    let t = getSkillTrigger(result, "defense", sheena)[0]
+    assert(t)
+    expect(t.probability).toBe(6.5)
+    expect(t.boostedProbability).toBe(6.5 * 1.2)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
     // ダメージ計算
     let d = getAccessDenco(result, "defense")
     expect(d.damage?.value).toBe(170)

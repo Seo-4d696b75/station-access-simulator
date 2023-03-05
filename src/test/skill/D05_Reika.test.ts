@@ -1,5 +1,5 @@
 import { init } from "../.."
-import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill, isSkillActive } from "../../core/skill"
@@ -36,7 +36,7 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, reika)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-守備側", () => {
@@ -62,7 +62,7 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, reika)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", reika)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動あり-攻撃側", () => {
@@ -88,7 +88,7 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
     expect(result.attackPercent).toBe(25)
   })
   test("発動あり-確率ブースト", () => {
@@ -117,9 +117,12 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
     expect(result.attackPercent).toBe(25)
+    let t = getSkillTrigger(result, "offense", reika)[0]
+    expect(t.probability).toBe(100)
+    expect(t.boostedProbability).toBe(100)
   })
   test("発動あり-編成内", () => {
     const context = initContext("test", "test", false)
@@ -144,9 +147,7 @@ describe("レイカのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
     expect(result.attackPercent).toBe(25)
-    let accessSeria = getAccessDenco(result, "offense")
-    expect(accessSeria.name).toBe("seria")
   })
 })

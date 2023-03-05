@@ -38,7 +38,7 @@ describe("カノンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kanon)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", kanon)).toBe(true)
     expect(result.attackPercent).toBe(15)
   })
 
@@ -63,7 +63,7 @@ describe("カノンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kanon)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", kanon)).toBe(true)
     expect(result.attackPercent).toBe(15)
   })
 
@@ -83,7 +83,7 @@ describe("カノンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kanon)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", kanon)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -110,7 +110,7 @@ describe("カノンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kanon)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", kanon)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-攻撃側(アクセス)", () => {
@@ -134,7 +134,7 @@ describe("カノンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, kanon)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", kanon)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動なし-守備側(被アクセス)", () => {
@@ -158,7 +158,7 @@ describe("カノンのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, kanon)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", kanon)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 })

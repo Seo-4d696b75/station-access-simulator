@@ -396,7 +396,7 @@ describe("アクセス処理のフィルム補正", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, luna)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", luna)).toBe(true)
       expect(result.defendPercent).toBe(25 + 20)
     })
     test("発動あり-攻撃側", () => {
@@ -427,7 +427,7 @@ describe("アクセス処理のフィルム補正", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.offense, reika)).toBe(true)
+      expect(hasSkillTriggered(result, "offense", reika)).toBe(true)
       expect(result.attackPercent).toBe(25 + 10)
     })
   })
@@ -464,8 +464,8 @@ describe("アクセス処理のフィルム補正", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, luna)).toBe(true)
-      expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", luna)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
       expect(result.defendPercent).toBe(25)
     })
     test("ルナ-発動なし", () => {
@@ -498,8 +498,8 @@ describe("アクセス処理のフィルム補正", () => {
       }
       const result = startAccess(context, config)
       expect(result.defense).not.toBeUndefined()
-      expect(hasSkillTriggered(result.defense, luna)).toBe(false)
-      expect(hasSkillTriggered(result.defense, hiiru)).toBe(true)
+      expect(hasSkillTriggered(result, "defense", luna)).toBe(false)
+      expect(hasSkillTriggered(result, "defense", hiiru)).toBe(true)
       expect(result.defendPercent).toBe(0)
     })
 
@@ -528,15 +528,16 @@ describe("アクセス処理のフィルム補正", () => {
       state = refreshState(context, state)
 
       expect(state.event.length).toBe(3)
+
       let e = state.event[0]
       assert(e.type === "skill_trigger")
-      expect(e.data.step).toBe("probability_check")
+      expect(e.data.denco.who).toBe("other")
       expect(e.data.denco).toMatchDenco(hiiru)
       e = state.event[1]
       assert(e.type === "access")
       e = state.event[2]
       assert(e.type === "skill_trigger")
-      expect(e.data.step).toBe("self")
+      expect(e.data.denco.who).toBe("self")
       expect(e.data.denco).toMatchDenco(charlotte)
 
     })

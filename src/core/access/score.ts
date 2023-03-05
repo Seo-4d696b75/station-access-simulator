@@ -5,7 +5,7 @@ import { copy } from "../../"
 import { Context } from "../context"
 import { ReadonlyState } from "../state"
 import { LinkResult, LinksResult, Station, StationLink } from "../station"
-import { AccessDencoState, AccessSideState, AccessState } from "./state"
+import { AccessDencoState, AccessState, AccessUserState } from "./state"
 
 
 /**
@@ -14,7 +14,7 @@ import { AccessDencoState, AccessSideState, AccessState } from "./state"
  * この合計値がアクセスによって増加するスコア・経験値量になります
  * 
  * ### スコアの計算
- * スコアは**ユーザー単位で計算されます** {@link AccessSideState score}
+ * スコアは**ユーザー単位で計算されます** {@link AccessUserState score}
  * 
  * ### 経験値の計算
  * **経験値は編成の各でんこ単位で計算されます** {@link AccessDencoState exp}
@@ -124,13 +124,21 @@ export interface AccessScoreExpResult extends AccessScoreExpState {
   total: number
 }
 
+export function addScoreExpBoost(dst: ScoreExpBoostPercent, src: ReadonlyState<ScoreExpBoostPercent>) {
+  dst.access += src.access
+  dst.accessBonus += src.accessBonus
+  dst.damageBonus += src.damageBonus
+  dst.linkBonus += src.linkBonus
+  dst.link += src.link
+}
+
 /**
  * 獲得するスコア・経験値の増減量を%単位で指定します
  * 
  * ### 獲得するスコア・経験値の増加と追加の違い
  * 「経験値を与える」「スコアを追加する」など固定値で追加する場合は{@link ScoreExpState}に直接加算してください
  */
-export interface ScoreExpCalcState {
+export interface ScoreExpBoostPercent {
 
   /**
    * 「アクセスしたとき獲得するスコア・経験値」の増加量[%]
@@ -184,7 +192,7 @@ export interface ScorePredicate {
    * @param state アクセスする本人を含む編成の現在の状態
    * @param station アクセスする駅
    */
-  calcAccessBonus: (context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>) => number
+  calcAccessBonus: (context: Context, state: ReadonlyState<AccessUserState>, station: ReadonlyState<Station>) => number
 
   /**
    * 「リンクのボーナス」
@@ -193,7 +201,7 @@ export interface ScorePredicate {
    * @param state アクセスする本人を含む編成の現在の状態
    * @param access アクセスの状態
    */
-  calcLinkBonus: (context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>) => number
+  calcLinkBonus: (context: Context, state: ReadonlyState<AccessUserState>, access: ReadonlyState<AccessState>) => number
 
   /**
    * 「与ダメージによるボーナス」  
@@ -220,14 +228,14 @@ const DEFAULT_SCORE_PREDICATE: ScorePredicate = {
   calcLinkScore: (context, link) => Math.floor((context.currentTime - link.start) / 100)
 }
 
-export function calcAccessBonusScoreExp(context: Context, state: ReadonlyState<AccessSideState>, station: ReadonlyState<Station>): [number, number] {
+export function calcAccessBonusScoreExp(context: Context, state: ReadonlyState<AccessUserState>, station: ReadonlyState<Station>): [number, number] {
   const predicate = context.scorePredicate?.calcAccessBonus ?? DEFAULT_SCORE_PREDICATE.calcAccessBonus
   const score = predicate(context, state, station)
   // 基本的にスコアと経験値は同じ？
   return [score, score]
 }
 
-export function calcDamageBonusScoreExp(context: Context, state: ReadonlyState<AccessSideState>, damage: number): [number, number] {
+export function calcDamageBonusScoreExp(context: Context, state: ReadonlyState<AccessUserState>, damage: number): [number, number] {
   const predicate = context.scorePredicate?.calcDamageBonus ?? DEFAULT_SCORE_PREDICATE.calcDamageBonus
   const score = damage >= 0 ? predicate(context, damage) : 0
   // ダメージ量が負数（回復）の場合など経験値0は一律経験値1を与える
@@ -235,14 +243,14 @@ export function calcDamageBonusScoreExp(context: Context, state: ReadonlyState<A
   return [score, exp]
 }
 
-export function calcLinkBonusScoreExp(context: Context, state: ReadonlyState<AccessSideState>, access: ReadonlyState<AccessState>): [number, number] {
+export function calcLinkBonusScoreExp(context: Context, state: ReadonlyState<AccessUserState>, access: ReadonlyState<AccessState>): [number, number] {
   const predicate = context.scorePredicate?.calcLinkBonus ?? DEFAULT_SCORE_PREDICATE.calcLinkBonus
   const score = predicate(context, state, access)
   // 基本的にスコアと経験値は同じ？
   return [score, score]
 }
 
-export function calcLinkResult(context: Context, link: StationLink, state: ReadonlyState<Omit<AccessSideState, "user">>, dencoIdx: number, linkIdx: number): LinkResult {
+export function calcLinkResult(context: Context, link: StationLink, state: ReadonlyState<Omit<AccessUserState, "user">>, dencoIdx: number, linkIdx: number): LinkResult {
   const time = context.currentTime
   const duration = time - link.start
   if (duration < 0) {
@@ -287,7 +295,7 @@ const LINK_COMBO_RATIO: readonly number[] = [
  * @param links 解除するリンク
  * @returns 
  */
-export function calcLinksResult(context: Context, links: readonly StationLink[], state: ReadonlyState<Omit<AccessSideState, "user">>, dencoIdx: number): LinksResult {
+export function calcLinksResult(context: Context, links: readonly StationLink[], state: ReadonlyState<Omit<AccessUserState, "user">>, dencoIdx: number): LinksResult {
   const time = context.currentTime
   const linkResult = links.map((link, idx) => calcLinkResult(context, link, state, dencoIdx, idx))
   const linkScore = linkResult.map(link => link.linkScore).reduce((a, b) => a + b, 0)
@@ -326,7 +334,7 @@ type ScoreExpCalcType =
  * @param state 
  * @returns 
  */
-export function calcScorePercent(score: number, state: ReadonlyState<Omit<AccessSideState, "user">>, type: ScoreExpCalcType): number {
+export function calcScorePercent(score: number, state: ReadonlyState<Omit<AccessUserState, "user">>, type: ScoreExpCalcType): number {
   let percent = 100
   switch (type) {
     case "access_bonus":

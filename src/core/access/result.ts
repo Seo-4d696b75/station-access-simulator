@@ -1,4 +1,4 @@
-import { AccessConfig } from "."
+import { AccessConfig, getSide } from "."
 import { copy, merge } from "../../"
 import { assert, Context } from "../context"
 import { withSkill } from "../skill/property"
@@ -6,9 +6,10 @@ import { refreshSkillState } from "../skill/refresh"
 import { ReadonlyState } from "../state"
 import { LinksResult } from "../station"
 import { UserState } from "../user"
+import { UserProperty } from "../user/property"
 import { refreshEXPState } from "../user/refresh"
 import { calcExpPercent, calcLinksResult, calcScorePercent, ScoreExpResult } from "./score"
-import { AccessDencoState, AccessSide, AccessSideState, AccessState } from "./state"
+import { AccessDencoState, AccessSide, AccessState, AccessUserState } from "./state"
 /**
  * アクセスの結果
  * 
@@ -29,7 +30,7 @@ export interface AccessResult extends Omit<AccessState, "offense" | "defense"> {
 /**
  * アクセス終了後の攻守各側の状態
  */
-export interface AccessUserResult extends Omit<AccessSideState, "user">, UserState {
+export interface AccessUserResult extends Omit<AccessUserState, "user">, UserState {
   formation: AccessDencoResult[]
 
   score: ScoreExpResult
@@ -83,8 +84,8 @@ export interface AccessDencoResult extends AccessDencoState {
 export function completeAccess(context: Context, config: AccessConfig, access: ReadonlyState<AccessState>): AccessResult {
   let result: AccessResult = {
     ...copy.AccessState(access),
-    offense: initUserResult(context, config.offense.state, access, "offense"),
-    defense: config.defense ? initUserResult(context, config.defense.state, access, "defense") : undefined,
+    offense: initUserResult(context, config.offense.state.user, access, "offense"),
+    defense: config.defense ? initUserResult(context, config.defense.state.user, access, "defense") : undefined,
   }
 
   // 各でんこのリンク状態を計算
@@ -106,11 +107,6 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   // レベルアップ処理
   checkLevelup(context, result)
 
-  // アクセスイベントを追加
-  addAccessEvent(context, config.offense.state, result, "offense")
-  addAccessEvent(context, config.defense?.state, result, "defense")
-
-
   // アクセス直後のスキル発動イベント
   checkSKillState(context, result)
   callbackReboot(context, result, "offense")
@@ -118,8 +114,13 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
   callbackLinkDisconnect(context, result, "offense")
   callbackLinkDisconnect(context, result, "defense")
   callbackLinkStarted(context, result)
-  callbackAfterAccess(context, result, "offense")
-  callbackAfterAccess(context, result, "defense")
+  result = callbackAfterAccess(context, result, "offense")
+  result = callbackAfterAccess(context, result, "defense")
+
+  // アクセスイベントを追加
+  addAccessEvent(context, access.offense, result, "offense")
+  addAccessEvent(context, access.defense, result, "defense")
+
   checkSKillState(context, result)
 
 
@@ -128,31 +129,36 @@ export function completeAccess(context: Context, config: AccessConfig, access: R
 
 
 
-function initUserResult(context: Context, state: ReadonlyState<UserState>, access: ReadonlyState<AccessState>, which: AccessSide): AccessUserResult {
+function initUserResult(context: Context, property: ReadonlyState<UserProperty>, access: ReadonlyState<AccessState>, which: AccessSide): AccessUserResult {
   const side = (which === "offense") ? access.offense : access.defense
   if (!side) {
     context.log.error(`アクセス結果の初期化に失敗`)
   }
 
-  const after = copy.AccessSideState(side)
-  const before = copy.UserState(state)
+  const after = copy.AccessUserState(side)
 
   return {
     ...after,
+    // イベントの順番: access > (reboot) > (levelup) > (その他コールバック)
+    // ただしaccessイベントの記録にreboot,levelup後の状態を反映させるので
+    // reboot,levelup処理終わるまで記録を待機
     event: [],
-    queue: before.queue,
-    user: before.user,
-    formation: after.formation.map(d => ({
-      ...d,
-      exp: {
-        ...d.exp,
-        total: 0,
-        access: {
-          ...d.exp.access,
+    // Access処理中はnullableを回避するためUserPropertyReaderに置き換えている
+    // UserPropertyはライブラリ側では更新しない約束なので元に戻す
+    user: copy.UserProperty(property),
+    formation: after.formation.map(d => {
+      return {
+        ...d,
+        exp: {
+          ...d.exp,
           total: 0,
-        }
+          access: {
+            ...d.exp.access,
+            total: 0,
+          }
+        },
       }
-    })),
+    }),
     displayedScore: 0,
     displayedExp: 0,
     score: {
@@ -278,13 +284,19 @@ export function completeDisplayScoreExp(context: Context, state: AccessResult, w
   }
 }
 
-function addAccessEvent(context: Context, origin: ReadonlyState<UserState> | undefined, result: AccessResult, which: AccessSide) {
+function addAccessEvent(
+  context: Context, 
+  origin: ReadonlyState<AccessUserState> | undefined, 
+  result: AccessResult, 
+  which: AccessSide,
+) {
   const side = (which === "offense") ? result.offense : result.defense
   if (!side || !origin) return
   side.event = [
     ...origin.event.map(e => copy.Event(e)),
     {
       // このアクセスイベントを追加
+      // reboot, levelup反映済み
       type: "access",
       data: copy.AccessEventData({
         ...result,
@@ -398,31 +410,25 @@ function callbackLinkStarted(context: Context, state: AccessResult) {
     })
 }
 
-function callbackAfterAccess(context: Context, state: AccessResult, which: AccessSide) {
+function callbackAfterAccess(context: Context, state: AccessResult, which: AccessSide): AccessResult {
   const side = (which === "offense") ? state.offense : state.defense
-  if (!side) return
-  let formation = side
+  if (!side) return state
+
   side.formation
     .filter(d => d.skill.type === "possess") // 保有スキルすべてにコールバック
     .map(d => d.carIndex)
     .forEach(idx => {
       // スキル発動による状態変更を考慮して評価直前にコピー
-      const d = copy.AccessDencoResult(formation.formation[idx])
+      const d = copy.AccessDencoResult(getSide(state, which).formation[idx])
       const skill = d.skill
       if (skill.type !== "possess") {
         context.log.error(`スキル評価処理中にスキル保有状態が変更しています ${d.name} possess => ${skill.type}`)
       }
       if (skill && skill.onAccessComplete) {
         const active = withSkill(d, skill, idx)
-        const next = skill.onAccessComplete(context, formation, active, state)
-        if (next) {
-          formation = next
-        }
+        state = skill.onAccessComplete(context, state, active) ?? state
       }
     })
-  if (which === "offense") {
-    state.offense = formation
-  } else {
-    state.defense = formation
-  }
+
+  return state
 }

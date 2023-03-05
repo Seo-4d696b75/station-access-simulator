@@ -1,6 +1,6 @@
 import assert from "assert"
 import { init } from "../.."
-import { hasSkillTriggered, startAccess } from "../../core/access/index"
+import { getSkillTrigger, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
@@ -47,9 +47,20 @@ describe("シズのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, shizu)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", shizu)).toBe(true)
+
+    // ATK増加 DEF減少
     expect(result.attackPercent).toBe(14)
     expect(result.defendPercent).toBe(-5.5 * cnt)
+
+    let t = getSkillTrigger(result, "offense", shizu)[0]
+    expect(t.skillName).toBe("カンペキテンサイおでかけプラン Lv.4")
+    expect(t.type).toBe("damage_atk")
+    expect(t.triggered).toBe(true)
+    t = getSkillTrigger(result, "offense", shizu)[1]
+    expect(t.skillName).toBe("カンペキテンサイおでかけプラン Lv.4")
+    expect(t.type).toBe("damage_def")
+    expect(t.triggered).toBe(true)
   })
   test.each([1, 2, 3, 4])("編成内ATK上昇 相手編成の属性x%d", (cnt) => {
     const context = initContext("test", "test", false)
@@ -80,9 +91,20 @@ describe("シズのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, shizu)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", shizu)).toBe(true)
+    
+    // ATK増加 DEF減少
     expect(result.attackPercent).toBe(14)
     expect(result.defendPercent).toBe(-5.5 * cnt)
+
+    let t = getSkillTrigger(result, "offense", shizu)[0]
+    expect(t.skillName).toBe("カンペキテンサイおでかけプラン Lv.4")
+    expect(t.type).toBe("damage_atk")
+    expect(t.triggered).toBe(true)
+    t = getSkillTrigger(result, "offense", shizu)[1]
+    expect(t.skillName).toBe("カンペキテンサイおでかけプラン Lv.4")
+    expect(t.type).toBe("damage_def")
+    expect(t.triggered).toBe(true)
   })
   test("発動なし heat以外あり", () => {
     const context = initContext("test", "test", false)
@@ -106,7 +128,7 @@ describe("シズのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, shizu)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", shizu)).toBe(false)
     expect(result.attackPercent).toBe(0)
     expect(result.defendPercent).toBe(0)
   })
@@ -137,8 +159,8 @@ describe("シズのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, shizu)).toBe(true)
-    expect(hasSkillTriggered(result.defense, mio)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", shizu)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", mio)).toBe(true)
     expect(result.attackPercent).toBe(14)
     expect(result.defendPercent).toBe(-16.5)
     // ミオの肩代わり対象のダメージ計算はATK増加のみ加味する

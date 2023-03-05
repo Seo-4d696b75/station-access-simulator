@@ -3,15 +3,12 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "auto-condition",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "defense") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "defense") {
       return {
-        probabilityKey: "probability",
-        recipe: (state) => {
-          const def = self.skill.property.readNumber("DEF")
-          state.defendPercent += def
-          context.log.log(`ありすはねぇ、お休みの日じゃないと″ほんりょうはっき″できないんだぁ～ DEF+${def}%`)
-        }
+        probability: self.skill.property.readNumber("probability"),
+        type: "damage_def",
+        percent: self.skill.property.readNumber("DEF")
       }
     }
   },

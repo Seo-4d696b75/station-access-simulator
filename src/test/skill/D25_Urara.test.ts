@@ -1,8 +1,10 @@
+import assert from "assert"
 import dayjs from "dayjs"
 import { DencoManager, init } from "../.."
 import { initContext } from "../../core/context"
 import { activateSkill, getSkill } from "../../core/skill"
 import { changeFormation, initUser, refreshState } from "../../core/user"
+import "../../gen/matcher"
 
 describe("うららのスキル", () => {
   beforeAll(init)
@@ -63,11 +65,15 @@ describe("うららのスキル", () => {
     expect(state.event.length).toBe(1)
     let event = state.event[0]
     expect(event.type).toBe("skill_trigger")
-    if (event.type === "skill_trigger") {
-      expect(event.data.denco.name).toBe("urara")
-      expect(event.data.step).toBe("self")
-      expect(event.data.time).toBe(context.currentTime)
-    }
+    assert(event.type === "skill_trigger")
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDenco(urara)
+    expect(event.data.skillName).toBe("じかんあっしゅく Lv.4")
+    expect(event.data.probability).toBe(50)
+    expect(event.data.boostedProbability).toBe(50)
+    expect(event.data.time).toBe(context.currentTime)
+
     // レイカのスキル cooldown -> idle
     reika = state.formation[1]
     skill = getSkill(reika)
@@ -120,15 +126,24 @@ describe("うららのスキル", () => {
     // スキル発動の確認
     expect(state.event.length).toBe(2)
     let event = state.event[0]
-    expect(event.type).toBe("skill_trigger")
-    if (event.type === "skill_trigger") {
-      expect(event.data.denco.name).toBe("hiiru")
-    }
+    assert(event.type === "skill_trigger")
+    expect(event.data.denco.carIndex).toBe(1)
+    expect(event.data.denco.who).toBe("other")
+    expect(event.data.denco).toMatchDenco(hiiru)
+    expect(event.data.skillName).toBe("テンションAGEAGE↑↑ Lv.4")
+    expect(event.data.probability).toBe(100)
+    expect(event.data.boostedProbability).toBe(100)
+    expect(event.data.time).toBe(context.currentTime)
+
     event = state.event[1]
-    expect(event.type).toBe("skill_trigger")
-    if (event.type === "skill_trigger") {
-      expect(event.data.denco.name).toBe("urara")
-    }
+    assert(event.type === "skill_trigger")
+    expect(event.data.denco.carIndex).toBe(0)
+    expect(event.data.denco.who).toBe("self")
+    expect(event.data.denco).toMatchDenco(urara)
+    expect(event.data.skillName).toBe("じかんあっしゅく Lv.4")
+    expect(event.data.probability).toBe(50)
+    expect(event.data.boostedProbability).toBe(50 * 1.2)
+    expect(event.data.time).toBe(context.currentTime)
 
     // レイカのスキル cooldown -> idle
     reika = state.formation[2]

@@ -43,7 +43,7 @@ describe("しおりのスキル", () => {
     // アクセス結果
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(true)
-    expect(hasSkillTriggered(result.defense, shiori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", shiori)).toBe(false)
     assert(result.defense)
     let dSeria = result.defense.formation[0]
     let dShiori = result.defense.formation[1]
@@ -62,8 +62,10 @@ describe("しおりのスキル", () => {
     e = result.defense.event[2]
     assert(e.type === "skill_trigger")
     expect(e.data.denco).toMatchDencoState(dShiori)
-    expect(e.data.carIndex).toBe(1)
-    expect(e.data.step).toBe("self")
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.probability).toBe(35)
+    expect(e.data.boostedProbability).toBe(35)
     expect(e.data.time).toBe(now)
     expect(e.data.skillName).toBe("たぶん完璧なアドバイス！ Lv.4")
     // 経験値追加
@@ -103,8 +105,8 @@ describe("しおりのスキル", () => {
     // アクセス結果
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(true)
-    expect(hasSkillTriggered(result.defense, shiori)).toBe(false)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", shiori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
     assert(result.defense)
     // スキル発動
     expect(result.defense.event.length).toBe(4)
@@ -115,13 +117,20 @@ describe("しおりのスキル", () => {
     expect(e.data.link.length).toBe(1)
     e = result.defense.event[2]
     assert(e.type === "skill_trigger")
-    expect(e.data.carIndex).toBe(2)
-    expect(e.data.step).toBe("probability_check")
+    expect(e.data.denco).toMatchDencoState(result.defense.formation[2])
+    expect(e.data.denco.carIndex).toBe(2)
+    expect(e.data.denco.who).toBe("other")
+    expect(e.data.probability).toBe(100)
+    expect(e.data.boostedProbability).toBe(100)
+    expect(e.data.skillName).toBe("テンションAGEAGE↑↑ Lv.4")
     e = result.defense.event[3]
     assert(e.type === "skill_trigger")
-    expect(e.data.carIndex).toBe(1)
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco.name).toBe("shiori")
+    expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.probability).toBe(35)
+    expect(e.data.boostedProbability).toBe(35 * 1.2)
+    expect(e.data.skillName).toBe("たぶん完璧なアドバイス！ Lv.4")
     // 経験値追加
     let d = result.defense.formation[0]
     expect(d.currentExp).toBe(d.exp.link + 350)
@@ -155,8 +164,8 @@ describe("しおりのスキル", () => {
     // アクセス結果
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(true)
-    expect(hasSkillTriggered(result.defense, shiori)).toBe(false)
-    expect(hasSkillTriggered(result.defense, hiiru)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", shiori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", hiiru)).toBe(false)
     assert(result.defense)
     // スキル発動なし
     expect(result.defense.event.length).toBe(2)
@@ -196,7 +205,7 @@ describe("しおりのスキル", () => {
     // アクセス結果
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(true)
-    expect(hasSkillTriggered(result.defense, shiori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", shiori)).toBe(false)
     assert(result.defense)
     // スキル発動なし
     expect(result.defense.event.length).toBe(2)
@@ -238,7 +247,7 @@ describe("しおりのスキル", () => {
     // アクセス結果
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(true)
-    expect(hasSkillTriggered(result.defense, shiori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", shiori)).toBe(false)
     assert(result.defense)
     // スキル発動
     expect(result.defense.event.length).toBe(2)
@@ -248,9 +257,12 @@ describe("しおりのスキル", () => {
     // リブートなし！！
     // assert(e.type === "reboot") 
     assert(e.type === "skill_trigger")
-    expect(e.data.carIndex).toBe(1)
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco.name).toBe("shiori")
+    expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.probability).toBe(35)
+    expect(e.data.boostedProbability).toBe(35)
+    expect(e.data.skillName).toBe("たぶん完璧なアドバイス！ Lv.4")
     // 経験値追加
     let d = result.defense.formation[0]
     expect(d.reboot).toBe(false)
@@ -284,7 +296,7 @@ describe("しおりのスキル", () => {
     // アクセス結果
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(false)
-    expect(hasSkillTriggered(result.offense, shiori)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", shiori)).toBe(false)
     // スキル発動
     expect(result.offense.event.length).toBe(3)
     let e = result.offense.event[0]
@@ -294,9 +306,12 @@ describe("しおりのスキル", () => {
     expect(e.data.link.length).toBe(3)
     e = result.offense.event[2]
     assert(e.type === "skill_trigger")
-    expect(e.data.carIndex).toBe(1)
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco.name).toBe("shiori")
+    expect(e.data.denco).toMatchDencoState(result.offense.formation[1])
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.probability).toBe(35)
+    expect(e.data.boostedProbability).toBe(35)
+    expect(e.data.skillName).toBe("たぶん完璧なアドバイス！ Lv.4")
     // 経験値追加
     let d = result.offense.formation[0]
     expect(d.reboot).toBe(true)
@@ -337,7 +352,7 @@ describe("しおりのスキル", () => {
     // アクセス結果
     expect(result.defense).not.toBeUndefined()
     expect(result.linkDisconnected).toBe(true)
-    expect(hasSkillTriggered(result.defense, shiori)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", shiori)).toBe(false)
     assert(result.defense)
     // レベルアップ
     let d = result.defense.formation[0]
@@ -352,9 +367,12 @@ describe("しおりのスキル", () => {
     expect(e.data.link.length).toBe(1)
     e = result.defense.event[2]
     assert(e.type === "skill_trigger")
-    expect(e.data.carIndex).toBe(1)
-    expect(e.data.step).toBe("self")
-    expect(e.data.denco.name).toBe("shiori")
+    expect(e.data.denco).toMatchDencoState(result.defense.formation[1])
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("self")
+    expect(e.data.probability).toBe(35)
+    expect(e.data.boostedProbability).toBe(35)
+    expect(e.data.skillName).toBe("たぶん完璧なアドバイス！ Lv.4")
     e = result.defense.event[3]
     assert(e.type === "levelup")
     expect(e.data.time).toBe(now)

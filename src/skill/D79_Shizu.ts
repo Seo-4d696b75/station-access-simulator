@@ -1,34 +1,34 @@
-import { formatPercent } from "../core/format";
+import { countDencoBy, countDencoOf } from "../core/denco";
 import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "manual",
   deactivate: "default_timeout",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.which === "offense") {
-      const heatCnt = state
-        .offense
-        .formation
-        .filter(d => d.attr === "heat")
-        .length
-      if (heatCnt === state.offense.formation.length) {
-        return {
-          probabilityKey: "probability",
-          recipe: (state) => {
-            const atk = self.skill.property.readNumber("ATK")
-            state.attackPercent += atk
-            const defUnit = self.skill.property.readNumber("DEF")
-            const attrCnt = new Set(
-              state.defense!.formation.map(d => d.attr)
-            ).size
-            const def = defUnit * attrCnt
-            state.defendPercent += def
-            context.log.log(`真のテンサイはサポートもうまくなくちゃね。`)
-            context.log.log(`  ATK ${formatPercent(atk)}`)
-            context.log.log(`  DEF ${formatPercent(def)}(${defUnit} x ${attrCnt})`)
-          }
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.which === "offense") {
+      const heatCnt = countDencoOf(
+        (d) => d.attr === "heat",
+        state.offense,
+      )
+      if (heatCnt !== state.offense.formation.length) return
+      const atk = self.skill.property.readNumber("ATK")
+      const attrCnt = countDencoBy(
+        (d) => d.attr,
+        state.defense
+      )
+      const def = attrCnt * self.skill.property.readNumber("DEF")
+      return [
+        {
+          probability: self.skill.property.readNumber("probability"),
+          type: "damage_atk",
+          percent: atk
+        },
+        {
+          probability: self.skill.property.readNumber("probability"),
+          type: "damage_def",
+          percent: def
         }
-      }
+      ]
     }
   }
 }

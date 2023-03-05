@@ -1,9 +1,11 @@
+import assert from "assert"
 import { getSkill, init } from "../.."
-import { getAccessDenco, startAccess } from "../../core/access/index"
+import { getAccessDenco, hasSkillTriggered, startAccess } from "../../core/access/index"
 import { initContext } from "../../core/context"
 import DencoManager from "../../core/dencoManager"
 import { activateSkill } from "../../core/skill"
 import { initUser } from "../../core/user"
+import "../../gen/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
 describe("メロのスキル", () => {
@@ -36,7 +38,7 @@ describe("メロのスキル", () => {
     expect(result.pinkItemSet).toBe(true)
     expect(result.pinkItemUsed).toBe(true)
     expect(result.pinkMode).toBe(true)
-    expect(result.offense.triggeredSkills.length).toBe(0)
+    expect(result.skillTriggers.length).toBe(0)
     expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
     let accessReika = getAccessDenco(result, "defense")
@@ -64,14 +66,12 @@ describe("メロのスキル", () => {
     expect(result.pinkItemSet).toBe(false)
     expect(result.pinkItemUsed).toBe(false)
     expect(result.pinkMode).toBe(false)
-    expect(result.offense.triggeredSkills.length).toBe(0)
-    if (result.defense) {
-      let d = getAccessDenco(result, "defense")
-      expect(d.damage?.value).toBe(200)
-      expect(d.hpBefore).toBe(192)
-      expect(d.hpAfter).toBe(0)
-      expect(d.reboot).toBe(true)
-    }
+    expect(hasSkillTriggered(result, "offense", mero)).toBe(false)
+    let d = getAccessDenco(result, "defense")
+    expect(d.damage?.value).toBe(200)
+    expect(d.hpBefore).toBe(192)
+    expect(d.hpAfter).toBe(0)
+    expect(d.reboot).toBe(true)
   })
   test("発動あり", () => {
     const context = initContext("test", "test", false)
@@ -97,16 +97,21 @@ describe("メロのスキル", () => {
     expect(result.pinkMode).toBe(true)
     expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
-    expect(result.offense.triggeredSkills.length).toBe(1)
-    let trigger = result.offense.triggeredSkills[0]
-    expect(trigger.step).toBe("pink_check")
-    expect(trigger.numbering).toBe("2")
-    expect(trigger.name).toBe("mero")
-    if (result.defense) {
-      let accessReika = getAccessDenco(result, "defense")
-      expect(accessReika.reboot).toBe(false)
-      expect(accessReika.damage).toBeUndefined()
-    }
+    expect(hasSkillTriggered(result, "offense", mero)).toBe(true)
+    expect(result.skillTriggers.length).toBe(1)
+    let trigger = result.skillTriggers[0]
+    expect(trigger.canTrigger).toBe(true)
+    expect(trigger.probability).toBe(1.6)
+    expect(trigger.boostedProbability).toBe(1.6)
+    expect(trigger.skillName).toBe("きゃのんぱんち Lv.4")
+    expect(trigger.denco).toMatchDenco(mero)
+    expect(trigger.denco.carIndex).toBe(0)
+    expect(trigger.denco.which).toBe("offense")
+    expect(trigger.denco.who).toBe("offense")
+    assert(result.defense)
+    let accessReika = getAccessDenco(result, "defense")
+    expect(accessReika.reboot).toBe(false)
+    expect(accessReika.damage).toBeUndefined()
   })
   test("発動あり-確率ブースト", () => {
     const context = initContext("test", "test", false)
@@ -137,16 +142,18 @@ describe("メロのスキル", () => {
     expect(result.pinkMode).toBe(true)
     expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
-    expect(result.offense.triggeredSkills.length).toBe(1)
+    expect(hasSkillTriggered(result, "offense", mero)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(false)
+    expect(result.skillTriggers.length).toBe(2)
     // メロ本人 ひいるの確率ブーストは乗らない
-    let trigger = result.offense.triggeredSkills[0]
-    expect(trigger.step).toBe("pink_check")
-    expect(trigger.numbering).toBe("2")
-    expect(trigger.name).toBe("mero")
-    if (result.defense) {
-      let accessReika = getAccessDenco(result, "defense")
-      expect(accessReika.reboot).toBe(false)
-      expect(accessReika.damage).toBeUndefined()
-    }
+    let trigger = result.skillTriggers[0]
+    expect(trigger.denco).toMatchDenco(mero)
+    expect(trigger.probability).toBe(1.6)
+    expect(trigger.boostedProbability).toBe(1.6)
+    trigger = result.skillTriggers[1]
+    expect(trigger.denco).toMatchDenco(hiiru)
+    expect(trigger.triggered).toBe(false)
+    assert(trigger.type === "probability_boost")
+    expect(trigger.percent).toBe(20)
   })
 })

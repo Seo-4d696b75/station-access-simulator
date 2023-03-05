@@ -40,7 +40,7 @@ describe("にちなスキル", () => {
     let d = getDefense(result).formation[1]
     expect(d.reboot).toBe(true)
     expect(d.link.length).toBe(0)
-    expect(hasSkillTriggered(result.defense, nichina)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", nichina)).toBe(true)
     // 移譲するリンク
     const link = minBy(nichina.link.slice(1, 10), (e) => e.start)!!
     // セリアに移譲
@@ -77,7 +77,7 @@ describe("にちなスキル", () => {
     let d = getDefense(result).formation[0]
     expect(d.reboot).toBe(true)
     expect(d.link.length).toBe(0)
-    expect(hasSkillTriggered(result.defense, nichina)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", nichina)).toBe(true)
     // セリアに移譲
     d = getDefense(result).formation[1]
     expect(d.reboot).toBe(false)
@@ -112,7 +112,7 @@ describe("にちなスキル", () => {
     let d = getDefense(result).formation[1]
     expect(d.reboot).toBe(false)
     expect(d.link.length).toBe(2)
-    expect(hasSkillTriggered(result.defense, nichina)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", nichina)).toBe(false)
     // セリアに移譲なし
     d = getDefense(result).formation[0]
     expect(d.reboot).toBe(false)
@@ -146,7 +146,7 @@ describe("にちなスキル", () => {
     let d = getDefense(result).formation[1]
     expect(d.reboot).toBe(true)
     expect(d.link.length).toBe(0)
-    expect(hasSkillTriggered(result.defense, nichina)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", nichina)).toBe(false)
     // セリアに移譲なし
     d = getDefense(result).formation[0]
     expect(d.reboot).toBe(false)
@@ -180,7 +180,7 @@ describe("にちなスキル", () => {
     let d = getDefense(result).formation[1]
     expect(d.reboot).toBe(true)
     expect(d.link.length).toBe(0)
-    expect(hasSkillTriggered(result.defense, nichina)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", nichina)).toBe(false)
     // セリアに移譲
     d = getDefense(result).formation[0]
     expect(d.reboot).toBe(false)
@@ -214,12 +214,12 @@ describe("にちなスキル", () => {
     // カウンター発動
     let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(false)
-    expect(hasSkillTriggered(result.defense, sheena)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", sheena)).toBe(true)
     // 本人はリブート
     d = result.offense.formation[1]
     expect(d.reboot).toBe(true)
     expect(d.link.length).toBe(0)
-    expect(hasSkillTriggered(result.offense, nichina)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", nichina)).toBe(true)
     // セリアに移譲
     d = result.offense.formation[0]
     expect(d.reboot).toBe(false)
@@ -256,12 +256,12 @@ describe("にちなスキル", () => {
     let d = getAccessDenco(result, "defense")
     expect(d.reboot).toBe(true)
     expect(d.damage?.value).toBe(1000)
-    expect(hasSkillTriggered(result.defense, marika)).toBe(true)
+    expect(hasSkillTriggered(result, "defense", marika)).toBe(true)
     // 本人
     d = result.offense.formation[1]
     expect(d.reboot).toBe(true)
     expect(d.damage?.value).toBe(1000)
-    expect(hasSkillTriggered(result.offense, nichina)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", nichina)).toBe(true)
     expect(d.link.length).toBe(0)
     // セリアに移譲
     d = result.offense.formation[0]

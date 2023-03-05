@@ -55,17 +55,23 @@ describe("リトのスキル", () => {
     assert(e.type === "reboot")
     expect(e.data.time).toBe(start)
     expect(e.data.denco).toMatchDencoState({ ...d, link: [], currentExp: 0 }) // リンク解除
+
     e = result.defense.event[2]
     assert(e.type === "access")
     expect(e.data.time).toBe(start)
     expect(e.data.which).toBe("offense")
+
     e = result.defense.event[3]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
-    expect(e.data.carIndex).toBe(0)
-    expect(e.data.step).toBe("self")
+    expect(e.data.denco.carIndex).toBe(0)
+    expect(e.data.denco.who).toBe("self")
     expect(e.data.skillName).toBe("ワンダーエスケープ Lv.4")
-    expect(e.data.denco).toMatchDencoState(d)
+    expect(e.data.denco).toMatchDencoState({
+      ...d,
+      currentExp: d.currentExp - 200, // ランダムなアクセスの直前
+      link: []
+    })
   })
   test("発動あり-確率ブースト", () => {
     const context = initContext("test", "test", false)
@@ -107,25 +113,31 @@ describe("リトのスキル", () => {
     assert(e.type === "reboot")
     expect(e.data.time).toBe(start)
     expect(e.data.denco).toMatchDencoState({ ...d0, link: [], currentExp: 0 }) // リンク解除
-    // スキル発動確率の確認（ひいるスキル発動）> スキル発動（アクセスの発生）> スキル発動の記録
+
     e = result.defense.event[2]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
-    expect(e.data.carIndex).toBe(1)
-    expect(e.data.step).toBe("probability_check")
+    expect(e.data.denco.carIndex).toBe(1)
+    expect(e.data.denco.who).toBe("other")
     expect(e.data.skillName).toBe("テンションAGEAGE↑↑ Lv.4")
     expect(e.data.denco).toMatchDencoState(d1)
+
     e = result.defense.event[3]
     assert(e.type === "access")
     expect(e.data.time).toBe(start)
     expect(e.data.which).toBe("offense")
+
     e = result.defense.event[4]
     assert(e.type === "skill_trigger")
     expect(e.data.time).toBe(start)
-    expect(e.data.carIndex).toBe(0)
-    expect(e.data.step).toBe("self")
+    expect(e.data.denco.carIndex).toBe(0)
+    expect(e.data.denco.who).toBe("self")
     expect(e.data.skillName).toBe("ワンダーエスケープ Lv.4")
-    expect(e.data.denco).toMatchDencoState(d0)
+    expect(e.data.denco).toMatchDencoState({
+      ...d0,
+      currentExp: d0.currentExp - 200, // ランダムなアクセスの直前
+      link: []
+    })
   })
   test("発動なし-確率", () => {
     const context = initContext("test", "test", false)
@@ -269,13 +281,13 @@ describe("リトのスキル", () => {
     const result = startAccess(context, config)
     expect(result.linkDisconnected).toBe(true)
     expect(result.linkSuccess).toBe(true)
-    expect(hasSkillTriggered(result.offense, test)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", test)).toBe(true)
 
     assert(result.defense)
     let d = result.defense.formation[0]
     expect(d.reboot).toBe(true)
     expect(d.hpAfter).toBe(0)
-    expect(d.skillInvalidated).toBe(true)
+
     expect(result.defense.event.length).toBe(2)
     let e = result.defense.event[0]
     assert(e.type === "access")

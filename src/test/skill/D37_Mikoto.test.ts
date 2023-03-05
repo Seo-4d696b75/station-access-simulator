@@ -1,5 +1,6 @@
-import { activateSkill, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
+import { activateSkill, getSkillTrigger, hasSkillTriggered, init, initContext, initUser, startAccess } from "../.."
 import DencoManager from "../../core/dencoManager"
+import "../../gen/matcher"
 import { testAlwaysSkill } from "../tool/skillState"
 
 describe("みことのスキル", () => {
@@ -30,7 +31,7 @@ describe("みことのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.defense, mikoto)).toBe(false)
+    expect(hasSkillTriggered(result, "defense", mikoto)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -55,7 +56,7 @@ describe("みことのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mikoto)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mikoto)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
 
@@ -80,7 +81,7 @@ describe("みことのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mikoto)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mikoto)).toBe(false)
     expect(result.attackPercent).toBe(0)
   })
   test("発動あり-攻撃側(編成内)-ディフェンダー", () => {
@@ -104,8 +105,19 @@ describe("みことのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mikoto)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mikoto)).toBe(true)
     expect(result.attackPercent).toBe(12)
+
+    const t = getSkillTrigger(result, "offense", mikoto)[0]
+    expect(t.skillName).toBe("惻隠之心 Lv.4")
+    expect(t.probability).toBe(70)
+    expect(t.boostedProbability).toBe(70)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("offense")
+    expect(t.denco.who).toBe("other")
+    expect(t.denco).toMatchDenco(mikoto)
   })
   test("発動なし（確率）-攻撃側(編成内)-ディフェンダー", () => {
     const context = initContext("test", "test", false)
@@ -128,8 +140,19 @@ describe("みことのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mikoto)).toBe(false)
+    expect(hasSkillTriggered(result, "offense", mikoto)).toBe(false)
     expect(result.attackPercent).toBe(0)
+
+    const t = getSkillTrigger(result, "offense", mikoto)[0]
+    expect(t.skillName).toBe("惻隠之心 Lv.4")
+    expect(t.probability).toBe(70)
+    expect(t.boostedProbability).toBe(70)
+    expect(t.canTrigger).toBe(false)
+    expect(t.triggered).toBe(false)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("offense")
+    expect(t.denco.who).toBe("other")
+    expect(t.denco).toMatchDenco(mikoto)
   })
 
   test("発動あり（確率ブースト）-攻撃側(編成内)-ディフェンダー", () => {
@@ -155,8 +178,19 @@ describe("みことのスキル", () => {
     }
     const result = startAccess(context, config)
     expect(result.defense).not.toBeUndefined()
-    expect(hasSkillTriggered(result.offense, mikoto)).toBe(true)
-    expect(hasSkillTriggered(result.offense, hiiru)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", mikoto)).toBe(true)
+    expect(hasSkillTriggered(result, "offense", hiiru)).toBe(true)
     expect(result.attackPercent).toBe(12)
+
+    const t = getSkillTrigger(result, "offense", mikoto)[0]
+    expect(t.skillName).toBe("惻隠之心 Lv.4")
+    expect(t.probability).toBe(70)
+    expect(t.boostedProbability).toBe(70 * 1.2)
+    expect(t.canTrigger).toBe(true)
+    expect(t.triggered).toBe(true)
+    expect(t.denco.carIndex).toBe(1)
+    expect(t.denco.which).toBe("offense")
+    expect(t.denco.who).toBe("other")
+    expect(t.denco).toMatchDenco(mikoto)
   })
 })

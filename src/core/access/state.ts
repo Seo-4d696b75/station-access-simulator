@@ -1,9 +1,10 @@
 import { DamageCalcState, DamageState, ScoreExpState } from "."
-import { Denco, DencoState } from "../denco"
+import { DencoState } from "../denco"
+import { AccessSkillTriggerState } from "../skill/trigger"
 import { ReadonlyState } from "../state"
 import { Station } from "../station"
-import { UserPropertyReader } from "../user"
-import { ScoreExpCalcState } from "./score"
+import { UserPropertyReader, UserState } from "../user"
+import { ScoreExpBoostPercent } from "./score"
 
 /**
  * アクセスにおけるスキルの評価ステップ
@@ -62,6 +63,8 @@ export type AccessWho =
  * アクセス処理中の両編成の各でんこの状態
  */
 export interface AccessDencoState extends DencoState {
+
+  // TODO 共通型を用意する
   readonly which: AccessSide
   readonly who: AccessWho
   readonly carIndex: number
@@ -157,19 +160,13 @@ export interface AccessDencoState extends DencoState {
   /**
    * アクセス処理中に獲得する経験値の増加量[%]
    */
-  expPercent: ScoreExpCalcState
+  expPercent: ScoreExpBoostPercent
 }
-
-
-export interface AccessTriggeredSkill extends Denco {
-  readonly step: AccessSkillStep
-}
-
 
 /**
  * アクセスの攻守ふたりの状態
  */
-export interface AccessSideState {
+export interface AccessUserState extends UserState {
   
   user: UserPropertyReader
 
@@ -182,11 +179,6 @@ export interface AccessSideState {
    * 直接アクセス・被アクセスするでんこの編成内における位置
    */
   carIndex: number
-
-  /**
-   * アクセス中にスキルが発動した編成内でんこの一覧
-   */
-  triggeredSkills: AccessTriggeredSkill[]
 
   probabilityBoostPercent: number
   probabilityBoosted: boolean
@@ -201,7 +193,7 @@ export interface AccessSideState {
   /**
    * アクセス処理中に発生したスコアの増加量を指定します
    */
-  scorePercent: ScoreExpCalcState
+  scorePercent: ScoreExpBoostPercent
 }
 
 /**
@@ -211,6 +203,9 @@ export type AccessSide =
   "offense" |
   "defense"
 
+export function invertAccessSide(which: AccessSide): AccessSide {
+  return which === "offense" ? "defense" : "offense"
+}
 
 export interface AccessState {
   /**
@@ -233,14 +228,16 @@ export interface AccessState {
   /**
    * アクセスする側の編成状態
    */
-  offense: AccessSideState
+  offense: AccessUserState
 
   /**
    * アクセスされる側の編成状態
    * 
    * リンクしたでんこの居ない対象にアクセスした場合は`undefined`
    */
-  defense?: AccessSideState
+  defense?: AccessUserState
+
+  skillTriggers: AccessSkillTriggerState[]
 
   /**
    * アクセス処理の呼び出しの深さ

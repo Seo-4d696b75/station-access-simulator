@@ -36,11 +36,15 @@ type SchemaOf<T> =
   T extends Object ? ObjectSchema<T> | CustomSchema : never
 
 export function createCopyFunc<T>(schema: SchemaOf<T>): (src: ReadonlyState<T>) => T {
-  return (src) => copy(schema, src)
+  return (src) => {
+    return copy(schema, src)
+  }
 }
 
 export function createMergeFunc<T>(schema: SchemaOf<T>): (dst: T, src: ReadonlyState<T>) => void {
-  return (dst, src) => merge(schema, dst, src)
+  return (dst, src) => {
+    merge(schema, dst, src)
+  }
 }
 
 export function createMatcher<T>(
@@ -128,7 +132,7 @@ function mergeArray<T>(schema: SchemaOf<T>, dst: T[], src: ReadonlyState<T>[]): 
   for (let i = 0; i < src.length; i++) {
     if (i < dst.length) {
       // merge item
-      merge(schema, dst[i], src[i])
+    merge(schema, dst[i], src[i])
     } else {
       // copy src to dst
       dst.push(copy(schema, src[i]))

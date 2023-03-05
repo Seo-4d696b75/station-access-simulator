@@ -3,32 +3,26 @@ import { SkillLogic } from "../core/skill";
 
 const skill: SkillLogic = {
   transitionType: "always",
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "offense") {
       // 編成内のアタッカーの数
       const cnt = state.offense.formation.filter(d => d.type === "attacker").length
       if (cnt > 0) {
         return {
-          probabilityKey: "probability",
-          recipe: (state) => {
-            const atk = cnt * self.skill.property.readNumber("ATK")
-            state.attackPercent += atk
-            context.log.log(`ワタシがどれだけ頑張れるかは編成にかかってるわ ATK+${atk}%`)
-          }
+          probability: self.skill.property.readNumber("probability"),
+          type: "damage_atk",
+          percent: cnt * self.skill.property.readNumber("ATK")
         }
       }
     }
-    if (step === "damage_common" && self.who === "defense") {
+    if (self.who === "defense") {
       // 編成内のディフェンダーの数
       const cnt = getDefense(state).formation.filter(d => d.type === "defender").length
       if (cnt > 0) {
         return {
-          probabilityKey: "probability",
-          recipe: (state) => {
-            const def = cnt * self.skill.property.readNumber("DEF")
-            state.defendPercent += def
-            context.log.log(`ワタシがどれだけ頑張れるかは編成にかかってるわ DEF+${def}%`)
-          }
+          probability: self.skill.property.readNumber("probability"),
+          type: "damage_def",
+          percent: cnt * self.skill.property.readNumber("DEF")
         }
       }
     }

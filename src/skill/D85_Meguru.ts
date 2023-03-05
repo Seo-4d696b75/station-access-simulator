@@ -1,5 +1,4 @@
 import { assert } from "../core/context";
-import { formatPercent } from "../core/format";
 import { SkillLogic } from "../core/skill";
 import { copy } from "../gen/copy";
 
@@ -26,18 +25,16 @@ const skill: SkillLogic = {
       }
     }
   },
-  triggerOnAccess: (context, state, step, self) => {
-    if (step === "damage_common" && self.who === "offense") {
+  onAccessDamagePercent: (context, state, self) => {
+    if (self.who === "offense") {
+      const cnt = self.skill.data.readNumber(KEY, 0)
+      const max = self.skill.property.readNumber("count_max")
+      const atkMax = self.skill.property.readNumber("ATK_max")
+      const atk = atkMax * Math.min(cnt, max) / max
       return {
-        probabilityKey: "probability", // 100%
-        recipe: (state) => {
-          const cnt = self.skill.data.readNumber(KEY, 0)
-          const max = self.skill.property.readNumber("count_max")
-          const atkMax = self.skill.property.readNumber("ATK_max")
-          const atk = atkMax * Math.min(cnt, max) / max
-          state.attackPercent += atk
-          context.log.log(`めぐはこうみえてマジメなんでぇ～♪ ATK${formatPercent(atk)}`)
-        }
+        probability: self.skill.property.readNumber("probability"), // 100%
+        type: "damage_atk",
+        percent: atk
       }
     }
   }
