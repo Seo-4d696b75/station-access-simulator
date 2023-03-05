@@ -14,7 +14,8 @@
 ✅ スキル発動のシミュレーション  
 ✅ ダメージ計算のシミュレーション  
 ✅ 経験値獲得・レベルアップのシミュレーション  
-✅ オリジナルでんこ No.1〜No.85 までのスキル実装  
+✅ オリジナルでんこ No.1〜No.99 のスキル実装  
+✅ エクストラでんこ No.2〜No.4 のスキル実装  
 ✅ タイムライン上の表示をコンソール出力で再現  
 
 ![image](https://user-images.githubusercontent.com/25225028/204131714-46bc4e25-f29a-4367-a2bc-00f2297452d4.png)
@@ -26,7 +27,7 @@
 `head`タグ内に追加  
 
 ```html
-<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@^0.4.0/umd/simulator.min.js"></script>
+<script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/ekimemo-access-simulator@^0.5.0/umd/simulator.min.js"></script>
 ```
 
 利用例：[[CodePen] CDN on Web](https://codepen.io/seo-4d696b75/pen/RwjoWeR)
@@ -78,54 +79,52 @@ init().then(() => {
 [各バージョンの一覧はこちら](https://github.com/Seo-4d696b75/station-access-simulator/releases)  
 
 
-**v0.4.0**  
-- `SkillLogic` コールバックの追加
-  - 編成内のでんこがリンクを開始 `onLinkStarted`
-  - スキル状態がunableに変化 `onUnable`
-  - スキル状態がcooldownに変化 `onCooldown`
-- スキル状態が非アクティブでもコールバックを呼び出す
-- 状態のコピー関数を修正
-- 発動したスキルの効果内容を確率で変化させる実装を追加
-- スキル発動判定に失敗した場合の処理を追加
-- スコア・経験値の内訳を細分化、型定義の修正
-- でんこの名前を複数種類追加　`name, fullName, firstName`
-- スキルの追加
-  - 66 みなも
-  - 67 まぜ
-  - 68 みつる
-  - 70 みやび
-  - 71 るり
-  - 72 ナギサ
-  - 73 やまと
-  - 74 コヨイ
-  - 75 ニナ
-  - 77 リト
-  - 78 なる
-  - 79 シズ
-  - 80 ねも
-  - 81 ゆう
-  - 82 ゆかり
-  - 83 くろがね
-  - 84 みそら
-  - 85 めぐる
-- 不具合の修正
-  - 61 Chitoseのスキルがアクセス時に影響しないサポーターのスキルも無効化してしまう
-  - 65 Hibikiのスキルがレンに無効化されてしまう
-  - アクセス直後のスキル発動で発動確率が100%でも確率補正（ひいる）が効いててしまう
-  - 特定の場合でカウンターが２回以上発動しない（まりか > みこと・くに）
-  - 38 Kuni のスキル発動タイミングが誤っていた
-  - スキル発動の呼び出し内から`activate/deactivateSkill`を呼び出せない（型定義が不適当）
-  - アクセス以外のスキル発動でEvent記録が破壊される場合がある
-  - `UserPropertyReader`の初期化が不適当で関数の呼び出しが正しく機能しない
-  - 新駅の判定処理を追加
-  - `Asia/Tokyo`以外のタイムゾーンの環境で実行すると`isHoliday`が正しく機能しない
-  
+**v0.5.0**  
+## Change List
 
-**v0.3.1**
-- サンプルプロジェクトの追加
-- UMDファイルの分割(Code Splitting)
-- 時刻を扱うライブラリの変更 moment.js => [Day.js](https://day.js.org/en/)
-- コンソール出力`format`のテスト追加
-- コンソール出力での表示の不具合を修正
-  - リンク解除されたアクセスでリンク時間が表示されない不具合
-  - アクセスでレベルアップ後の最大HP,レベルで表示される不具合
+- スキル時間延長の実装  
+  アサとは異なりactive, cooldown時間を等しく延長するタイプ  
+- スキル発動処理の大幅な修正  
+  - スキル発動の効果内容を分類して形式化
+  - スキル発動の効果に応じたスキル定義（コールバック）を `SkillLogic`に修正
+  - 無効化スキルの発動判定を変更  
+    - 無効化の対象をフィルターする関数`isTarget`を返す
+    - 無効化の対象の有無を厳密に確認する
+  - スキル発動の付随的な効果を追加
+    - `AccessSkillTriggerBase#sideEffect`
+    - スキルが発動したとき一緒に実行される
+    - 19 イムラのATK増加と同時にHPを半減させる実装
+  - 確率発動の判定失敗時の処理を追加  
+     - `AccessSkillRecipe#fallbackRecipe`
+     - （無効化を除く）確率判定に失敗した場合に代わりに実行されて発動扱いになる
+     -  78 なるの確率でスキル効果が変化する実装
+  - スキル発動失敗時のスキル効果を追加
+    - `EventSkillRecipe#fallbackEffect`
+    - スキル発動に失敗したときに実行される（発動の記録は残らない）
+    - 80 ねものリンク成功時にスキル発動失敗した場合の実装（スキル状態がcooldownに遷移する）
+  - 既存のスキル実装を修正
+- スキル発動確率を動的に計算できる対応  
+  94 ゆき の実装対応
+- UserPropertyの修正
+  型定義を簡略化・前日のアクセス数の定義追加
+- AccessStateの修正  
+  両編成の型をUserStateのサブタイプに変更
+- 不具合の修正
+  - assertでundefinedがthrowされる
+  - merge関数の不具合 
+  - 33 エリアの無効化スキルが正しく作用しない
+- でんこ追加
+  - 86 ミナト 
+  - 87 ひめ
+  - 88 たまき
+  - 89 ギンカ
+  - 90 あい 
+  - 91 よしの
+  - 92 すばる
+  - 93 あさひ
+  - 94 ゆき
+  - 95 ひな
+  - 96 アヤ
+  - 97 あまね
+  - 98 まふゆ
+  - 99 おとめ
